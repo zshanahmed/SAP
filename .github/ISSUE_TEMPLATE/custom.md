@@ -7,14 +7,8 @@ assignees: ''
 
 ---
 
-## <name of feature goes here>
+## User Story:
 <user story goes here>
 
-### Points: <number points go here>
-
-### Owner: <owner goes here>
-
-### Pull request:
-<link to pull request>
-
-### TODO:
+## Acceptance Criteria:
+<acceptance Criteria goes here>
