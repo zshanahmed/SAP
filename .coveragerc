@@ -1,0 +1,18 @@
+[run]
+omit = 
+    polls/migrations/*
+    polls/__init__.py
+    polls/models.py
+    polls/views.py
+    polls/admin.py
+    polls/apps.py
+
+
+[report]
+omit = 
+    polls/migrations/*
+    polls/__init__.py
+    polls/models.py
+    polls/views.py
+    polls/admin.py
+    polls/apps.py
