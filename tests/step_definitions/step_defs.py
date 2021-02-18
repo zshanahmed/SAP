@@ -9,6 +9,7 @@ scenarios('../features/initial.feature')
 
 localhost = 'http://127.0.0.1:8000/'
 
+### Fixtures (for browsers)
 @pytest.fixture
 def firefoxBrowser():
     b = webdriver.Firefox()
@@ -30,6 +31,19 @@ def safariBrowser():
     yield b
     b.quit()
 
+######################
+### Reusable Given ###
+######################
+
+#####################
+### Reusable When ###
+#####################
+
+#####################
+### Reusable Then ###
+#####################
+
+### Old Examples
 @when(parsers.parse('I\'m on the homepage'))
 
 def first_step(firefoxBrowser, chromeBrowser, safariBrowser):
