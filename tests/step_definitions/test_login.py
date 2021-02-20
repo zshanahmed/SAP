@@ -3,6 +3,10 @@ import pytest
 from pytest_bdd import scenarios, given, when, then, parsers
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.chrome.options import Options
+
+options = Options()
+options.headless = True
 
 localhost = 'http://127.0.0.1:8000/'
 
@@ -12,7 +16,7 @@ scenarios('../features/login.feature')
 #Fixtures
 @pytest.fixture
 def browser():
-    b = webdriver.Chrome()
+    b = webdriver.Chrome('/usr/local/bin/chromedriver', chrome_options=options)
     b.implicitly_wait(10)
     yield b
     b.quit()
@@ -23,7 +27,7 @@ def visit_login(browser):
     browser.get(localhost)
 
 # When step
-@when(parsers.parse('I enter my Username "{username}" and Password "{password}"'))
+@when(parsers.parse('I enter my username "{username}" and password "{password}"'))
 def input_login(browser, username, password):
     browser.find_element_by_id('id_username').send_keys(username)
     browser.find_element_by_id('id_password').send_keys(password, Keys.RETURN)
