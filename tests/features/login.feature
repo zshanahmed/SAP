@@ -6,5 +6,5 @@ Feature: Login
 
   Scenario: I want to login
     Given that I am on the login page
-    When I enter my username 'johndoe' and password 'serpent_1'
-    Then I should see the page with title 'Dashboard'
+    When I enter my username johndoe and password serpent_1
+    Then I should see the page with title Dashboard
