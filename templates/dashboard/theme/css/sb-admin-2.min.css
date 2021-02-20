@@ -2226,39 +2226,39 @@ fieldset:disabled a.btn {
   pointer-events: none;
 }
 .btn-primary {
-  color: #fff;
-  background-color: #4e73df;
-  border-color: #4e73df;
+  color: rgb(19, 19, 19);
+  background-color: #ebcf34;
+  border-color: #ffde5c;
 }
 .btn-primary:hover {
   color: #fff;
-  background-color: #2e59d9;
-  border-color: #2653d4;
+  background-color: #b3a106;
+  border-color: #af9e04;
 }
 .btn-primary.focus,
 .btn-primary:focus {
   color: #fff;
-  background-color: #2e59d9;
-  border-color: #2653d4;
-  box-shadow: 0 0 0 0.2rem rgba(105, 136, 228, 0.5);
+  background-color: #f1da08;
+  border-color: #f1da08;
+  box-shadow: 0 0 0 0.2rem #f1da08
 }
 .btn-primary.disabled,
 .btn-primary:disabled {
   color: #fff;
-  background-color: #4e73df;
-  border-color: #4e73df;
+  background-color: #f1da08;
+  border-color: #f1da08;
 }
 .btn-primary:not(:disabled):not(.disabled).active,
 .btn-primary:not(:disabled):not(.disabled):active,
 .show > .btn-primary.dropdown-toggle {
   color: #fff;
-  background-color: #2653d4;
-  border-color: #244ec9;
+  background-color: #f1da08;
+  border-color: #f1da08;
 }
 .btn-primary:not(:disabled):not(.disabled).active:focus,
 .btn-primary:not(:disabled):not(.disabled):active:focus,
 .show > .btn-primary.dropdown-toggle:focus {
-  box-shadow: 0 0 0 0.2rem rgba(105, 136, 228, 0.5);
+  box-shadow: 0 0 0 0.2rem #f1da08
 }
 .btn-secondary {
   color: #fff;
@@ -4406,13 +4406,13 @@ input[type='submit'].btn-block {
   padding: 0.5rem 0.75rem;
   margin-left: -1px;
   line-height: 1.25;
-  color: #4e73df;
+  color: #181601;
   background-color: #fff;
   border: 1px solid #dddfeb;
 }
 .page-link:hover {
   z-index: 2;
-  color: #224abe;
+  color: #8b8204;
   text-decoration: none;
   background-color: #eaecf4;
   border-color: #dddfeb;
@@ -4434,8 +4434,8 @@ input[type='submit'].btn-block {
 .page-item.active .page-link {
   z-index: 3;
   color: #fff;
-  background-color: #4e73df;
-  border-color: #4e73df;
+  background-color: #f6c500;
+  border-color: #f6c500;
 }
 .page-item.disabled .page-link {
   color: #858796;
@@ -8791,7 +8791,7 @@ button.bg-dark:hover {
   color: #fff !important;
 }
 .text-primary {
-  color: #4e73df !important;
+  color: #352a01 !important;
 }
 a.text-primary:focus,
 a.text-primary:hover {
@@ -9067,8 +9067,8 @@ a:focus {
   animation-timing-function: opacity cubic-bezier(0, 1, 0.4, 1);
 }
 .bg-gradient-primary {
-  background-color: #4e73df;
-  background-image: linear-gradient(180deg, #4e73df 10%, #224abe 100%);
+  background-color: #f6c500;
+  background-image: linear-gradient(180deg, #e4b704d5 10%, #f1d35a 100%);
   background-size: cover;
 }
 .bg-gradient-secondary {
