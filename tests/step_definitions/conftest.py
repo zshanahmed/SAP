@@ -3,6 +3,7 @@ This module contains shared fixtures, steps, and hooks.
 """
 import pytest
 from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
 
 @pytest.fixture
 def firefoxBrowser():
@@ -14,7 +15,9 @@ def firefoxBrowser():
 
 @pytest.fixture
 def chromeBrowser():
-    b = webdriver.Chrome()
+    options = Options()
+    options.headless = True
+    b = webdriver.Chrome(options=options)
     b.implicitly_wait(10)
     yield b
     b.quit()
