@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 
+{% load static %}
+
 <head>
 
     <meta charset="utf-8">
@@ -12,16 +14,16 @@
     <title>IBA - Dashboard</title>
 
     <!-- Custom fonts for this template -->
-    <link href="vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+    <link href="{% static '/vendor/fontawesome-free/css/all.min.css' %}" rel="stylesheet" type="text/css">
     <link
         href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
         rel="stylesheet">
 
     <!-- Custom styles for this template -->
-    <link href="css/sb-admin-2.min.css" rel="stylesheet">
+    <link href="{% static '/css/sb-admin-2.min.css' %}" rel="stylesheet">
 
     <!-- Custom styles for this page -->
-    <link href="vendor/datatables/dataTables.bootstrap4.min.css" rel="stylesheet">
+    <link href="{% static '/vendor/datatables/dataTables.bootstrap4.min.css' %}" rel="stylesheet">
 
 </head>
 
@@ -34,10 +36,10 @@
         <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
             <br>
             <!-- Sidebar - Brand -->
-            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="index.html">
+            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="/dashboard">
                 
                 <div class="sidebar-brand-icon rotate-n-15">
-                    <img src="img/Untitled-1.png" alt="IBA Logo" width="151px" height="88px">
+                    <img src="{% static '/img/Untitled-1.png' %}" alt="IBA Logo" width="151px" height="88px">
                 </div>
             </a>
 
@@ -47,13 +49,13 @@
 
             <!-- Nav Item - Dashboard -->
             <li class="nav-item">
-                <a class="nav-link" href="#">
+                <a class="nav-link" href="/dashboard">
                     <i class="fas fa-fw fa-tachometer-alt"></i>
                     <span>Dashboard</span></a>
             </li>
 
             <li class="nav-item">
-                <a class="nav-link" href="#">
+                <a class="nav-link" href="/analytics">
                     <i class="fas fa-fw fa-chart-area"></i>
                     <span>Analytics</span></a>
             </li>
@@ -117,12 +119,12 @@
                                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 <span class="mr-2 d-none d-lg-inline text-gray-600 small">IBA Admin</span>
                                 <img class="img-profile rounded-circle"
-                                    src="img/undraw_profile.svg">
+                                    src="{% static '/img/undraw_profile.svg' %}">
                             </a>
                             <!-- Dropdown - User Information -->
                             <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
                                 aria-labelledby="userDropdown">
-                                <a class="dropdown-item" href="profile.html">
+                                <a class="dropdown-item" href="/update_profile">
                                     <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
                                     Profile
                                 </a>
@@ -135,7 +137,7 @@
                                     Activity Log
                                 </a> -->
                                 <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" href="#" data-toggle="modal" data-target="#logoutModal">
+                                <a class="dropdown-item" href="/logout" data-toggle="modal" data-target="#logoutModal">
                                     <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
                                     Logout
                                 </a>
@@ -160,7 +162,7 @@
                                     <div class="form-group row">
                                         <div class="col-sm-6 mb-3 mb-sm-0">
                                             <select class="form-control">
-                                                <option hidden>University Type</option>
+                                                <option hidden>User Type</option>
                                                 <option value="">Faculty</option>
                                                 <option value="">Undergraduate Student</option>
                                                 <option value="">Graduate Student/Post-doc</option>
@@ -213,100 +215,60 @@
                         </div>
                         <div class="card-body">
                             <div class="table-responsive">
-                                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
-                                    <thead>
-                                        <tr>
-                                            <th>Name</th>
-                                            <th>University Type</th>
-                                            <th>STEM AOR</th>
-                                            <th>Mentorship Status</th>
-                                            <th>Year</th>
-                                            <th></th>
-                                        </tr>
-                                    </thead>
-                                    <tfoot>
-                                        <tr>
-                                            <th>Name</th>
-                                            <th>University Type</th>
-                                            <th>STEM AOR</th>
-                                            <th>Mentorship Status</th>
-                                            <th>Year</th>
-                                            <th></th>
-                                        </tr>
-                                    </tfoot>
-                                    <tbody>
-                                        <tr>
-                                            <td>John Doe 1</td>
-                                            <td>Graduate</td>
-                                            <td>Physics</td>
-                                            <td>Mentor</td>
-                                            <td>Senior</td>
-                                            <td>
-                                                <ul class="list-inline m-0" style="text-align: center">
-                                                    <li class="list-inline-item">
-                                                        <button class="btn btn-primary btn-sm" type="button" data-toggle="tooltip" data-placement="top"
-                                                            title="Add"><i class="fa fa-eye"></i></button>
-                                                    </li>
-                                                    <li class="list-inline-item">
-                                                        <button class="btn btn-success btn-sm" type="button" data-toggle="tooltip" data-placement="top"
-                                                            title="Edit"><i class="fa fa-edit"></i></button>
-                                                    </li>
-                                                    <li class="list-inline-item">
-                                                        <button class="btn btn-danger btn-sm" type="button" data-toggle="tooltip" data-placement="top"
-                                                            title="Delete"><i class="fa fa-trash"></i></button>
-                                                    </li>
-                                                </ul>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>Garrett Winters</td>
-                                            <td>Accountant</td>
-                                            <td>Tokyo</td>
-                                            <td>63</td>
-                                            <td>2011/07/25</td>
-                                            <td>
-                                                <ul class="list-inline m-0" style="text-align: center">
-                                                    <li class="list-inline-item">
-                                                        <button class="btn btn-primary btn-sm" type="button" data-toggle="tooltip" data-placement="top"
-                                                            title="Add"><i class="fa fa-eye"></i></button>
-                                                    </li>
-                                                    <li class="list-inline-item">
-                                                        <button class="btn btn-success btn-sm" type="button" data-toggle="tooltip" data-placement="top"
-                                                            title="Edit"><i class="fa fa-edit"></i></button>
-                                                    </li>
-                                                    <li class="list-inline-item">
-                                                        <button class="btn btn-danger btn-sm" type="button" data-toggle="tooltip" data-placement="top"
-                                                            title="Delete"><i class="fa fa-trash"></i></button>
-                                                    </li>
-                                                </ul>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>Ashton Cox</td>
-                                            <td>Junior Technical Author</td>
-                                            <td>San Francisco</td>
-                                            <td>66</td>
-                                            <td>2009/01/12</td>
-                                            <td>
-                                                <ul class="list-inline m-0" style="text-align: center">
-                                                    <li class="list-inline-item">
-                                                        <button class="btn btn-primary btn-sm" type="button" data-toggle="tooltip" data-placement="top"
-                                                            title="Add"><i class="fa fa-eye"></i></button>
-                                                    </li>
-                                                    <li class="list-inline-item">
-                                                        <button class="btn btn-success btn-sm" type="button" data-toggle="tooltip" data-placement="top"
-                                                            title="Edit"><i class="fa fa-edit"></i></button>
-                                                    </li>
-                                                    <li class="list-inline-item">
-                                                        <button class="btn btn-danger btn-sm" type="button" data-toggle="tooltip" data-placement="top"
-                                                            title="Delete"><i class="fa fa-trash"></i></button>
-                                                    </li>
-                                                </ul>
-                                            </td>
-                                        </tr>
-                                        
-                                    </tbody>
-                                </table>
+                                {% if allies_list %}
+                                    <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                                        <thead>
+                                            <tr>
+                                                <th>Name</th>
+                                                <th>User Type</th>
+                                                <th>STEM AOR</th>
+                                                <th>Interested in Mentoring</th>
+                                                <th>Year</th>
+                                                <th></th>
+                                            </tr>
+                                        </thead>
+                                        <tfoot>
+                                            <tr>
+                                                <th>Name</th>
+                                                <th>User Type</th>
+                                                <th>STEM AOR</th>
+                                                <th>Interested in Mentoring</th>
+                                                <th>Year</th>
+                                                <th></th>
+                                            </tr>
+                                        </tfoot>
+                                        <tbody>
+                                            {% for ally in allies_list %}
+                                                <tr>
+                                                    <td>{{ ally.user.first_name }} {{ally.user.last_name}}</td>
+                                                    <td>{{ ally.user_type }}</td>
+                                                    <td>{{ ally.area_of_research }}</td>
+                                                    <td>{{ ally.interested_in_mentoring }}</td>
+                                                    <td>{{ ally.year }}</td>
+                                                    <td>
+                                                        <ul class="list-inline m-0" style="text-align: center">
+                                                            <li class="list-inline-item">
+                                                                <button class="btn btn-primary btn-sm" type="button" data-toggle="tooltip" data-placement="top"
+                                                                    title="Add"><i class="fa fa-eye"></i></button>
+                                                            </li>
+                                                            <li class="list-inline-item">
+                                                                <button class="btn btn-success btn-sm" type="button" data-toggle="tooltip" data-placement="top"
+                                                                    title="Edit"><i class="fa fa-edit"></i></button>
+                                                            </li>
+                                                            <li class="list-inline-item">
+                                                                <button class="btn btn-danger btn-sm" type="button" data-toggle="tooltip" data-placement="top"
+                                                                    title="Delete"><i class="fa fa-trash"></i></button>
+                                                            </li>
+                                                        </ul>
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                            
+                                        </tbody>
+                                    </table>
+                                {% else %}
+                                    <h6 class="m-0 font-weight-bold text-primary">No allies are available.</h6>
+                                {% endif %}
                             </div>
                         </div>
                     </div>
@@ -352,28 +314,28 @@
                 <div class="modal-body">Select "Logout" below if you are ready to end your current session.</div>
                 <div class="modal-footer">
                     <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
-                    <a class="btn btn-primary" href="login.html">Logout</a>
+                    <a class="btn btn-primary" href="/logout">Logout</a>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Bootstrap core JavaScript-->
-    <script src="vendor/jquery/jquery.min.js"></script>
-    <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="{% static '/vendor/jquery/jquery.min.js' %}"></script>
+    <script src="{% static '/vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
 
     <!-- Core plugin JavaScript-->
-    <script src="vendor/jquery-easing/jquery.easing.min.js"></script>
+    <script src="{% static '/vendor/jquery-easing/jquery.easing.min.js' %}"></script>
 
     <!-- Custom scripts for all pages-->
-    <script src="js/sb-admin-2.min.js"></script>
+    <script src="{% static '/js/sb-admin-2.min.js' %}"></script>
 
     <!-- Page level plugins -->
-    <script src="vendor/datatables/jquery.dataTables.min.js"></script>
-    <script src="vendor/datatables/dataTables.bootstrap4.min.js"></script>
+    <script src="{% static '/vendor/datatables/jquery.dataTables.min.js' %}"></script>
+    <script src="{% static '/vendor/datatables/dataTables.bootstrap4.min.js' %}"></script>
 
     <!-- Page level custom scripts -->
-    <script src="js/demo/datatables-demo.js"></script>
+    <script src="{% static '/js/demo/datatables-demo.js' %}"></script>
 
 </body>
 
