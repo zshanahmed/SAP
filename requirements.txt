@@ -7,3 +7,4 @@ django-nose==1.4.7
 pytest-bdd
 selenium
 pytest
+django-crispy-forms==1.11.0
