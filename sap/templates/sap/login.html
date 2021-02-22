@@ -17,7 +17,7 @@
         <div class="row d-flex">
             <div class="col-lg-6">
                 <div class="card1 pb-5">
-                    <div class="d-flex"> <img src="{% static 'img/iba_logo.png'%}" class="logo"> <h2 class="logo-text"><strong>Science Alliance <span>Portal</span></strong></h2> </div>
+                    <div class="d-flex"> <img src="{% static 'img/iba_logo.png'%}" class="logo"> <h2 class="logo-text"><strong> <a class="logo-link" href="#">Science Alliance <span>Portal</span></a></strong></h2> </div>
                     <div class="row px-3 justify-content-center mt-4 border-line"> <img src="{% static 'img/people-design.jpg'%}"> </div>
                 </div>
             </div>
@@ -31,8 +31,8 @@
                         <div class="row px-3"> <label class="mb-1">
                                 <h6 class="mb-0 ">Password</h6>
                             </label> <div class="mb-4">{{ form.password }} </div></div>
-                        <div class="row mb-3 px-4"> <button type="submit" class="btn btn-blue text-center" value="login"> <strong>Login</strong></button> </div>
-                        <div class="row mb-4 px-3"> <small class="font-weight-bold">Don't have an account? <a class="text-danger ">Register</a></small> </div>
+                        <div class="row mb-3 px-4"> <button type="submit" class="btn btn-yellow text-center" value="login"> <strong>Login</strong></button> </div>
+                        <div class="row mb-4 px-3"> <div class="font-weight-bold">Forgot Your Password? <a class="text-yellow">Click here to reset your password</a></div></div>
                     </div>
                 </form>
             </div>

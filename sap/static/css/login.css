@@ -29,6 +29,18 @@ body {
     padding-left: 0.6rem;
 }
 
+a {
+    text-decoration: none;
+}
+
+a.text-yellow {
+    color: #494D97;
+}
+
+a.text-yellow:hover {
+    color: #FFCD00;
+}
+
 span {
     border-bottom: #FFCD00 4px solid;
 }
@@ -40,6 +52,14 @@ span {
 
 .border-line {
     border-right: 1px solid #EEEEEE
+}
+
+#bottom-right {
+    position: absolute;
+    width: 1rem;
+    height: 1rem;
+    left: 492px;
+    top: 285px;
 }
 
 .facebook {
@@ -142,7 +162,7 @@ a {
     cursor: pointer
 }
 
-.btn-blue {
+.btn-yellow {
     background-color: #FFCD00;
     width: 100px;
     color: #000;
@@ -150,7 +170,7 @@ a {
     box-shadow: 2px 2px 4px lightgray ;
 }
 
-.btn-blue:hover {
+.btn-yellow:hover {
     background-color: #f1c40c;
     cursor: pointer;
 }
