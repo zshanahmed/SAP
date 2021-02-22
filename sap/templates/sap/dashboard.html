@@ -1,4 +1,17 @@
 {% extends 'sap/base.html' %}
 {% block content %}
-<h1>Dashboard</h1>
+<legend class="border-bottom mb-2">Dashboard</legend>
+<h1>IBA Allies Dashboard</h1>
+{% if allies_list %}
+    <ul>
+    {% for ally in allies_list %}
+        <li><a href="/">{{ ally.hawk_id }}</a> | | {{ally.user.first_name}} | | {{ally.user.last_name}} | | {{ally.user.email}}
+            | | {{ally.user_type}} | | {{ally.major}}
+        </li>
+        <br>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>No allies are available.</p>
+{% endif %}
 {% endblock content %}
