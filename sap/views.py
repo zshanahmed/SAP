@@ -23,3 +23,10 @@ class AnalyticsView(TemplateView):
 
 class AdminProfileView(TemplateView):
     template_name = "sap/profile.html"
+
+class AboutPageView(TemplateView):
+    template_name = "sap/about.html"
+
+class SupportPageView(TemplateView):
+    template_name = "sap/support.html"
+
