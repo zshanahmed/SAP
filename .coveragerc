@@ -1,18 +1,24 @@
 [run]
-omit = 
+omit =
+    polls/*
     polls/migrations/*
     polls/__init__.py
     polls/models.py
     polls/views.py
     polls/admin.py
     polls/apps.py
+    sap/models.py
+    sap/migrations/*
 
 
 [report]
-omit = 
+omit =
+    polls/*
     polls/migrations/*
     polls/__init__.py
     polls/models.py
     polls/views.py
     polls/admin.py
     polls/apps.py
+    sap/models.py
+    sap/migrations/*
