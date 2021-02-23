@@ -32,8 +32,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
-    'sap.apps.SapConfig',
-    'polls.apps.PollsConfig',
+    'sap.apps.SapConfig',#'polls.apps.PollsConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -45,7 +44,6 @@ INSTALLED_APPS = [
 ]
 
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
-
 # Tell nose to measure coverage on the 'foo' and 'bar' apps
 NOSE_ARGS = [
     '--with-coverage',
