@@ -48,3 +48,6 @@ class AllyStudentCategoryRelation(models.Model):
         StudentCategories,
         on_delete=models.CASCADE,
     )
+
+class Post(models.Model):
+    text = models.TextField()
