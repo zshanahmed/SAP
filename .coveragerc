@@ -1,24 +1,17 @@
 [run]
 omit =
     polls/*
-    polls/migrations/*
-    polls/__init__.py
-    polls/models.py
-    polls/views.py
-    polls/admin.py
-    polls/apps.py
     sap/models.py
     sap/migrations/*
+    sap/apps.py
+    sap/admin.py
 
 
 [report]
 omit =
     polls/*
-    polls/migrations/*
-    polls/__init__.py
-    polls/models.py
-    polls/views.py
-    polls/admin.py
-    polls/apps.py
     sap/models.py
     sap/migrations/*
+    sap/migrations/*
+    sap/apps.py
+    sap/admin.py
