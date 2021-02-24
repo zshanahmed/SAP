@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Ally, Post
+from .models import Ally, Message
 # Register your models here.
 
 
@@ -12,4 +12,4 @@ class AllyAdmin(admin.ModelAdmin):
 
 admin.site.register(Ally, AllyAdmin)
 
-admin.site.register(Post)
+admin.site.register(Message)

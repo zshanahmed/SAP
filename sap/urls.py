@@ -9,7 +9,6 @@ from django.contrib.auth.decorators import login_required
 urlpatterns = [
     path('', auth_views.LoginView.as_view(template_name='sap/login.html'), name='home'),
     path('logout/', auth_views.LogoutView.as_view(template_name='sap/logout.html'), name='logout'),
-    # path('', MessageBoardView.as_view(), name='message_board'),
 
 
     url(r'^dashboard/$',

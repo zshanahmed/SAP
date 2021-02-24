@@ -1,6 +1,6 @@
 <h1>Message Board</h1>
 <ul>
-    {% for post in all_posts_list %}
-    <li>{{ post.text }}</li>
+    {% for message in all_posts_list %}
+    <li>{{ message.message }}</li>
     {% endfor %}
 </ul>

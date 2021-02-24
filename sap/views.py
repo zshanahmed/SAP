@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from .models import Ally, Post
+from .models import Ally, Message
 from django.urls import reverse
 from django.views import generic
 from django.views.generic import TemplateView
@@ -31,6 +31,6 @@ class SupportPageView(TemplateView):
     template_name = "sap/support.html"
 
 class MessageBoardView(generic.ListView):
-    model = Post
+    model = Message
     template_name = 'sap/message_board.html'
     context_object_name = 'all_posts_list'

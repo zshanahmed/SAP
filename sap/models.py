@@ -49,8 +49,9 @@ class AllyStudentCategoryRelation(models.Model):
         on_delete=models.CASCADE,
     )
 
-class Post(models.Model):
-    text = models.TextField()
 
-    def __str__(self):  # display the first 50 chars of text field
-        return self.text[:50]
+class Message(models.Model):
+    message = models.TextField()
+
+    def __str__(self):  # display the first 70 chars of text field
+        return self.message[:70]
