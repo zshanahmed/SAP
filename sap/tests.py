@@ -93,29 +93,43 @@ class AlliesIndexViewTests(TestCase):
         )
         '''
 
+
 class MessageModelTest(TestCase):
     def setUp(self):
-        Message.objects.create(text='test case for Chat Feature')
+        Message.objects.create(message='test case for Chat Feature')
 
     def test_chat_content(self):
+        """
+        Check if Message model behaves correctly
+        """
         entry = Message.objects.get(id=1)
-        expected_object_name = f'{entry.text}'
+        expected_object_name = f'{entry.message}'
         self.assertEqual(expected_object_name, 'test case for Chat Feature')
 
 
-class MessageBoardViewTest(TestCase):  # new
+class MessageBoardViewTest(TestCase):
     def setUp(self):
-        Message.objects.create(text='test case for Message Board view')
+        Message.objects.create(message='test case for Message Board view')
+
+        self.username = 'admin'
+        self.password = 'admin_password'
+        self.client = Client()
+
+        User.objects.create_user(self.username, 'email@test.com', self.password)
 
     def test_view_url_exists_at_proper_location(self):
-        resp = self.client.get('/')
-        self.assertEqual(resp.status_code, 200)
-
-    def test_view_url_by_name(self):
-        resp = self.client.get(reverse('message_board'))
-        self.assertEqual(resp.status_code, 200)
+        """
+        Check if Message Board page exist and return HTTP 200 response
+        """
+        self.client.login(username=self.username, password=self.password)
+        response = self.client.get(reverse('sap:sap-message_board'))
+        self.assertEqual(response.status_code, 200)
 
     def test_view_uses_correct_template(self):
-        resp = self.client.get(reverse('message_board'))
-        self.assertEqual(resp.status_code, 200)
-        self.assertTemplateUsed(resp, 'sap/message_board.html')
+        """
+        Check if it uses correct template
+        """
+        self.client.login(username=self.username, password=self.password)
+        response = self.client.get(reverse('sap:sap-message_board'))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'sap/message_board.html')
