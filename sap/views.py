@@ -32,4 +32,5 @@ class SupportPageView(TemplateView):
 
 class MessageBoardView(generic.ListView):
     model = Post
-    template_name = 'message_board.html'
+    template_name = 'sap/message_board.html'
+    context_object_name = 'all_posts_list'
