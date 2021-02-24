@@ -29,19 +29,7 @@ body {
     padding-left: 0.6rem;
 }
 
-a {
-    text-decoration: none;
-}
-
-a.text-yellow {
-    color: #494D97;
-}
-
-a.text-yellow:hover {
-    color: #FFCD00;
-}
-
-span {
+span.title-logo {
     border-bottom: #FFCD00 4px solid;
 }
 
@@ -158,9 +146,14 @@ button:focus {
 }
 
 a {
-    color: inherit;
-    cursor: pointer
-}
+    text-decoration: none;
+    color:inherit;
+    cursor: pointer;
+  }
+  
+  a:hover {
+    color: #FFCD00;
+  }
 
 .btn-yellow {
     background-color: #FFCD00;

@@ -17,7 +17,7 @@ def firefoxBrowser():
 @pytest.fixture
 def chromeBrowser():
     options = Options()
-    options.headless = True
+    # options.headless = True
     b = webdriver.Chrome(options=options)
     b.implicitly_wait(10)
     yield b
