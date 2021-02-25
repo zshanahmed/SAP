@@ -11,7 +11,7 @@
     <meta name="description" content="">
     <meta name="author" content="">
 
-    <title>Admin - Profile</title>
+    <title>Create admin</title>
 
     <!-- Custom fonts for this template-->
     <link href="{% static 'vendor/fontawesome-free/css/all.min.css' %}" rel="stylesheet" type="text/css">
@@ -36,36 +36,41 @@
                     <div class="col-lg-7">
                         <div class="p-5">
                             <div class="text-center">
-                                <h1 class="h4 text-gray-900 mb-4">Admin Profile</h1>
+                                <h1 class="h4 text-gray-900 mb-4">Your Credentials</h1>
                             </div>
                             <form class="user">
 
                                 <div class="form-group">
-                                    <input type="text" class="form-control form-control-user" id="username" placeholder="Username">
+                                    <input type="text" class="form-control form-control-user" id="current_username" placeholder="Your Username">
                                 </div>
                                 <div class="form-group">
-                                    <input type="email" class="form-control form-control-user" id="exampleInputEmail"
-                                        placeholder="Email Address">
+                                    <input type="password" class="form-control form-control-user" id="current_password" placeholder="Your Password">
+                                </div>
+                                <hr color="gray">
+                                <div class="text-center">
+                                    <h1 class="h4 text-gray-900 mb-4">Enter New Admin</h1>
                                 </div>
                                 <div class="form-group">
-                                    <input type="password" class="form-control form-control-user" id="prev_pass" placeholder="Previous Password">
+                                    <input type="email" class="form-control form-control-user" id="new_email" placeholder="New Email">
+                                </div>
+                                <div class="form-group">
+                                    <input type="text" class="form-control form-control-user" id="new_username" placeholder="New Username">
                                 </div>
                                 <div class="form-group row">
                                     <div class="col-sm-6 mb-3 mb-sm-0">
                                         <input type="password" class="form-control form-control-user"
-                                            id="new_pass" placeholder="New Password">
+                                            id="new_password" placeholder="New Password">
                                     </div>
                                     <div class="col-sm-6">
                                         <input type="password" class="form-control form-control-user"
-                                            id="repeat_pass" placeholder="Repeat Password">
+                                            id="repeat_password" placeholder="Repeat Password">
                                     </div>
                                 </div>
-                                <a href="l#" class="btn btn-primary btn-user btn-block">
-                                    Update Admin Profile
+                                <a href="l#" class="btn btn-primary btn-user btn-block" id="submit_new_admin">
+                                    Create New Admin
                                 </a>
                                 <hr>
                             </form>
-
                         </div>
                     </div>
                 </div>

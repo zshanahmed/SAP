@@ -19,6 +19,6 @@ urlpatterns = [
         login_required(views.AdminProfileView.as_view(), login_url='home'),
         name='sap-admin_profile'),
     url('create_iba_admin/',
-        login_required(views.AdminProfileView.as_view(), login_url='home'),
+        login_required(views.CreateAdminView.as_view(), login_url='home'),
         name='create_iba_admin')
 ]

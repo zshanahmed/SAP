@@ -18,3 +18,6 @@ class AnalyticsView(TemplateView):
 
 class AdminProfileView(TemplateView):
     template_name = "sap/profile.html"
+
+class CreateAdminView(TemplateView):
+    template_name = "sap/create_iba_admin.html"
