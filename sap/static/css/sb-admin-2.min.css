@@ -154,14 +154,13 @@ sub {
 sup {
   top: -0.5em;
 }
+
 a {
-  color: #4e73df;
   text-decoration: none;
-  background-color: transparent;
 }
+
 a:hover {
-  color: #224abe;
-  text-decoration: underline;
+  color: #FFCD00;
 }
 a:not([href]):not([class]) {
   color: inherit;
@@ -9891,7 +9890,7 @@ a:focus {
   background-repeat: no-repeat;
 }
 .bg-password-image {
-  background: url(https://source.unsplash.com/oWTW-jNGl9I/600x800);
+  background: url('../img/forgot-pass-1.jpg');
   background-position: center;
   background-size: cover;
 }
