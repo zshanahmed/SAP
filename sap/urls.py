@@ -18,6 +18,6 @@ urlpatterns = [
     url('update_profile/',
         login_required(views.AdminProfileView.as_view(), login_url='home'),
         name='sap-admin_profile'),
-    url(r'forgot-password/$', views.ForgotPasswordView.as_view(), name='sap-forgot_password')
+    url(r'forgot-password/$', views.ForgotPasswordView.as_view(), name='forgot_password')
 
 ]

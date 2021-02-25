@@ -10,16 +10,7 @@
     </head>
     <body>
         <div class="container">
-            {% if user.is_authenticated %}
-                You are logged in as {{ user.username }}! <a href="/logout">Logout</a>
-           {% endif %}
-            {% if messages %}
-            {% for message in messages %}
-              <div class="alert alert-{{ message.tags }}">
-                {{ message }}
-              </div>
-            {% endfor %}
-          {% endif %}
+            
             {% block content %}{% endblock %}
         </div>
         <!-- Optional JavaScript; choose one of the two! -->
