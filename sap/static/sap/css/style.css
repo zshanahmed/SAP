@@ -1,0 +1,46 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+#iba_logo {
+    position: relative;
+width: 179px;
+height: 105px;
+left: 73px;
+top: 104px;
+transform: scale(0.8);
+}
+
+#logo-text {
+    position: relative;
+width: 440px;
+height: 101px;
+left: 220px;
+top: 114px;
+
+font-family: Playfair Display;
+font-style: normal;
+font-weight: normal;
+font-size: 59px;
+line-height: 52px;
+text-align: right;
+}
+
+#top_right {
+    position: relative;
+    width: 312.11px;
+    height: 266px;
+    left: 1203.47px;
+    top: -64px;
+    transform: scale(0.5);
+}
+
+.div_id_username {
+position: relative;
+width: 260px;
+height: 40px;
+left: 110px;
+top: 373px;
+}
