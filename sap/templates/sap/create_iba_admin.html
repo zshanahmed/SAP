@@ -38,37 +38,37 @@
                             <div class="text-center">
                                 <h1 class="h4 text-gray-900 mb-4">Your Credentials</h1>
                             </div>
-                            <form class="user">
+                            <form method="post" class="user">{% csrf_token %}
 
                                 <div class="form-group">
-                                    <input type="text" class="form-control form-control-user" id="current_username" placeholder="Your Username">
+                                    <input name="current_username" type="text" class="form-control form-control-user" id="current_username" placeholder="Your Username">
                                 </div>
                                 <div class="form-group">
-                                    <input type="password" class="form-control form-control-user" id="current_password" placeholder="Your Password">
+                                    <input name="current_password" type="password" class="form-control form-control-user" id="current_password" placeholder="Your Password">
                                 </div>
                                 <hr color="gray">
                                 <div class="text-center">
                                     <h1 class="h4 text-gray-900 mb-4">Enter New Admin</h1>
                                 </div>
                                 <div class="form-group">
-                                    <input type="email" class="form-control form-control-user" id="new_email" placeholder="New Email">
+                                    <input name="new_email" type="email" class="form-control form-control-user" id="new_email" placeholder="New Email">
                                 </div>
                                 <div class="form-group">
-                                    <input type="text" class="form-control form-control-user" id="new_username" placeholder="New Username">
+                                    <input name="new_username" type="text" class="form-control form-control-user" id="new_username" placeholder="New Username">
                                 </div>
                                 <div class="form-group row">
                                     <div class="col-sm-6 mb-3 mb-sm-0">
-                                        <input type="password" class="form-control form-control-user"
+                                        <input name="new_password" type="password" class="form-control form-control-user"
                                             id="new_password" placeholder="New Password">
                                     </div>
                                     <div class="col-sm-6">
-                                        <input type="password" class="form-control form-control-user"
+                                        <input name="repeat_password" type="password" class="form-control form-control-user"
                                             id="repeat_password" placeholder="Repeat Password">
                                     </div>
                                 </div>
-                                <a href="l#" class="btn btn-primary btn-user btn-block" id="submit_new_admin">
+                                <button type="submit" formmethod="post" class="btn btn-primary btn-user btn-block" id="submit_new_admin">
                                     Create New Admin
-                                </a>
+                                </button>
                                 <hr>
                             </form>
                         </div>
