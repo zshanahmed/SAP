@@ -15,6 +15,10 @@ class Ally(models.Model):
     hawk_id = models.CharField(max_length=100)
     user_type = models.CharField(max_length=20)  # student/faculty/..
     works_at = models.CharField(max_length=100)  # college_of_engineering / college of liberal arts
+
+    def __str__(self):
+        return self.hawk_id
+
     area_of_research = models.CharField(max_length=100, null=True)
     openings_in_lab_serving_at = models.BooleanField(default=False)
     description_of_research_done_at_lab = models.CharField(max_length=500, null=True)

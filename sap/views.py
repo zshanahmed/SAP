@@ -1,6 +1,4 @@
-from django.shortcuts import render
 from .models import Ally
-from django.urls import reverse
 from django.views import generic
 from django.views.generic import TemplateView
 
@@ -13,10 +11,7 @@ class AlliesListView(generic.ListView):
     context_object_name = 'allies_list'
 
     def get_queryset(self):
-        """
-        Return the most recently registered 50 allies
-        """
-        return Ally.objects.order_by('-id')[:50]
+        return Ally.objects.order_by('-id')
 
 class AnalyticsView(TemplateView):
     template_name = "sap/analytics.html"
