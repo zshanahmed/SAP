@@ -7,6 +7,7 @@ from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.forms import PasswordChangeForm
 from django.shortcuts import render, redirect
 from django.contrib.auth.models import User
+from .forms import UpdateAdminProfileForm
 
 
 # Create your views here.
@@ -37,8 +38,10 @@ def change_password(request):
 def edit_admin_profile(request):
     if request.method == 'POST':
         curr_user = request.user
-        new_username = request.POST.get('username')
-        new_email = request.POST.get('email')
+        form = UpdateAdminProfileForm(request.POST)
+        
+        new_username = form.data['username']
+        new_email = form.data['email']
         if not User.objects.filter(username=new_username).exists():
             curr_user.username = new_username
             curr_user.email = new_email
@@ -47,8 +50,11 @@ def edit_admin_profile(request):
             return redirect('sap:sap-admin_profile')
         else:
             messages.error(request, "Couldn't Update Profile ! Username already exists")
-    
-    return render(request, 'sap/profile.html')
+    else:
+        form = UpdateAdminProfileForm()
+    return render(request, 'sap/profile.html', {
+        'form': form
+    })
 
 class AlliesListView(generic.ListView):
     template_name = 'sap/dashboard.html'
