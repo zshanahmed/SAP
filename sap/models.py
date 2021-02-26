@@ -7,24 +7,17 @@ from django.contrib.auth.models import User
 
 # Need to figure out how to include the following
 # Are you interested in serving as a mentor to students who identify as any of the following (check all that may apply)
-
-Roles = (
-    ('admin', 'ADMIN'),
-    ('ally', 'ALLY'),
-
-)
-
 class Ally(models.Model):
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
     )
     hawk_id = models.CharField(max_length=100)
-    user_type = models.CharField(max_length=20, choices=Roles, default='admin')  # student/faculty/..
+    user_type = models.CharField(max_length=20)  # student/faculty/..
     works_at = models.CharField(max_length=100)  # college_of_engineering / college of liberal arts
 
     def __str__(self):
-        return self.user.username
+        return self.hawk_id
 
     area_of_research = models.CharField(max_length=100, null=True)
     openings_in_lab_serving_at = models.BooleanField(default=False)

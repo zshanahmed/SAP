@@ -38,7 +38,7 @@ class AccessMixin(LoginRequiredMixin):
         return super().dispatch(request, *args, **kwargs)
 
 
-class AlliesListView(AccessMixin, generic.ListView):
+class AlliesListView(generic.ListView):
     template_name = 'sap/dashboard.html'
     context_object_name = 'allies_list'
 
@@ -46,7 +46,7 @@ class AlliesListView(AccessMixin, generic.ListView):
         return Ally.objects.order_by('-id')
 
 
-class AnalyticsView(AccessMixin, TemplateView):
+class AnalyticsView(TemplateView):
     template_name = "sap/analytics.html"
 
 
