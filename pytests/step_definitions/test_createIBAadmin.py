@@ -1,9 +1,5 @@
 #https://automationpanda.com/2018/10/22/python-testing-101-pytest-bdd/
 from pytest_bdd import scenarios, given, when, then, parsers
-from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.support.ui import Select
-import time
-import re
 import pytest
 
 scenarios('../features/CreateNewIBAadmin.feature')
@@ -38,16 +34,20 @@ def fill_in_textBox(firefoxBrowser, text, elementID):
 
 @when(parsers.parse('I click the button with id: "{buttonID}"'))
 def click_button(firefoxBrowser, buttonID):
-    firefoxBrowser.find_element_by_id().click()
-
-@then(parsers.parse('User with username "{username}" and password "{password}" should exist'))
-def check_created(firefoxBrowser, username, password):
-    assert True
+    firefoxBrowser.find_element_by_id(buttonID).click()
 
 @then(parsers.parse('I should be on page with url: "{url}"'))
 def check_url(firefoxBrowser, url):
-    assert True
+    assert url == firefoxBrowser.current_url
 
 @then(parsers.parse('I should see text: "{text}"'))
 def check_test(firefoxBrowser, text):
-    assert True
+    assert (text in firefoxBrowser.page_source)
+
+@then(parsers.parse('be able to login with username "{username}", and password "{password}"'))
+def check_login(firefoxBrowser, username, password):
+    firefoxBrowser.get(localhost)
+    firefoxBrowser.find_element_by_id('id_username').send_keys(username)
+    firefoxBrowser.find_element_by_id('id_password').send_keys(password)
+    firefoxBrowser.find_element_by_id("submit").click()
+    assert ('Science Alliance Portal' in firefoxBrowser.page_source)

@@ -11,7 +11,7 @@ def firefoxBrowser():
     fireFoxOptions = webdriver.FirefoxOptions()
     fireFoxOptions.headless = True
     b = webdriver.Firefox(options=fireFoxOptions)
-    b.implicitly_wait(10)
+    b.implicitly_wait(2)
     yield b
     b.quit()
 

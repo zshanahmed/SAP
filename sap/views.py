@@ -1,12 +1,11 @@
 from django.contrib.auth import logout
-from django.shortcuts import redirect
+from django.contrib.auth.models import User
+from django.contrib.auth import authenticate
 from .models import Ally
 from django.views import generic
 from django.views.generic import TemplateView
-from django.views.generic import FormView
 from django.shortcuts import render
 from django.shortcuts import redirect
-from django.contrib import messages
 from django.http import HttpResponseRedirect
 
 from django.contrib import messages
@@ -37,9 +36,34 @@ class CreateAdminView(TemplateView):
         return render(request, self.template_name)
 
     def post(self, request):
-        print(request.POST)
-        messages.add_message(request, messages.SUCCESS, 'Account Created')
-        return redirect('/dashboard')
+        newAdminDict = dict(request.POST)
+        valid = True
+        for key in newAdminDict:
+            if newAdminDict[key][0] == '':
+                valid = False
+        if valid:
+            #Check if username credentials are correct
+            if authenticate(request, username=newAdminDict['current_username'][0],
+                            password=newAdminDict['current_password'][0]) is not None:
+                #if are check username exists in database
+                if User.objects.filter(username=newAdminDict['new_username'][0]).exists():
+                    messages.add_message(request, messages.ERROR, 'Account was not created because username exists')
+                    return redirect('/create_iba_admin')
+                #Check if repeated password is same
+                elif newAdminDict['new_password'][0] != newAdminDict['repeat_password'][0]:
+                    messages.add_message(request, messages.ERROR, 'New password was not the same as repeated password')
+                    return redirect('/create_iba_admin')
+                else:
+                    messages.add_message(request, messages.SUCCESS, 'Account Created')
+                    User.objects.create_user(newAdminDict['new_username'][0],
+                                             newAdminDict['new_email'][0], newAdminDict['new_password'][0])
+                    return redirect('/dashboard')
+            else:
+                messages.add_message(request, messages.ERROR, 'Invalid Credentials entered')
+                return redirect('/create_iba_admin')
+        else:
+            messages.add_message(request, messages.ERROR, 'Account was not created because one or more fields were not entered')
+            return redirect('/create_iba_admin')
 
 class ForgotPasswordView(TemplateView):
     template_name= "sap/forgot-password.html"

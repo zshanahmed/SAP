@@ -75,6 +75,73 @@ class AlliesIndexViewTests(TestCase):
             ['<Ally: hawk_id_2>', '<Ally: hawk_id_1>'] # Need to return in the descending order (When the ally record was created in the table)
         )
 
+class CreateAdminViewTest(TestCase):
+
+    def setUp(self):
+        self.username = 'admin'
+        self.password = 'admin_password1'
+        self.c = Client()
+        self.user = User.objects.create_user(self.username, 'email@test.com', self.password)
+        self.c.login(username=self.username, password=self.password)
+
+    def test_get(self):
+        """
+        test get create admin page
+        """
+        response = self.c.get('/create_iba_admin/')
+        self.assertEqual(response.status_code, 200)
+
+    def test_post_missing_data(self):
+        response = self.c.post('/create_iba_admin/', {'csrfmiddlewaretoken': ['AAIHnJBSnR9fQdHP6yTjGRPQSE8HmiRI7oc3tPv0RyJrMoAyXpq93geUfDTH6QCk'],
+                'current_username': ['iba_admin'],
+                'current_password': ['iba_sep_1'], 'new_email': [''],
+                'new_username': ['iba_admin'], 'new_password': ['iba_sep_1'],
+                'repeat_password': ['iba_sep_1']})
+
+        url = response.url
+        assert url == '/create_iba_admin'
+
+    def test_post_Invalid_credentials(self):
+        response = self.c.post('/create_iba_admin/', {'csrfmiddlewaretoken': ['AAIHnJBSnR9fQdHP6yTjGRPQSE8HmiRI7oc3tPv0RyJrMoAyXpq93geUfDTH6QCk'],
+                'current_username': ['admin'],
+                'current_password': ['admin_assword1'], 'new_email': ['emailGuy@email.com'],
+                'new_username': ['iba_admin'], 'new_password': ['iba_sep_1'],
+                'repeat_password': ['iba_sep_1']})
+
+        url = response.url
+        assert url == '/create_iba_admin'
+
+    def test_post_new_username_that_exists(self):
+        response = self.c.post('/create_iba_admin/', {'csrfmiddlewaretoken': ['AAIHnJBSnR9fQdHP6yTjGRPQSE8HmiRI7oc3tPv0RyJrMoAyXpq93geUfDTH6QCk'],
+                'current_username': ['admin'],
+                'current_password': ['admin_password1'], 'new_email': ['emailGuy@email.com'],
+                'new_username': ['admin'], 'new_password': ['admin_password1'],
+                'repeat_password': ['iba_sep_1']})
+
+        url = response.url
+        assert url == '/create_iba_admin'
+
+    def test_post_non_matching_new_password(self):
+        response = self.c.post('/create_iba_admin/', {'csrfmiddlewaretoken': ['AAIHnJBSnR9fQdHP6yTjGRPQSE8HmiRI7oc3tPv0RyJrMoAyXpq93geUfDTH6QCk'],
+                'current_username': ['admin'],
+                'current_password': ['admin_password1'], 'new_email': ['emailGuy@email.com'],
+                'new_username': ['admin1'], 'new_password': ['admin_password1'],
+                'repeat_password': ['iba_sep_1']})
+
+        url = response.url
+        assert url == '/create_iba_admin'
+
+    def test_good_create_admin(self):
+        response = self.c.post('/create_iba_admin/', {'csrfmiddlewaretoken': ['AAIHnJBSnR9fQdHP6yTjGRPQSE8HmiRI7oc3tPv0RyJrMoAyXpq93geUfDTH6QCk'],
+                'current_username': ['admin'],
+                'current_password': ['admin_password1'], 'new_email': ['emailGuy@email.com'],
+                'new_username': ['admin1'], 'new_password': ['admin_password1'],
+                'repeat_password': ['admin_password1']})
+
+        url = response.url
+        assert url == '/dashboard'
+        assert User.objects.filter(username='admin1').exists()
+
     '''
     TODO: Once we do performance enhancement - pagination, this test will be useful
     def test_51_allies(self):
