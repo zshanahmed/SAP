@@ -8,6 +8,20 @@ from django.contrib import messages
 # Create your views here.
 
 
+def login_success(request):
+    """
+    Redirects users based on whether they are staff or not
+    """
+
+    if request.user.is_authenticated:
+        # login(request, user)
+        if request.user.is_staff:
+        # sales users landing page
+            return redirect('sap:sap-dashboard')
+        else:
+            return redirect('sap:sap-admin_profile')
+
+
 def logout_request(request):
     logout(request)
     return redirect('sap:home')
