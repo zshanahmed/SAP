@@ -27,8 +27,11 @@
 
     <div class="container">
         {% if form.errors %}
-            <div class="alert alert-danger" id="login-alert">
+            <div class="alert alert-danger alert-dismissible fade show" id="login-alert">
                  Username or password is incorrect!
+                 <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
             </div>
         {% endif %}
 
