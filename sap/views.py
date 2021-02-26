@@ -1,3 +1,5 @@
+from django.contrib.auth import logout
+from django.shortcuts import redirect
 from .models import Ally
 from django.views import generic
 from django.views.generic import TemplateView
@@ -7,9 +9,13 @@ from django.shortcuts import redirect
 from django.contrib import messages
 from django.http import HttpResponseRedirect
 
+from django.contrib import messages
 
 # Create your views here.
 
+def logout_request(request):
+    logout(request)
+    return redirect('sap:home')
 
 class AlliesListView(generic.ListView):
     template_name = 'sap/dashboard.html'
@@ -34,3 +40,6 @@ class CreateAdminView(TemplateView):
         print(request.POST)
         messages.add_message(request, messages.SUCCESS, 'Account Created')
         return redirect('/dashboard')
+
+class ForgotPasswordView(TemplateView):
+    template_name= "sap/forgot-password.html"
