@@ -30,7 +30,7 @@ def logout_request(request):
 
 class AccessMixin(LoginRequiredMixin):
     """
-    Redirects users based on whether they are staff or not
+    Redirect users based on whether they are staff or not
     """
     def dispatch(self, request, *args, **kwargs):
         if not request.user.is_staff:

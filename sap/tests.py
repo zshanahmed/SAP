@@ -92,3 +92,57 @@ class AlliesIndexViewTests(TestCase):
             50
         )
         '''
+
+
+class AdminAccessTests(TestCase):
+
+    def setUp(self):
+        self.username = 'admin'
+        self.password = 'admin_password1'
+        self.client = Client()
+
+        User.objects.create_user(self.username, 'email@test.com', self.password, is_staff=True)
+
+    def test_dashboard_access_for_admin(self):
+        """
+        Admin users can access Dashboard
+        """
+        self.client.login(username=self.username, password=self.password)
+        response = self.client.get(reverse('sap:sap-dashboard'))
+        self.assertEqual(response.status_code, 200)
+
+    def test_analytics_access_for_admin(self):
+        """
+        Admin users can access Analytics
+        """
+        self.client.login(username=self.username, password=self.password)
+        response = self.client.get(reverse('sap:sap-analytics'))
+        self.assertEqual(response.status_code, 200)
+
+
+class NonAdminAccessTests(TestCase):
+
+    def setUp(self):
+        self.username = 'admin'
+        self.password = 'admin_password1'
+        self.client = Client()
+
+        User.objects.create_user(self.username, 'email@test.com', self.password, is_staff=False)
+
+    def test_dashboard_access_for_nonadmin(self):
+        """
+        Admin users can access Dashboard
+        """
+        self.client.login(username=self.username, password=self.password)
+        response = self.client.get(reverse('sap:sap-dashboard'))
+        self.assertEqual(response.status_code, 403)
+
+    def test_analytics_access_for_nonadmin(self):
+        """
+        Admin users can access Dashboard
+        """
+        self.client.login(username=self.username, password=self.password)
+        response = self.client.get(reverse('sap:sap-analytics'))
+        self.assertEqual(response.status_code, 403)
+
+
