@@ -1,4 +1,5 @@
 from django.contrib.auth import logout
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import redirect
 from .models import Ally
 from django.views import generic
@@ -27,7 +28,17 @@ def logout_request(request):
     return redirect('sap:home')
 
 
-class AlliesListView(generic.ListView):
+class AccessMixin(LoginRequiredMixin):
+    """
+    Redirects users based on whether they are staff or not
+    """
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_staff:
+            return self.handle_no_permission()
+        return super().dispatch(request, *args, **kwargs)
+
+
+class AlliesListView(AccessMixin, generic.ListView):
     template_name = 'sap/dashboard.html'
     context_object_name = 'allies_list'
 
@@ -35,7 +46,7 @@ class AlliesListView(generic.ListView):
         return Ally.objects.order_by('-id')
 
 
-class AnalyticsView(TemplateView):
+class AnalyticsView(AccessMixin, TemplateView):
     template_name = "sap/analytics.html"
 
 
