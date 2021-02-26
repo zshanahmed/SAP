@@ -16,5 +16,5 @@ Feature: Login
 
   Scenario: I forgot my password while trying to login
     Given that I am on the login page
-    When I click on Click here to reset your password
+    When I click on Forgot Password?
     Then I should see the page with title Forgot Your Password? 
