@@ -83,14 +83,14 @@ class AccessMixin(LoginRequiredMixin):
         return super().dispatch(request, *args, **kwargs)
 
 
-class AlliesListView(generic.ListView):
+class AlliesListView(AccessMixin, generic.ListView):
     template_name = 'sap/dashboard.html'
     context_object_name = 'allies_list'
 
     def get_queryset(self):
         return Ally.objects.order_by('-id')
 
-class AnalyticsView(TemplateView):
+class AnalyticsView(AccessMixin, TemplateView):
     template_name = "sap/analytics.html"
 
 class AdminProfileView(TemplateView):
@@ -106,7 +106,7 @@ class SupportPageView(TemplateView):
 
 
 
-class CreateAdminView(TemplateView):
+class CreateAdminView(AccessMixin, TemplateView):
     template_name = "sap/create_iba_admin.html"
 
     def get(self, request):

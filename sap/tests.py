@@ -173,7 +173,9 @@ class AlliesIndexViewTests(TestCase):
         self.password = 'admin_password1'
         self.client = Client()
 
-        User.objects.create_user(self.username, 'email@test.com', self.password)
+        user = User.objects.create_user(self.username, 'email@test.com', self.password)
+        user.is_staff = True
+        user.save()
 
     def test_no_ally(self):
         """
@@ -219,6 +221,8 @@ class CreateAdminViewTest(TestCase):
         self.c = Client()
         self.user = User.objects.create_user(self.username, 'email@test.com', self.password)
         self.c.login(username=self.username, password=self.password)
+        self.user.is_staff = True
+        self.user.save()
 
     def test_get(self):
         """
