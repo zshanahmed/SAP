@@ -101,8 +101,10 @@ class CreateAdminView(TemplateView):
                     return redirect('/create_iba_admin')
                 else:
                     messages.add_message(request, messages.SUCCESS, 'Account Created')
-                    User.objects.create_user(newAdminDict['new_username'][0],
+                    user = User.objects.create_user(newAdminDict['new_username'][0],
                                              newAdminDict['new_email'][0], newAdminDict['new_password'][0])
+                    user.is_staff = True
+                    user.save()
                     return redirect('/dashboard')
             else:
                 messages.add_message(request, messages.ERROR, 'Invalid Credentials entered')

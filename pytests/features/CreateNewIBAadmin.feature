@@ -8,16 +8,16 @@ Feature: Create New IBA Admin
 
   Scenario: I enter my credentials into the settings page and create new admin
     When I navigate to the create verification page
-    And I fill in "iba_admin" into element: "current_username"
+    And I fill in "iba_admin1" into element: "current_username"
     And I fill in "iba_sep_1" into element: "current_password"
-    And I fill in "iba_admin6" into element: "new_username"
+    And I fill in "iba_admin89" into element: "new_username"
     And I fill in "email@uiowa.edu" into element: "new_email"
     And I fill in "iba_sep_2" into element: "new_password"
     And I fill in "iba_sep_2" into element: "repeat_password"
     And I click the button with id: "submit_new_admin"
     Then I should be on page with url: "http://127.0.0.1:8000/dashboard/"
     And I should see text: "Account Created"
-    And be able to login with username "iba_admin6", and password "iba_sep_2"
+    And be able to login with username "iba_admin89", and password "iba_sep_2"
 
   Scenario: I enter incorrect credentials into settings page
     When I navigate to the create verification page

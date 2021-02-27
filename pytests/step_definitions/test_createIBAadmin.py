@@ -13,9 +13,10 @@ localhost = 'http://127.0.0.1:8000/'
 @given(parsers.parse('I\'ve logged in'))
 def login(firefoxBrowser):
     firefoxBrowser.get(localhost)
-    firefoxBrowser.find_element_by_id('id_username').send_keys('iba_admin')
+    firefoxBrowser.find_element_by_id('id_username').send_keys('iba_admin1')
     firefoxBrowser.find_element_by_id('id_password').send_keys('iba_sep_1')
     firefoxBrowser.find_element_by_id("submit").click()
+    url = firefoxBrowser.current_url
 
 
 @when(parsers.parse('I navigate to the create verification page'))
@@ -24,12 +25,12 @@ def goto_accountSettings(firefoxBrowser):
     #'//*[@id="content"]/nav/ul/li[2]/div/a[2]'
     #'//*[@id="content"]/nav/ul/li[2]/div/a[3]'
     firefoxBrowser.find_element_by_xpath('//*[@id="userDropdown"]').click()
-    firefoxBrowser.find_element_by_xpath('//*[@id="content"]/nav/ul/li[2]/div/a[2]').click()
-    url = firefoxBrowser.current_url
+    firefoxBrowser.find_element_by_xpath('//*[@id="content"]/nav/ul/li[2]/div/a[3]').click()
 
 
 @when(parsers.parse('I fill in "{text}" into element: "{elementID}"'))
 def fill_in_textBox(firefoxBrowser, text, elementID):
+    url = firefoxBrowser.current_url
     firefoxBrowser.find_element_by_id(elementID).send_keys(text)
 
 @when(parsers.parse('I click the button with id: "{buttonID}"'))
