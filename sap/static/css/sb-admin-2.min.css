@@ -154,14 +154,13 @@ sub {
 sup {
   top: -0.5em;
 }
+
 a {
-  color: #4e73df;
   text-decoration: none;
-  background-color: transparent;
 }
+
 a:hover {
-  color: #224abe;
-  text-decoration: underline;
+  color: #FFCD00;
 }
 a:not([href]):not([class]) {
   color: inherit;
@@ -2228,12 +2227,12 @@ fieldset:disabled a.btn {
 .btn-primary {
   color: rgb(19, 19, 19);
   background-color: #ebcf34;
-  border-color: #ffde5c;
+  border: none;
+  box-shadow: 2px 2px 4px lightgray;
 }
 .btn-primary:hover {
   color: #fff;
   background-color: #b3a106;
-  border-color: #af9e04;
 }
 .btn-primary.focus,
 .btn-primary:focus {
@@ -9880,7 +9879,7 @@ a:focus {
   }
 }
 .bg-login-image {
-  background: url(https://source.unsplash.com/K4mSJ7kc0As/600x800);
+  background: url('../img/4630062.jpg');
   background-position: center;
   background-size: cover;
 }
@@ -9891,7 +9890,7 @@ a:focus {
   background-repeat: no-repeat;
 }
 .bg-password-image {
-  background: url(https://source.unsplash.com/oWTW-jNGl9I/600x800);
+  background: url('../img/forgot-pass-1.jpg');
   background-position: center;
   background-size: cover;
 }
@@ -9904,7 +9903,8 @@ form.user .form-control-user {
   padding: 1.5rem 1rem;
 }
 form.user .btn-user {
-  font-size: 0.8rem;
+  font-weight: bolder;
+  font-size: 1rem;
   border-radius: 10rem;
   padding: 0.75rem 1rem;
 }
@@ -10279,4 +10279,21 @@ footer.sticky-footer .copyright {
 }
 body.sidebar-toggled footer.sticky-footer {
   width: 100%;
+}
+
+/* Custom style */
+#iba-logo {
+  --width: 85px;
+  height: calc(var(--width) * 0.58565);
+}
+
+#text-logo {
+  display: inline;
+  color: #000;
+  font-weight: bold;
+}
+
+span {
+  border-bottom: 3px solid #FFCD00;
+  padding-bottom: 0.01em;
 }
