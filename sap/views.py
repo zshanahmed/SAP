@@ -15,9 +15,8 @@ def login_success(request):
     """
 
     if request.user.is_authenticated:
-        # login(request, user)
         if request.user.is_staff:
-        # sales users landing page
+        # users landing page
             return redirect('sap:sap-dashboard')
         else:
             return redirect('sap:sap-admin_profile')
