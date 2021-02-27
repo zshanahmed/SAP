@@ -1,55 +1,110 @@
-{% extends 'sap/base.html' %}
+<!DOCTYPE html>
+<html lang="en">
 {% load static %}
 
-{% block content%}
 <head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
     <title>IBA - Science Alliance Portal</title>
+
+    <!-- Custom fonts for this template-->
+    <link href="{% static 'vendor/fontawesome-free/css/all.min.css'%}" rel="stylesheet" type="text/css">
+    <link
+        href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+        rel="stylesheet">
+
+    <!-- Custom styles for this template-->
+    <link href="{% static 'css/sb-admin-2.min.css'%}" rel="stylesheet">
+
 </head>
-<link rel="stylesheet" href="{% static 'css/login.css'%}">
 
- <!-- Custom fonts for this template -->
- <link href="{% static '/vendor/fontawesome-free/css/all.min.css' %}" rel="stylesheet" type="text/css">
- <link
-     href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
-     rel="stylesheet">
+<body class="bg-gradient-primary">
 
-<link href='https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css'>
-<script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js'></script>
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-
-<div class="container-fluid">
-    {% if form.errors %}
-    <div class="alert alert-warning" id="login-alert">
-        Username or password is incorrect!
-    </div>
-    {% endif %}
-</div>
-
-<div class="container-fluid px-1 px-md-5 px-lg-1 px-xl-5 py-5 mx-auto">
-        <div class="row d-flex">
-            <div class="col-lg-6">
-                <div class="card1 pb-5">
-                    <div class="d-flex"> <img src="{% static 'img/iba_logo.png'%}" class="logo"> <h2 class="logo-text"><strong> <a class="logo-link" href="{% url 'sap:home'%}">Science Alliance <span class="title-logo">Portal</span></a></strong></h2> </div>
-                    <div class="row px-3 justify-content-center mt-4 border-line"> <img src="{% static 'img/people-design.jpg'%}"> </div>
-                </div>
+    <div class="container">
+        {% if form.errors %}
+            <div class="alert alert-danger alert-dismissible fade show" id="login-alert">
+                 Username or password is incorrect!
+                 <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
             </div>
+        {% endif %}
 
-            <div class="col-lg-6">
-                <form method="POST">
-                    {% csrf_token %}
-                    <div class="card2 card border-0 px-4 pt-5 mt-4">
-                        <div class="row px-3"> <label class="mb-1">
-                                <h6 class="mb-0 ">Username</h6>
-                            </label> <div class="mb-4">{{ form.username }} </div></div>
-                        <div class="row px-3"> <label class="mb-1">
-                                <h6 class="mb-0 ">Password</h6>
-                            </label> <div class="mb-4">{{ form.password }} </div></div>
-                        <div class="row mb-3 px-4"> <button type="submit" class="btn btn-yellow text-center" value="login"> <strong>Login</strong></button> </div>
-                        <div class="row mb-4 px-3"> <div class="font-weight-bold">Forgot Your Password? <a class="text-yellow" href="{% url 'sap:forgot_password' %}" id="forgot-pass">Click here to reset your password</a></div></div>
+        <!-- Outer Row -->
+        <div class="row justify-content-center">
+
+            <div class="col-xl-10 col-lg-12 col-md-9">
+
+                <div class="card o-hidden border-0 shadow-lg my-5">
+                    <div class="card-body px-3 py-0">
+                        <!-- Nested Row within Card Body -->
+                        <div class="row">
+                            <div class="col-lg-6 mt-4 bg-login-image"></div>
+                            <div class="col-lg-6">
+                                <div class="p-5">
+                                    <div class="row text-center">
+                                        <img src="{% static 'img/iba_logo.png' %}" alt="" id="iba-logo">
+                                        <h4 class="mt-3 pl-2" id='text-logo'>Science Alliance <span>Portal</span></h4>
+                                    </div>
+                                    <form method="POST" class="user">
+                                        {% csrf_token %}
+                                        <div class="form-group mt-4">
+                                            <input type="text" name="username" autofocus="" autocapitalize="none" class="form-control form-control-user" placeholder="Enter Username..." autocomplete="username" maxlength="150" required="" id="id_username">
+                                            <!-- <input type="text" class="form-control form-control-user"
+                                                id="exampleInputEmail" aria-describedby="emailHelp"
+                                                placeholder="Enter Username..."> -->
+                                        </div>
+                                        <div class="form-group">
+                                            <input type="password" name="password" class="form-control form-control-user" placeholder="Password" autocomplete="current-password" required="" id="id_password">
+                                            <!-- <input type="password" class="form-control form-control-user"
+                                                id="exampleInputPassword" placeholder="Password"> -->
+                                        </div>
+                                        <div class="form-group">
+                                            <div class="custom-control custom-checkbox small">
+                                                <input type="checkbox" class="custom-control-input" id="customCheck">
+                                                <label class="custom-control-label" for="customCheck">Remember
+                                                    Me</label>
+                                            </div>
+                                        </div>
+                                        <button type="submit" class="btn-primary btn-user btn-block" value="login" id="submit"> Login </button>
+                                        <!-- <a href="index.html" class="btn btn-primary btn-user btn-block">
+                                            Login
+                                        </a> -->
+                                    </form>
+                                    <hr>
+                                    <div class="text-center">
+                                        <a href="{% url 'sap:forgot_password'%}">Forgot Password?</a>
+                                    </div>
+                                    <!-- <div class="text-center">
+                                        <a href="register.html">Create an Account!</a>
+                                    </div> -->
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                </form>
-            </div>
-        </div>
-</div>
+                </div>
 
-{% endblock content %}
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Bootstrap core JavaScript-->
+    <script src="{% static 'vendor/jquery/jquery.min.js' %}"></script>
+    <script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+
+    <!-- Core plugin JavaScript-->
+    <script src="{% static 'vendor/jquery-easing/jquery.easing.min.js' %}"></script>
+
+    <!-- Custom scripts for all pages-->
+    <script src="{% static 'js/sb-admin-2.min.js"' %}></script>
+
+</body>
+
+</html>

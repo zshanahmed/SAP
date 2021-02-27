@@ -33,7 +33,7 @@ jobs:
 
     - name: Collect static
       run: python manage.py collectstatic
-
+      
     - name: Run tests
       run: python manage.py test
     

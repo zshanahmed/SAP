@@ -8,8 +8,10 @@ from selenium.webdriver.chrome.options import Options
 
 @pytest.fixture
 def firefoxBrowser():
-    b = webdriver.Firefox()
-    b.implicitly_wait(10)
+    fireFoxOptions = webdriver.FirefoxOptions()
+    fireFoxOptions.headless = True
+    b = webdriver.Firefox(options=fireFoxOptions)
+    b.implicitly_wait(2)
     yield b
     b.quit()
 
