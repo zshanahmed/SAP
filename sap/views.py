@@ -1,13 +1,9 @@
 from django.contrib.auth import logout
-from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
+from django.contrib.auth.mixins import LoginRequiredMixin
 from .models import Ally
 from django.views import generic
 from django.views.generic import TemplateView
-from django.shortcuts import render
-from django.shortcuts import redirect
-from django.http import HttpResponseRedirect
-
 from django.contrib import messages
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.forms import PasswordChangeForm
@@ -17,6 +13,20 @@ from .forms import UpdateAdminProfileForm
 
 
 # Create your views here.
+
+
+def login_success(request):
+    """
+    Redirects users based on whether they are staff or not
+    """
+
+    if request.user.is_authenticated:
+        if request.user.is_staff:
+        # users landing page
+            return redirect('sap:sap-dashboard')
+        else:
+            return redirect('sap:sap-admin_profile')
+
 
 def logout_request(request):
     logout(request)
@@ -62,6 +72,17 @@ def edit_admin_profile(request):
         'form': form
     })
 
+
+class AccessMixin(LoginRequiredMixin):
+    """
+    Redirect users based on whether they are staff or not
+    """
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_staff:
+            return self.handle_no_permission()
+        return super().dispatch(request, *args, **kwargs)
+
+
 class AlliesListView(generic.ListView):
     template_name = 'sap/dashboard.html'
     context_object_name = 'allies_list'
@@ -74,6 +95,16 @@ class AnalyticsView(TemplateView):
 
 class AdminProfileView(TemplateView):
     template_name = "sap/profile.html"
+
+
+class AboutPageView(TemplateView):
+    template_name = "sap/about.html"
+
+
+class SupportPageView(TemplateView):
+    template_name = "sap/support.html"
+
+
 
 class CreateAdminView(TemplateView):
     template_name = "sap/create_iba_admin.html"

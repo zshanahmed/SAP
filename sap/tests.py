@@ -295,3 +295,88 @@ class CreateAdminViewTest(TestCase):
             50
         )
         '''
+
+
+class AdminAccessTests(TestCase):
+
+    def setUp(self):
+        self.username = 'admin'
+        self.password = 'admin_password1'
+        self.client = Client()
+
+        User.objects.create_user(self.username, 'email@test.com', self.password, is_staff=True)
+
+    def test_dashboard_access_for_admin(self):
+        """
+        Admin users can access Dashboard
+        """
+        self.client.login(username=self.username, password=self.password)
+        response = self.client.get(reverse('sap:sap-dashboard'))
+        self.assertEqual(response.status_code, 200)
+
+    def test_analytics_access_for_admin(self):
+        """
+        Admin users can access Analytics
+        """
+        self.client.login(username=self.username, password=self.password)
+        response = self.client.get(reverse('sap:sap-analytics'))
+        self.assertEqual(response.status_code, 200)
+
+
+class LoginRedirectTests(TestCase):
+
+    def setUp(self):
+        self.username = 'admin'
+        self.password = 'admin_password1'
+        self.client = Client()
+
+        user1 = User.objects.create_user(username ='admin', email='email@test.com', password='admin_password1',
+                                         is_staff=True)
+        user1 = User.objects.create_user(username='nonadmin', email='email@test.com', password='admin_password2',
+                                         is_staff=False)
+
+    def test_login_for_admin(self):
+        """
+        Admin users can access Dashboard
+        """
+        self.client.login(username='admin', password='admin_password1')
+        response = self.client.get(reverse('sap:login_success'))
+        self.assertEqual(response.status_code, 302)
+        self.client.logout()
+
+    def test_login_for_nonadmin(self):
+        """
+        Admin users can access Analytics
+        """
+        self.client.login(username='nonadmin', password='admin_password2')
+        response = self.client.get(reverse('sap:sap-admin_profile'))
+        self.assertEqual(response.status_code, 200)
+        self.client.logout()
+
+
+'''class NonAdminAccessTests(TestCase):
+
+    def setUp(self):
+        self.username = 'admin'
+        self.password = 'admin_password1'
+        self.client = Client()
+
+        User.objects.create_user(self.username, 'email@test.com', self.password, is_staff=False)
+
+    def test_dashboard_access_for_nonadmin(self):
+        """
+        Admin users can access Dashboard
+        """
+        self.client.login(username=self.username, password=self.password)
+        response = self.client.get(reverse('sap:sap-dashboard'))
+        self.assertEqual(response.status_code, 403)
+
+    def test_analytics_access_for_nonadmin(self):
+        """
+        Admin users can access Dashboard
+        """
+        self.client.login(username=self.username, password=self.password)
+        response = self.client.get(reverse('sap:sap-analytics'))
+        self.assertEqual(response.status_code, 403)
+'''
+
