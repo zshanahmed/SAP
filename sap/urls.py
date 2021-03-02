@@ -28,4 +28,6 @@ urlpatterns = [
     url('create_iba_admin/',
         login_required(views.CreateAdminView.as_view(), login_url='home'),
         name='create_iba_admin'),
+
+    url('sign-up/', views.SignUpView.as_view(), name='sign-up')
 ]

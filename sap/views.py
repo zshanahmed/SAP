@@ -144,5 +144,8 @@ class CreateAdminView(AccessMixin, TemplateView):
             messages.add_message(request, messages.ERROR, 'Account was not created because one or more fields were not entered')
             return redirect('/create_iba_admin')
 
+class SignUpView(TemplateView):
+    template_name = "sap/sign-up.html"
+
 class ForgotPasswordView(TemplateView):
     template_name= "sap/forgot-password.html"
