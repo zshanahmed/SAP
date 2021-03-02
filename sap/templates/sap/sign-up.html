@@ -66,37 +66,33 @@
                                     </div>
                                 </div>
                                 <div class="form-check form-check-inline">
-                                    <div class="p-2">
-                                       <input type="radio" onclick="javascript:yesnoCheck();" name="yesno" id="staffCheck"> 
-                                       <label class="form-check-label" for="staffCheck">Staff</label>
-                                    </div>
-                                    <div class="p-2">
-                                       <input type="radio" onclick="javascript:yesnoCheck();" name="yesno" id="undergradCheck">
-                                       <label class="form-check-label" for="undergradCheck">Undergrad</label>
-                                    </div>
-                                    <div class="p-2">
-                                       <input type="radio" onclick="javascript:yesnoCheck();" name="yesno" id="gradCheck">
-                                       <label class="form-check-label" for="gradCheck">Grad</label>
-                                    </div>
-                                    <div class="p-2">
-                                       <input type="radio" onclick="javascript:yesnoCheck();" name="yesno" id="facultyCheck">
-                                       <label class="form-check-label" for="facultyCheck">Faculty</label>
-                                    </div>
+                                    <p>Please select your role in the university:</p>
+                                      <input type="radio" name="yesno" id="staffCheck" onclick="javascript:yesnoCheck('staffContent');" > 
+                                      <label class="form-check-label" for="staffCheck">Staff</label>
+                                      <input type="radio" name="yesno" id="gradCheck" onclick="javascript:yesnoCheck('gradContent');" > 
+                                      <label class="form-check-label" for="gradCheck">Grad</label>
+                                      <input type="radio" name="yesno" id="underGradCheck" onclick="javascript:yesnoCheck('undergradContent');" > 
+                                      <label class="form-check-label" for="undergradCheck">Undergrad</label>
+                                      <input type="radio" name="yesno" id="facultyCheck" onclick="javascript:yesnoCheck('facultyContent');" > 
+                                      <label class="form-check-label" for="facultyCheck">Faculty</label>
                                 </div>
-                                <div>
-                                    <div id="ifStaff" style="display: none;">
-                                        Staff <input class="form-control form-control-user" type='text' id='yes' name='yes'><br>
-                                    </div>
-                                    <div id="ifGrad" style="display: none;">
-                                        Grad <input class="form-control form-control-user" type='text' id='yes' name='yes'><br>
-                                    </div>
-                                    <div id="ifUndergrad" style="display: none;">
-                                        Undergrad <input class="form-control form-control-user" type='text' id='yes' name='yes'><br>
-                                    </div>
-                                    <div id="ifFaculty" style="display: none;">
-                                        Faculty <input class="form-control form-control-user" type='text' id='yes' name='yes'><br>
-                                    </div>
+                                <div id='container'>
                                 </div>
+                                <div id='staffContent' style="display: none">
+                                    staff content
+                                  </div>
+                                  
+                                  <div id='gradContent' style="display: none">
+                                    grad content
+                                  </div>
+                                  
+                                  <div id='undergradContent' style="display: none">
+                                    undergrad content
+                                  </div>
+                                  
+                                  <div id='facultyContent' style="display: none">
+                                    faculty content
+                                  </div>
 
                                 <button type="submit" formmethod="post" class="btn btn-primary btn-user btn-block" id="submit_new_ally">
                                     Create New Ally
@@ -124,38 +120,9 @@
 </body>
 
 <script>
-    function yesnoCheck() {
-    if (document.getElementById('staffCheck').checked) {
-        document.getElementById('ifStaff').style.display = 'inline';
-        document.getElementById('ifGrad').style.display = 'none';
-        document.getElementById('ifFaculty').style.display = 'none';
-        document.getElementById('ifUndergrad').style.display = 'none';
+    function yesnoCheck(div_name) {
+	document.getElementById('container').innerHTML = document.getElementById(div_name).innerHTML;
     }
-    else if (document.getElementById('gradCheck').checked) {
-        document.getElementById('ifGrad').style.display = 'inline';
-        document.getElementById('ifStaff').style.display = 'none';
-        document.getElementById('ifFaculty').style.display = 'none';
-        document.getElementById('ifUndergrad').style.display = 'none';
-    }
-    else if (document.getElementById('undergradCheck').checked) {
-        document.getElementById('ifUndergrad').style.display = 'inline';
-        document.getElementById('ifStaff').style.display = 'none';
-        document.getElementById('ifGrad').style.display = 'none';
-        document.getElementById('ifFaculty').style.display = 'none';
-    }
-    else if (document.getElementById('facultyCheck').checked) {
-        document.getElementById('ifFaculty').style.display = 'inline';
-        document.getElementById('ifStaff').style.display = 'none';
-        document.getElementById('ifGrad').style.display = 'none';
-        document.getElementById('ifUndergrad').style.display = 'none';
-    }
-    else {
-        document.getElementById('ifStaff').style.display = 'none';
-        document.getElementById('ifGrad').style.display = 'none';
-        document.getElementById('ifFaculty').style.display = 'none';
-        document.getElementById('ifUndergrad').style.display = 'none';
-    }
-}
 </script>
 
 </html>
