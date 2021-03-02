@@ -50,51 +50,75 @@
                                     <h1 class="h4 text-gray-900 mb-4">Sign Up</h1>
                                 </div>
                                 <div class="form-group">
-                                    <input name="new_username" type="text" class="form-control form-control-user" id="new_username" placeholder="New Username">
+                                    <input name="new_username" type="text" class="form-control form-control-user" id="new_username" placeholder="New Username" required>
                                 </div>
                                 <div class="form-group">
-                                    <input name="new_email" type="email" class="form-control form-control-user" id="new_email" placeholder="New Email">
+                                    <input name="new_email" type="email" class="form-control form-control-user" id="new_email" placeholder="New Email" required>
                                 </div>
                                 <div class="form-group row">
                                     <div class="col-sm-6 mb-3 mb-sm-0">
                                         <input name="new_password" type="password" class="form-control form-control-user"
-                                            id="new_password" placeholder="New Password">
+                                            id="new_password" placeholder="New Password" required>
                                     </div>
                                     <div class="col-sm-6">
                                         <input name="repeat_password" type="password" class="form-control form-control-user"
-                                            id="repeat_password" placeholder="Repeat Password">
+                                            id="repeat_password" placeholder="Repeat Password" required>
                                     </div>
                                 </div>
-                                <div class="form-check form-check-inline">
-                                    <p>Please select your role in the university:</p>
-                                      <input type="radio" name="yesno" id="staffCheck" onclick="javascript:yesnoCheck('staffContent');" > 
-                                      <label class="form-check-label" for="staffCheck">Staff</label>
-                                      <input type="radio" name="yesno" id="gradCheck" onclick="javascript:yesnoCheck('gradContent');" > 
-                                      <label class="form-check-label" for="gradCheck">Grad</label>
-                                      <input type="radio" name="yesno" id="underGradCheck" onclick="javascript:yesnoCheck('undergradContent');" > 
-                                      <label class="form-check-label" for="undergradCheck">Undergrad</label>
-                                      <input type="radio" name="yesno" id="facultyCheck" onclick="javascript:yesnoCheck('facultyContent');" > 
-                                      <label class="form-check-label" for="facultyCheck">Faculty</label>
+                                <div class="py-2">                               
+                                    Please select your role in the university:
+                                    <div class="form-check form-check-inline">
+                                        <div class="px-2">
+                                            <input type="radio" name="roleSelected" id="staffCheck" onclick="javascript:yesnoCheck('staffContent');" required > 
+                                            <label class="form-check-label" for="staffCheck">Staff</label>
+                                        </div>
+                                        <div class="px-2">
+                                        <input type="radio" name="roleSelected" id="gradCheck" onclick="javascript:yesnoCheck('gradContent');" required > 
+                                        <label class="form-check-label" for="gradCheck">Grad</label>  
+                                        </div>
+                                        <div class="px-2">
+                                        <input type="radio" name="roleSelected" id="undergradCheck" onclick="javascript:yesnoCheck('undergradContent');" required > 
+                                        <label class="form-check-label" for="undergradCheck">Undergrad</label>
+                                        </div>
+                                        <div class="px-2">
+                                            <input type="radio" name="roleSelected" id="facultyCheck" onclick="javascript:yesnoCheck('facultyContent');" required > 
+                                            <label class="form-check-label" for="facultyCheck">Faculty</label>
+                                        </div>
+                                      
+                                    </div>
                                 </div>
-                                <div id='container'>
+                                <div id='contents'>
                                 </div>
                                 <div id='staffContent' style="display: none">
-                                    staff content
-                                  </div>
+                                    Do you know students who would be interested in the Science Alliance?
+                                    <div class="text-center">
+                                        <input type="radio" name="yes" id="yes" required> 
+                                            <label class="form-check-label" for="knowOthers">Yes</label>
+                                        <input type="radio" name="yes" id="no" required> 
+                                            <label class="form-check-label" for="knowOthers">No</label><br/>
+                                    </div>
+                                    
+                                    <div class="py-1">How can science alliance serve you?</div>
+                                    <input name="howCanWeHelp" type="text" class="form-control form-control-user" id="howHelp">
+                                </div>
                                   
                                   <div id='gradContent' style="display: none">
                                     grad content
                                   </div>
                                   
                                   <div id='undergradContent' style="display: none">
-                                    undergrad content
+                                    Year:
+                                    <div id="undergradRadios">
+                                    </div>
+                                    <div class="py-1">How can science alliance serve you?</div>
+                                    <input name="new_username" type="text" class="form-control form-control-user" id="new_username">    
                                   </div>
                                   
                                   <div id='facultyContent' style="display: none">
                                     faculty content
                                   </div>
 
-                                <button type="submit" formmethod="post" class="btn btn-primary btn-user btn-block" id="submit_new_ally">
+                                <button type="submit" formmethod="post" class="btn btn-primary btn-user btn-block mt-2" id="submit_new_ally">
                                     Create New Ally
                                 </button>
                                 <hr>
@@ -121,8 +145,24 @@
 
 <script>
     function yesnoCheck(div_name) {
-	document.getElementById('container').innerHTML = document.getElementById(div_name).innerHTML;
+	document.getElementById('contents').innerHTML = document.getElementById(div_name).innerHTML;
     }
+
+    function addRadioOptions(div_id, field_list, field_id){
+        console.log(div_id);
+        x = document.getElementById(div_id);
+        console.log(x.innerHTML);
+        var i;
+
+        for (i=0; i<field_list.length; i++)
+        {
+          x.innerHTML += "<input type=\"radio\" name=\""+field_id+"\" id=\""+field_id+"\" required> \
+            <label class=\"form-check-label\" for=\""+field_id+"\">"+field_list[i]+"</label><br/>"  
+        }
+    }
+
+    addRadioOptions('undergradRadios', ['Freshman', 'Sophomore', 'Junior', 'Senior'], 'year')
+
 </script>
 
 </html>
