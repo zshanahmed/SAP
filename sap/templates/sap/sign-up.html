@@ -78,16 +78,16 @@
                                     </div>
                                 </div>
 
-                                <div id="ifStaff" style="visibility:hidden">
+                                <div id="ifStaff" style="display: none;">
                                     Staff <input type='text' id='yes' name='yes'><br>
                                 </div>
-                                <div id="ifGrad" style="visibility:hidden">
+                                <div id="ifGrad" style="display: none;">
                                     Grad <input type='text' id='yes' name='yes'><br>
                                 </div>
-                                <div id="ifUndergrad" style="visibility:hidden">
+                                <div id="ifUndergrad" style="display: none;">
                                     Undergrad <input type='text' id='yes' name='yes'><br>
                                 </div>
-                                <div id="ifFaculty" style="visibility:hidden">
+                                <div id="ifFaculty" style="display: none;">
                                     Faculty <input type='text' id='yes' name='yes'><br>
                                 </div>
 
@@ -119,34 +119,34 @@
 <script>
     function yesnoCheck() {
     if (document.getElementById('staffCheck').checked) {
-        document.getElementById('ifStaff').style.visibility = 'visible';
-        document.getElementById('ifGrad').style.visibility = 'hidden';
-        document.getElementById('ifFaculty').style.visibility = 'hidden';
-        document.getElementById('ifUndergrad').style.visibility = 'hidden';
+        document.getElementById('ifStaff').style.display = 'inline';
+        document.getElementById('ifGrad').style.display = 'none';
+        document.getElementById('ifFaculty').style.display = 'none';
+        document.getElementById('ifUndergrad').style.display = 'none';
     }
     else if (document.getElementById('gradCheck').checked) {
-        document.getElementById('ifGrad').style.visibility = 'visible';
-        document.getElementById('ifStaff').style.visibility = 'hidden';
-        document.getElementById('ifFaculty').style.visibility = 'hidden';
-        document.getElementById('ifUndergrad').style.visibility = 'hidden';
+        document.getElementById('ifGrad').style.display = 'inline';
+        document.getElementById('ifStaff').style.display = 'none';
+        document.getElementById('ifFaculty').style.display = 'none';
+        document.getElementById('ifUndergrad').style.display = 'none';
     }
     else if (document.getElementById('undergradCheck').checked) {
-        document.getElementById('ifUndergrad').style.visibility = 'visible';
-        document.getElementById('ifStaff').style.visibility = 'hidden';
-        document.getElementById('ifGrad').style.visibility = 'hidden';
-        document.getElementById('ifFaculty').style.visibility = 'hidden';
+        document.getElementById('ifUndergrad').style.display = 'inline';
+        document.getElementById('ifStaff').style.display = 'none';
+        document.getElementById('ifGrad').style.display = 'none';
+        document.getElementById('ifFaculty').style.display = 'none';
     }
     else if (document.getElementById('facultyCheck').checked) {
-        document.getElementById('ifFaculty').style.visibility = 'visible';
-        document.getElementById('ifStaff').style.visibility = 'hidden';
-        document.getElementById('ifGrad').style.visibility = 'hidden';
-        document.getElementById('ifUndergrad').style.visibility = 'hidden';
+        document.getElementById('ifFaculty').style.display = 'inline';
+        document.getElementById('ifStaff').style.display = 'none';
+        document.getElementById('ifGrad').style.display = 'none';
+        document.getElementById('ifUndergrad').style.display = 'none';
     }
     else {
-        document.getElementById('ifStaff').style.visibility = 'hidden';
-        document.getElementById('ifGrad').style.visibility = 'hidden';
-        document.getElementById('ifFaculty').style.visibility = 'hidden';
-        document.getElementById('ifUndergrad').style.visibility = 'hidden';
+        document.getElementById('ifStaff').style.display = 'none';
+        document.getElementById('ifGrad').style.display = 'none';
+        document.getElementById('ifFaculty').style.display = 'none';
+        document.getElementById('ifUndergrad').style.display = 'none';
     }
 }
 </script>
