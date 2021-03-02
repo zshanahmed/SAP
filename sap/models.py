@@ -40,7 +40,9 @@ class StudentCategories(models.Model):
     under_represented_racial_ethnic = models.BooleanField(default=False)
     first_gen_college_student = models.BooleanField(default=False)
     transfer_student = models.BooleanField(default=False)
-    lbgtq = models.BooleanField(default=False)
+    lgbtq = models.BooleanField(default=False)
+    rural_student = models.BooleanField(default=False)
+    gpa_3 = models.BooleanField(default=False)
 
 
 class AllyStudentCategoryRelation(models.Model):
