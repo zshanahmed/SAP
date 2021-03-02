@@ -44,6 +44,9 @@ class AccessMixin(LoginRequiredMixin):
 
 
 class ChangeAdminPassword(AccessMixin, View):
+    """
+    Change the password for admin
+    """
     def get(self, request, *args, **kwargs):
         form = PasswordChangeForm(request.user)
         return render(request, 'sap/change_password.html', {
@@ -66,6 +69,9 @@ class ChangeAdminPassword(AccessMixin, View):
         })
 
 class EditAdminProfile(AccessMixin, View):
+    """
+    Change the profile for admin
+    """
     def get(self, request, *args, **kwargs):
         form = UpdateAdminProfileForm()
         return render(request, 'sap/profile.html', {
