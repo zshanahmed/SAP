@@ -47,7 +47,7 @@
                         <div class="p-5">
                             <form method="post" class="user">{% csrf_token %}
                                 <div class="text-center">
-                                    <h1 class="h4 text-gray-900 mb-4">Enter New Username, Email and Password</h1>
+                                    <h1 class="h4 text-gray-900 mb-4">Sign Up</h1>
                                 </div>
                                 <div class="form-group">
                                     <input name="new_username" type="text" class="form-control form-control-user" id="new_username" placeholder="New Username">
@@ -65,6 +65,32 @@
                                             id="repeat_password" placeholder="Repeat Password">
                                     </div>
                                 </div>
+                                <div class="text-center">
+                                    <div>
+                                        Staff<input type="radio" onclick="javascript:yesnoCheck();" name="yesno" id="staffCheck">
+                                    </div>
+                                    <div>
+                                        Undergrad<input type="radio" onclick="javascript:yesnoCheck();" name="yesno" id="undergradCheck"> 
+                                    </div><div>
+                                        Grad<input type="radio" onclick="javascript:yesnoCheck();" name="yesno" id="gradCheck"> 
+                                    </div><div>
+                                        Faculty<input type="radio" onclick="javascript:yesnoCheck();" name="yesno" id="facultyCheck"> 
+                                    </div>
+                                </div>
+
+                                <div id="ifStaff" style="visibility:hidden">
+                                    Staff <input type='text' id='yes' name='yes'><br>
+                                </div>
+                                <div id="ifGrad" style="visibility:hidden">
+                                    Grad <input type='text' id='yes' name='yes'><br>
+                                </div>
+                                <div id="ifUndergrad" style="visibility:hidden">
+                                    Undergrad <input type='text' id='yes' name='yes'><br>
+                                </div>
+                                <div id="ifFaculty" style="visibility:hidden">
+                                    Faculty <input type='text' id='yes' name='yes'><br>
+                                </div>
+
                                 <button type="submit" formmethod="post" class="btn btn-primary btn-user btn-block" id="submit_new_ally">
                                     Create New Ally
                                 </button>
@@ -89,5 +115,40 @@
     <script src="{% static 'js/sb-admin-2.min.js' %}"></script>
 
 </body>
+
+<script>
+    function yesnoCheck() {
+    if (document.getElementById('staffCheck').checked) {
+        document.getElementById('ifStaff').style.visibility = 'visible';
+        document.getElementById('ifGrad').style.visibility = 'hidden';
+        document.getElementById('ifFaculty').style.visibility = 'hidden';
+        document.getElementById('ifUndergrad').style.visibility = 'hidden';
+    }
+    else if (document.getElementById('gradCheck').checked) {
+        document.getElementById('ifGrad').style.visibility = 'visible';
+        document.getElementById('ifStaff').style.visibility = 'hidden';
+        document.getElementById('ifFaculty').style.visibility = 'hidden';
+        document.getElementById('ifUndergrad').style.visibility = 'hidden';
+    }
+    else if (document.getElementById('undergradCheck').checked) {
+        document.getElementById('ifUndergrad').style.visibility = 'visible';
+        document.getElementById('ifStaff').style.visibility = 'hidden';
+        document.getElementById('ifGrad').style.visibility = 'hidden';
+        document.getElementById('ifFaculty').style.visibility = 'hidden';
+    }
+    else if (document.getElementById('facultyCheck').checked) {
+        document.getElementById('ifFaculty').style.visibility = 'visible';
+        document.getElementById('ifStaff').style.visibility = 'hidden';
+        document.getElementById('ifGrad').style.visibility = 'hidden';
+        document.getElementById('ifUndergrad').style.visibility = 'hidden';
+    }
+    else {
+        document.getElementById('ifStaff').style.visibility = 'hidden';
+        document.getElementById('ifGrad').style.visibility = 'hidden';
+        document.getElementById('ifFaculty').style.visibility = 'hidden';
+        document.getElementById('ifUndergrad').style.visibility = 'hidden';
+    }
+}
+</script>
 
 </html>

@@ -10293,7 +10293,7 @@ body.sidebar-toggled footer.sticky-footer {
   font-weight: bold;
 }
 
-span {
+#logo-text {
   border-bottom: 3px solid #FFCD00;
   padding-bottom: 0.01em;
 }
