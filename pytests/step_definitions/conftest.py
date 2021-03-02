@@ -21,7 +21,7 @@ def chromeBrowser():
     options = Options()
     # options.headless = True
     b = webdriver.Chrome(options=options)
-    b.implicitly_wait(10)
+    b.implicitly_wait(2)
     yield b
     b.quit()
 
