@@ -19,6 +19,8 @@ class Ally(models.Model):
     def __str__(self):
         return self.hawk_id
 
+    firstName = models.CharField(max_length=100, null=True)
+    lastName = models.CharField(max_length=100, null=True)
     area_of_research = models.CharField(max_length=100, null=True)
     openings_in_lab_serving_at = models.BooleanField(default=False)
     description_of_research_done_at_lab = models.CharField(max_length=500, null=True)
@@ -34,6 +36,7 @@ class Ally(models.Model):
     interested_in_joining_lab = models.BooleanField(default=False)
     has_lab_experience = models.BooleanField(default=False)
     interested_in_peer_mentoring = models.BooleanField(default=False)
+    information_release = models.BooleanField(default=False)
 
 
 class StudentCategories(models.Model):
