@@ -147,8 +147,12 @@ class CreateAdminView(AccessMixin, TemplateView):
 class SignUpView(TemplateView):
     template_name = "sap/sign-up.html"
 
+    def get(self, request):
+        return render(request, self.template_name)
+
     def post(self, request):
-        pass
+        print(request.POST)
+        return redirect("sap:home")
 
 class ForgotPasswordView(TemplateView):
     template_name= "sap/forgot-password.html"

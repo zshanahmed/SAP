@@ -1,6 +1,6 @@
 function yesnoCheck(div_name) {
 	document.getElementById('contents').innerHTML = document.getElementById(div_name).innerHTML;
-    }
+}
 
     function addRadioOptions(div_id, field_list)
     {
@@ -25,7 +25,7 @@ function addCheckBoxes(div_id, field_list)
     for (i=0; i<field_list.length; i++)
     {
         field_id = field_list[i].replace(/\s+/g, '').toLowerCase();
-        x.innerHTML += "<input type=\"checkbox\" name=\""+div_id+"\" id=\""+field_id+"\" required> \
+        x.innerHTML += "<input type=\"checkbox\" name=\""+div_id+"\" id=\""+field_id+"\"> \
         <label class=\"form-check-label\" for=\""+div_id+"\">"+field_list[i]+"</label><br/>"  
     }
 }
