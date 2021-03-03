@@ -25,7 +25,7 @@ def login_success(request):
         # users landing page
             return redirect('sap:sap-dashboard')
         else:
-            return redirect('sap:sap-admin_profile')
+            return redirect('sap:sap-about')
 
 
 def logout_request(request):
