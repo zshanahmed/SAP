@@ -125,3 +125,4 @@ dmypy.json
 staticfiles/
 
 .idea/
+sendgrid.env
