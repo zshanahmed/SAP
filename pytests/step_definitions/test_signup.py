@@ -31,6 +31,11 @@ def goto_signup(chromeBrowser):
 def click_radio(chromeBrowser, idButton):
     chromeBrowser.find_element_by_id(idButton).click()
 
+@when(parsers.parse('I fill in "{text}" into element: "{elementID}"'))
+def fill_in_textBox(firefoxBrowser, text, elementID):
+    url = firefoxBrowser.current_url
+    firefoxBrowser.find_element_by_id(elementID).send_keys(text)
+
 @then(parsers.parse('I should see element with id: "{idElement}"'))
 def find(chromeBrowser,idElement):
     try:
@@ -38,3 +43,7 @@ def find(chromeBrowser,idElement):
     except NoSuchElementException:
         assert False
     assert True
+
+@then(parsers.parse('I should see text: "{text}"'))
+def check_test(firefoxBrowser, text):
+    assert (text in firefoxBrowser.page_source)
