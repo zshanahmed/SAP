@@ -41,8 +41,8 @@ addCheckBoxes('stemCheckboxes',['Biochemistry', 'Bioinformatics', 'Biology', 'Bi
 addCheckBoxes('idUnderGradCheckboxes',['First generation college-student', 'Low-income','Underrepresented racial/ethnic minority', 'Transfer student', 'LGBTQ'])
 addCheckBoxes('mentoringCheckboxes',['First generation college-student','Underrepresented racial/ethnic minority', 'Transfer student', 'LGBTQ'])
 addRadioOptions('volunteerRadios',['Yes','No'])
-addRadioOptions('gpaRadios',['Yes','No'])
 addRadioOptions('trainingRadios',['Yes','No'])
+addRadioOptions('agreementRadios',['Yes','No'])
 
 addCheckBoxes('stemGradCheckboxes',['Biochemistry', 'Bioinformatics', 'Biology', 'Biomedical Engineering','Chemical Engineering','Chemistry','Computer Science and Engineering','Environmental Science','Health and Human Physiology','Mathematics','Microbiology','Neuroscience','Nursing','Physics','Psychology'])
 addRadioOptions('mentoringGradRadios',['Yes','No'])
