@@ -11,6 +11,13 @@ Feature: Sign up
     Given I have navigated to sign-up page
     When I click the radio button with id: "undergradCheck"
     Then I should see element with id: "undergradRadios"
+    And I should see element with id: "gpaGreaterThan3"
+    And I should see element with id: "lgbtq"
+    And I should see element with id: "firstGen"
+    And I should see element with id: "rural"
+    And I should see element with id: "low-income"
+    And I should see element with id: "under-represented-minority"
+
 
   Scenario: I have navigated to the sign-up page and I've selected grad as University status
     Given I have navigated to sign-up page
