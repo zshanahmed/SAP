@@ -80,19 +80,19 @@
                                     <strong>Please select your role in the university:</strong>
                                     <div class="form-check form-check-inline">
                                         <div class="px-2">
-                                            <input type="radio" name="roleSelected" id="staffCheck" onclick="javascript:yesnoCheck('staffContent');"  > 
+                                            <input type="radio" name="roleSelected" id="staffCheck" value="Staff" onclick="javascript:yesnoCheck('staffContent');"  > 
                                             <label class="form-check-label" for="staffCheck">Staff</label>
                                         </div>
                                         <div class="px-2">
-                                        <input type="radio" name="roleSelected" id="gradCheck" onclick="javascript:yesnoCheck('gradContent');"  > 
+                                        <input type="radio" name="roleSelected" id="gradCheck" value="Graduate Student" onclick="javascript:yesnoCheck('gradContent');"  > 
                                         <label class="form-check-label" for="gradCheck">Grad</label>  
                                         </div>
                                         <div class="px-2">
-                                        <input type="radio" name="roleSelected" id="undergradCheck" onclick="javascript:yesnoCheck('undergradContent');"  > 
+                                        <input type="radio" name="roleSelected" id="undergradCheck" value="Undergraduate Student" onclick="javascript:yesnoCheck('undergradContent');"  > 
                                         <label class="form-check-label" for="undergradCheck">Undergrad</label>
                                         </div>
                                         <div class="px-2">
-                                            <input type="radio" name="roleSelected" id="facultyCheck" onclick="javascript:yesnoCheck('facultyContent');"  > 
+                                            <input type="radio" name="roleSelected" id="facultyCheck" value="Faculty" onclick="javascript:yesnoCheck('facultyContent');"  > 
                                             <label class="form-check-label" for="facultyCheck">Faculty</label>
                                         </div>
                                       
@@ -121,10 +121,7 @@
     <div id='staffContent' style="display: none">
         <strong>Do you know students who would be interested in the Science Alliance?</strong>
         <div class="text-center">
-            <input type="radio" name="yes" id="yes" > 
-                <label class="form-check-label" for="knowOthers">Yes</label>
-            <input type="radio" name="yes" id="no" > 
-                <label class="form-check-label" for="knowOthers">No</label><br/>
+            <div id="studentsInterestedRadios"></div>
         </div>
         
         <div class="py-1"><strong>How can science alliance serve you?</strong></div>

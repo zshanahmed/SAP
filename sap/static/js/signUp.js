@@ -11,7 +11,7 @@ function yesnoCheck(div_name) {
         for (i=0; i<field_list.length; i++)
         {
           field_id = field_list[i].replace(/\s+/g, '').toLowerCase();
-          x.innerHTML += "<input type=\"radio\" name=\""+div_id+"\" id=\""+field_id+"\" required> \
+          x.innerHTML += "<input type=\"radio\" name=\""+div_id+"\" id=\""+field_id+"\" value=\""+field_list[i]+"\" required> \
             <label class=\"form-check-label\" for=\""+div_id+"\">"+field_list[i]+"</label><br/>"  
         }
     }
@@ -29,6 +29,8 @@ function addCheckBoxes(div_id, field_list)
         <label class=\"form-check-label\" for=\""+div_id+"\">"+field_list[i]+"</label><br/>"  
     }
 }
+
+addRadioOptions('studentsInterestedRadios', ['Yes', 'No'])
 
 addRadioOptions('undergradRadios', ['Freshman', 'Sophomore', 'Junior', 'Senior'])
 addRadioOptions('interestRadios', ['Yes', 'No'])
