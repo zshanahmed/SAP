@@ -43,36 +43,58 @@ class AdminUpdateProfileAndPasswordTests(TestCase):
         self.user = User.objects.create_user(
             self.username, self.email, self.password)
     
-    def test_correct_change_password(self):
+    def test_change_password_page_for_admin(self):
         """
-        If password is changed, a success message is displayed
+        Show Change Password page for Admin
         """
+        self.user.is_staff = True
+        self.user.save()
         self.client.login(username=self.username, password=self.password)
         response = self.client.get(reverse('sap:change_password'))
         self.assertEqual(response.status_code, HTTPStatus.OK)
         self.assertContains(
             response, "Change Password", html=True
         )
-        data = {
-            "old_password": "admin_password1",
-            "new_password1": "admin_password2",
-            "new_password2": "admin_password2"
-        }
-        form = PasswordChangeForm(
-            user=self.user,
-            data=data
-        )
-        self.assertTrue(form.is_valid())
-        response = self.client.post(
-            reverse('sap:change_password'), data=data, follow=True)
-        self.assertEqual(response.status_code, HTTPStatus.OK)
-        message = list(response.context['messages'])[0]
-        self.assertEqual(message.message, "Password Updated Successfully !")
     
+    def test_change_password_page_for_ally(self):
+        """
+        Show Change Password page for Ally
+        """
+        self.user.is_staff = False
+        self.user.save()
+        self.client.login(username=self.username, password=self.password)
+        response = self.client.get(reverse('sap:change_password'))
+        self.assertEqual(response.status_code, HTTPStatus.FORBIDDEN)
+        
+    def test_update_profile_page_for_admin(self):
+        """
+        Show Change Password page for Admin
+        """
+        self.user.is_staff = True
+        self.user.save()
+        self.client.login(username=self.username, password=self.password)
+        response = self.client.get(reverse('sap:sap-admin_profile'))
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        self.assertContains(
+            response, "Update Admin Profile", html=True
+        )
+
+    def test_update_profile_page_for_ally(self):
+        """
+        Show Change Password page for Ally
+        """
+        self.user.is_staff = False
+        self.user.save()
+        self.client.login(username=self.username, password=self.password)
+        response = self.client.get(reverse('sap:sap-admin_profile'))
+        self.assertEqual(response.status_code, HTTPStatus.FORBIDDEN)
+
     def test_failure_mismatched_new_pass_change_password(self):
         """
         If new passwords don't match, a failed message is displayed
         """
+        self.user.is_staff = True
+        self.user.save()
         self.client.login(username=self.username, password=self.password)
         response = self.client.get(reverse('sap:change_password'))
         self.assertEqual(response.status_code, HTTPStatus.OK)
@@ -100,6 +122,8 @@ class AdminUpdateProfileAndPasswordTests(TestCase):
         """
         If old password is wrong, a failed message is displayed
         """
+        self.user.is_staff = True
+        self.user.save()
         self.client.login(username=self.username, password=self.password)
         response = self.client.get(reverse('sap:change_password'))
         self.assertEqual(response.status_code, HTTPStatus.OK)
@@ -122,11 +146,43 @@ class AdminUpdateProfileAndPasswordTests(TestCase):
         self.assertEqual(response.status_code, HTTPStatus.OK)
         message = list(response.context['messages'])[0]
         self.assertEqual(message.message, "Couldn't Update Password !")
+
+    def test_success_change_password(self):
+        """
+        If old password is right and new password match then change password
+        is successfull and a success message is displayed
+        """
+        self.user.is_staff = True
+        self.user.save()
+        self.client.login(username=self.username, password=self.password)
+        response = self.client.get(reverse('sap:change_password'))
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        self.assertContains(
+            response, "Change Password", html=True
+        )
+        data = {
+            "old_password": "admin_password1",
+            "new_password1": "admin_password2",
+            "new_password2": "admin_password2"
+        }
+        form = PasswordChangeForm(
+            user=self.user,
+            data=data
+        )
+        self.assertTrue(form.is_valid())
+
+        response = self.client.post(
+            reverse('sap:change_password'), data=data, follow=True)
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        message = list(response.context['messages'])[0]
+        self.assertEqual(message.message, "Password Updated Successfully !")
     
     def test_correct_update_profile(self):
         """
         If profile is updated, a success message is displayed
         """
+        self.user.is_staff = True
+        self.user.save()
         self.client.login(username=self.username, password=self.password)
         response = self.client.get(reverse('sap:sap-admin_profile'))
         self.assertEqual(response.status_code, HTTPStatus.OK)
@@ -147,6 +203,8 @@ class AdminUpdateProfileAndPasswordTests(TestCase):
         """
         If profile is not updated, a failed message is displayed
         """
+        self.user.is_staff = True
+        self.user.save()
         self.client.login(username=self.username, password=self.password)
         response = self.client.get(reverse('sap:sap-admin_profile'))
         self.assertEqual(response.status_code, HTTPStatus.OK)
@@ -163,8 +221,6 @@ class AdminUpdateProfileAndPasswordTests(TestCase):
         message = list(response.context['messages'])[0]
         self.assertEqual(
             message.message, "Couldn't Update Profile ! Username already exists")
-
-
 
 class AlliesIndexViewTests(TestCase):
 

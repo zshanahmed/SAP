@@ -12,8 +12,9 @@ urlpatterns = [
 
     url(r'login_success/$', views.login_success, name='login_success'),
 
-    url(r'^password/$', login_required(views.change_password), name='change_password'),
-    url(r'^update_profile/$', login_required(views.edit_admin_profile),
+    url(r'^password/$', login_required(views.ChangeAdminPassword.as_view()),
+        name='change_password'),
+    url(r'^update_profile/$', login_required(views.EditAdminProfile.as_view()),
         name='sap-admin_profile'),
 
     url(r'^dashboard/$',
