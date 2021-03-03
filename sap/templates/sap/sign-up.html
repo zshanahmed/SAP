@@ -11,7 +11,7 @@
     <meta name="description" content="">
     <meta name="author" content="">
 
-    <title>Create Ally</title>
+    <title>Create admin</title>
 
     <!-- Custom fonts for this template-->
     <link href="{% static 'vendor/fontawesome-free/css/all.min.css' %}" rel="stylesheet" type="text/css">
@@ -53,7 +53,7 @@
                                     <input name="new_username" type="text" class="form-control form-control-user" id="new_username" placeholder="New Username" required>
                                 </div>
                                 <div class="form-group">
-                                    <input name="new_email" type="email" class="form-control form-control-user" id="new_email" placeholder="New Email" required>
+                                    <input name="new_email" type="email" class="form-control form-control-user" id="new_email" placeholder="Please type your UIOWA email address" required>
                                 </div>
                                 <div class="form-group row">
                                     <div class="col-sm-6 mb-3 mb-sm-0">
@@ -103,19 +103,83 @@
                                 </div>
                                   
                                   <div id='gradContent' style="display: none">
-                                    grad content
+                                    <div class="py-1">
+                                        STEM Area of Research:
+                                          <div id="stemGradCheckboxes"></div> 
+                                     </div> 
+                                     <div class="py-1">
+                                        Are you interested in mentoring students?
+                                          <div id="mentoringGradRadios"></div> 
+                                     </div>
+                                     <div class="py-1">
+                                        Are you interested in serving as a mentor to students who identify as any of the following? (check all that apply)
+                                          <div id="mentoringGradCheckboxes"></div> 
+                                     </div>
+                                     <div class="py-1">
+                                        Would you be willing to offer lab shadowing to potential students?
+                                          <div id="labShadowRadios"></div> 
+                                     </div>
+                                     <div class="py-1">
+                                        Are you interested in connecting with other mentors?
+                                         <div id="connectingRadios">
+                                         </div>  
+                                     </div>
+                                     <div class="py-1">
+                                        Would you be willing to volunteer for panels, networking workshops, and other events as professional development for students?
+                                         <div id="volunteerGradRadios">
+                                         </div>  
+                                     </div>
+                                     <div class="py-1">
+                                        Are you interested in mentor training?
+                                         <div id="gradTrainingRadios"></div> 
+                                    </div>        
                                   </div>
                                   
                                   <div id='undergradContent' style="display: none">
                                     Year:
                                     <div id="undergradRadios">
                                     </div>
-                                    <div class="py-1">How can science alliance serve you?</div>
-                                    <input name="new_username" type="text" class="form-control form-control-user" id="new_username">    
+                                    <div class="py-1">Major:
+                                        <input name="major" type="text" class="form-control form-control-user" id="major"> 
+                                    </div>
+                                    <div class="py-1">
+                                       Are you interested in joining a lab?   
+                                        <div id="interestRadios">
+                                        </div>  
+                                    </div>
+                                    <div class="py-1">
+                                        Do you have experience working in a laboratory?  
+                                         <div id="experienceRadios">
+                                         </div>  
+                                     </div>  
+                                     <div class="py-1">
+                                        Are you interested in becoming a peer mentor?
+                                         <div id="interestedRadios">
+                                         </div>  
+                                     </div>    
                                   </div>
                                   
                                   <div id='facultyContent' style="display: none">
-                                    faculty content
+                                    <div class="py-1">
+                                       Stem Area of Research:
+                                         <div id="stemCheckboxes"></div> 
+                                    </div> 
+                                    <div class="py-1">
+                                        Do you currently have openings for undergraduate students in your lab?
+                                          <div id="openingRadios"></div> 
+                                     </div>   
+                                     <div class="py-1">
+                                        Are you interested in serving as a mentor to students who identify as any of the following? (check all that apply)
+                                          <div id="mentoringCheckboxes"></div> 
+                                     </div> 
+                                     <div class="py-1">
+                                        Would you be willing to volunteer for panels, networking workshops, and other events as professional development for students?
+                                          <div id="volunteerRadios"></div> 
+                                     </div>
+                                     <div class="py-1">
+                                         Are you interested in mentor training?
+                                          <div id="trainingRadios"></div> 
+                                     </div>       
                                   </div>
 
                                 <button type="submit" formmethod="post" class="btn btn-primary btn-user btn-block mt-2" id="submit_new_ally">
@@ -140,29 +204,8 @@
 
     <!-- Custom scripts for all pages-->
     <script src="{% static 'js/sb-admin-2.min.js' %}"></script>
+    <script src="{% static 'js/signUp.js' %}"></script>
 
 </body>
-
-<script>
-    function yesnoCheck(div_name) {
-	document.getElementById('contents').innerHTML = document.getElementById(div_name).innerHTML;
-    }
-
-    function addRadioOptions(div_id, field_list, field_id){
-        console.log(div_id);
-        x = document.getElementById(div_id);
-        console.log(x.innerHTML);
-        var i;
-
-        for (i=0; i<field_list.length; i++)
-        {
-          x.innerHTML += "<input type=\"radio\" name=\""+field_id+"\" id=\""+field_id+"\" required> \
-            <label class=\"form-check-label\" for=\""+field_id+"\">"+field_list[i]+"</label><br/>"  
-        }
-    }
-
-    addRadioOptions('undergradRadios', ['Freshman', 'Sophomore', 'Junior', 'Senior'], 'year')
-
-</script>
 
 </html>
