@@ -11,7 +11,7 @@
     <meta name="description" content="">
     <meta name="author" content="">
 
-    <title>Create admin</title>
+    <title>IBA - Signup</title>
 
     <!-- Custom fonts for this template-->
     <link href="{% static 'vendor/fontawesome-free/css/all.min.css' %}" rel="stylesheet" type="text/css">
@@ -65,6 +65,7 @@
                                             id="repeat_password" placeholder="Repeat Password" required>
                                     </div>
                                 </div>
+                                <hr>
                                 <div class="py-2">                               
                                     <strong>Please select your role in the university:</strong>
                                     <div class="form-check form-check-inline">
@@ -140,6 +141,16 @@
                                        <strong>Year:</strong> 
                                         <div class="form-check" id="undergradRadios"></div> 
                                     </div>
+
+                                    <div class="py-1">
+                                        <strong>Is your GPA greater than 3.0?</strong> 
+                                         <div class="form-check" id="gpaRadios"></div> 
+                                     </div>
+
+                                    <div class="py-1">
+                                        <strong>Do you identify as? (check all that apply)</strong> 
+                                         <div class="form-check" id="idUnderGradCheckboxes"></div> 
+                                     </div>
                                     
                                     <div class="py-3">
                                         <input name="major" type="text" class="form-control form-control-user" id="major" placeholder="Please enter your Major"> 
