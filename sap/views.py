@@ -152,9 +152,9 @@ class SignUpView(TemplateView):
 
     def post(self, request):
         print(request.POST)
-        messages.add_message(request, messages.ERROR, 'Invalid Credentials entered')
-        return redirect('sign-up/')
-        #return redirect("sap:home")
+        messages.add_message(request, messages.WARNING, 'Invalid Credentials entered')
+        #return redirect('sign-up/')
+        return redirect("sap:home")
 
 class ForgotPasswordView(TemplateView):
     template_name= "sap/forgot-password.html"

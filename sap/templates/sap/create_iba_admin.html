@@ -1,5 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
+<style>
+    .alert-dismissible{ }
+</style>
 
 {% load static %}
 
@@ -23,21 +26,18 @@
     <link href="{% static 'css/sb-admin-2.min.css' %}" rel="stylesheet">
 
 </head>
-
 <body class="bg-gradient-primary">
-
     <div class="container">
         {% if messages %}
-        <div class="alert alert-primary alert-dismissible fade show" role="alert">
+        <div class="alert alert-primary alert-dismissible fade show" role="alert" id="alert">
             {% for message in messages %}
-            <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+            <li style="font-size: 15px; width: auto" {% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
             {% endfor %}
             <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
             </button>
         </div>
         {% endif %}
-
         <div class="card o-hidden border-0 shadow-lg my-5">
             <div class="card-body p-0">
                 <!-- Nested Row within Card Body -->
@@ -86,7 +86,6 @@
                 </div>
             </div>
         </div>
-
     </div>
 
     <!-- Bootstrap core JavaScript-->
