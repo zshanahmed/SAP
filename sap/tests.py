@@ -395,14 +395,18 @@ class SignUpTests(TestCase):
         self.assertEqual(response.status_code, 302)
 
     def test_create_Undergrad(self):
-        response = self.c.post('/sign-up/', {'csrfmiddlewaretoken': ['MIyNUVJILbLGKrHXjz4m4fWt4d13TUOkkvRtCpStSmxkW8PKomuz3ESTYF8VVQil'],
-                                  'firstName': ['Elias'], 'lastName': ['Shaeffer'], 'new_username': ['admin1'],
-                                  'new_email': ['email@test.com'], 'new_password': ['ddd'], 'repeat_password':
-                                      ['dddd'], 'roleSelected': ['Graduate Student'],
-                                  'stemGradCheckboxes': ['Biochemistry'], 'mentoringGradRadios': ['Yes'],
-                                  'mentoringGradCheckboxes': ['First generation college-student'],
-                                  'labShadowRadios': ['Yes'], 'connectingRadios': ['Yes'],
-                                  'volunteerGradRadios': ['Yes'], 'gradTrainingRadios': ['Yes']})
+        response = self.c.post('/sign-up/', { 'csrfmiddlewaretoken': ['At4HFZNsApVRWNye2Jcj4RVcWYf1fviv1kFbSZevLnNmJrWz4OyZhcAPn0JeaknZ'],
+                                              'firstName': ['Zeeshan'], 'lastName': ['Ahmed'], 'new_username': ['zeeahmed'],
+                                              'new_email': ['zeeahmed@uiowa.edu'], 'new_password': ['bigchungus'],
+                                              'repeat_password': ['bigchungus'], 'roleSelected': ['Undergraduate Student'],
+                                              'undergradRadios': ['Senior'], 'idUnderGradCheckboxes': ['First generation college-student'],
+                                              'major': ['Computer Science'], 'interestRadios': ['Yes'],
+                                              'experienceRadios': ['Yes'], 'interestedRadios': ['Yes'],
+                                              'agreementRadios': ['Yes']})
+        url = response.url
+        self.assertEqual(url, '')
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(User.objects.filter(username="zeeahmed").exists())
 
 
 '''class NonAdminAccessTests(TestCase):

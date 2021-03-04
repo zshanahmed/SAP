@@ -160,6 +160,10 @@ class SignUpView(TemplateView):
             messages.add_message(request, messages.WARNING,
                                  'Account can not be created because email already exists')
             return redirect('sign-up/')
+        else:
+            if postDict['roleSelected'][0] == 'Undergraduate Student':
+                pass
+
         return redirect("sap:home")
 
 class ForgotPasswordView(TemplateView):
