@@ -12,7 +12,7 @@ with open('./config.json') as f:
   config = json.load(f)
 
 message = Mail(
-    from_email='nam-h-le@uiowa.edu',    # this email address must be in Sendgrid's sender list, or it must have a whitelisted domain name
+    from_email='nam-h-le@uiowa.edu', # this email address must be in Sendgrid's sender list OR it must have a whitelisted domain name
     to_emails='bodhi.psyche@gmail.com',
     subject='Sample Email From Science Alliance Portal',
     html_content='<strong>This is an email from Science Alliance Portal</strong>')
