@@ -1,20 +1,18 @@
 import pytest
 import pdb
 
-from pytest_bdd import scenario, given, when, then, parsers
+from pytest_bdd import scenarios, given, when, then, parsers
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 import time
 
 localhost = 'http://127.0.0.1:8000/'
 
+# Scenarios
+scenarios('../features/admin_change_password.feature')
+
 #Fixtures
 @pytest.mark.usefixtures('chromeBrowser')
-
-# Scenario
-@scenario("../features/admin_change_password.feature", "Change password with correct old password and matching new password")
-def test_login_page():
-    print("Finish test")
 
 @given(parsers.parse('I have logged in with username {username} and password {password}'))
 def login(chromeBrowser, username, password):
@@ -61,3 +59,4 @@ def see_status(chromeBrowser, new_pass, old_pass, message):
 
     element = chromeBrowser.find_element_by_id('status_message')
     assert message in element.text
+
