@@ -357,6 +357,53 @@ class LoginRedirectTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.client.logout()
 
+class SignUpTests(TestCase):
+    def setUp(self):
+        self.username = 'admin'
+        self.password = 'admin_password1'
+        self.user = User.objects.create_user(self.username, 'email@test.com', self.password)
+        self.c = Client()
+
+    def test_get(self):
+        response = self.c.get('/sign-up/')
+        self.assertEqual(response.status_code, 200)
+
+    def test_entered_existing_user(self):
+        response = self.c.post('/sign-up/', {'csrfmiddlewaretoken': ['MIyNUVJILbLGKrHXjz4m4fWt4d13TUOkkvRtCpStSmxkW8PKomuz3ESTYF8VVQil'],
+                                  'firstName': ['Elias'], 'lastName': ['Shaeffer'], 'new_username': ['admin'],
+                                  'new_email': ['eshaeffer@uiowa.edu'], 'new_password': ['ddd'], 'repeat_password':
+                                      ['dddd'], 'roleSelected': ['Graduate Student'],
+                                  'stemGradCheckboxes': ['Biochemistry'], 'mentoringGradRadios': ['Yes'],
+                                  'mentoringGradCheckboxes': ['First generation college-student'],
+                                  'labShadowRadios': ['Yes'], 'connectingRadios': ['Yes'],
+                                  'volunteerGradRadios': ['Yes'], 'gradTrainingRadios': ['Yes']})
+        url = response.url
+        self.assertEqual(url, 'sign-up/')
+        self.assertEqual(response.status_code, 302)
+
+    def test_entered_existing_email(self):
+        response = self.c.post('/sign-up/', {'csrfmiddlewaretoken': ['MIyNUVJILbLGKrHXjz4m4fWt4d13TUOkkvRtCpStSmxkW8PKomuz3ESTYF8VVQil'],
+                                  'firstName': ['Elias'], 'lastName': ['Shaeffer'], 'new_username': ['admin1'],
+                                  'new_email': ['email@test.com'], 'new_password': ['ddd'], 'repeat_password':
+                                      ['dddd'], 'roleSelected': ['Graduate Student'],
+                                  'stemGradCheckboxes': ['Biochemistry'], 'mentoringGradRadios': ['Yes'],
+                                  'mentoringGradCheckboxes': ['First generation college-student'],
+                                  'labShadowRadios': ['Yes'], 'connectingRadios': ['Yes'],
+                                  'volunteerGradRadios': ['Yes'], 'gradTrainingRadios': ['Yes']})
+        url = response.url
+        self.assertEqual(url, 'sign-up/')
+        self.assertEqual(response.status_code, 302)
+
+    def test_create_Undergrad(self):
+        response = self.c.post('/sign-up/', {'csrfmiddlewaretoken': ['MIyNUVJILbLGKrHXjz4m4fWt4d13TUOkkvRtCpStSmxkW8PKomuz3ESTYF8VVQil'],
+                                  'firstName': ['Elias'], 'lastName': ['Shaeffer'], 'new_username': ['admin1'],
+                                  'new_email': ['email@test.com'], 'new_password': ['ddd'], 'repeat_password':
+                                      ['dddd'], 'roleSelected': ['Graduate Student'],
+                                  'stemGradCheckboxes': ['Biochemistry'], 'mentoringGradRadios': ['Yes'],
+                                  'mentoringGradCheckboxes': ['First generation college-student'],
+                                  'labShadowRadios': ['Yes'], 'connectingRadios': ['Yes'],
+                                  'volunteerGradRadios': ['Yes'], 'gradTrainingRadios': ['Yes']})
+
 
 '''class NonAdminAccessTests(TestCase):
 

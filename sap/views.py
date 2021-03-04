@@ -151,9 +151,15 @@ class SignUpView(TemplateView):
         return render(request, self.template_name)
 
     def post(self, request):
-        print(request.POST)
-        messages.add_message(request, messages.WARNING, 'Invalid Credentials entered')
-        #return redirect('sign-up/')
+        postDict = dict(request.POST)
+        if User.objects.filter(username=postDict["new_username"][0]).exists():
+            messages.add_message(request, messages.WARNING,
+                                 'Account can not be created because username already exists')
+            return redirect('sign-up/')
+        elif User.objects.filter(email=postDict["new_email"][0]).exists():
+            messages.add_message(request, messages.WARNING,
+                                 'Account can not be created because email already exists')
+            return redirect('sign-up/')
         return redirect("sap:home")
 
 class ForgotPasswordView(TemplateView):
