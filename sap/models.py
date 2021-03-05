@@ -43,7 +43,6 @@ class Ally(models.Model):
     identity = models.CharField(max_length=200, blank=True)
     interested_in_joining_lab = models.BooleanField(default=False)
     has_lab_experience = models.BooleanField(default=False)
-    interested_in_internship = models.BooleanField(default=False)
 
 class StudentCategories(models.Model):
     under_represented_racial_ethnic = models.BooleanField(default=False)
