@@ -62,7 +62,7 @@ class ChangeAdminPassword(AccessMixin, View):
                 request, 'Password Updated Successfully !')
             return redirect('sap:change_password')
         else:
-            messages.error(request, "Couldn't Update Password !")
+            messages.error(request, "Could not Update Password !")
 
         return render(request, 'sap/change_password.html', {
             'form': form
@@ -92,7 +92,7 @@ class EditAdminProfile(AccessMixin, View):
             return redirect('sap:sap-admin_profile')
         else:
             messages.error(
-                request, "Couldn't Update Profile ! Username already exists")
+                request, "Could not Update Profile ! Username already exists")
         return render(request, 'sap/profile.html', {
             'form': form
         })
