@@ -1,5 +1,5 @@
 from django.test import TestCase, Client
-from .models import Ally
+from .models import Ally, StudentCategories, AllyStudentCategoryRelation
 from django.urls import reverse
 from django.contrib.auth.models import User
 from http import HTTPStatus
@@ -394,6 +394,19 @@ class SignUpTests(TestCase):
         self.assertEqual(url, 'sign-up/')
         self.assertEqual(response.status_code, 302)
 
+    def test_password_not_same(self):
+        response = self.c.post('/sign-up/', {'csrfmiddlewaretoken': ['MIyNUVJILbLGKrHXjz4m4fWt4d13TUOkkvRtCpStSmxkW8PKomuz3ESTYF8VVQil'],
+                                  'firstName': ['Elias'], 'lastName': ['Shaeffer'], 'new_username': ['admin1123'],
+                                  'new_email': ['email123@test.com'], 'new_password': ['ddd'], 'repeat_password':
+                                      ['ddddd'], 'roleSelected': ['Graduate Student'],
+                                  'stemGradCheckboxes': ['Biochemistry'], 'mentoringGradRadios': ['Yes'],
+                                  'mentoringGradCheckboxes': ['First generation college-student'],
+                                  'labShadowRadios': ['Yes'], 'connectingRadios': ['Yes'],
+                                  'volunteerGradRadios': ['Yes'], 'gradTrainingRadios': ['Yes']})
+        url = response.url
+        self.assertEqual(url, 'sign-up/')
+        self.assertEqual(response.status_code, 302)
+
     def test_create_Undergrad(self):
         response = self.c.post('/sign-up/', { 'csrfmiddlewaretoken': ['At4HFZNsApVRWNye2Jcj4RVcWYf1fviv1kFbSZevLnNmJrWz4OyZhcAPn0JeaknZ'],
                                               'firstName': ['Zeeshan'], 'lastName': ['Ahmed'], 'new_username': ['zeeahmed'],
@@ -406,7 +419,14 @@ class SignUpTests(TestCase):
         url = response.url
         self.assertEqual(url, '')
         self.assertEqual(response.status_code, 200)
-        self.assertTrue(User.objects.filter(username="zeeahmed").exists())
+        user = User.objects.filter(username="zeeahmed")
+        ally = Ally.objects.filter(user_id=user.id)
+        categoryRelation = AllyStudentCategoryRelation.objects.filter(ally_id=ally.id)
+        categories = StudentCategories.objects.filter(id=categoryRelation.student_category_id)
+        self.assertTrue(user.exists())
+        self.assertTrue(ally.exists())
+        self.assertTrue(categoryRelation.exists())
+        self.assertTrue(categories.exists())
 
 
 '''class NonAdminAccessTests(TestCase):
@@ -414,7 +434,7 @@ class SignUpTests(TestCase):
     def setUp(self):
         self.username = 'admin'
         self.password = 'admin_password1'
-        self.client = Client()
+        self.client = Client()w
 
         User.objects.create_user(self.username, 'email@test.com', self.password, is_staff=False)
 

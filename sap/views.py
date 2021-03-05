@@ -1,7 +1,7 @@
 from django.contrib.auth import logout
 from django.contrib.auth import authenticate
 from django.contrib.auth.mixins import LoginRequiredMixin
-from .models import Ally
+from .models import Ally, StudentCategories, AllyStudentCategoryRelation
 from django.views import generic
 from django.views.generic import TemplateView
 from django.contrib import messages
@@ -147,11 +147,29 @@ class CreateAdminView(AccessMixin, TemplateView):
 class SignUpView(TemplateView):
     template_name = "sap/sign-up.html"
 
+    def make_categories(self, studentCategories):
+        categories = StudentCategories.objects.create()
+        for id in studentCategories:
+            if id == 'First generation college-student':
+                categories.first_gen_college_student = True
+            elif id == 'Low-income':
+                categories.low_income = True
+            elif id == 'Underrepresented racial/ethnic minority':
+                categories.under_represented_racial_ethnic = True
+            elif id == 'LGBTQ':
+                categories.lgbtq = True
+            elif id == 'Rural':
+                categories.rural = True
+        categories.save()
+        return categories
+
+
     def get(self, request):
         return render(request, self.template_name)
 
     def post(self, request):
         postDict = dict(request.POST)
+        print(request.POST)
         if User.objects.filter(username=postDict["new_username"][0]).exists():
             messages.add_message(request, messages.WARNING,
                                  'Account can not be created because username already exists')
@@ -160,8 +178,23 @@ class SignUpView(TemplateView):
             messages.add_message(request, messages.WARNING,
                                  'Account can not be created because email already exists')
             return redirect('sign-up/')
+        elif postDict["new_password"][0] != postDict["repeat_password"][0]:
+            return redirect('sign-up/')
         else:
+            user = User.objects.create_user(username=postDict["new_username"][0],
+                                            password=postDict["new_password"][0],
+                                            email=postDict["new_email"][0],
+                                            first_name=postDict["firstName"][0],
+                                            last_name=postDict["lastName"][0])
             if postDict['roleSelected'][0] == 'Undergraduate Student':
+                relation = AllyStudentCategoryRelation.objects.create()
+                categories = self.make_categories(postDict["idUnderGradCheckboxes"])
+                ally = Ally.objects.create(user=user, )
+            elif postDict['roleSelected'][0] == 'Graduate Student':
+                pass
+            elif postDict['roleSelected'][0] == 'Faculty':
+                pass
+            elif postDict['roleSelected'][0] == 'Staff':
                 pass
 
         return redirect("sap:home")
