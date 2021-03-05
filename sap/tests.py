@@ -116,7 +116,7 @@ class AdminUpdateProfileAndPasswordTests(TestCase):
             reverse('sap:change_password'), data=data, follow=True)
         self.assertEqual(response.status_code, HTTPStatus.OK)
         message = list(response.context['messages'])[0]
-        self.assertEqual(message.message, "Couldn't Update Password !")
+        self.assertEqual(message.message, "Could not Update Password !")
     
     def test_failure_old_pass_wrong_change_password(self):
         """
@@ -145,7 +145,7 @@ class AdminUpdateProfileAndPasswordTests(TestCase):
             reverse('sap:change_password'), data=data, follow=True)
         self.assertEqual(response.status_code, HTTPStatus.OK)
         message = list(response.context['messages'])[0]
-        self.assertEqual(message.message, "Couldn't Update Password !")
+        self.assertEqual(message.message, "Could not Update Password !")
 
     def test_success_change_password(self):
         """
@@ -220,7 +220,7 @@ class AdminUpdateProfileAndPasswordTests(TestCase):
         self.assertEqual(response.status_code, HTTPStatus.OK)
         message = list(response.context['messages'])[0]
         self.assertEqual(
-            message.message, "Couldn't Update Profile ! Username already exists")
+            message.message, "Could not Update Profile ! Username already exists")
 
 class AlliesIndexViewTests(TestCase):
 
