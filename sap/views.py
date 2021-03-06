@@ -163,6 +163,14 @@ class SignUpView(TemplateView):
         categories.save()
         return categories
 
+    def set_boolean(self, list, postDict):
+        dict = {}
+        for selection in list:
+            if postDict[selection] == 'Yes':
+                dict[selection] = True
+            else:
+                dict[selection] = False
+        return dict
 
     def get(self, request):
         return render(request, self.template_name)
@@ -183,13 +191,24 @@ class SignUpView(TemplateView):
         else:
             user = User.objects.create_user(username=postDict["new_username"][0],
                                             password=postDict["new_password"][0],
-                                            email=postDict["new_email"][0],
-                                            first_name=postDict["firstName"][0],
-                                            last_name=postDict["lastName"][0])
+                                            email=postDict["new_email"][0])
             if postDict['roleSelected'][0] == 'Undergraduate Student':
                 relation = AllyStudentCategoryRelation.objects.create()
                 categories = self.make_categories(postDict["idUnderGradCheckboxes"])
-                ally = Ally.objects.create(user=user, )
+                undergradList = ['interestRadios', 'experienceRadios', 'interestedRadios', 'agreementRadios']
+                selections = self.set_boolean(undergradList, postDict)
+                ally = Ally.objects.create(user=user, user_type=postDict['roleSelected'][0],
+                                           first_name=postDict["firstName"][0], last_name=postDict["lastName"][0],
+                                           major=postDict['major'][0], year=postDict['undergradRadios'][0],
+                                           interested_in_joining_lab=selections['interestRadios'],
+                                           has_lab_experience=selections['experienceRadios'],
+                                           interested_in_mentoring=selections['interestedRadios'],
+                                           information_release=selections['agreementRadios'])
+                relation.student_category_id = categories.id
+                relation.ally_id = ally.id
+                relation.save()
+                messages.add_message(request, messages.WARNING, "Account created")
+                return redirect("sap:home")
             elif postDict['roleSelected'][0] == 'Graduate Student':
                 pass
             elif postDict['roleSelected'][0] == 'Faculty':
