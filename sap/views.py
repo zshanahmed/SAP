@@ -196,7 +196,10 @@ class SignUpView(TemplateView):
                                             first_name=postDict["firstName"][0], last_name=postDict["lastName"][0])
             
             if postDict['roleSelected'][0] == 'Staff':
-                pass
+                selections = self.set_boolean(['studentsInterestedRadios'], postDict)
+                ally = Ally.objects.create(user=user, user_type=postDict['roleSelected'][0], hawk_id=user.username,
+                                            people_who_might_be_interested_in_iba=selections['studentsInterestedRadios'],
+                                            how_can_science_ally_serve_you=postDict['howCanWeHelp'])
             else:
                 if postDict['roleSelected'][0] == 'Undergraduate Student':
                     categories = self.make_categories(postDict["idUnderGradCheckboxes"])

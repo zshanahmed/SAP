@@ -29,7 +29,7 @@ class Ally(models.Model):
     works_at = models.CharField(max_length=200, null=True)
 
     ##Staff
-    people_who_might_be_interested_in_iba = models.CharField(max_length=500, default='')
+    people_who_might_be_interested_in_iba = models.BooleanField(default=False)
     how_can_science_ally_serve_you = models.CharField(max_length=500, null=True)
 
     ##Undergraduate
