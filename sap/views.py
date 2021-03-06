@@ -188,6 +188,8 @@ class SignUpView(TemplateView):
                                  'Account can not be created because email already exists')
             return redirect('sign-up/')
         elif postDict["new_password"][0] != postDict["repeat_password"][0]:
+            messages.add_message(request, messages.WARNING,
+                                 'Repeated password is not the same as the inputted password')
             return redirect('sign-up/')
         else:
             user = User.objects.create_user(username=postDict["new_username"][0],

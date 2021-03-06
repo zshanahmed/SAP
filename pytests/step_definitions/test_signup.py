@@ -48,7 +48,8 @@ def fill_out_undergrad(chromeBrowser):
     chromeBrowser.find_element_by_id('freshman').click()
     chromeBrowser.find_element_by_id('low-income').click()
     chromeBrowser.find_element_by_id('major').send_keys('biomedical engineering')
-    chromeBrowser.find_element_by_xpath('/html/body/div[1]/div/div/div/div/div/form/div[7]/div[4]/div/input[1]').click()
+    chromeBrowser.find_element_by_id('major').send_keys('major')
+    chromeBrowser.find_element_by_xpath('/html/body/div[1]/div/div/div/div/div/form/div[7]/div[1]/div/input[1]').click()
     chromeBrowser.find_element_by_xpath('/html/body/div[1]/div/div/div/div/div/form/div[7]/div[5]/div/input[1]').click()
     chromeBrowser.find_element_by_xpath('/html/body/div[1]/div/div/div/div/div/form/div[7]/div[6]/div/input[1]').click()
     chromeBrowser.find_element_by_xpath('/html/body/div[1]/div/div/div/div/div/form/div[7]/div[7]/div/input[1]').click()
@@ -73,11 +74,12 @@ def fill_out_staff(chromeBrowser):
 
 @when(parsers.parse('I fill in faculty form'))
 def fill_out_faculty(chromeBrowser):
-    chromeBrowser.find_element_by_xpath('/html/body/div[1]/div/div/div/div/div/form/div[7]/div[1]/div/input[1]').click()
+    chromeBrowser.find_element_by_xpath('/html/body/div[1]/div/div/div/div/div/form/div[6]/div/div[4]/input').click()
     chromeBrowser.find_element_by_xpath('/html/body/div[1]/div/div/div/div/div/form/div[7]/div[2]/div/input[1]').click()
     chromeBrowser.find_element_by_xpath('/html/body/div[1]/div/div/div/div/div/form/div[7]/div[3]/div/input[1]').click()
-    chromeBrowser.find_element_by_xpath('/html/body/div[1]/div/div/div/div/div/form/div[7]/div[4]/div/input[1]').click()
-    chromeBrowser.find_element_by_xpath('/html/body/div[1]/div/div/div/div/div/form/div[7]/div[5]/div/input[2]').click()
+    chromeBrowser.find_element_by_id('research-des').send_keys('research')
+    chromeBrowser.find_element_by_xpath('/html/body/div[1]/div/div/div/div/div/form/div[7]/div[6]/div/input[2]').click()
+    chromeBrowser.find_element_by_xpath('/html/body/div[1]/div/div/div/div/div/form/div[7]/div[7]/div/input[2]').click()
     chromeBrowser.find_element_by_id('submit_new_ally').click()
 
 @then(parsers.parse('I should see text: "{text}"'))
