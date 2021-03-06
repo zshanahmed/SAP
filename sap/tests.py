@@ -378,7 +378,7 @@ class SignUpTests(TestCase):
                                   'labShadowRadios': ['Yes'], 'connectingRadios': ['Yes'],
                                   'volunteerGradRadios': ['Yes'], 'gradTrainingRadios': ['Yes']})
         url = response.url
-        self.assertEqual(url, 'sign-up/')
+        self.assertEqual(url, '/sign-up')
         self.assertEqual(response.status_code, 302)
 
     def test_entered_existing_email(self):
@@ -391,7 +391,7 @@ class SignUpTests(TestCase):
                                   'labShadowRadios': ['Yes'], 'connectingRadios': ['Yes'],
                                   'volunteerGradRadios': ['Yes'], 'gradTrainingRadios': ['Yes']})
         url = response.url
-        self.assertEqual(url, 'sign-up/')
+        self.assertEqual(url, '/sign-up')
         self.assertEqual(response.status_code, 302)
 
     def test_password_not_same(self):
@@ -404,7 +404,7 @@ class SignUpTests(TestCase):
                                   'labShadowRadios': ['Yes'], 'connectingRadios': ['Yes'],
                                   'volunteerGradRadios': ['Yes'], 'gradTrainingRadios': ['Yes']})
         url = response.url
-        self.assertEqual(url, 'sign-up/')
+        self.assertEqual(url, '/sign-up')
         self.assertEqual(response.status_code, 302)
 
     def test_create_Undergrad(self):

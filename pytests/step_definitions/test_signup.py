@@ -1,5 +1,6 @@
 from pytest_bdd import scenarios, given, when, then, parsers
 from selenium.common.exceptions import NoSuchElementException
+from time import sleep
 import pytest
 
 scenarios('../features/signup.feature')
@@ -49,6 +50,7 @@ def fill_out_undergrad(chromeBrowser):
     chromeBrowser.find_element_by_id('low-income').click()
     chromeBrowser.find_element_by_id('major').send_keys('biomedical engineering')
     chromeBrowser.find_element_by_id('major').send_keys('major')
+    chromeBrowser.find_element_by_xpath('/html/body/div[1]/div/div/div/div/div/form/div[7]/div[4]/div/input[1]').click()
     chromeBrowser.find_element_by_xpath('/html/body/div[1]/div/div/div/div/div/form/div[7]/div[1]/div/input[1]').click()
     chromeBrowser.find_element_by_xpath('/html/body/div[1]/div/div/div/div/div/form/div[7]/div[5]/div/input[1]').click()
     chromeBrowser.find_element_by_xpath('/html/body/div[1]/div/div/div/div/div/form/div[7]/div[6]/div/input[1]').click()
@@ -74,22 +76,23 @@ def fill_out_staff(chromeBrowser):
 
 @when(parsers.parse('I fill in faculty form'))
 def fill_out_faculty(chromeBrowser):
-    chromeBrowser.find_element_by_xpath('/html/body/div[1]/div/div/div/div/div/form/div[6]/div/div[4]/input').click()
-    chromeBrowser.find_element_by_xpath('/html/body/div[1]/div/div/div/div/div/form/div[7]/div[2]/div/input[1]').click()
     chromeBrowser.find_element_by_xpath('/html/body/div[1]/div/div/div/div/div/form/div[7]/div[3]/div/input[1]').click()
+    chromeBrowser.find_element_by_xpath('/html/body/div[1]/div/div/div/div/div/form/div[7]/div[4]/div/input[1]').click()
     chromeBrowser.find_element_by_id('research-des').send_keys('research')
     chromeBrowser.find_element_by_xpath('/html/body/div[1]/div/div/div/div/div/form/div[7]/div[6]/div/input[2]').click()
     chromeBrowser.find_element_by_xpath('/html/body/div[1]/div/div/div/div/div/form/div[7]/div[7]/div/input[2]').click()
     chromeBrowser.find_element_by_id('submit_new_ally').click()
+
 
 @then(parsers.parse('I should see text: "{text}"'))
 def check_test(chromeBrowser, text):
     assert (text in chromeBrowser.page_source)
 
 @then(parsers.parse('be able to login with username "{username}", and password "{password}"'))
-def check_login(firefoxBrowser, username, password):
-    firefoxBrowser.get(localhost)
-    firefoxBrowser.find_element_by_id('id_username').send_keys(username)
-    firefoxBrowser.find_element_by_id('id_password').send_keys(password)
-    firefoxBrowser.find_element_by_id("submit").click()
-    assert ('Science Alliance Portal' in firefoxBrowser.page_source)
+def check_login(chromeBrowser, username, password):
+    chromeBrowser.get(localhost)
+    chromeBrowser.find_element_by_id('id_username').send_keys(username)
+    chromeBrowser.find_element_by_id('id_password').send_keys(password)
+    chromeBrowser.find_element_by_id("submit").click()
+    url = chromeBrowser.current_url
+    assert url == localhost + 'update_profile/'

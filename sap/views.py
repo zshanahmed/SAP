@@ -148,6 +148,7 @@ class SignUpView(TemplateView):
     template_name = "sap/sign-up.html"
 
     def make_categories(self, studentCategories):
+
         categories = StudentCategories.objects.create()
         for id in studentCategories:
             if id == 'First generation college-student':
@@ -218,7 +219,11 @@ class SignUpView(TemplateView):
                         stem_fields = ','.join(postDict['stemGradCheckboxes'])
                     except KeyError:
                         stem_fields = None
-                    categories = self.make_categories(postDict['mentoringGradCheckboxes'])
+                    try:
+                        categories = self.make_categories(postDict['mentoringGradCheckboxes'])
+                    except KeyError:
+                        categories = StudentCategories.objects.create()
+
                     gradList = ['mentoringGradRadios', 'labShadowRadios', 'connectingRadios', 'volunteerGradRadios', 'gradTrainingRadios']
                     selections = self.set_boolean(gradList, postDict)
                     ally = Ally.objects.create(user=user, user_type=postDict['roleSelected'][0], hawk_id=user.username,
@@ -232,7 +237,10 @@ class SignUpView(TemplateView):
                         stem_fields = None
                     facultyList = ['openingRadios', 'volunteerRadios', 'trainingRadios', 'mentoringFacultyRadios']
                     selections = self.set_boolean(facultyList, postDict)
-                    categories = self.make_categories(postDict['mentoringCheckboxes'])
+                    try:
+                        categories = self.make_categories(postDict['mentoringCheckboxes'])
+                    except KeyError:
+                        categories = StudentCategories.objects.create()
                     ally = Ally.objects.create(user=user, user_type=postDict['roleSelected'][0], hawk_id=user.username,
                     area_of_research = stem_fields, openings_in_lab_serving_at=selections['openingRadios'], 
                     description_of_research_done_at_lab = postDict['research-des'][0], interested_in_mentoring=selections['mentoringFacultyRadios'], 

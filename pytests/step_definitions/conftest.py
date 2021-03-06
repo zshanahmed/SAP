@@ -21,7 +21,7 @@ def chromeBrowser():
     options = Options()
     # options.headless = True
     b = webdriver.Chrome(options=options)
-    b.implicitly_wait(2)
+    b.implicitly_wait(5)
     yield b
     b.quit()
 
@@ -33,6 +33,10 @@ def safariBrowser():
     yield b
     b.quit()
 
+@pytest.fixture()
+def cleanup():
+    yield
+    db_cleanup()
 
 def pytest_bdd_step_error(request, feature, scenario, step, step_func, step_func_args, exception):
     print(f'Step failed: {step}')
