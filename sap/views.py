@@ -213,8 +213,17 @@ class SignUpView(TemplateView):
                 ally = Ally.objects.create(user=user, user_type=postDict['roleSelected'][0], hawk_id=user.username,
                 area_of_research=stem_fields, interested_in_mentoring=selections['mentoringGradRadios'], willing_to_offer_lab_shadowing=selections['labShadowRadios'], 
                 interested_in_connecting_with_other_mentors=selections['connectingRadios'], willing_to_volunteer_for_events=selections['volunteerGradRadios'], interested_in_mentor_training= selections['gradTrainingRadios'])
+            
             elif postDict['roleSelected'][0] == 'Faculty':
-                pass
+                stem_fields = ','.join(postDict['stemCheckboxes'])
+                facultyList = ['openingRadios', 'volunteerRadios', 'trainingRadios', 'mentoringFacultyRadios']
+                selections = self.set_boolean(facultyList, postDict)
+                categories = self.make_categories(postDict['mentoringCheckboxes'])
+                ally = Ally.objects.create(user=user, user_type=postDict['roleSelected'][0], hawk_id=user.username,
+                area_of_research = stem_fields, openings_in_lab_serving_at=selections['openingRadios'], 
+                description_of_research_done_at_lab = postDict['research-des'][0], interested_in_mentoring=selections['mentoringFacultyRadios'], 
+                willing_to_volunteer_for_events=selections['volunteerRadios'], interested_in_mentor_training=selections['trainingRadios'])
+
             elif postDict['roleSelected'][0] == 'Staff':
                 pass
             AllyStudentCategoryRelation.objects.create(student_category_id=categories.id, ally_id=ally.id)

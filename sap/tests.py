@@ -448,6 +448,42 @@ class SignUpTests(TestCase):
         self.assertTrue(categoryRelation.exists())
         self.assertTrue(categories.exists())
 
+    def test_Faculty(self):
+        response = self.c.post('/sign-up/', {'csrfmiddlewaretoken': ['gr9bKWMJLFrJZfcdKkdRhlyKLI0JeTh2ZefMhjulIFuY05e6romNm1CvLZUKa0zG'], 'firstName': ['Terry'], 'lastName': ['Braun'], 
+        'new_username': ['tbraun'], 'new_email': ['tbraun@uiowa.edu'], 'new_password': ['123'], 
+        'repeat_password': ['123'], 'roleSelected': ['Faculty'], 
+        'stemCheckboxes': ['Bioinformatics', 'Biomedical Engineering'], 'research-des': ['Me make big variant :)'], 
+        'openingRadios': ['Yes'], 'mentoringCheckboxes': ['First generation college-student', 'Underrepresented racial/ethnic minority', 'Transfer student'], 
+        'volunteerRadios': ['Yes'],'mentoringFacultyRadios':['Yes'], 'trainingRadios': ['Yes']})
+        url = response.url
+        self.assertEqual(url, '/')
+        self.assertEqual(response.status_code, 302)
+        user = User.objects.filter(username="tbraun")
+        ally = Ally.objects.filter(user_id=user[0].id)
+        categoryRelation = AllyStudentCategoryRelation.objects.filter(ally_id=ally[0].id)
+        categories = StudentCategories.objects.filter(id=categoryRelation[0].student_category_id)
+        self.assertTrue(user.exists())
+        self.assertTrue(ally.exists())
+        self.assertTrue(categoryRelation.exists())
+        self.assertTrue(categories.exists())\
+    
+    # def test_Staff(self):
+    #     response = self.c.post('/sign-up/', {'csrfmiddlewaretoken': ['PoY77CUhmZ70AsUF3C1nISUsVErkhMjLyb4IEZCTjZafBiWyKGajNyYdVVlldTBp'], 
+    #     'firstName': ['chongu'], 'lastName': ['gumpy'], 'new_username': ['chonguG'], 
+    #     'new_email': ['chongu@uiowa.edu'], 'new_password': ['123'], 'repeat_password': ['123'], 
+    #     'roleSelected': ['Staff'], 'studentsInterestedRadios': ['Yes'], 'howCanWeHelp': ['give me $10000000']})
+    #     url = response.url
+    #     self.assertEqual(url, '/')
+    #     self.assertEqual(response.status_code, 302)
+    #     user = User.objects.filter(username="chonguG")
+    #     ally = Ally.objects.filter(user_id=user[0].id)
+    #     categoryRelation = AllyStudentCategoryRelation.objects.filter(ally_id=ally[0].id)
+    #     categories = StudentCategories.objects.filter(id=categoryRelation[0].student_category_id)
+    #     self.assertTrue(user.exists())
+    #     self.assertTrue(ally.exists())
+    #     self.assertTrue(categoryRelation.exists())
+    #     self.assertTrue(categories.exists())
+
 
 '''class NonAdminAccessTests(TestCase):
 
