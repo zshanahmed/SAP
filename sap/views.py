@@ -215,7 +215,10 @@ class SignUpView(TemplateView):
                                             information_release=selections['agreementRadios'])
                 elif postDict['roleSelected'][0] == 'Graduate Student':
 
-                    stem_fields = ','.join(postDict['stemGradCheckboxes'])
+                    if postDict['stemGradCheckboxes'][0] == '':
+                        stem_fields = None
+                    else:
+                        stem_fields = ','.join(postDict['stemGradCheckboxes'])
                     categories = self.make_categories(postDict['mentoringGradCheckboxes'])
                     gradList = ['mentoringGradRadios', 'labShadowRadios', 'connectingRadios', 'volunteerGradRadios', 'gradTrainingRadios']
                     selections = self.set_boolean(gradList, postDict)
@@ -224,7 +227,10 @@ class SignUpView(TemplateView):
                     interested_in_connecting_with_other_mentors=selections['connectingRadios'], willing_to_volunteer_for_events=selections['volunteerGradRadios'], interested_in_mentor_training= selections['gradTrainingRadios'])
                 
                 elif postDict['roleSelected'][0] == 'Faculty':
-                    stem_fields = ','.join(postDict['stemCheckboxes'])
+                    try:
+                        stem_fields = ','.join(postDict['stemCheckboxes'])
+                    except KeyError:
+                        stem_fields = None
                     facultyList = ['openingRadios', 'volunteerRadios', 'trainingRadios', 'mentoringFacultyRadios']
                     selections = self.set_boolean(facultyList, postDict)
                     categories = self.make_categories(postDict['mentoringCheckboxes'])
