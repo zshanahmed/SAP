@@ -95,4 +95,4 @@ def check_login(chromeBrowser, username, password):
     chromeBrowser.find_element_by_id('id_password').send_keys(password)
     chromeBrowser.find_element_by_id("submit").click()
     url = chromeBrowser.current_url
-    assert url == localhost + 'update_profile/'
+    assert url == localhost + 'about/'
