@@ -417,12 +417,12 @@ class SignUpTests(TestCase):
                                               'experienceRadios': ['Yes'], 'interestedRadios': ['Yes'],
                                               'agreementRadios': ['Yes']})
         url = response.url
-        self.assertEqual(url, '')
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(url, '/')
+        self.assertEqual(response.status_code, 302)
         user = User.objects.filter(username="zeeahmed")
-        ally = Ally.objects.filter(user_id=user.id)
-        categoryRelation = AllyStudentCategoryRelation.objects.filter(ally_id=ally.id)
-        categories = StudentCategories.objects.filter(id=categoryRelation.student_category_id)
+        ally = Ally.objects.filter(user_id=user[0].id)
+        categoryRelation = AllyStudentCategoryRelation.objects.filter(ally_id=ally[0].id)
+        categories = StudentCategories.objects.filter(id=categoryRelation[0].student_category_id)
         self.assertTrue(user.exists())
         self.assertTrue(ally.exists())
         self.assertTrue(categoryRelation.exists())
