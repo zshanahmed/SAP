@@ -39,7 +39,5 @@ def see_dashboard(chromeBrowser, title):
 # Then step
 @then(parsers.parse('I should see a message saying \'{message}\''))
 def check_message(chromeBrowser, message):
-    print(message)
-    element = chromeBrowser.find_element_by_id('login-alert')
-    assert element.text == 'Username or password is incorrect!'
+    assert (message in chromeBrowser.page_source)
     chromeBrowser.quit()

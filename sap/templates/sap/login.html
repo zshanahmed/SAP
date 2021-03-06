@@ -26,17 +26,37 @@
 <body class="bg-gradient-primary">
 
     <div class="container">
+        {% if form.errors %}
+        {% for field in form %}
+            {% for error in field.errors %}
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <strong>{{ error|escape }}</strong>
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+            {% endfor %}
+        {% endfor %}
+        {% for error in form.non_field_errors %}
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <strong>{{ error|escape }}</strong>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        {% endfor %}
+    {% endif %}
 
-        {% if messages %}
+        <!-- {% if form.errors %}
         <div class="alert alert-primary alert-dismissible fade show" role="alert">
-            {% for message in messages %}
-            <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+            {% for error in form.errors %}
+            <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ error }}</li>
             {% endfor %}
             <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
             </button>
         </div>
-    {% endif %}
+    {% endif %} -->
 
         <!-- Outer Row -->
         <div class="row justify-content-center">

@@ -26,6 +26,8 @@ def login_success(request):
             return redirect('sap:sap-dashboard')
         else:
             return redirect('sap:sap-about')
+    else:
+        messages.error(request, 'Username or password is incorrect!')
 
 
 def logout_request(request):
@@ -263,7 +265,7 @@ class SignUpView(TemplateView):
                 AllyStudentCategoryRelation.objects.create(student_category_id=categories.id, ally_id=ally.id)
 
            
-            messages.add_message(request, messages.WARNING, "Account created")
+            messages.success(request, "Account created")
             return redirect("sap:home")
 
         return redirect("sap:home")
