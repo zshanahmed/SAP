@@ -163,6 +163,7 @@ class SignUpView(TemplateView):
         categories.save()
         return categories
 
+
     def set_boolean(self, list, postDict):
         dict = {}
         for selection in list:
@@ -203,15 +204,22 @@ class SignUpView(TemplateView):
                                            has_lab_experience=selections['experienceRadios'],
                                            interested_in_mentoring=selections['interestedRadios'],
                                            information_release=selections['agreementRadios'])
-                AllyStudentCategoryRelation.objects.create(student_category_id=categories.id, ally_id=ally.id)
-                messages.add_message(request, messages.WARNING, "Account created")
-                return redirect("sap:home")
             elif postDict['roleSelected'][0] == 'Graduate Student':
-                pass
+
+                stem_fields = ','.join(postDict['stemGradCheckboxes'])
+                categories = self.make_categories(postDict['mentoringGradCheckboxes'])
+                gradList = ['mentoringGradRadios', 'labShadowRadios', 'connectingRadios', 'volunteerGradRadios', 'gradTrainingRadios']
+                selections = self.set_boolean(gradList, postDict)
+                ally = Ally.objects.create(user=user, user_type=postDict['roleSelected'][0], hawk_id=user.username,
+                area_of_research=stem_fields, interested_in_mentoring=selections['mentoringGradRadios'], willing_to_offer_lab_shadowing=selections['labShadowRadios'], 
+                interested_in_connecting_with_other_mentors=selections['connectingRadios'], willing_to_volunteer_for_events=selections['volunteerGradRadios'], interested_in_mentor_training= selections['gradTrainingRadios'])
             elif postDict['roleSelected'][0] == 'Faculty':
                 pass
             elif postDict['roleSelected'][0] == 'Staff':
                 pass
+            AllyStudentCategoryRelation.objects.create(student_category_id=categories.id, ally_id=ally.id)
+            messages.add_message(request, messages.WARNING, "Account created")
+            return redirect("sap:home")
 
         return redirect("sap:home")
 
