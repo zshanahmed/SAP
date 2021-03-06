@@ -3,7 +3,7 @@ from django.contrib.auth import authenticate
 from django.contrib.auth.mixins import LoginRequiredMixin
 from .models import Ally, StudentCategories, AllyStudentCategoryRelation
 from django.views import generic
-from django.views.generic import TemplateView
+from django.views.generic import TemplateView, View
 from django.contrib import messages
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.forms import PasswordChangeForm
@@ -25,7 +25,7 @@ def login_success(request):
         # users landing page
             return redirect('sap:sap-dashboard')
         else:
-            return redirect('sap:sap-admin_profile')
+            return redirect('sap:sap-about')
 
 
 def logout_request(request):
@@ -33,8 +33,27 @@ def logout_request(request):
     return redirect('sap:home')
 
 
-def change_password(request):
-    if request.method == 'POST':
+class AccessMixin(LoginRequiredMixin):
+    """
+    Redirect users based on whether they are staff or not
+    """
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_staff:
+            return self.handle_no_permission()
+        return super().dispatch(request, *args, **kwargs)
+
+
+class ChangeAdminPassword(AccessMixin, View):
+    """
+    Change the password for admin
+    """
+    def get(self, request, *args, **kwargs):
+        form = PasswordChangeForm(request.user)
+        return render(request, 'sap/change_password.html', {
+            'form': form
+        })
+
+    def post(self, request, *args, **kwargs):
         form = PasswordChangeForm(request.user, request.POST)
         if form.is_valid():
             user = form.save()
@@ -43,16 +62,23 @@ def change_password(request):
                 request, 'Password Updated Successfully !')
             return redirect('sap:change_password')
         else:
-            messages.error(request, "Couldn't Update Password !")
-    else:
-        form = PasswordChangeForm(request.user)
-    return render(request, 'sap/change_password.html', {
-        'form': form
-    })
+            messages.error(request, "Could not Update Password !")
 
+        return render(request, 'sap/change_password.html', {
+            'form': form
+        })
 
-def edit_admin_profile(request):
-    if request.method == 'POST':
+class EditAdminProfile(AccessMixin, View):
+    """
+    Change the profile for admin
+    """
+    def get(self, request, *args, **kwargs):
+        form = UpdateAdminProfileForm()
+        return render(request, 'sap/profile.html', {
+            'form': form
+        })
+
+    def post(self, request, *args, **kwargs):
         curr_user = request.user
         form = UpdateAdminProfileForm(request.POST)
 
@@ -65,23 +91,11 @@ def edit_admin_profile(request):
             messages.success(request, "Profile Updated !")
             return redirect('sap:sap-admin_profile')
         else:
-            messages.error(request, "Couldn't Update Profile ! Username already exists")
-    else:
-        form = UpdateAdminProfileForm()
-    return render(request, 'sap/profile.html', {
-        'form': form
-    })
-
-
-class AccessMixin(LoginRequiredMixin):
-    """
-    Redirect users based on whether they are staff or not
-    """
-    def dispatch(self, request, *args, **kwargs):
-        if not request.user.is_staff:
-            return self.handle_no_permission()
-        return super().dispatch(request, *args, **kwargs)
-
+            messages.error(
+                request, "Could not Update Profile ! Username already exists")
+        return render(request, 'sap/profile.html', {
+            'form': form
+        })
 
 class AlliesListView(AccessMixin, generic.ListView):
     template_name = 'sap/dashboard.html'

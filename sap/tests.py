@@ -43,36 +43,58 @@ class AdminUpdateProfileAndPasswordTests(TestCase):
         self.user = User.objects.create_user(
             self.username, self.email, self.password)
     
-    def test_correct_change_password(self):
+    def test_change_password_page_for_admin(self):
         """
-        If password is changed, a success message is displayed
+        Show Change Password page for Admin
         """
+        self.user.is_staff = True
+        self.user.save()
         self.client.login(username=self.username, password=self.password)
         response = self.client.get(reverse('sap:change_password'))
         self.assertEqual(response.status_code, HTTPStatus.OK)
         self.assertContains(
             response, "Change Password", html=True
         )
-        data = {
-            "old_password": "admin_password1",
-            "new_password1": "admin_password2",
-            "new_password2": "admin_password2"
-        }
-        form = PasswordChangeForm(
-            user=self.user,
-            data=data
-        )
-        self.assertTrue(form.is_valid())
-        response = self.client.post(
-            reverse('sap:change_password'), data=data, follow=True)
-        self.assertEqual(response.status_code, HTTPStatus.OK)
-        message = list(response.context['messages'])[0]
-        self.assertEqual(message.message, "Password Updated Successfully !")
     
+    def test_change_password_page_for_ally(self):
+        """
+        Show Change Password page for Ally
+        """
+        self.user.is_staff = False
+        self.user.save()
+        self.client.login(username=self.username, password=self.password)
+        response = self.client.get(reverse('sap:change_password'))
+        self.assertEqual(response.status_code, HTTPStatus.FORBIDDEN)
+        
+    def test_update_profile_page_for_admin(self):
+        """
+        Show Change Password page for Admin
+        """
+        self.user.is_staff = True
+        self.user.save()
+        self.client.login(username=self.username, password=self.password)
+        response = self.client.get(reverse('sap:sap-admin_profile'))
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        self.assertContains(
+            response, "Update Admin Profile", html=True
+        )
+
+    def test_update_profile_page_for_ally(self):
+        """
+        Show Change Password page for Ally
+        """
+        self.user.is_staff = False
+        self.user.save()
+        self.client.login(username=self.username, password=self.password)
+        response = self.client.get(reverse('sap:sap-admin_profile'))
+        self.assertEqual(response.status_code, HTTPStatus.FORBIDDEN)
+
     def test_failure_mismatched_new_pass_change_password(self):
         """
         If new passwords don't match, a failed message is displayed
         """
+        self.user.is_staff = True
+        self.user.save()
         self.client.login(username=self.username, password=self.password)
         response = self.client.get(reverse('sap:change_password'))
         self.assertEqual(response.status_code, HTTPStatus.OK)
@@ -94,12 +116,14 @@ class AdminUpdateProfileAndPasswordTests(TestCase):
             reverse('sap:change_password'), data=data, follow=True)
         self.assertEqual(response.status_code, HTTPStatus.OK)
         message = list(response.context['messages'])[0]
-        self.assertEqual(message.message, "Couldn't Update Password !")
+        self.assertEqual(message.message, "Could not Update Password !")
     
     def test_failure_old_pass_wrong_change_password(self):
         """
         If old password is wrong, a failed message is displayed
         """
+        self.user.is_staff = True
+        self.user.save()
         self.client.login(username=self.username, password=self.password)
         response = self.client.get(reverse('sap:change_password'))
         self.assertEqual(response.status_code, HTTPStatus.OK)
@@ -121,12 +145,44 @@ class AdminUpdateProfileAndPasswordTests(TestCase):
             reverse('sap:change_password'), data=data, follow=True)
         self.assertEqual(response.status_code, HTTPStatus.OK)
         message = list(response.context['messages'])[0]
-        self.assertEqual(message.message, "Couldn't Update Password !")
+        self.assertEqual(message.message, "Could not Update Password !")
+
+    def test_success_change_password(self):
+        """
+        If old password is right and new password match then change password
+        is successfull and a success message is displayed
+        """
+        self.user.is_staff = True
+        self.user.save()
+        self.client.login(username=self.username, password=self.password)
+        response = self.client.get(reverse('sap:change_password'))
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        self.assertContains(
+            response, "Change Password", html=True
+        )
+        data = {
+            "old_password": "admin_password1",
+            "new_password1": "admin_password2",
+            "new_password2": "admin_password2"
+        }
+        form = PasswordChangeForm(
+            user=self.user,
+            data=data
+        )
+        self.assertTrue(form.is_valid())
+
+        response = self.client.post(
+            reverse('sap:change_password'), data=data, follow=True)
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        message = list(response.context['messages'])[0]
+        self.assertEqual(message.message, "Password Updated Successfully !")
     
     def test_correct_update_profile(self):
         """
         If profile is updated, a success message is displayed
         """
+        self.user.is_staff = True
+        self.user.save()
         self.client.login(username=self.username, password=self.password)
         response = self.client.get(reverse('sap:sap-admin_profile'))
         self.assertEqual(response.status_code, HTTPStatus.OK)
@@ -147,6 +203,8 @@ class AdminUpdateProfileAndPasswordTests(TestCase):
         """
         If profile is not updated, a failed message is displayed
         """
+        self.user.is_staff = True
+        self.user.save()
         self.client.login(username=self.username, password=self.password)
         response = self.client.get(reverse('sap:sap-admin_profile'))
         self.assertEqual(response.status_code, HTTPStatus.OK)
@@ -162,9 +220,7 @@ class AdminUpdateProfileAndPasswordTests(TestCase):
         self.assertEqual(response.status_code, HTTPStatus.OK)
         message = list(response.context['messages'])[0]
         self.assertEqual(
-            message.message, "Couldn't Update Profile ! Username already exists")
-
-
+            message.message, "Could not Update Profile ! Username already exists")
 
 class AlliesIndexViewTests(TestCase):
 
@@ -301,32 +357,6 @@ class CreateAdminViewTest(TestCase):
         '''
 
 
-class AdminAccessTests(TestCase):
-
-    def setUp(self):
-        self.username = 'admin'
-        self.password = 'admin_password1'
-        self.client = Client()
-
-        User.objects.create_user(self.username, 'email@test.com', self.password, is_staff=True)
-
-    def test_dashboard_access_for_admin(self):
-        """
-        Admin users can access Dashboard
-        """
-        self.client.login(username=self.username, password=self.password)
-        response = self.client.get(reverse('sap:sap-dashboard'))
-        self.assertEqual(response.status_code, 200)
-
-    def test_analytics_access_for_admin(self):
-        """
-        Admin users can access Analytics
-        """
-        self.client.login(username=self.username, password=self.password)
-        response = self.client.get(reverse('sap:sap-analytics'))
-        self.assertEqual(response.status_code, 200)
-
-
 class LoginRedirectTests(TestCase):
 
     def setUp(self):
@@ -344,18 +374,44 @@ class LoginRedirectTests(TestCase):
         Admin users can access Dashboard
         """
         self.client.login(username='admin', password='admin_password1')
-        response = self.client.get(reverse('sap:login_success'))
-        self.assertEqual(response.status_code, 302)
+        response = self.client.get(reverse('sap:sap-dashboard'))
+        self.assertEqual(response.status_code, HTTPStatus.OK)
         self.client.logout()
 
     def test_login_for_nonadmin(self):
         """
-        Admin users can access Analytics
+        Non-admin users are redirected to About page
         """
         self.client.login(username='nonadmin', password='admin_password2')
-        response = self.client.get(reverse('sap:sap-admin_profile'))
-        self.assertEqual(response.status_code, 200)
+        response = self.client.get(reverse('sap:sap-about'))
+        self.assertEqual(response.status_code, HTTPStatus.OK)
         self.client.logout()
+
+
+class AdminAccessTests(TestCase):
+
+    def setUp(self):
+        self.username = 'admin'
+        self.password = 'admin_password1'
+        self.client = Client()
+
+        User.objects.create_user(self.username, 'email@test.com', self.password, is_staff=True)
+
+    def test_dashboard_access_for_admin(self):
+        """
+        Admin users can access Dashboard
+        """
+        self.client.login(username=self.username, password=self.password)
+        response = self.client.get(reverse('sap:sap-dashboard'))
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+
+    def test_analytics_access_for_admin(self):
+        """
+        Admin users can access Analytics
+        """
+        self.client.login(username=self.username, password=self.password)
+        response = self.client.get(reverse('sap:sap-analytics'))
+        self.assertEqual(response.status_code, HTTPStatus.OK)
 
 class SignUpTests(TestCase):
     def setUp(self):
@@ -498,7 +554,7 @@ class SignUpTests(TestCase):
     #     self.assertTrue(categories.exists())
 
 
-'''class NonAdminAccessTests(TestCase):
+class NonAdminAccessTests(TestCase):
 
     def setUp(self):
         self.username = 'admin'
@@ -513,7 +569,7 @@ class SignUpTests(TestCase):
         """
         self.client.login(username=self.username, password=self.password)
         response = self.client.get(reverse('sap:sap-dashboard'))
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, HTTPStatus.FORBIDDEN)
 
     def test_analytics_access_for_nonadmin(self):
         """
@@ -521,6 +577,6 @@ class SignUpTests(TestCase):
         """
         self.client.login(username=self.username, password=self.password)
         response = self.client.get(reverse('sap:sap-analytics'))
-        self.assertEqual(response.status_code, 403)
-'''
+        self.assertEqual(response.status_code, HTTPStatus.FORBIDDEN)
+
 

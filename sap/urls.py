@@ -12,13 +12,15 @@ urlpatterns = [
 
     url(r'login_success/$', views.login_success, name='login_success'),
 
-    url(r'^password/$', login_required(views.change_password), name='change_password'),
-    url(r'^update_profile/$', login_required(views.edit_admin_profile),
+    url(r'^password/$', login_required(views.ChangeAdminPassword.as_view()),
+        name='change_password'),
+    url(r'^update_profile/$', login_required(views.EditAdminProfile.as_view()),
         name='sap-admin_profile'),
 
     url(r'^dashboard/$',
         login_required(views.AlliesListView.as_view(), login_url='home'),
         name='sap-dashboard'),
+
     url('analytics/',
         login_required(views.AnalyticsView.as_view(), login_url='home'),
         name='sap-analytics'),
@@ -28,6 +30,10 @@ urlpatterns = [
     url('create_iba_admin/',
         login_required(views.CreateAdminView.as_view(), login_url='home'),
         name='create_iba_admin'),
+
+    url('about/',
+        login_required(views.AboutPageView.as_view(), login_url='about'),
+        name='sap-about'),
 
     url('sign-up/', views.SignUpView.as_view(), name='sign-up')
 ]
