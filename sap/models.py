@@ -17,9 +17,6 @@ class Ally(models.Model):
     def __str__(self):
         return self.hawk_id
 
-    firstName = models.CharField(max_length=100, null=True)
-    lastName = models.CharField(max_length=100, null=True)
-
     ##Grad and Faculty
     area_of_research = models.CharField(max_length=200, null=True)
     openings_in_lab_serving_at = models.BooleanField(default=False)

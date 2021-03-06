@@ -166,7 +166,7 @@ class SignUpView(TemplateView):
     def set_boolean(self, list, postDict):
         dict = {}
         for selection in list:
-            if postDict[selection] == 'Yes':
+            if postDict[selection][0] == 'Yes':
                 dict[selection] = True
             else:
                 dict[selection] = False
@@ -197,7 +197,7 @@ class SignUpView(TemplateView):
                 categories = self.make_categories(postDict["idUnderGradCheckboxes"])
                 undergradList = ['interestRadios', 'experienceRadios', 'interestedRadios', 'agreementRadios']
                 selections = self.set_boolean(undergradList, postDict)
-                ally = Ally.objects.create(user=user, user_type=postDict['roleSelected'][0],
+                ally = Ally.objects.create(user=user, user_type=postDict['roleSelected'][0], hawk_id=user.username,
                                            major=postDict['major'][0], year=postDict['undergradRadios'][0],
                                            interested_in_joining_lab=selections['interestRadios'],
                                            has_lab_experience=selections['experienceRadios'],
