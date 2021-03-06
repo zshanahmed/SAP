@@ -559,7 +559,7 @@ class NonAdminAccessTests(TestCase):
     def setUp(self):
         self.username = 'admin'
         self.password = 'admin_password1'
-        self.client = Client()w
+        self.client = Client()
 
         User.objects.create_user(self.username, 'email@test.com', self.password, is_staff=False)
 
