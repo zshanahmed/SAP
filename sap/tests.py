@@ -465,7 +465,20 @@ class SignUpTests(TestCase):
         self.assertTrue(user.exists())
         self.assertTrue(ally.exists())
         self.assertTrue(categoryRelation.exists())
-        self.assertTrue(categories.exists())\
+        self.assertTrue(categories.exists())
+
+    def test_Staff(self):
+        response = self.c.post('/sign-up/', {'csrfmiddlewaretoken': ['K5dFCUih0K6ZYklAemhvIWSpCebK86zdx4ric6ucIPLUQhAdtdT7hhp4r5etxoJY'], 
+        'firstName': ['hawk'], 'lastName': ['herky'], 'new_username': ['hawkherky'], 'new_email': ['hawkherky@uiowa.edu'], 
+        'new_password': ['hawk'], 'repeat_password': ['hawk'], 'roleSelected': ['Staff'], 
+        'studentsInterestedRadios': ['Yes'], 'howCanWeHelp': ['sasdasdasd']})
+        url = response.url
+        self.assertEqual(url, '/')
+        self.assertEqual(response.status_code, 302)
+        user = User.objects.filter(username="hawkherky")
+        ally = Ally.objects.filter(user_id=user[0].id)
+        self.assertTrue(user.exists())
+        self.assertTrue(ally.exists())
     
     # def test_Staff(self):
     #     response = self.c.post('/sign-up/', {'csrfmiddlewaretoken': ['PoY77CUhmZ70AsUF3C1nISUsVErkhMjLyb4IEZCTjZafBiWyKGajNyYdVVlldTBp'], 

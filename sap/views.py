@@ -194,39 +194,43 @@ class SignUpView(TemplateView):
                                             password=postDict["new_password"][0],
                                             email=postDict["new_email"][0],
                                             first_name=postDict["firstName"][0], last_name=postDict["lastName"][0])
-            if postDict['roleSelected'][0] == 'Undergraduate Student':
-                categories = self.make_categories(postDict["idUnderGradCheckboxes"])
-                undergradList = ['interestRadios', 'experienceRadios', 'interestedRadios', 'agreementRadios']
-                selections = self.set_boolean(undergradList, postDict)
-                ally = Ally.objects.create(user=user, user_type=postDict['roleSelected'][0], hawk_id=user.username,
-                                           major=postDict['major'][0], year=postDict['undergradRadios'][0],
-                                           interested_in_joining_lab=selections['interestRadios'],
-                                           has_lab_experience=selections['experienceRadios'],
-                                           interested_in_mentoring=selections['interestedRadios'],
-                                           information_release=selections['agreementRadios'])
-            elif postDict['roleSelected'][0] == 'Graduate Student':
-
-                stem_fields = ','.join(postDict['stemGradCheckboxes'])
-                categories = self.make_categories(postDict['mentoringGradCheckboxes'])
-                gradList = ['mentoringGradRadios', 'labShadowRadios', 'connectingRadios', 'volunteerGradRadios', 'gradTrainingRadios']
-                selections = self.set_boolean(gradList, postDict)
-                ally = Ally.objects.create(user=user, user_type=postDict['roleSelected'][0], hawk_id=user.username,
-                area_of_research=stem_fields, interested_in_mentoring=selections['mentoringGradRadios'], willing_to_offer_lab_shadowing=selections['labShadowRadios'], 
-                interested_in_connecting_with_other_mentors=selections['connectingRadios'], willing_to_volunteer_for_events=selections['volunteerGradRadios'], interested_in_mentor_training= selections['gradTrainingRadios'])
             
-            elif postDict['roleSelected'][0] == 'Faculty':
-                stem_fields = ','.join(postDict['stemCheckboxes'])
-                facultyList = ['openingRadios', 'volunteerRadios', 'trainingRadios', 'mentoringFacultyRadios']
-                selections = self.set_boolean(facultyList, postDict)
-                categories = self.make_categories(postDict['mentoringCheckboxes'])
-                ally = Ally.objects.create(user=user, user_type=postDict['roleSelected'][0], hawk_id=user.username,
-                area_of_research = stem_fields, openings_in_lab_serving_at=selections['openingRadios'], 
-                description_of_research_done_at_lab = postDict['research-des'][0], interested_in_mentoring=selections['mentoringFacultyRadios'], 
-                willing_to_volunteer_for_events=selections['volunteerRadios'], interested_in_mentor_training=selections['trainingRadios'])
-
-            elif postDict['roleSelected'][0] == 'Staff':
+            if postDict['roleSelected'][0] == 'Staff':
                 pass
-            AllyStudentCategoryRelation.objects.create(student_category_id=categories.id, ally_id=ally.id)
+            else:
+                if postDict['roleSelected'][0] == 'Undergraduate Student':
+                    categories = self.make_categories(postDict["idUnderGradCheckboxes"])
+                    undergradList = ['interestRadios', 'experienceRadios', 'interestedRadios', 'agreementRadios']
+                    selections = self.set_boolean(undergradList, postDict)
+                    ally = Ally.objects.create(user=user, user_type=postDict['roleSelected'][0], hawk_id=user.username,
+                                            major=postDict['major'][0], year=postDict['undergradRadios'][0],
+                                            interested_in_joining_lab=selections['interestRadios'],
+                                            has_lab_experience=selections['experienceRadios'],
+                                            interested_in_mentoring=selections['interestedRadios'],
+                                            information_release=selections['agreementRadios'])
+                elif postDict['roleSelected'][0] == 'Graduate Student':
+
+                    stem_fields = ','.join(postDict['stemGradCheckboxes'])
+                    categories = self.make_categories(postDict['mentoringGradCheckboxes'])
+                    gradList = ['mentoringGradRadios', 'labShadowRadios', 'connectingRadios', 'volunteerGradRadios', 'gradTrainingRadios']
+                    selections = self.set_boolean(gradList, postDict)
+                    ally = Ally.objects.create(user=user, user_type=postDict['roleSelected'][0], hawk_id=user.username,
+                    area_of_research=stem_fields, interested_in_mentoring=selections['mentoringGradRadios'], willing_to_offer_lab_shadowing=selections['labShadowRadios'], 
+                    interested_in_connecting_with_other_mentors=selections['connectingRadios'], willing_to_volunteer_for_events=selections['volunteerGradRadios'], interested_in_mentor_training= selections['gradTrainingRadios'])
+                
+                elif postDict['roleSelected'][0] == 'Faculty':
+                    stem_fields = ','.join(postDict['stemCheckboxes'])
+                    facultyList = ['openingRadios', 'volunteerRadios', 'trainingRadios', 'mentoringFacultyRadios']
+                    selections = self.set_boolean(facultyList, postDict)
+                    categories = self.make_categories(postDict['mentoringCheckboxes'])
+                    ally = Ally.objects.create(user=user, user_type=postDict['roleSelected'][0], hawk_id=user.username,
+                    area_of_research = stem_fields, openings_in_lab_serving_at=selections['openingRadios'], 
+                    description_of_research_done_at_lab = postDict['research-des'][0], interested_in_mentoring=selections['mentoringFacultyRadios'], 
+                    willing_to_volunteer_for_events=selections['volunteerRadios'], interested_in_mentor_training=selections['trainingRadios'])
+                
+                AllyStudentCategoryRelation.objects.create(student_category_id=categories.id, ally_id=ally.id)
+
+           
             messages.add_message(request, messages.WARNING, "Account created")
             return redirect("sap:home")
 
