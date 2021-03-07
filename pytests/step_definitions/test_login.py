@@ -33,8 +33,7 @@ def click_on(chromeBrowser, link):
 # Then step
 @then(parsers.parse('I should see the page with title {title}'))
 def see_dashboard(chromeBrowser, title):
-    element = chromeBrowser.find_element_by_tag_name('h1')
-    assert element.text == title
+    assert (title in chromeBrowser.page_source)
 
 # Then step
 @then(parsers.parse('I should see a message saying \'{message}\''))
