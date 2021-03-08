@@ -7,6 +7,7 @@ node {
             checkout scm
 
         stage 'Test'
+            sh 'export WORKSPACE=`pwd`'
             sh 'python3 -m venv venv'
             sh '. env/bin/activate'
             sh 'env/bin/pip install -r requirements.txt'
