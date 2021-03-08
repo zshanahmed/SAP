@@ -7,7 +7,7 @@ node {
             checkout scm
 
         stage 'Test'
-            sh 'virtualenv env -p python3.5'
+            sh 'python3 -m venv venv'
             sh '. env/bin/activate'
             sh 'env/bin/pip install -r requirements.txt'
             sh 'python manage.py test'
