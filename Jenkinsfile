@@ -7,7 +7,6 @@ node {
             checkout scm
 
         stage 'Test'
-            sh 'export WORKSPACE=`pwd`'
             sh 'virtualenv env -p python3.5'
             sh '. env/bin/activate'
             sh 'env/bin/pip install -r requirements.txt'
