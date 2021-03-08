@@ -44,3 +44,23 @@ ally_1 = Ally.objects.create(user = user_1, hawk_id = 'hawk1', user_type = 'stud
 
 ally_2 = Ally.objects.create(user=user_2, hawk_id='hawk2', user_type='student', works_at='College of Engineering', year='second',
                              major='Biology')
+
+# New data
+user = User.objects.create_user(username='amahmood1',
+                                email='amahmood1@uiowa.edu',
+                                password='amahmood1',
+                                first_name='Asad',
+                                last_name='Mahmood')
+
+ally = Ally.objects.create(
+    user=user,
+    hawk_id='amahmood1',
+    user_type='Student',
+    works_at='College of Liberal Arts',
+    area_of_research='Application of ML/DL on User Privacy',
+    description_of_research_done_at_lab='Worked on Authorship Obfuscation',
+    people_who_might_be_interested_in_iba='Zeeshan',
+    how_can_science_ally_serve_you='Help in finding internship',
+    year='2021',
+    major='Computer Science'
+)

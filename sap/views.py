@@ -43,6 +43,11 @@ class AccessMixin(LoginRequiredMixin):
         return super().dispatch(request, *args, **kwargs)
 
 
+class ViewAllyProfileFromAdminDashboard(AccessMixin, View):
+    def get(self, request, *args, **kwargs):
+        
+        pass
+
 class ChangeAdminPassword(AccessMixin, View):
     """
     Change the password for admin
