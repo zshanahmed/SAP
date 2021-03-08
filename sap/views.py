@@ -45,8 +45,12 @@ class AccessMixin(LoginRequiredMixin):
 
 class ViewAllyProfileFromAdminDashboard(AccessMixin, View):
     def get(self, request, *args, **kwargs):
-        
-        pass
+        username = request.GET['username']
+        user = User.objects.get(username=username)
+        ally = Ally.objects.get(user=user)
+        return render(request, 'sap/admin_ally_table/view_ally.html', {
+            'ally': ally
+        })
 
 class ChangeAdminPassword(AccessMixin, View):
     """
