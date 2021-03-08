@@ -7,6 +7,7 @@ node {
             checkout scm
 
         stage 'Test'
+            sh '#!/bin/bash'
             sh 'export WORKSPACE=`pwd`'
             sh 'python3 -m venv venv'
             sh 'source venv/bin/activate'
