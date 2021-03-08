@@ -7,10 +7,12 @@ node {
             checkout scm
 
         stage 'Test'
-            sh 'virtualenv env -p python3.5'
-            sh '. env/bin/activate'
-            sh 'env/bin/pip install -r requirements.txt'
-            sh 'env/bin/python3.5 manage.py test'
+            sh '#!/bin/bash'
+            sh 'export WORKSPACE=`pwd`'
+            sh 'python3 -m venv venv'
+            sh 'source venv/bin/activate'
+            sh 'pip install -r requirements.txt'
+            sh 'python manage.py test'
     }
 
     catch (err) {
