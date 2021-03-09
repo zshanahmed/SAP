@@ -8,6 +8,7 @@ node {
 
         stage 'Test'
             sh 'python3 -m venv venv'
+            sh '#!/bin/bash'
             sh 'source venv/bin/activate'
             sh 'pip3 install --upgrade pip'
             sh 'pip3 install -r requirements.txt'
