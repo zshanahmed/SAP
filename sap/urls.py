@@ -34,4 +34,6 @@ urlpatterns = [
     url('about/',
         login_required(views.AboutPageView.as_view(), login_url='about'),
         name='sap-about'),
+
+    url('sign-up/', views.SignUpView.as_view(), name='sign-up')
 ]
