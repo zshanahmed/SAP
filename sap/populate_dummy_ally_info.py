@@ -59,11 +59,11 @@ ally = Ally.objects.create(
     works_at='College of Engineering',
     area_of_research='Online Fingerprinting defence measures',
     description_of_research_done_at_lab='Created tools to fight fingerprinting',
-    people_who_might_be_interested_in_iba='Asad, Hamza',
+    people_who_might_be_interested_in_iba=True,
     how_can_science_ally_serve_you='Help in connecting with like minded people',
     year='2019',
     major='Electical Engineering',
     willing_to_offer_lab_shadowing=True,
     willing_to_volunteer_for_events=True,
-    interested_in_peer_mentoring=True
+    interested_in_mentoring=True
 )
