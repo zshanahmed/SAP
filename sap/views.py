@@ -10,7 +10,7 @@ from django.contrib.auth.forms import PasswordChangeForm
 from django.shortcuts import render, redirect
 from django.contrib.auth.models import User
 from .forms import UpdateAdminProfileForm
-
+from django.http import HttpResponseNotFound
 
 # Create your views here.
 
@@ -46,11 +46,14 @@ class AccessMixin(LoginRequiredMixin):
 class ViewAllyProfileFromAdminDashboard(AccessMixin, View):
     def get(self, request, *args, **kwargs):
         username = request.GET['username']
-        user = User.objects.get(username=username)
-        ally = Ally.objects.get(user=user)
-        return render(request, 'sap/admin_ally_table/view_ally.html', {
-            'ally': ally
-        })
+        try:
+            user = User.objects.get(username=username)
+            ally = Ally.objects.get(user=user)
+            return render(request, 'sap/admin_ally_table/view_ally.html', {
+                'ally': ally
+            })
+        except:
+            return HttpResponseNotFound("hello")
 
 class ChangeAdminPassword(AccessMixin, View):
     """
