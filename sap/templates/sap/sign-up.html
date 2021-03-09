@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+
+{% load static %}
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>IBA - Signup</title>
+
+    <!-- Custom fonts for this template-->
+    <link href="{% static 'vendor/fontawesome-free/css/all.min.css' %}" rel="stylesheet" type="text/css">
+    <link
+        href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+        rel="stylesheet">
+
+    <!-- Custom styles for this template-->
+    <link href="{% static 'css/sb-admin-2.min.css' %}" rel="stylesheet">
+
+</head>
+
+<body class="bg-gradient-primary">
+
+    <div class="container">
+        {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible text-center" role="alert">
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <strong>{% if message.level == DEFAULT_MESSAGE_LEVELS.ERROR %}Error{% else %}{{ message.tags|title }}{% endif %}!</strong> {{ message }}
+        </div>
+        {% endfor %}
+        {% endif %}
+
+        <div class="card o-hidden border-0 shadow-lg my-5">
+            <div class="card-body p-0">
+                <!-- Nested Row within Card Body -->
+                <div class="row">
+                    <a class="col-lg-5 d-none d-lg-block bg-register-image"></a>
+                    <div class="col-lg-7">
+                        <div class="p-5">
+                            <form method="post" class="user">{% csrf_token %}
+                                <div class="text-center">
+                                    <h1 class="h4 text-gray-900 mb-4">Sign Up</h1>
+                                </div>
+                                <div class="form-group row">
+                                    <div class="col-sm-6 mb-3 mb-sm-0">
+                                        <input name="firstName" type="text" class="form-control form-control-user"
+                                            id="firstName" placeholder="First Name" required >
+                                    </div>
+                                    <div class="col-sm-6">
+                                        <input name="lastName" type="text" class="form-control form-control-user"
+                                            id="lastName" placeholder="Last Name"  required>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <input name="new_username" type="text" class="form-control form-control-user" id="new_username" placeholder="Please enter your Hawk ID"  required >
+                                </div>
+                                <div class="form-group">
+                                    <input name="new_email" type="email" class="form-control form-control-user" id="new_email" placeholder="Please type your UIOWA email address" pattern="^[a-zA-Z0-9-_\.]+@uiowa\.edu$"  required >
+                                </div>
+                                <div class="form-group row">
+                                    <div class="col-sm-6 mb-3 mb-sm-0">
+                                        <input name="new_password" type="password" class="form-control form-control-user"
+                                            id="new_password" placeholder="New Password"  required  >
+                                    </div>
+                                    <div class="col-sm-6">
+                                        <input name="repeat_password" type="password" class="form-control form-control-user"
+                                            id="repeat_password" placeholder="Repeat Password"  required >
+                                    </div>
+                                </div>
+                                <hr>
+                                <div class="py-2">                               
+                                    <strong>Please select your role in the university:</strong>
+                                    <div class="form-check form-check-inline">
+                                        <div class="px-2">
+                                            <input type="radio" name="roleSelected" id="staffCheck" value="Staff" onclick="javascript:yesnoCheck('staffContent');"  required  > 
+                                            <label class="form-check-label" for="staffCheck">Staff</label>
+                                        </div>
+                                        <div class="px-2">
+                                        <input type="radio" name="roleSelected" id="gradCheck" value="Graduate Student" onclick="javascript:yesnoCheck('gradContent');"  required  > 
+                                        <label class="form-check-label" for="gradCheck">Grad</label>  
+                                        </div>
+                                        <div class="px-2">
+                                        <input type="radio" name="roleSelected" id="undergradCheck" value="Undergraduate Student" onclick="javascript:yesnoCheck('undergradContent');"  required  > 
+                                        <label class="form-check-label" for="undergradCheck">Undergrad</label>
+                                        </div>
+                                        <div class="px-2">
+                                            <input type="radio" name="roleSelected" id="facultyCheck" value="Faculty" onclick="javascript:yesnoCheck('facultyContent');"  required  > 
+                                            <label class="form-check-label" for="facultyCheck">Faculty</label>
+                                        </div>
+                                      
+                                    </div>
+                                </div>
+                                <div id='contents'>
+                                </div>
+
+                                <button type="submit" formmethod="post" class="btn btn-primary btn-user btn-block mt-2" id="submit_new_ally">
+                                    Create New Ally
+                                </button>
+                                <hr>
+                            </form>
+                            Already have an account? <a href="{% url 'sap:home'%}">Click here to log in</a>.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Content to fill in contents divs -->
+
+    <!-- Staff Content -->
+    <div id='staffContent' style="display: none">
+        <strong>Do you know students who would be interested in the Science Alliance?</strong>
+        <div class="py-1">
+            <div class="form-check" id="studentsInterestedRadios"></div>
+        </div>
+        
+        <div class="py-1"><strong>How can science alliance serve you?</strong></div>
+        <input name="howCanWeHelp" type="text" class="form-control form-control-user" id="howHelp" required>
+    </div>
+    
+    <!-- Graduate Student Content -->
+
+    <div id='gradContent' style="display: none">
+        <div class="py-1">
+            <strong>STEM Area of Research:</strong> 
+              <div class="form-check" id="stemGradCheckboxes"></div> 
+         </div> 
+         <div class="py-1">
+            <strong>Are you interested in mentoring students?</strong> 
+              <div class="form-check" id="mentoringGradRadios"></div> 
+         </div>
+         <div class="py-1">
+            <strong>Are you interested in serving as a mentor to students who identify as any of the following? (check all that apply)</strong> 
+              <div class="form-check" id="mentoringGradCheckboxes"></div> 
+         </div>
+         <div class="py-1">
+            <strong>Would you be willing to offer lab shadowing to potential students?</strong> 
+              <div class="form-check" id="labShadowRadios"></div> 
+         </div>
+         <div class="py-1">
+            <strong>Are you interested in connecting with other mentors?</strong> 
+             <div class="form-check" id="connectingRadios">
+             </div>  
+         </div>
+         <div class="py-1">
+            <strong>Would you be willing to volunteer for panels, networking workshops, and other events as professional development for students?</strong> 
+             <div class="form-check" id="volunteerGradRadios">
+             </div>  
+         </div>
+         <div class="py-1">
+            <strong>Are you interested in mentor training?</strong> 
+             <div class="form-check" id="gradTrainingRadios"></div> 
+        </div>        
+      </div>
+      
+    <!-- Undergraduate student content -->
+
+    <div id='undergradContent' style="display: none">
+        <div class="py-1">
+           <strong>Year:</strong> 
+            <div class="form-check" id="undergradRadios"></div> 
+        </div>
+
+        <div class="py-1">
+            <strong>Do you identify as? (check all that apply)</strong> 
+             <div class="form-check" id="idUnderGradCheckboxes"></div> 
+         </div>
+        
+        <div class="py-3">
+            <input name="major" type="text" class="form-control form-control-user" id="major" placeholder="Please enter your Major"  required > 
+        </div>
+        <div class="py-1">
+           <strong>Are you interested in joining a lab?</strong> 
+            <div class="form-check" id="interestRadios">
+            </div>  
+        </div>
+        <div class="py-1">
+           <strong>Do you have experience working in a laboratory?</strong>   
+             <div class="form-check" id="experienceRadios">
+             </div>  
+         </div>  
+         <div class="py-1">
+            <strong>Are you interested in becoming a peer mentor?</strong> 
+             <div class="form-check" id="interestedRadios">
+             </div>  
+         </div>
+         <div class="py-1">
+            <strong>My academic standing is a factor for IBA internships; therefore, I give IBA staff permission to obtain my transcripts. If I completed coursework at another college or university, I am responsible for submitting transcripts from that school to the University of Iowa Office of Admissions, and IBA may obtain a copy of those transcripts from Admissions.</strong> 
+             <div class="form-check" id="agreementRadios">
+             </div>  
+         </div>    
+      </div>
+    
+      <!-- Faculty Content  -->
+      
+    <div id='facultyContent' style="display: none">
+        <div class="py-1">
+           <strong>Stem Area of Research:</strong> 
+             <div class="form-check" id="stemCheckboxes"></div> 
+        </div> 
+        <div class="py-3">
+            <input name="research-des" type="text" class="form-control form-control-user" id="research-des" placeholder="Brief description of Research" maxlength="500"  required > 
+        </div>
+        <div class="py-1">
+            <strong>Do you currently have openings for undergraduate students in your lab?</strong> 
+              <div class="form-check" id="openingRadios"></div> 
+         </div>
+         <div class="py-1">
+            <strong>Are you interested in mentoring students?</strong> 
+              <div class="form-check" id="mentoringFacultyRadios"></div> 
+         </div>
+         <div class="py-1">
+            <strong>Are you interested in serving as a mentor to students who identify as any of the following? (check all that apply)</strong> 
+            <div class="form-check" id="mentoringCheckboxes"></div> 
+         </div> 
+         <div class="py-1">
+            <strong>Would you be willing to volunteer for panels, networking workshops, and other events as professional development for students?</strong> 
+              <div class="form-check" id="volunteerRadios"></div> 
+         </div>
+         <div class="py-1">
+            <strong>Are you interested in mentor training?</strong> 
+              <div class="form-check" id="trainingRadios"></div> 
+         </div>       
+      </div>
+
+    <!-- Bootstrap core JavaScript-->
+    <script src="{% static 'vendor/jquery/jquery.min.js' %}"></script>
+    <script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+
+    <!-- Core plugin JavaScript-->
+    <script src="{% static 'vendor/jquery-easing/jquery.easing.min.js' %}"></script>
+
+    <!-- Custom scripts for all pages-->
+    <script src="{% static 'js/sb-admin-2.min.js' %}"></script>
+    <script src="{% static 'js/signUp.js' %}"></script>
+
+</body>
+
+</html>

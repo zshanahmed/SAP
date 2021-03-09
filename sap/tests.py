@@ -1,5 +1,5 @@
 from django.test import TestCase, Client
-from .models import Ally
+from .models import Ally, StudentCategories, AllyStudentCategoryRelation
 from django.urls import reverse
 from django.contrib.auth.models import User
 from http import HTTPStatus
@@ -480,6 +480,146 @@ class AdminAccessTests(TestCase):
         self.client.login(username=self.username, password=self.password)
         response = self.client.get(reverse('sap:sap-analytics'))
         self.assertEqual(response.status_code, HTTPStatus.OK)
+
+class SignUpTests(TestCase):
+    def setUp(self):
+        self.username = 'admin'
+        self.password = 'admin_password1'
+        self.user = User.objects.create_user(self.username, 'email@test.com', self.password)
+        self.c = Client()
+
+    def test_get(self):
+        response = self.c.get('/sign-up/')
+        self.assertEqual(response.status_code, 200)
+
+    def test_entered_existing_user(self):
+        response = self.c.post('/sign-up/', {'csrfmiddlewaretoken': ['MIyNUVJILbLGKrHXjz4m4fWt4d13TUOkkvRtCpStSmxkW8PKomuz3ESTYF8VVQil'],
+                                  'firstName': ['Elias'], 'lastName': ['Shaeffer'], 'new_username': ['admin'],
+                                  'new_email': ['eshaeffer@uiowa.edu'], 'new_password': ['ddd'], 'repeat_password':
+                                      ['dddd'], 'roleSelected': ['Graduate Student'],
+                                  'stemGradCheckboxes': ['Biochemistry'], 'mentoringGradRadios': ['Yes'],
+                                  'mentoringGradCheckboxes': ['First generation college-student'],
+                                  'labShadowRadios': ['Yes'], 'connectingRadios': ['Yes'],
+                                  'volunteerGradRadios': ['Yes'], 'gradTrainingRadios': ['Yes']})
+        url = response.url
+        self.assertEqual(url, '/sign-up')
+        self.assertEqual(response.status_code, 302)
+
+    def test_entered_existing_email(self):
+        response = self.c.post('/sign-up/', {'csrfmiddlewaretoken': ['MIyNUVJILbLGKrHXjz4m4fWt4d13TUOkkvRtCpStSmxkW8PKomuz3ESTYF8VVQil'],
+                                  'firstName': ['Elias'], 'lastName': ['Shaeffer'], 'new_username': ['admin1'],
+                                  'new_email': ['email@test.com'], 'new_password': ['ddd'], 'repeat_password':
+                                      ['dddd'], 'roleSelected': ['Graduate Student'],
+                                  'stemGradCheckboxes': ['Biochemistry'], 'mentoringGradRadios': ['Yes'],
+                                  'mentoringGradCheckboxes': ['First generation college-student'],
+                                  'labShadowRadios': ['Yes'], 'connectingRadios': ['Yes'],
+                                  'volunteerGradRadios': ['Yes'], 'gradTrainingRadios': ['Yes']})
+        url = response.url
+        self.assertEqual(url, '/sign-up')
+        self.assertEqual(response.status_code, 302)
+
+    def test_password_not_same(self):
+        response = self.c.post('/sign-up/', {'csrfmiddlewaretoken': ['MIyNUVJILbLGKrHXjz4m4fWt4d13TUOkkvRtCpStSmxkW8PKomuz3ESTYF8VVQil'],
+                                  'firstName': ['Elias'], 'lastName': ['Shaeffer'], 'new_username': ['admin1123'],
+                                  'new_email': ['email123@test.com'], 'new_password': ['ddd'], 'repeat_password':
+                                      ['ddddd'], 'roleSelected': ['Graduate Student'],
+                                  'stemGradCheckboxes': ['Biochemistry'], 'mentoringGradRadios': ['Yes'],
+                                  'mentoringGradCheckboxes': ['First generation college-student'],
+                                  'labShadowRadios': ['Yes'], 'connectingRadios': ['Yes'],
+                                  'volunteerGradRadios': ['Yes'], 'gradTrainingRadios': ['Yes']})
+        url = response.url
+        self.assertEqual(url, '/sign-up')
+        self.assertEqual(response.status_code, 302)
+
+    def test_create_Undergrad(self):
+        response = self.c.post('/sign-up/', { 'csrfmiddlewaretoken': ['At4HFZNsApVRWNye2Jcj4RVcWYf1fviv1kFbSZevLnNmJrWz4OyZhcAPn0JeaknZ'],
+                                              'firstName': ['Zeeshan'], 'lastName': ['Ahmed'], 'new_username': ['zeeahmed'],
+                                              'new_email': ['zeeahmed@uiowa.edu'], 'new_password': ['bigchungus'],
+                                              'repeat_password': ['bigchungus'], 'roleSelected': ['Undergraduate Student'],
+                                              'undergradRadios': ['Senior'], 'idUnderGradCheckboxes': ['First generation college-student'],
+                                              'major': ['Computer Science'], 'interestRadios': ['Yes'],
+                                              'experienceRadios': ['Yes'], 'interestedRadios': ['Yes'],
+                                              'agreementRadios': ['Yes']})
+        url = response.url
+        self.assertEqual(url, '/')
+        self.assertEqual(response.status_code, 302)
+        user = User.objects.filter(username="zeeahmed")
+        ally = Ally.objects.filter(user_id=user[0].id)
+        categoryRelation = AllyStudentCategoryRelation.objects.filter(ally_id=ally[0].id)
+        categories = StudentCategories.objects.filter(id=categoryRelation[0].student_category_id)
+        self.assertTrue(user.exists())
+        self.assertTrue(ally.exists())
+        self.assertTrue(categoryRelation.exists())
+        self.assertTrue(categories.exists())
+    
+    def test_create_Grad(self):
+        response = self.c.post('/sign-up/', {'csrfmiddlewaretoken': ['TFosu1rFWp6S4SsYIV5Rb9FtBzoTavgrCsu31o9hTp975IuRpZeNgPJeBQiU6Cy5'], 
+        'firstName': ['glumpy'], 'lastName': ['guy'], 'new_username': ['big_guy1'], 
+        'new_email': ['eshaeffer@uiowa.edu'], 'new_password': ['123'], 'repeat_password': ['123'], 
+        'roleSelected': ['Graduate Student'], 
+        'stemGradCheckboxes': ['Biochemistry', 'Biology', 'Biomedical Engineering', 'Chemical Engineering'], 
+        'mentoringGradRadios': ['Yes'], 'mentoringGradCheckboxes': ['First generation college-student', 'Low-income', 'Underrepresented racial/ethnic minority', 'Transfer student', 'LGBTQ'], 
+        'labShadowRadios': ['Yes'], 'connectingRadios': ['Yes'], 'volunteerGradRadios': ['No'], 'gradTrainingRadios': ['Yes']})
+        url = response.url
+        self.assertEqual(url, '/')
+        self.assertEqual(response.status_code, 302)
+        user = User.objects.filter(username="big_guy1")
+        ally = Ally.objects.filter(user_id=user[0].id)
+        categoryRelation = AllyStudentCategoryRelation.objects.filter(ally_id=ally[0].id)
+        categories = StudentCategories.objects.filter(id=categoryRelation[0].student_category_id)
+        self.assertTrue(user.exists())
+        self.assertTrue(ally.exists())
+        self.assertTrue(categoryRelation.exists())
+        self.assertTrue(categories.exists())
+
+    def test_Faculty(self):
+        response = self.c.post('/sign-up/', {'csrfmiddlewaretoken': ['gr9bKWMJLFrJZfcdKkdRhlyKLI0JeTh2ZefMhjulIFuY05e6romNm1CvLZUKa0zG'], 'firstName': ['Terry'], 'lastName': ['Braun'], 
+        'new_username': ['tbraun'], 'new_email': ['tbraun@uiowa.edu'], 'new_password': ['123'], 
+        'repeat_password': ['123'], 'roleSelected': ['Faculty'], 
+        'stemCheckboxes': ['Bioinformatics', 'Biomedical Engineering'], 'research-des': ['Me make big variant :)'], 
+        'openingRadios': ['Yes'], 'mentoringCheckboxes': ['First generation college-student', 'Underrepresented racial/ethnic minority', 'Transfer student'], 
+        'volunteerRadios': ['Yes'],'mentoringFacultyRadios':['Yes'], 'trainingRadios': ['Yes']})
+        url = response.url
+        self.assertEqual(url, '/')
+        self.assertEqual(response.status_code, 302)
+        user = User.objects.filter(username="tbraun")
+        ally = Ally.objects.filter(user_id=user[0].id)
+        categoryRelation = AllyStudentCategoryRelation.objects.filter(ally_id=ally[0].id)
+        categories = StudentCategories.objects.filter(id=categoryRelation[0].student_category_id)
+        self.assertTrue(user.exists())
+        self.assertTrue(ally.exists())
+        self.assertTrue(categoryRelation.exists())
+        self.assertTrue(categories.exists())
+
+    def test_Staff(self):
+        response = self.c.post('/sign-up/', {'csrfmiddlewaretoken': ['K5dFCUih0K6ZYklAemhvIWSpCebK86zdx4ric6ucIPLUQhAdtdT7hhp4r5etxoJY'], 
+        'firstName': ['hawk'], 'lastName': ['herky'], 'new_username': ['hawkherky'], 'new_email': ['hawkherky@uiowa.edu'], 
+        'new_password': ['hawk'], 'repeat_password': ['hawk'], 'roleSelected': ['Staff'], 
+        'studentsInterestedRadios': ['Yes'], 'howCanWeHelp': ['sasdasdasd']})
+        url = response.url
+        self.assertEqual(url, '/')
+        self.assertEqual(response.status_code, 302)
+        user = User.objects.filter(username="hawkherky")
+        ally = Ally.objects.filter(user_id=user[0].id)
+        self.assertTrue(user.exists())
+        self.assertTrue(ally.exists())
+    
+    # def test_Staff(self):
+    #     response = self.c.post('/sign-up/', {'csrfmiddlewaretoken': ['PoY77CUhmZ70AsUF3C1nISUsVErkhMjLyb4IEZCTjZafBiWyKGajNyYdVVlldTBp'], 
+    #     'firstName': ['chongu'], 'lastName': ['gumpy'], 'new_username': ['chonguG'], 
+    #     'new_email': ['chongu@uiowa.edu'], 'new_password': ['123'], 'repeat_password': ['123'], 
+    #     'roleSelected': ['Staff'], 'studentsInterestedRadios': ['Yes'], 'howCanWeHelp': ['give me $10000000']})
+    #     url = response.url
+    #     self.assertEqual(url, '/')
+    #     self.assertEqual(response.status_code, 302)
+    #     user = User.objects.filter(username="chonguG")
+    #     ally = Ally.objects.filter(user_id=user[0].id)
+    #     categoryRelation = AllyStudentCategoryRelation.objects.filter(ally_id=ally[0].id)
+    #     categories = StudentCategories.objects.filter(id=categoryRelation[0].student_category_id)
+    #     self.assertTrue(user.exists())
+    #     self.assertTrue(ally.exists())
+    #     self.assertTrue(categoryRelation.exists())
+    #     self.assertTrue(categories.exists())
 
 
 class NonAdminAccessTests(TestCase):
