@@ -32,6 +32,73 @@ def create_ally(username, hawk_id):
                                major='Computer Science')
 
 
+class AdminAllyTableFeatureTests(TestCase):
+    def setUp(self):
+        self.username = 'Admin_1'
+        self.password = 'admin_password1'
+        self.email = 'email@test.com'
+        self.client = Client()
+
+        self.user = User.objects.create_user(
+            self.username, self.email, self.password)
+
+        self.ally_user = User.objects.create_user(username='johndoe',
+                                        email='johndoe@uiowa.edu',
+                                        password='johndoe',
+                                        first_name='John',
+                                        last_name='Doe')
+
+
+        self.ally = Ally.objects.create(
+            user=self.ally_user,
+            hawk_id='johndoe',
+            user_type='Staff',
+            works_at='College of Engineering',
+            area_of_research='Online Fingerprinting defence measures',
+            description_of_research_done_at_lab='Created tools to fight fingerprinting',
+            people_who_might_be_interested_in_iba=True,
+            how_can_science_ally_serve_you='Help in connecting with like minded people',
+            year='Senior',
+            major='Electical Engineering',
+            willing_to_offer_lab_shadowing=True,
+            willing_to_volunteer_for_events=True
+        )
+
+    def test_view_ally_page_for_admin(self):
+        """
+        Show View ally page for admin
+        """
+        
+        self.user.is_staff = True
+        self.user.save()
+        self.client.login(username=self.username, password=self.password)
+        response = self.client.get('/allies/', {'username': self.ally_user.username})
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        self.assertContains(
+            response, "Ally Profile", html=True
+        )
+    
+    def test_view_non_ally_page_for_admin(self):
+        """
+        Show that the code return 404 when username is wrong
+        """
+
+        self.user.is_staff = True
+        self.user.save()
+        self.client.login(username=self.username, password=self.password)
+        response = self.client.get(
+            '/allies/', {'username': 'something'})
+        self.assertEqual(response.status_code, HTTPStatus.NOT_FOUND)
+    
+    def test_view_ally_page_for_non_admin(self):
+        """
+        Show that the code return 403 when user is not admin
+        """
+
+        self.client.login(username=self.username, password=self.password)
+        response = self.client.get(
+            '/allies/', {'username': 'something'})
+        self.assertEqual(response.status_code, HTTPStatus.FORBIDDEN)
 
 class AdminUpdateProfileAndPasswordTests(TestCase):
     def setUp(self):
