@@ -483,7 +483,27 @@ class SignUpTests(TestCase):
         self.assertTrue(ally.exists())
         self.assertTrue(categoryRelation.exists())
         self.assertTrue(categories.exists())
-    
+
+    def test_create_Undergrad(self):
+        response = self.c.post('/sign-up/', { 'csrfmiddlewaretoken': ['At4HFZNsApVRWNye2Jcj4RVcWYf1fviv1kFbSZevLnNmJrWz4OyZhcAPn0JeaknZ'],
+                                              'firstName': ['Zeeshan'], 'lastName': ['Ahmed'], 'new_username': ['zeeahmed1'],
+                                              'new_email': ['zeeahmed@uiowa.edu'], 'new_password': ['bigchungus'],
+                                              'repeat_password': ['bigchungus'], 'roleSelected': ['Undergraduate Student'],
+                                              'undergradRadios': ['Senior'], 'major': ['Computer Science'], 'interestRadios': ['Yes'],
+                                              'experienceRadios': ['Yes'], 'interestedRadios': ['Yes'],
+                                              'agreementRadios': ['Yes']})
+        url = response.url
+        self.assertEqual(url, '/')
+        self.assertEqual(response.status_code, 302)
+        user = User.objects.filter(username="zeeahmed1")
+        ally = Ally.objects.filter(user_id=user[0].id)
+        categoryRelation = AllyStudentCategoryRelation.objects.filter(ally_id=ally[0].id)
+        categories = StudentCategories.objects.filter(id=categoryRelation[0].student_category_id)
+        self.assertTrue(user.exists())
+        self.assertTrue(ally.exists())
+        self.assertTrue(categoryRelation.exists())
+        self.assertTrue(categories.exists())
+
     def test_create_Grad(self):
         response = self.c.post('/sign-up/', {'csrfmiddlewaretoken': ['TFosu1rFWp6S4SsYIV5Rb9FtBzoTavgrCsu31o9hTp975IuRpZeNgPJeBQiU6Cy5'], 
         'firstName': ['glumpy'], 'lastName': ['guy'], 'new_username': ['big_guy1'], 
@@ -504,6 +524,28 @@ class SignUpTests(TestCase):
         self.assertTrue(categoryRelation.exists())
         self.assertTrue(categories.exists())
 
+    def test_create_Grad_noBoxes(self):
+        response = self.c.post('/sign-up/', {
+            'csrfmiddlewaretoken': ['TFosu1rFWp6S4SsYIV5Rb9FtBzoTavgrCsu31o9hTp975IuRpZeNgPJeBQiU6Cy5'],
+            'firstName': ['glumpy'], 'lastName': ['guy'], 'new_username': ['big_guy12'],
+            'new_email': ['eshaeffer@uiowa.edu'], 'new_password': ['123'], 'repeat_password': ['123'],
+            'roleSelected': ['Graduate Student'],
+            'mentoringGradRadios': ['Yes'],
+            'labShadowRadios': ['Yes'], 'connectingRadios': ['Yes'], 'volunteerGradRadios': ['No'],
+            'gradTrainingRadios': ['Yes']})
+        url = response.url
+        self.assertEqual(url, '/')
+        self.assertEqual(response.status_code, 302)
+        user = User.objects.filter(username="big_guy12")
+        ally = Ally.objects.filter(user_id=user[0].id)
+        categoryRelation = AllyStudentCategoryRelation.objects.filter(ally_id=ally[0].id)
+        categories = StudentCategories.objects.filter(id=categoryRelation[0].student_category_id)
+        self.assertTrue(user.exists())
+        self.assertTrue(ally.exists())
+        self.assertTrue(categoryRelation.exists())
+        self.assertTrue(categories.exists())
+
+
     def test_Faculty(self):
         response = self.c.post('/sign-up/', {'csrfmiddlewaretoken': ['gr9bKWMJLFrJZfcdKkdRhlyKLI0JeTh2ZefMhjulIFuY05e6romNm1CvLZUKa0zG'], 'firstName': ['Terry'], 'lastName': ['Braun'], 
         'new_username': ['tbraun'], 'new_email': ['tbraun@uiowa.edu'], 'new_password': ['123'], 
@@ -515,6 +557,27 @@ class SignUpTests(TestCase):
         self.assertEqual(url, '/')
         self.assertEqual(response.status_code, 302)
         user = User.objects.filter(username="tbraun")
+        ally = Ally.objects.filter(user_id=user[0].id)
+        categoryRelation = AllyStudentCategoryRelation.objects.filter(ally_id=ally[0].id)
+        categories = StudentCategories.objects.filter(id=categoryRelation[0].student_category_id)
+        self.assertTrue(user.exists())
+        self.assertTrue(ally.exists())
+        self.assertTrue(categoryRelation.exists())
+        self.assertTrue(categories.exists())
+
+    def test_Faculty_noSelect(self):
+        response = self.c.post('/sign-up/', {
+            'csrfmiddlewaretoken': ['gr9bKWMJLFrJZfcdKkdRhlyKLI0JeTh2ZefMhjulIFuY05e6romNm1CvLZUKa0zG'],
+            'firstName': ['Terry'], 'lastName': ['Braun'],
+            'new_username': ['tbraun2'], 'new_email': ['tbraun@uiowa.edu'], 'new_password': ['123'],
+            'repeat_password': ['123'], 'roleSelected': ['Faculty'],
+            'research-des': ['Me make big variant :)'],
+            'openingRadios': ['Yes'],
+            'volunteerRadios': ['Yes'], 'mentoringFacultyRadios': ['Yes'], 'trainingRadios': ['Yes']})
+        url = response.url
+        self.assertEqual(url, '/')
+        self.assertEqual(response.status_code, 302)
+        user = User.objects.filter(username="tbraun2")
         ally = Ally.objects.filter(user_id=user[0].id)
         categoryRelation = AllyStudentCategoryRelation.objects.filter(ally_id=ally[0].id)
         categories = StudentCategories.objects.filter(id=categoryRelation[0].student_category_id)
@@ -535,6 +598,7 @@ class SignUpTests(TestCase):
         ally = Ally.objects.filter(user_id=user[0].id)
         self.assertTrue(user.exists())
         self.assertTrue(ally.exists())
+
     
     # def test_Staff(self):
     #     response = self.c.post('/sign-up/', {'csrfmiddlewaretoken': ['PoY77CUhmZ70AsUF3C1nISUsVErkhMjLyb4IEZCTjZafBiWyKGajNyYdVVlldTBp'], 
