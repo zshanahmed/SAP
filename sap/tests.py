@@ -1,3 +1,4 @@
+# tests file
 from django.test import TestCase, Client
 from .models import Ally, StudentCategories, AllyStudentCategoryRelation
 from django.urls import reverse
