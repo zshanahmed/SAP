@@ -33,171 +33,214 @@
                 
                 <hr>
                 <div class="row">
-                    <div class="col-md-3"><h5 class="m-0 font-weight-bold text-primary">Name: </h5></div>
+                    <div class="col-md-4"><h5 class="m-0 font-weight-bold text-primary">Name: </h5></div>
                     <div class="col-md-6">{{ ally.user.first_name }} {{ally.user.last_name}}</div>
                 </div>
                 <div class="row">
-                    <div class="col-md-3">
+                    <div class="col-md-4">
                         <h5 class="m-0 font-weight-bold text-primary">Username: </h5>
                     </div>
                     <div class="col-md-6">{{ ally.user.username }}</div>
                 </div>
                 <div class="row">
-                    <div class="col-md-3">
+                    <div class="col-md-4">
                         <h5 class="m-0 font-weight-bold text-primary">Email: </h5>
                     </div>
                     <div class="col-md-6">{{ ally.user.email }}</div>
                 </div>
                 <hr>
                 <div class="row">
-                    <div class="col-md-3">
+                    <div class="col-md-4">
                         <h5 class="m-0 font-weight-bold text-primary">Hawk ID: </h5>
                     </div>
                     <div class="col-md-6">{{ ally.hawk_id }}</div>
                 </div>
                 <div class="row">
-                    <div class="col-md-3">
+                    <div class="col-md-4">
                         <h5 class="m-0 font-weight-bold text-primary">User Type: </h5>
                     </div>
                     <div class="col-md-6">{{ ally.user_type }}</div>
                 </div>
-                <div class="row">
-                    <div class="col-md-3">
-                        <h5 class="m-0 font-weight-bold text-primary">Works at: </h5>
-                    </div>
-                    <div class="col-md-6">{{ ally.works_at }}</div>
-                </div>
-                <div class="row">
-                    <div class="col-md-3">
-                        <h5 class="m-0 font-weight-bold text-primary">STEM Area of Research: </h5>
-                    </div>
-                    <div class="col-md-6">{{ ally.area_of_research }}</div>
-                </div>
-                <div class="row">
-                    <div class="col-md-3">
-                        <h5 class="m-0 font-weight-bold text-primary">Research Description: </h5>
-                    </div>
-                    <div class="col-md-6">{{ ally.description_of_research_done_at_lab }}</div>
-                </div>
-                <div class="row">
-                    <div class="col-md-3">
-                        <h5 class="m-0 font-weight-bold text-primary">Year: </h5>
-                    </div>
-                    <div class="col-md-6">{{ ally.year }}</div>
-                </div>
-                <div class="row">
-                    <div class="col-md-3">
-                        <h5 class="m-0 font-weight-bold text-primary">Major: </h5>
-                    </div>
-                    <div class="col-md-6">{{ ally.major }}</div>
-                </div>
-                <div class="row">
-                    <div class="col-md-3">
-                        <h5 class="m-0 font-weight-bold text-primary">How can Science Alliance serve: </h5>
-                    </div>
-                    <div class="col-md-6">{{ ally.how_can_science_ally_serve_you }}</div>
-                </div>
-                <hr>
-                <div class="row">
-                    <div class="col-md-3">
-                        <h5 class="m-0 font-weight-bold text-primary">Openings in Lab</h5>
-                    </div>
-                    <div class="col-md-3">
-                        {% if ally.openings_in_lab_serving_at %}
+                
+                {% if ally.user_type == 'Staff' %}
+                    <div class="row">
+                        <div class="col-md-4">
+                            <h5 class="m-0 font-weight-bold text-primary">Interested in IBA: </h5>
+                        </div>
+                        <div class="col-md-6">
+                            {% if ally.people_who_might_be_interested_in_iba %}
                             <i class="fa fa-check" style="color:green"></i>
-                        {% else %}
+                            {% else %}
                             <i class="fa fa-times" style="color:red"></i>
-                        {% endif %}
+                            {% endif %}
+                        </div>
                     </div>
-                    <div class="col-md-3">
-                        <h5 class="m-0 font-weight-bold text-primary">Interested in Mentoring</h5>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <h5 class="m-0 font-weight-bold text-primary">How can Science Alliance serve: </h5>
+                        </div>
+                        <div class="col-md-6">{{ ally.how_can_science_ally_serve_you }}</div>
                     </div>
-                    <div class="col-md-3">
-                        {% if ally.interested_in_mentoring %}
-                        <i class="fa fa-check" style="color:green"></i>
-                        {% else %}
-                        <i class="fa fa-times" style="color:red"></i>
-                        {% endif %}
+                {% elif ally.user_type == 'Undergraduate Student' %}
+                    <div class="row">
+                        <div class="col-md-4">
+                            <h5 class="m-0 font-weight-bold text-primary">Year: </h5>
+                        </div>
+                        <div class="col-md-6">{{ ally.year }}</div>
                     </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-3">
-                        <h5 class="m-0 font-weight-bold text-primary">Lab Shadowing</h5>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <h5 class="m-0 font-weight-bold text-primary">Major: </h5>
+                        </div>
+                        <div class="col-md-6">{{ ally.major }}</div>
                     </div>
-                    <div class="col-md-3">
-                        {% if ally.willing_to_offer_lab_shadowing %}
-                        <i class="fa fa-check" style="color:green"></i>
-                        {% else %}
-                        <i class="fa fa-times" style="color:red"></i>
-                        {% endif %}
+                    <div class="row">
+                        <div class="col-md-4">
+                            <h5 class="m-0 font-weight-bold text-primary">Release Information: </h5>
+                        </div>
+                        <div class="col-md-6">
+                            {% if ally.information_release %}
+                            <i class="fa fa-check" style="color:green"></i>
+                            {% else %}
+                            <i class="fa fa-times" style="color:red"></i>
+                            {% endif %}
+                        </div>
                     </div>
-                    <div class="col-md-3">
-                        <h5 class="m-0 font-weight-bold text-primary">Connect with other Mentors</h5>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <h5 class="m-0 font-weight-bold text-primary">Being Mentored: </h5>
+                        </div>
+                        <div class="col-md-6">
+                            {% if ally.interested_in_being_mentored %}
+                            <i class="fa fa-check" style="color:green"></i>
+                            {% else %}
+                            <i class="fa fa-times" style="color:red"></i>
+                            {% endif %}
+                        </div>
                     </div>
-                    <div class="col-md-3">
-                        {% if ally.interested_in_connecting_with_other_mentors %}
-                        <i class="fa fa-check" style="color:green"></i>
-                        {% else %}
-                        <i class="fa fa-times" style="color:red"></i>
-                        {% endif %}
+                    <div class="row">
+                        <div class="col-md-4">
+                            <h5 class="m-0 font-weight-bold text-primary">Identity: </h5>
+                        </div>
+                        <div class="col-md-6">{{ ally.identity }}</div>
                     </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-3">
-                        <h5 class="m-0 font-weight-bold text-primary">Volunteer for Events</h5>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <h5 class="m-0 font-weight-bold text-primary">Join Lab: </h5>
+                        </div>
+                        <div class="col-md-6">
+                            {% if ally.interested_in_joining_lab %}
+                            <i class="fa fa-check" style="color:green"></i>
+                            {% else %}
+                            <i class="fa fa-times" style="color:red"></i>
+                            {% endif %}
+                        </div>
                     </div>
-                    <div class="col-md-3">
-                        {% if ally.willing_to_volunteer_for_events %}
-                        <i class="fa fa-check" style="color:green"></i>
-                        {% else %}
-                        <i class="fa fa-times" style="color:red"></i>
-                        {% endif %}
+                    <div class="row">
+                        <div class="col-md-4">
+                            <h5 class="m-0 font-weight-bold text-primary">Lab Experience: </h5>
+                        </div>
+                        <div class="col-md-6">
+                            {% if ally.has_lab_experience %}
+                            <i class="fa fa-check" style="color:green"></i>
+                            {% else %}
+                            <i class="fa fa-times" style="color:red"></i>
+                            {% endif %}
+                        </div>
                     </div>
-                    <div class="col-md-3">
-                        <h5 class="m-0 font-weight-bold text-primary">Being Mentored</h5>
+                {% else %}
+                    <div class="row">
+                        <div class="col-md-4">
+                            <h5 class="m-0 font-weight-bold text-primary">STEM Area of Research: </h5>
+                        </div>
+                        <div class="col-md-6">{{ ally.area_of_research }}</div>
                     </div>
-                    <div class="col-md-3">
-                        {% if ally.interested_in_being_mentored %}
-                        <i class="fa fa-check" style="color:green"></i>
-                        {% else %}
-                        <i class="fa fa-times" style="color:red"></i>
-                        {% endif %}
+                    <div class="row">
+                        <div class="col-md-4">
+                            <h5 class="m-0 font-weight-bold text-primary">Openings in Lab</h5>
+                        </div>
+                        <div class="col-md-6">
+                            {% if ally.openings_in_lab_serving_at %}
+                            <i class="fa fa-check" style="color:green"></i>
+                            {% else %}
+                            <i class="fa fa-times" style="color:red"></i>
+                            {% endif %}
+                        </div>
                     </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-3">
-                        <h5 class="m-0 font-weight-bold text-primary">Joining Lab</h5>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <h5 class="m-0 font-weight-bold text-primary">Research Description: </h5>
+                        </div>
+                        <div class="col-md-6">{{ ally.description_of_research_done_at_lab }}</div>
                     </div>
-                    <div class="col-md-3">
-                        {% if ally.interested_in_joining_lab %}
-                        <i class="fa fa-check" style="color:green"></i>
-                        {% else %}
-                        <i class="fa fa-times" style="color:red"></i>
-                        {% endif %}
+                    <div class="row">
+                        <div class="col-md-4">
+                            <h5 class="m-0 font-weight-bold text-primary">Interested in Mentoring: </h5>
+                        </div>
+                        <div class="col-md-6">
+                            {% if ally.interested_in_mentoring %}
+                            <i class="fa fa-check" style="color:green"></i>
+                            {% else %}
+                            <i class="fa fa-times" style="color:red"></i>
+                            {% endif %}
+                        </div>
                     </div>
-                    <div class="col-md-3">
-                        <h5 class="m-0 font-weight-bold text-primary">Has Lab Experience</h5>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <h5 class="m-0 font-weight-bold text-primary">Interested in Training: </h5>
+                        </div>
+                        <div class="col-md-6">
+                            {% if ally.interested_in_mentor_training %}
+                            <i class="fa fa-check" style="color:green"></i>
+                            {% else %}
+                            <i class="fa fa-times" style="color:red"></i>
+                            {% endif %}
+                        </div>
                     </div>
-                    <div class="col-md-3">
-                        {% if ally.has_lab_experience %}
-                        <i class="fa fa-check" style="color:green"></i>
-                        {% else %}
-                        <i class="fa fa-times" style="color:red"></i>
-                        {% endif %}
+                    <div class="row">
+                        <div class="col-md-4">
+                            <h5 class="m-0 font-weight-bold text-primary">Shadow Labs: </h5>
+                        </div>
+                        <div class="col-md-6">
+                            {% if ally.willing_to_offer_lab_shadowing %}
+                            <i class="fa fa-check" style="color:green"></i>
+                            {% else %}
+                            <i class="fa fa-times" style="color:red"></i>
+                            {% endif %}
+                        </div>
                     </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-3">
-                        <h5 class="m-0 font-weight-bold text-primary">Peer Mentoring</h5>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <h5 class="m-0 font-weight-bold text-primary">Connect with other Mentors: </h5>
+                        </div>
+                        <div class="col-md-6">
+                            {% if ally.willing_to_offer_lab_shadowing %}
+                            <i class="fa fa-check" style="color:green"></i>
+                            {% else %}
+                            <i class="fa fa-times" style="color:red"></i>
+                            {% endif %}
+                        </div>
                     </div>
-                    <div class="col-md-3">
-                        {% if ally.interested_in_peer_mentoring %}
-                        <i class="fa fa-check" style="color:green"></i>
-                        {% else %}
-                        <i class="fa fa-times" style="color:red"></i>
-                        {% endif %}
+                    <div class="row">
+                        <div class="col-md-4">
+                            <h5 class="m-0 font-weight-bold text-primary">Voluntter for events: </h5>
+                        </div>
+                        <div class="col-md-6">
+                            {% if ally.willing_to_volunteer_for_events %}
+                            <i class="fa fa-check" style="color:green"></i>
+                            {% else %}
+                            <i class="fa fa-times" style="color:red"></i>
+                            {% endif %}
+                        </div>
                     </div>
-                </div>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <h5 class="m-0 font-weight-bold text-primary">Works at: </h5>
+                        </div>
+                        <div class="col-md-6">{{ ally.works_at }}</div>
+                    </div>
+                {% endif %}
+
                 <hr>
                 <a href="/dashboard" class="btn btn-primary btn-user">
                     Back
