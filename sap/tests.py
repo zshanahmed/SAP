@@ -387,6 +387,21 @@ class LoginRedirectTests(TestCase):
         self.assertEqual(response.status_code, HTTPStatus.OK)
         self.client.logout()
 
+class LogoutRedirectTests(TestCase):
+
+    def setUp(self):
+        self.username = 'admin'
+        self.password = 'admin_password1'
+        self.client = Client()
+
+        User.objects.create_user(self.username, 'email@test.com', self.password, is_staff=True)
+    
+    def test_logout_for_admin(self):
+        self.client.login(username=self.username, password=self.password)
+        response = self.client.get(reverse('sap:logout'))
+        self.assertEqual(response.status_code, HTTPStatus.FOUND)
+        self.assertEqual(response.url, '/')
+
 
 class AdminAccessTests(TestCase):
 

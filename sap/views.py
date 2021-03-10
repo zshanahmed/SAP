@@ -221,7 +221,10 @@ class SignUpView(TemplateView):
                                             how_can_science_ally_serve_you=postDict['howCanWeHelp'])
             else:
                 if postDict['roleSelected'][0] == 'Undergraduate Student':
-                    categories = self.make_categories(postDict["idUnderGradCheckboxes"])
+                    try:
+                        categories = self.make_categories(postDict["idUnderGradCheckboxes"])
+                    except KeyError:
+                        categories = StudentCategories.objects.create()
                     undergradList = ['interestRadios', 'experienceRadios', 'interestedRadios', 'agreementRadios']
                     selections = self.set_boolean(undergradList, postDict)
                     ally = Ally.objects.create(user=user, user_type=postDict['roleSelected'][0], hawk_id=user.username,
