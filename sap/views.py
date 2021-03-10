@@ -1,15 +1,27 @@
+import os
+
 from django.contrib.auth import logout
 from django.contrib.auth import authenticate
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.utils.encoding import force_bytes
+
 from .models import Ally, StudentCategories, AllyStudentCategoryRelation
 from django.views import generic
 from django.views.generic import TemplateView, View
 from django.contrib import messages
 from django.contrib.auth import update_session_auth_hash
-from django.contrib.auth.forms import PasswordChangeForm
+from django.contrib.auth.forms import PasswordChangeForm, PasswordResetForm
 from django.shortcuts import render, redirect
 from django.contrib.auth.models import User
-from .forms import UpdateAdminProfileForm
+from .forms import UpdateAdminProfileForm, UserPasswordForgotForm, UserResetForgotPasswordForm
+from django.contrib import messages
+from django.views.decorators.http import require_http_methods
+from django.contrib.sites.shortcuts import get_current_site
+from django.template.loader import render_to_string
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from .tokens import password_reset_token, account_activation_token
+from sendgrid import SendGridAPIClient
+from sendgrid.helpers.mail import Mail
 
 
 # Create your views here.
@@ -70,6 +82,7 @@ class ChangeAdminPassword(AccessMixin, View):
             'form': form
         })
 
+
 class EditAdminProfile(AccessMixin, View):
     """
     Change the profile for admin
@@ -99,6 +112,7 @@ class EditAdminProfile(AccessMixin, View):
             'form': form
         })
 
+
 class AlliesListView(AccessMixin, generic.ListView):
     template_name = 'sap/dashboard.html'
     context_object_name = 'allies_list'
@@ -106,8 +120,10 @@ class AlliesListView(AccessMixin, generic.ListView):
     def get_queryset(self):
         return Ally.objects.order_by('-id')
 
+
 class AnalyticsView(AccessMixin, TemplateView):
     template_name = "sap/analytics.html"
+
 
 class AdminProfileView(TemplateView):
     template_name = "sap/profile.html"
@@ -119,7 +135,6 @@ class AboutPageView(TemplateView):
 
 class SupportPageView(TemplateView):
     template_name = "sap/support.html"
-
 
 
 class CreateAdminView(AccessMixin, TemplateView):
@@ -159,6 +174,7 @@ class CreateAdminView(AccessMixin, TemplateView):
         else:
             messages.add_message(request, messages.ERROR, 'Account was not created because one or more fields were not entered')
             return redirect('/create_iba_admin')
+
 
 class SignUpView(TemplateView):
     template_name = "sap/sign-up.html"
@@ -270,5 +286,116 @@ class SignUpView(TemplateView):
 
         return redirect("sap:home")
 
-class ForgotPasswordView(TemplateView):
-    template_name= "sap/forgot-password.html"
+
+class ForgotPasswordInitiateView(TemplateView):
+    """
+    A view which allows users to reset their password in case they forget it. Send a confirmation emails with token
+    """
+    # template_name = "sap/password-forgot-initiate.html"
+
+    def get(self, request, *args, **kwargs):
+        form = PasswordResetForm(request.GET)
+        return render(request, 'sap/password-forgot-initiate.html', {'form': form})
+
+    def post(self, request, *args, **kwargs):
+        form = PasswordResetForm(request.POST)
+
+        if form.is_valid():
+            entered_email = request.POST.get('email')
+            valid_email = User.objects.filter(email=entered_email)
+            site = get_current_site(request)
+
+            if len(valid_email) > 0:
+                user = valid_email[0]
+                # user.is_active = False  # User needs to be inactive for the reset password duration
+                # user.profile.reset_password = True
+                # user.save()
+
+                message = render_to_string('sap/password-forgot-mail.html', {
+                    'user': user,
+                    'protocol': 'http',
+                    'domain': site.domain,
+                    'uid': urlsafe_base64_encode(force_bytes(user.pk)),
+                    'token': account_activation_token.make_token(user),
+                })
+
+                message = Mail(
+                    from_email='team1sep@hotmail.com',
+                    to_emails=entered_email,
+                    subject='Reset password for domain.com',
+                    html_content=message)
+
+                try:
+                    sg = SendGridAPIClient(os.environ.get('SENDGRID_API_KEY'))
+                    response = sg.send(message)
+                    print(response.status_code)
+                    print(response.body)
+                    print(response.headers)
+                except Exception as e:
+                    print(e.message)
+
+            messages.success(request, 'Confirmation Email Sent!')
+            return redirect('sap/password-forgot-confirm.html')
+        else:
+            messages.error(request, "Could not Update Password !")
+
+        return render(request, 'sap/password-forgot-initiate.html', {'form': form})
+
+
+class ForgotPasswordConfirmView(TemplateView):
+    template_name = "sap/password-forgot-confirm.html"
+
+
+class ForgotPasswordFormView(TemplateView):
+    template_name = "sap/password-forgot-form.html"
+
+
+class ForgotPasswordResetView(TemplateView):
+    pass
+
+
+@check_recaptcha
+@require_http_methods(["GET", "POST"])
+@unauthenticated_required(home_url='/', redirect_field_name='')
+def password_reset(request):
+    """User forgot password form view."""
+    msg = ''
+    if request.method == "POST":
+        form = UserPasswordForgotForm(request.POST)
+        if form.is_valid() and request.recaptcha_is_valid:
+            email = request.POST.get('email')
+            qs = User.objects.filter(email=email)
+            site = get_current_site(request)
+
+            if len(qs) > 0:
+                user = qs[0]
+                user.is_active = False  # User needs to be inactive for the reset password duration
+                user.profile.reset_password = True
+                user.save()
+
+                message = render_to_string('account/password_reset_mail.html', {
+                    'user': user,
+                    'protocol': 'http',
+                    'domain': site.domain,
+                    'uid': urlsafe_base64_encode(force_bytes(user.pk)),
+                    'token': account_activation_token.make_token(user),
+                })
+
+                message = Mail(
+                    from_email='noreply@domain.com',
+                    to_emails=email,
+                    subject='Reset password for domain.com',
+                    html_content=message)
+                try:
+                    sg = SendGridAPIClient(os.environ.get('SENDGRID_API_KEY'))
+                    response = sg.send(message)
+                except Exception as e:
+                    print(e)
+
+            messages.add_message(request, messages.SUCCESS, 'Email {0} submitted.'.format(email))
+            msg = 'If this mail address is known to us, an email will be sent to your account.'
+        else:
+            messages.add_message(request, messages.WARNING, 'Email not submitted.')
+            return render(request, 'sap/password_reset_req.html', {'form': form})
+
+    return render(request, 'sap/password_reset_req.html', {'form': UserPasswordForgotForm, 'msg': msg})

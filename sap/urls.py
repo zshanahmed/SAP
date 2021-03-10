@@ -25,7 +25,13 @@ urlpatterns = [
         login_required(views.AnalyticsView.as_view(), login_url='home'),
         name='sap-analytics'),
 
-    url(r'forgot-password/$', views.ForgotPasswordView.as_view(), name='forgot_password'),
+    url(r'password-forgot-initiate/$', views.ForgotPasswordInitiateView.as_view(), name='password-forgot-initiate'),
+
+    url(r'password-forgot-confirm/$', views.ForgotPasswordConfirmView.as_view(), name='password-forgot-confirm'),
+
+    url(r'password-forgot-form/$', views.ForgotPasswordFormView.as_view(), name='password-forgot-form'),
+
+    url(r'password-forgot-reset/$', views.ForgotPasswordResetView.as_view(), name='password-forgot-reset'),
 
     url('create_iba_admin/',
         login_required(views.CreateAdminView.as_view(), login_url='home'),
