@@ -17,7 +17,7 @@ Feature: Create New IBA Admin
     And I click the button with id: "submit_new_admin"
     Then I should be on page with url: "http://127.0.0.1:8000/dashboard/"
     And I should see text: "Account Created"
-    And be able to login with username "iba_admin89", and password "iba_sep_2"
+    And be able to login with username "iba_admin89", and password "iba_sep_12"
 
   Scenario: I enter incorrect credentials into settings page
     When I navigate to the create verification page
