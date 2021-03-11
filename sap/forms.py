@@ -26,7 +26,7 @@ class UserPasswordForgotForm(PasswordResetForm):
                              required=True,
                              widget=forms.TextInput(
                                  attrs={'class': 'form-control',
-                                        'placeholder': 'email address',
+                                        'placeholder': 'Email address...',
                                         'type': 'text',
                                         'id': 'email_address'
                                         }
@@ -44,7 +44,7 @@ class UserResetForgotPasswordForm(SetPasswordForm):
                                     widget=forms.PasswordInput(
                                         attrs={
                                             'class': 'form-control',
-                                            'placeholder': 'password',
+                                            'placeholder': 'New password...',
                                             'type': 'password',
                                             'id': 'user_password',
                                         }))
@@ -56,7 +56,7 @@ class UserResetForgotPasswordForm(SetPasswordForm):
                                     widget=forms.PasswordInput(
                                         attrs={
                                             'class': 'form-control',
-                                            'placeholder': 'confirm password',
+                                            'placeholder': 'Repeat new password...',
                                             'type': 'password',
                                             'id': 'user_password',
                                         }))

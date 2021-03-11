@@ -290,7 +290,8 @@ class SignUpView(TemplateView):
 
 class ForgotPasswordView(TemplateView):
     """
-    A view which allows users to reset their password in case they forget it. Send a confirmation emails with token
+    A view which allows users to reset their password in case they forget it.
+    Send a confirmation emails with unique token
     """
     # template_name = "sap/password-forgot.html"
 
@@ -308,54 +309,49 @@ class ForgotPasswordView(TemplateView):
 
             if len(valid_email) > 0:
                 user = valid_email[0]
-                # user.is_active = False  # User needs to be inactive for the reset password duration
+                user.is_active = False  # User needs to be inactive for the reset password duration
                 # user.profile.reset_password = True
-                # user.save()
+                user.save()
 
-                # message = render_to_string('sap/password-forgot-mail.html', {
-                #     'user': user,
-                #     'protocol': 'http',
-                #     'domain': site.domain,
-                #     'uid': urlsafe_base64_encode(force_bytes(user.pk)),
-                #     'token': account_activation_token.make_token(user),
-                #     'url': reverse('password-forgot-mail',
-                #                    args=[urlsafe_base64_encode(force_bytes(user.pk)), account_activation_token.make_token(user)])
-                # })
 
-                message_ = reverse('sap:password-forgot-confirm', args=[urlsafe_base64_encode(force_bytes(user.pk)), password_reset_token.make_token(user)])
+                message_body = render_to_string('sap/password-forgot-mail.html', {
+                    'user': user,
+                    'protocol': 'http',
+                    'domain': site.domain,
+                    'uid': urlsafe_base64_encode(force_bytes(user.pk)), # encode user's primary key
+                    'token': password_reset_token.make_token(user),
+                })
 
-                message_body = 'http:' + '//'+ site.domain + message_
+                # message_ = reverse('sap:password-forgot-confirm',
+                #                    args=[urlsafe_base64_encode(force_bytes(user.pk)),
+                #                          password_reset_token.make_token(user)])
+                #
+                # message_body = 'http:' + '//' + site.domain + message_
 
-                message = Mail(
+                email_content = Mail(
                     from_email='team1sep@hotmail.com',
                     to_emails=entered_email,
-                    subject='Reset password for domain.com',
+                    subject='Reset Password for Science Alliance Portal',
                     html_content=message_body)
 
                 try:
                     # sg = SendGridAPIClient(os.environ.get('SENDGRID_API_KEY'))
                     sg = SendGridAPIClient('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')
-                    response = sg.send(message)
+                    response = sg.send(email_content)
                     print(response.status_code)
                     print(response.body)
                     print(response.headers)
                 except Exception as e:
-                    print(e.message)
+                    print(e.email_content)
 
-            messages.success(request, 'Confirmation Email Sent!')
-            return redirect('/password-forgot-complete')
-        else:
-            messages.error(request, "Could not Update Password !")
+                messages.success(request, 'Confirmation Email Sent!')
+                return redirect('/password-forgot-done')
+
+            else:
+                messages.error(request, "Invalid Email Address!")
+                return render(request, 'account/password-forgot.html', {'form': form})
 
         return render(request, 'sap/password-forgot.html', {'form': form})
-
-
-# class ForgotPasswordDoneView(TemplateView):
-#     pass
-
-
-class ForgotPasswordCompleteView(TemplateView):
-    template_name = "sap/password-forgot-complete.html"
 
 
 class ForgotPasswordDoneView(TemplateView):
@@ -363,9 +359,15 @@ class ForgotPasswordDoneView(TemplateView):
 
 
 class ForgotPasswordConfirmView(TemplateView):
-    # template_name = "sap/about.html"
-    pass
+    template_name = "sap/password-forgot-confirm.html"
 
+
+class ForgotPasswordCompleteView(TemplateView):
+    template_name = "sap/password-forgot-complete.html"
+
+
+class ForgotPasswordMail(TemplateView):
+    template_name = "sap/password-forgot-mail.html"
 
 
 def reset(request, uidb64, token):
@@ -421,5 +423,4 @@ def reset(request, uidb64, token):
 
     return redirect('home')
 
-class ForgotPasswordMail(TemplateView):
-    template_name = "sap/password-forgot-mail.html"
+
