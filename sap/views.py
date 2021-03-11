@@ -3,6 +3,7 @@ import os
 from django.contrib.auth import logout
 from django.contrib.auth import authenticate
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.urls import reverse
 from django.utils.encoding import force_bytes, force_text
 
 from .models import Ally, StudentCategories, AllyStudentCategoryRelation
@@ -311,50 +312,59 @@ class ForgotPasswordView(TemplateView):
                 # user.profile.reset_password = True
                 # user.save()
 
-                message = render_to_string('sap/password-forgot-mail.html', {
-                    'user': user,
-                    'protocol': 'http',
-                    'domain': site.domain,
-                    'uid': urlsafe_base64_encode(force_bytes(user.pk)),
-                    'token': account_activation_token.make_token(user),
-                })
+                # message = render_to_string('sap/password-forgot-mail.html', {
+                #     'user': user,
+                #     'protocol': 'http',
+                #     'domain': site.domain,
+                #     'uid': urlsafe_base64_encode(force_bytes(user.pk)),
+                #     'token': account_activation_token.make_token(user),
+                #     'url': reverse('password-forgot-mail',
+                #                    args=[urlsafe_base64_encode(force_bytes(user.pk)), account_activation_token.make_token(user)])
+                # })
+
+                message_ = reverse('sap:password-forgot-confirm', args=[urlsafe_base64_encode(force_bytes(user.pk)), password_reset_token.make_token(user)])
+
+                message_body = 'http:' + '//'+ site.domain + message_
 
                 message = Mail(
                     from_email='team1sep@hotmail.com',
                     to_emails=entered_email,
                     subject='Reset password for domain.com',
-                    html_content=message)
+                    html_content=message_body)
 
                 try:
-                    sg = SendGridAPIClient(os.environ.get('SENDGRID_API_KEY'))
+                    # sg = SendGridAPIClient(os.environ.get('SENDGRID_API_KEY'))
+                    sg = SendGridAPIClient('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')
                     response = sg.send(message)
                     print(response.status_code)
                     print(response.body)
                     print(response.headers)
                 except Exception as e:
-                    print(e)
+                    print(e.message)
 
             messages.success(request, 'Confirmation Email Sent!')
-            return redirect('sap/password-forgot-complete.html')
+            return redirect('/password-forgot-complete')
         else:
             messages.error(request, "Could not Update Password !")
 
         return render(request, 'sap/password-forgot.html', {'form': form})
 
 
-class ForgotPasswordDoneView(TemplateView):
-    pass
+# class ForgotPasswordDoneView(TemplateView):
+#     pass
 
 
 class ForgotPasswordCompleteView(TemplateView):
-    # template_name = "sap/password-forgot-complete.html"
-    pass
+    template_name = "sap/password-forgot-complete.html"
+
+
+class ForgotPasswordDoneView(TemplateView):
+    template_name = "sap/password-forgot-done.html"
+
 
 class ForgotPasswordConfirmView(TemplateView):
-    # template_name = "sap/password-forgot-done.html"
-
+    # template_name = "sap/about.html"
     pass
-
 
 
 
