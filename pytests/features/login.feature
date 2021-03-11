@@ -6,13 +6,18 @@ Feature: Login
 
   Scenario: I want to login using valid username and password
     Given that I am on the login page
-    When I enter my username johndoe and password serpent_1
+    When I enter my username iba_admin and password iba_sep_1
     Then I should see the page with title Science Alliance Portal
+  
+  Scenario: I want to login using valid username and password as ally
+    Given that I am on the login page
+    When I enter my username john and password doe
+    Then I should see the page with title This page will be for About
 
   Scenario: I try to login with invalid username and password
     Given that I am on the login page
     When I enter my username johndoe and password johndoe
-    Then I should see a message saying 'Username or password is incorrect!'
+    Then I should see a message saying 'Please enter a correct username and password. Note that both fields may be case-sensitive.'
 
   Scenario: I forgot my password while trying to login
     Given that I am on the login page
