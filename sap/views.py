@@ -349,21 +349,30 @@ class ForgotPasswordView(TemplateView):
                 return redirect('/password-forgot-done')
 
             else:
-                messages.error(request, "Invalid Email Address!")
+                messages.warning(request, "If this email address is known to us, a confirmation email will be sent to your inbox.")
                 # return render(request, 'account/password-forgot.html', {'form': form})
 
         return render(request, 'sap/password-forgot.html', {'form': form})
 
 
 class ForgotPasswordDoneView(TemplateView):
+    """
+    A view which is presented if the user entered valid email ing Forget Password view
+    """
     template_name = "sap/password-forgot-done.html"
 
 
 class ForgotPasswordCompleteView(TemplateView):
+    """
+    A view which
+    """
     template_name = "sap/password-forgot-complete.html"
 
 
 class ForgotPasswordMail(TemplateView):
+    """
+    Email template for Forgot Password Feature
+    """
     template_name = "sap/password-forgot-mail.html"
 
 
@@ -391,37 +400,16 @@ class ForgotPasswordConfirmView(TemplateView):
                 'uid': uidb64,
                 'token': token
             }
-            return render(request, 'account/password_reset_conf.html', context)
+            return render(request, 'sap/password-forgot-confirm.html', context)
         else:
             messages.add_message(request, messages.WARNING, 'Password reset link is invalid.')
             messages.add_message(request, messages.WARNING, 'Please request a new password reset.')
 
-        uid = force_text(urlsafe_base64_decode(uidb64))
-        user = User.objects.get(pk=uid)
-        form = SetPasswordForm(request.GET)
-        return render(request, 'sap/password-forgot-confirm.html', {'form': form})
-
     def post(self, request, *args, **kwargs):
-        uid = force_text(urlsafe_base64_decode(request.uidb64))
-        user = User.objects.get(pk=uid)
-        form = SetPasswordForm(request.POST)
+        path = request.path
+        path_1, token = os.path.split(path)
+        path_0, uidb64 = os.path.split(path_1)
 
-        if form.is_valid():
-            entered_email = request.POST.get('email')
-            valid_email = User.objects.filter(email=entered_email)
-            site = get_current_site(request)
-
-            if len(valid_email) > 0:
-                user = valid_email[0]
-                user.is_active = False  # User needs to be inactive for the reset password duration
-                # user.profile.reset_password = True
-                user.save()
-
-
-
-def reset(request, uidb64, token):
-
-    if request.method == 'POST':
         try:
             uid = force_text(urlsafe_base64_decode(uidb64))
             user = User.objects.get(pk=uid)
@@ -438,7 +426,7 @@ def reset(request, uidb64, token):
                 user.is_active = True
                 # user.profile.reset_password = False
                 user.save()
-                messages.add_message(request, messages.SUCCESS, 'Password reset successfully.')
+                messages.success(request, 'New Password Created Successfully!')
                 return redirect('sap:home')
             else:
                 context = {
@@ -446,30 +434,11 @@ def reset(request, uidb64, token):
                     'uid': uidb64,
                     'token': token
                 }
-                messages.add_message(request, messages.WARNING, 'Password could not be reset.')
+                messages.error(request, 'Password Could Not be Reset.')
                 return render(request, 'account/password-forgot-confirm.html', context)
         else:
-            messages.add_message(request, messages.WARNING, 'Password reset link is invalid.')
-            messages.add_message(request, messages.WARNING, 'Please request a new password reset.')
+            messages.error(request, messages.WARNING, 'Password reset link is invalid. Please request a new password reset.')
 
-    try:
-        uid = force_text(urlsafe_base64_decode(uidb64))
-        user = User.objects.get(pk=uid)
-    except (TypeError, ValueError, OverflowError, User.DoesNotExist) as e:
-        messages.add_message(request, messages.WARNING, str(e))
-        user = None
 
-    if user is not None and password_reset_token.check_token(user, token):
-        context = {
-            'form': UserResetForgotPasswordForm(user),
-            'uid': uidb64,
-            'token': token
-        }
-        return render(request, 'account/password_reset_conf.html', context)
-    else:
-        messages.add_message(request, messages.WARNING, 'Password reset link is invalid.')
-        messages.add_message(request, messages.WARNING, 'Please request a new password reset.')
-
-    return redirect('home')
 
 
