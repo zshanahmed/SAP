@@ -311,7 +311,7 @@ class ForgotPasswordView(TemplateView):
                 # user.profile.reset_password = True
                 # user.save()
 
-                message = render_to_string('sap/password-forgot-confirm.html', {
+                message = render_to_string('sap/password-forgot-mail.html', {
                     'user': user,
                     'protocol': 'http',
                     'domain': site.domain,
@@ -410,3 +410,6 @@ def reset(request, uidb64, token):
         messages.add_message(request, messages.WARNING, 'Please request a new password reset.')
 
     return redirect('home')
+
+class ForgotPasswordMail(TemplateView):
+    template_name = "sap/password-forgot-mail.html"
