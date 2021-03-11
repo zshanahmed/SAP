@@ -332,7 +332,7 @@ class ForgotPasswordView(TemplateView):
                     print(response.body)
                     print(response.headers)
                 except Exception as e:
-                    print(e.message)
+                    print(e)
 
             messages.success(request, 'Confirmation Email Sent!')
             return redirect('sap/password-forgot-complete.html')
