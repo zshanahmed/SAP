@@ -337,7 +337,7 @@ class ForgotPasswordView(TemplateView):
 
                 try:
                     # sg = SendGridAPIClient(os.environ.get('SENDGRID_API_KEY'))
-                    sg = SendGridAPIClient('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')
+                    sg = SendGridAPIClient(os.environ.get('SENDGRID_API_KEY'))
                     response = sg.send(email_content)
                     print(response.status_code)
                     print(response.body)
