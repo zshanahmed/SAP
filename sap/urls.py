@@ -36,9 +36,6 @@ urlpatterns = [
 
     url(r'password-forgot-mail/', views.ForgotPasswordMail.as_view(),
         name='password-forgot-mail'),
-    #
-    # url(r'^password-reset/confirm/(?P<uidb64>[-\w]+)/(?P<token>[-\w]+)/$',
-    #     auth_views.PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
 
     url(r'password-forgot-complete$', views.ForgotPasswordCompleteView.as_view(),
         name='password-forgot-complete'),

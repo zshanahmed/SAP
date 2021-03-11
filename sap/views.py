@@ -349,7 +349,7 @@ class ForgotPasswordView(TemplateView):
 
             else:
                 messages.error(request, "Invalid Email Address!")
-                return render(request, 'account/password-forgot.html', {'form': form})
+                # return render(request, 'account/password-forgot.html', {'form': form})
 
         return render(request, 'sap/password-forgot.html', {'form': form})
 
