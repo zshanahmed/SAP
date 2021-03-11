@@ -3,7 +3,7 @@ import os
 from django.contrib.auth import logout
 from django.contrib.auth import authenticate
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.utils.encoding import force_bytes
+from django.utils.encoding import force_bytes, force_text
 
 from .models import Ally, StudentCategories, AllyStudentCategoryRelation
 from django.views import generic
@@ -287,15 +287,15 @@ class SignUpView(TemplateView):
         return redirect("sap:home")
 
 
-class ForgotPasswordInitiateView(TemplateView):
+class ForgotPasswordView(TemplateView):
     """
     A view which allows users to reset their password in case they forget it. Send a confirmation emails with token
     """
-    # template_name = "sap/password-forgot-initiate.html"
+    # template_name = "sap/password-forgot.html"
 
     def get(self, request, *args, **kwargs):
         form = PasswordResetForm(request.GET)
-        return render(request, 'sap/password-forgot-initiate.html', {'form': form})
+        return render(request, 'sap/password-forgot.html', {'form': form})
 
     def post(self, request, *args, **kwargs):
         form = PasswordResetForm(request.POST)
@@ -311,7 +311,7 @@ class ForgotPasswordInitiateView(TemplateView):
                 # user.profile.reset_password = True
                 # user.save()
 
-                message = render_to_string('sap/password-forgot-mail.html', {
+                message = render_to_string('sap/password-forgot-confirm.html', {
                     'user': user,
                     'protocol': 'http',
                     'domain': site.domain,
@@ -335,67 +335,78 @@ class ForgotPasswordInitiateView(TemplateView):
                     print(e.message)
 
             messages.success(request, 'Confirmation Email Sent!')
-            return redirect('sap/password-forgot-confirm.html')
+            return redirect('sap/password-forgot-complete.html')
         else:
             messages.error(request, "Could not Update Password !")
 
-        return render(request, 'sap/password-forgot-initiate.html', {'form': form})
+        return render(request, 'sap/password-forgot.html', {'form': form})
 
 
-class ForgotPasswordConfirmView(TemplateView):
-    template_name = "sap/password-forgot-confirm.html"
-
-
-class ForgotPasswordFormView(TemplateView):
-    template_name = "sap/password-forgot-form.html"
-
-
-class ForgotPasswordResetView(TemplateView):
+class ForgotPasswordDoneView(TemplateView):
     pass
 
 
-@check_recaptcha
-@require_http_methods(["GET", "POST"])
-@unauthenticated_required(home_url='/', redirect_field_name='')
-def password_reset(request):
-    """User forgot password form view."""
-    msg = ''
-    if request.method == "POST":
-        form = UserPasswordForgotForm(request.POST)
-        if form.is_valid() and request.recaptcha_is_valid:
-            email = request.POST.get('email')
-            qs = User.objects.filter(email=email)
-            site = get_current_site(request)
+class ForgotPasswordCompleteView(TemplateView):
+    # template_name = "sap/password-forgot-complete.html"
+    pass
 
-            if len(qs) > 0:
-                user = qs[0]
-                user.is_active = False  # User needs to be inactive for the reset password duration
-                user.profile.reset_password = True
+class ForgotPasswordConfirmView(TemplateView):
+    # template_name = "sap/password-forgot-done.html"
+
+    pass
+
+
+
+
+def reset(request, uidb64, token):
+
+    if request.method == 'POST':
+        try:
+            uid = force_text(urlsafe_base64_decode(uidb64))
+            user = User.objects.get(pk=uid)
+        except (TypeError, ValueError, OverflowError, User.DoesNotExist) as e:
+            messages.add_message(request, messages.WARNING, str(e))
+            user = None
+
+        if user is not None and password_reset_token.check_token(user, token):
+            form = UserResetForgotPasswordForm(user=user, data=request.POST)
+            if form.is_valid() and request.recaptcha_is_valid:
+                form.save()
+                update_session_auth_hash(request, form.user)
+
+                user.is_active = True
+                user.profile.reset_password = False
                 user.save()
-
-                message = render_to_string('account/password_reset_mail.html', {
-                    'user': user,
-                    'protocol': 'http',
-                    'domain': site.domain,
-                    'uid': urlsafe_base64_encode(force_bytes(user.pk)),
-                    'token': account_activation_token.make_token(user),
-                })
-
-                message = Mail(
-                    from_email='noreply@domain.com',
-                    to_emails=email,
-                    subject='Reset password for domain.com',
-                    html_content=message)
-                try:
-                    sg = SendGridAPIClient(os.environ.get('SENDGRID_API_KEY'))
-                    response = sg.send(message)
-                except Exception as e:
-                    print(e)
-
-            messages.add_message(request, messages.SUCCESS, 'Email {0} submitted.'.format(email))
-            msg = 'If this mail address is known to us, an email will be sent to your account.'
+                messages.add_message(request, messages.SUCCESS, 'Password reset successfully.')
+                return redirect('login')
+            else:
+                context = {
+                    'form': form,
+                    'uid': uidb64,
+                    'token': token
+                }
+                messages.add_message(request, messages.WARNING, 'Password could not be reset.')
+                return render(request, 'account/password_reset_conf.html', context)
         else:
-            messages.add_message(request, messages.WARNING, 'Email not submitted.')
-            return render(request, 'sap/password_reset_req.html', {'form': form})
+            messages.add_message(request, messages.WARNING, 'Password reset link is invalid.')
+            messages.add_message(request, messages.WARNING, 'Please request a new password reset.')
 
-    return render(request, 'sap/password_reset_req.html', {'form': UserPasswordForgotForm, 'msg': msg})
+    try:
+        uid = force_text(urlsafe_base64_decode(uidb64))
+        user = User.objects.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist) as e:
+        messages.add_message(request, messages.WARNING, str(e))
+        user = None
+
+    if user is not None and password_reset_token.check_token(user, token):
+        context = {
+            'form': UserResetForgotPasswordForm(user),
+            'uid': uidb64,
+            'token': token
+        }
+        return render(request, 'account/password_reset_conf.html', context)
+    else:
+        messages.add_message(request, messages.WARNING, 'Password reset link is invalid.')
+        messages.add_message(request, messages.WARNING, 'Please request a new password reset.')
+
+    return redirect('home')

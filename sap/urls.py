@@ -25,13 +25,16 @@ urlpatterns = [
         login_required(views.AnalyticsView.as_view(), login_url='home'),
         name='sap-analytics'),
 
-    url(r'password-forgot-initiate/$', views.ForgotPasswordInitiateView.as_view(), name='password-forgot-initiate'),
+    url(r'password-forgot/$', views.ForgotPasswordView.as_view(), name='password-forgot'),
 
-    url(r'password-forgot-confirm/$', views.ForgotPasswordConfirmView.as_view(), name='password-forgot-confirm'),
+    url(r'password-forgot/done/$', views.ForgotPasswordDoneView.as_view(), name='password-forgot-done'),
 
-    url(r'password-forgot-form/$', views.ForgotPasswordFormView.as_view(), name='password-forgot-form'),
+    url(r'password-forgot/confirm/<uidb64>/<token>/$', views.ForgotPasswordConfirmView.as_view(), name='password-forgot-confirm'),
+    #
+    # url(r'^password-reset/confirm/(?P<uidb64>[-\w]+)/(?P<token>[-\w]+)/$',
+    #     auth_views.PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
 
-    url(r'password-forgot-reset/$', views.ForgotPasswordResetView.as_view(), name='password-forgot-reset'),
+    url(r'password-forgot/complete$', views.ForgotPasswordCompleteView.as_view(), name='password-forgot-complete'),
 
     url('create_iba_admin/',
         login_required(views.CreateAdminView.as_view(), login_url='home'),
