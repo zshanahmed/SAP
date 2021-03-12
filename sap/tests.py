@@ -4,7 +4,8 @@ from django.urls import reverse
 from django.contrib.auth.models import User
 from http import HTTPStatus
 from .forms import UpdateAdminProfileForm
-from django.contrib.auth.forms import PasswordChangeForm
+from django.contrib.auth.forms import PasswordChangeForm, PasswordResetForm
+
 
 # Create your tests here.
 class DummyTests(TestCase):
@@ -729,9 +730,9 @@ class NonAdminAccessTests(TestCase):
 
 class ForgotPasswordViewTest(TestCase):
     def setUp(self):
-        self.username = 'admin'
-        self.password = 'admin_password1'
-        self.email = 'email@test.com'
+        self.username = 'user1'
+        self.password = 'user_password1'
+        self.email = 'email1@test.com'
         self.client = Client()
         self.user = User.objects.create_user(
             self.username, self.email, self.password)
@@ -740,17 +741,57 @@ class ForgotPasswordViewTest(TestCase):
         """
         The view is valid
         """
-        self.client.login(username=self.username, password=self.password)
+        # self.user.save()
+        # self.client.login(username=self.username, password=self.password)
         response = self.client.get(reverse('sap:password-forgot'))
         self.assertEqual(response.status_code, HTTPStatus.OK)
         self.assertContains(
             response, "Send me instructions!", html=True
         )
 
-    def enter_reset_email(self):
-        response = self.client.post()
+    def test_enter_valid_reset_email_address(self):
+        """
+        Enter email address and receive a message
+        """
+        response = self.client.get(reverse('sap:password-forgot'))
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        self.assertContains(
+            response, "Send me instructions!", html=True
+        )
 
+        data = {
+            "email": "email1@test.com",
+        }
+        form = PasswordResetForm(
+            data=data
+        )
+        self.assertTrue(form.is_valid())
 
+        response = self.client.post(
+            reverse("sap:password-forgot"), data=data, follow=True)
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+
+    def test_enter_invalid_reset_email_address(self):
+        """
+        Enter email address and receive a message
+        """
+        response = self.client.get(reverse('sap:password-forgot'))
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        self.assertContains(
+            response, "Send me instructions!", html=True
+        )
+
+        data = {
+            "email": "wrongemail@test.com",
+        }
+        form = PasswordResetForm(
+            data=data
+        )
+        self.assertTrue(form.is_valid())
+
+        response = self.client.post(
+            reverse('sap:password-forgot'), data=data, follow=True)
+        self.assertEqual(response.status_code, HTTPStatus.OK)
 
 
 

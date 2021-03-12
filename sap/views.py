@@ -363,11 +363,10 @@ class ForgotPasswordView(TemplateView):
                 except Exception as e:
                     print(e.email_content)
 
-                messages.success(request, 'Confirmation Email Sent!')
                 return redirect('/password-forgot-done')
 
             else:
-                messages.warning(request, "If this email address is known to us, a confirmation email will be sent to your inbox.")
+                return redirect('/password-forgot-done')
                 # return render(request, 'account/password-forgot.html', {'form': form})
 
         return render(request, 'sap/password-forgot.html', {'form': form})
@@ -387,11 +386,11 @@ class ForgotPasswordCompleteView(TemplateView):
     template_name = "sap/password-forgot-complete.html"
 
 
-# class ForgotPasswordMail(TemplateView):
-#     """
-#     Email template for Forgot Password Feature
-#     """
-#     template_name = "sap/password-forgot-mail.html"
+class ForgotPasswordMail(TemplateView):
+    """
+    Email template for Forgot Password Feature
+    """
+    template_name = "sap/password-forgot-mail.html"
 
 
 class ForgotPasswordConfirmView(TemplateView):
@@ -409,7 +408,7 @@ class ForgotPasswordConfirmView(TemplateView):
             uid = force_text(urlsafe_base64_decode(uidb64))
             user = User.objects.get(pk=uid)
         except (TypeError, ValueError, OverflowError, User.DoesNotExist) as e:
-            messages.add_message(request, messages.WARNING, str(e))
+            messages.warning(request, str(e))
             user = None
 
         if user is not None and password_reset_token.check_token(user, token):
@@ -420,8 +419,7 @@ class ForgotPasswordConfirmView(TemplateView):
             }
             return render(request, 'sap/password-forgot-confirm.html', context)
         else:
-            messages.add_message(request, messages.WARNING, 'Password reset link is invalid.')
-            messages.add_message(request, messages.WARNING, 'Please request a new password reset.')
+            messages.error(request, 'Password reset link is invalid. Please request a new password reset.')
 
     def post(self, request, *args, **kwargs):
         path = request.path
@@ -432,7 +430,7 @@ class ForgotPasswordConfirmView(TemplateView):
             uid = force_text(urlsafe_base64_decode(uidb64))
             user = User.objects.get(pk=uid)
         except (TypeError, ValueError, OverflowError, User.DoesNotExist) as e:
-            messages.add_message(request, messages.WARNING, str(e))
+            messages.warning(request, str(e))
             user = None
 
         if user is not None and password_reset_token.check_token(user, token):
@@ -455,7 +453,7 @@ class ForgotPasswordConfirmView(TemplateView):
                 messages.error(request, 'Password Could Not be Reset.')
                 return render(request, 'account/password-forgot-confirm.html', context)
         else:
-            messages.error(request, messages.WARNING, 'Password reset link is invalid. Please request a new password reset.')
+            messages.error(request, 'Password reset link is invalid. Please request a new password reset.')
 
 
 
