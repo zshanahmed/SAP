@@ -32,7 +32,6 @@ def create_ally(username, hawk_id):
                                major='Computer Science')
 
 
-
 class AdminUpdateProfileAndPasswordTests(TestCase):
     def setUp(self):
         self.username = 'Admin_1'
@@ -413,6 +412,7 @@ class AdminAccessTests(TestCase):
         response = self.client.get(reverse('sap:sap-analytics'))
         self.assertEqual(response.status_code, HTTPStatus.OK)
 
+
 class SignUpTests(TestCase):
     def setUp(self):
         self.username = 'admin'
@@ -642,5 +642,33 @@ class NonAdminAccessTests(TestCase):
         self.client.login(username=self.username, password=self.password)
         response = self.client.get(reverse('sap:sap-analytics'))
         self.assertEqual(response.status_code, HTTPStatus.FORBIDDEN)
+
+
+class ForgotPasswordViewTest(TestCase):
+    def setUp(self):
+        self.username = 'admin'
+        self.password = 'admin_password1'
+        self.email = 'email@test.com'
+        self.client = Client()
+        self.user = User.objects.create_user(
+            self.username, self.email, self.password)
+
+    def test_get(self):
+        """
+        The view is valid
+        """
+        self.client.login(username=self.username, password=self.password)
+        response = self.client.get(reverse('sap:password-forgot'))
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        self.assertContains(
+            response, "Send me instructions!", html=True
+        )
+
+    def enter_reset_email(self):
+        response = self.client.post()
+
+
+
+
 
 

@@ -369,11 +369,11 @@ class ForgotPasswordCompleteView(TemplateView):
     template_name = "sap/password-forgot-complete.html"
 
 
-class ForgotPasswordMail(TemplateView):
-    """
-    Email template for Forgot Password Feature
-    """
-    template_name = "sap/password-forgot-mail.html"
+# class ForgotPasswordMail(TemplateView):
+#     """
+#     Email template for Forgot Password Feature
+#     """
+#     template_name = "sap/password-forgot-mail.html"
 
 
 class ForgotPasswordConfirmView(TemplateView):
