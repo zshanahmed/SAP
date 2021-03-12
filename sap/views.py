@@ -57,6 +57,14 @@ class ViewAllyProfileFromAdminDashboard(AccessMixin, View):
         except:
             return HttpResponseNotFound("hello")
 
+class DeleteAllyProfileFromAdminDashboard(AccessMixin, View):
+    def get(self, request, *args, **kwargs):
+        username = request.GET['username']
+        try:
+            print(request)
+        except:
+            return HttpResponseNotFound("hello")
+
 class ChangeAdminPassword(AccessMixin, View):
     """
     Change the password for admin
