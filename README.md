@@ -1,3 +1,3 @@
 ### SAP
 
-https://sep-team1-iba.azurewebsites.net/
+https://sep-iba-team1.azurewebsites.net/
