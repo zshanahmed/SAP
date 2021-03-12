@@ -25,6 +25,8 @@ from .tokens import password_reset_token, account_activation_token
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
 
+from .forms import UpdateAdminProfileForm
+from django.http import HttpResponseNotFound
 
 # Create your views here.
 
@@ -57,6 +59,19 @@ class AccessMixin(LoginRequiredMixin):
         if not request.user.is_staff:
             return self.handle_no_permission()
         return super().dispatch(request, *args, **kwargs)
+
+
+class ViewAllyProfileFromAdminDashboard(AccessMixin, View):
+    def get(self, request, *args, **kwargs):
+        username = request.GET['username']
+        try:
+            user = User.objects.get(username=username)
+            ally = Ally.objects.get(user=user)
+            return render(request, 'sap/admin_ally_table/view_ally.html', {
+                'ally': ally
+            })
+        except:
+            return HttpResponseNotFound("hello")
 
 
 class ChangeAdminPassword(AccessMixin, View):
@@ -239,7 +254,10 @@ class SignUpView(TemplateView):
                                             how_can_science_ally_serve_you=postDict['howCanWeHelp'])
             else:
                 if postDict['roleSelected'][0] == 'Undergraduate Student':
-                    categories = self.make_categories(postDict["idUnderGradCheckboxes"])
+                    try:
+                        categories = self.make_categories(postDict["idUnderGradCheckboxes"])
+                    except KeyError:
+                        categories = StudentCategories.objects.create()
                     undergradList = ['interestRadios', 'experienceRadios', 'interestedRadios', 'agreementRadios']
                     selections = self.set_boolean(undergradList, postDict)
                     ally = Ally.objects.create(user=user, user_type=postDict['roleSelected'][0], hawk_id=user.username,
