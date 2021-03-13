@@ -65,7 +65,7 @@ class DeleteAllyProfileFromAdminDashboard(AccessMixin, View):
             ally = Ally.objects.get(user=user)
             ally.delete()
             user.delete()
-            messages.success(request, 'Successfully the deleted user')
+            messages.success(request, 'Successfully deleted the user '+username)
             return redirect('sap:sap-dashboard')
         except Exception as e:
             print(e)
