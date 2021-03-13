@@ -25,7 +25,23 @@ urlpatterns = [
         login_required(views.AnalyticsView.as_view(), login_url='home'),
         name='sap-analytics'),
 
-    url(r'forgot-password/$', views.ForgotPasswordView.as_view(), name='forgot_password'),
+    url(r'password-forgot/$', views.ForgotPasswordView.as_view(),
+        name='password-forgot'),
+
+    url(r'password-forgot-done/$', views.ForgotPasswordDoneView.as_view(),
+        name='password-forgot-done'),
+
+    # path(r'^password-forgot-confirm/(<slug:uidb64>/<slug:token>/$', auth_views.PasswordResetConfirmView.as_view(),
+    #      name='password-forgot-confirm'),
+
+    url(r'password-forgot-confirm/(?P<uidb64>[\w-]+)/(?P<token>[\w-]+)$', views.ForgotPasswordConfirmView.as_view(),
+        name='password-forgot-confirm'),
+
+    url(r'password-forgot-mail/', views.ForgotPasswordMail.as_view(),
+        name='password-forgot-mail'),
+
+    url(r'password-forgot-complete$', views.ForgotPasswordCompleteView.as_view(),
+        name='password-forgot-complete'),
 
     url(r'^allies/$', login_required(views.ViewAllyProfileFromAdminDashboard.as_view()),
         name='admin_view_ally'),

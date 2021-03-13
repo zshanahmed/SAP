@@ -1,12 +1,22 @@
+import os
+
+from django.shortcuts import render
 from django.test import TestCase, Client
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
+
 from .models import Ally, StudentCategories, AllyStudentCategoryRelation
 from django.urls import reverse
 from django.contrib.auth.models import User
 from http import HTTPStatus
 from .forms import UpdateAdminProfileForm
-from django.contrib.auth.forms import PasswordChangeForm
+from django.contrib.auth.forms import PasswordChangeForm, PasswordResetForm
+
 
 # Create your tests here.
+from .tokens import password_reset_token
+
+
 class DummyTests(TestCase):
 
     def test_true(self):
@@ -68,7 +78,7 @@ class AdminAllyTableFeatureTests(TestCase):
         """
         Show View ally page for admin
         """
-        
+
         self.user.is_staff = True
         self.user.save()
         self.client.login(username=self.username, password=self.password)
@@ -77,7 +87,7 @@ class AdminAllyTableFeatureTests(TestCase):
         self.assertContains(
             response, "Ally Profile", html=True
         )
-    
+
     def test_view_non_ally_page_for_admin(self):
         """
         Show that the code return 404 when username is wrong
@@ -89,7 +99,7 @@ class AdminAllyTableFeatureTests(TestCase):
         response = self.client.get(
             '/allies/', {'username': 'something'})
         self.assertEqual(response.status_code, HTTPStatus.NOT_FOUND)
-    
+
     def test_view_ally_page_for_non_admin(self):
         """
         Show that the code return 403 when user is not admin
@@ -462,7 +472,7 @@ class LogoutRedirectTests(TestCase):
         self.client = Client()
 
         User.objects.create_user(self.username, 'email@test.com', self.password, is_staff=True)
-    
+
     def test_logout_for_admin(self):
         self.client.login(username=self.username, password=self.password)
         response = self.client.get(reverse('sap:logout'))
@@ -494,6 +504,7 @@ class AdminAccessTests(TestCase):
         self.client.login(username=self.username, password=self.password)
         response = self.client.get(reverse('sap:sap-analytics'))
         self.assertEqual(response.status_code, HTTPStatus.OK)
+
 
 class SignUpTests(TestCase):
     def setUp(self):
@@ -726,3 +737,78 @@ class NonAdminAccessTests(TestCase):
         self.assertEqual(response.status_code, HTTPStatus.FORBIDDEN)
 
 
+class ForgotPasswordViewTest(TestCase):
+    def setUp(self):
+        self.username = 'user1'
+        self.password = 'user_password1'
+        self.email = 'email1@test.com'
+        self.client = Client()
+        self.user = User.objects.create_user(
+            self.username, self.email, self.password)
+
+    def test_get(self):
+        """
+        The view is valid
+        """
+        # self.user.save()
+        # self.client.login(username=self.username, password=self.password)
+        response = self.client.get(reverse('sap:password-forgot'))
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        self.assertContains(
+            response, "Send me instructions!", html=True
+        )
+
+    def test_enter_valid_reset_email_address(self):
+        """
+        Enter email address and receive a message
+        """
+        response = self.client.get(reverse('sap:password-forgot'))
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        self.assertContains(
+            response, "Send me instructions!", html=True
+        )
+
+        data = {
+            "email": "email1@test.com",
+        }
+        form = PasswordResetForm(
+            data=data
+        )
+        self.assertTrue(form.is_valid())
+
+        response = self.client.post(
+            reverse("sap:password-forgot"), data=data, follow=True)
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+
+    def test_enter_invalid_reset_email_address(self):
+        """
+        Enter invalid email address and receive a message
+        """
+        response = self.client.get(reverse('sap:password-forgot'))
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        self.assertContains(
+            response, "Send me instructions!", html=True
+        )
+
+        data = {
+            "email": "wrongemail@test.com",
+        }
+        form = PasswordResetForm(
+            data=data
+        )
+        self.assertTrue(form.is_valid())
+
+        response = self.client.post(
+            reverse('sap:password-forgot'), data=data, follow=True)
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+
+    def test_if_confirmation_link_work(self):
+        """
+        Enter invalid email address and receive a message
+        """
+        token = password_reset_token.make_token(self.user)
+        uid = urlsafe_base64_encode(force_bytes(self.user.pk))
+        link = reverse('sap:password-forgot-confirm', args=[uid, token])
+
+        request = self.client.get(link)
+        self.assertEqual(request.status_code, HTTPStatus.OK)
