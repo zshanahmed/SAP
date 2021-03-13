@@ -808,16 +808,7 @@ class ForgotPasswordViewTest(TestCase):
         """
         token = password_reset_token.make_token(self.user)
         uid = urlsafe_base64_encode(force_bytes(self.user.pk))
-        data = {
-            "token": token,
-            "uid": uid
-        }
         link = reverse('sap:password-forgot-confirm', args=[uid, token])
-
 
         request = self.client.get(link)
         self.assertEqual(request.status_code, HTTPStatus.OK)
-
-
-
-
