@@ -1,6 +1,7 @@
 import os
 
 from django.shortcuts import render
+# tests file
 from django.test import TestCase, Client
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
@@ -692,7 +693,7 @@ class SignUpTests(TestCase):
         self.assertTrue(user.exists())
         self.assertTrue(ally.exists())
 
-    
+
     # def test_Staff(self):
     #     response = self.c.post('/sign-up/', {'csrfmiddlewaretoken': ['PoY77CUhmZ70AsUF3C1nISUsVErkhMjLyb4IEZCTjZafBiWyKGajNyYdVVlldTBp'], 
     #     'firstName': ['chongu'], 'lastName': ['gumpy'], 'new_username': ['chonguG'], 
