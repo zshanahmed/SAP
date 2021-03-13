@@ -135,8 +135,11 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 LOGIN_REDIRECT_URL = 'login_success/'
 LOGOUT_REDIRECT_URL = 'sap:home'
 
+
 from django.contrib.messages import constants as messages
 
 MESSAGE_TAGS = {
     messages.ERROR: 'danger'
 }
+
+LOGIN_URL = 'sap:home'
