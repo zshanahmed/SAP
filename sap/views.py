@@ -73,6 +73,20 @@ class ViewAllyProfileFromAdminDashboard(AccessMixin, View):
         except:
             return HttpResponseNotFound("hello")
 
+class DeleteAllyProfileFromAdminDashboard(AccessMixin, View):
+    def get(self, request, *args, **kwargs):
+        username = request.GET['username']
+        try:
+            user = User.objects.get(username=username)
+            ally = Ally.objects.get(user=user)
+            ally.delete()
+            user.delete()
+            messages.success(request, 'Successfully deleted the user '+username)
+            return redirect('sap:sap-dashboard')
+        except Exception as e:
+            print(e)
+            return HttpResponseNotFound("")
+
 
 class ChangeAdminPassword(AccessMixin, View):
     """

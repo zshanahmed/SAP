@@ -110,6 +110,19 @@ class AdminAllyTableFeatureTests(TestCase):
         response = self.client.get(
             '/allies/', {'username': 'something'})
         self.assertEqual(response.status_code, HTTPStatus.FORBIDDEN)
+    
+    def test_delete_ally(self):
+        self.user.is_staff = True
+        self.user.save()
+        self.client.login(username=self.username, password=self.password)
+        name = self.ally_user.first_name + ' ' + self.ally_user.last_name
+
+        response = self.client.get(reverse('sap:sap-dashboard'))
+        self.assertContains(response, name, html=True)
+        response = self.client.get('/delete/', {'username': self.ally_user.username}, follow=True)
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        self.assertNotContains(response, name, html=True)
+
 
 class AdminUpdateProfileAndPasswordTests(TestCase):
     def setUp(self):
