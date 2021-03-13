@@ -1,4 +1,10 @@
+import os
+
+from django.shortcuts import render
 from django.test import TestCase, Client
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
+
 from .models import Ally, StudentCategories, AllyStudentCategoryRelation
 from django.urls import reverse
 from django.contrib.auth.models import User
@@ -8,6 +14,9 @@ from django.contrib.auth.forms import PasswordChangeForm, PasswordResetForm
 
 
 # Create your tests here.
+from .tokens import password_reset_token
+
+
 class DummyTests(TestCase):
 
     def test_true(self):
@@ -773,7 +782,7 @@ class ForgotPasswordViewTest(TestCase):
 
     def test_enter_invalid_reset_email_address(self):
         """
-        Enter email address and receive a message
+        Enter invalid email address and receive a message
         """
         response = self.client.get(reverse('sap:password-forgot'))
         self.assertEqual(response.status_code, HTTPStatus.OK)
@@ -792,6 +801,22 @@ class ForgotPasswordViewTest(TestCase):
         response = self.client.post(
             reverse('sap:password-forgot'), data=data, follow=True)
         self.assertEqual(response.status_code, HTTPStatus.OK)
+
+    def test_if_confirmation_link_work(self):
+        """
+        Enter invalid email address and receive a message
+        """
+        token = password_reset_token.make_token(self.user)
+        uid = urlsafe_base64_encode(force_bytes(self.user.pk))
+        data = {
+            "token": token,
+            "uid": uid
+        }
+        link = reverse('sap:password-forgot-confirm', args=[uid, token])
+
+
+        request = self.client.get(link)
+        self.assertEqual(request.status_code, HTTPStatus.OK)
 
 
 
