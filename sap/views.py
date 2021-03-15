@@ -435,6 +435,7 @@ class ForgotPasswordConfirmView(TemplateView):
             return render(request, 'sap/password-forgot-confirm.html', context)
         else:
             messages.error(request, 'Password reset link is invalid. Please request a new password reset.')
+            return redirect('sap:home')
 
     def post(self, request, *args, **kwargs):
         path = request.path

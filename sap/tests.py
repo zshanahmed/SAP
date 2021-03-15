@@ -478,6 +478,7 @@ class LoginRedirectTests(TestCase):
         self.assertEqual(response.status_code, HTTPStatus.OK)
         self.client.logout()
 
+
 class LogoutRedirectTests(TestCase):
 
     def setUp(self):
