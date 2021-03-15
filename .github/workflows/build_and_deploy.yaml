@@ -37,6 +37,9 @@ jobs:
     - name: Run tests
       run: python manage.py test
     
+    - name: Remove artifacts
+      uses: c-hive/gha-remove-artifacts@v1.2.0
+    
     - name: Upload artifact for deployment jobs
       uses: actions/upload-artifact@v2
       with:
