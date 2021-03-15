@@ -13,9 +13,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    
-    - name: Remove artifacts
-      uses: c-hive/gha-remove-artifacts@v1.2.0
 
     - uses: actions/checkout@v2
 
