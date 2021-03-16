@@ -12,21 +12,6 @@ env:
   WEBAPP_NAME: 'sep-iba-team1'  # Replace with the name of your Azure web app
 
 jobs:
-  remove-old-artifacts:
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-
-    steps:
-    - uses: actions/checkout@v2
-    
-    - name: Remove old artifacts
-      uses: UIOWAjohnsonhj/001_SEP2021@master
-      with:
-        age: '1 month'
-        # Optional inputs
-        # skip-tags: true
-        # skip-recent: 5
-        
   build-and-test:
     runs-on: ubuntu-latest
     
