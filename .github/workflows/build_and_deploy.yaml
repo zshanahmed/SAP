@@ -12,11 +12,17 @@ env:
   WEBAPP_NAME: 'sep-iba-team1'  # Replace with the name of your Azure web app
 
 jobs:
+        
   build-and-test:
     runs-on: ubuntu-latest
     
     steps:
     - uses: actions/checkout@v2
+    
+    - name: Remove old artifacts
+      uses: UIOWAjohnsonhj/001_SEP2021-artifacts@v1
+      with:
+        age: '1 week'
 
     - name: Setup Python version
       uses: actions/setup-python@v2
