@@ -15,9 +15,9 @@ jobs:
 
     steps:
     - name: Remove old artifacts
-      uses: UIOWAjohnsonhj/001_SEP2021@fix_ci_cd
+      uses: c-hive/gha-remove-artifacts@v1
       with:
-        age: '1 month'
+        age: '1 week'
         # Optional inputs
         # skip-tags: true
         # skip-recent: 5
