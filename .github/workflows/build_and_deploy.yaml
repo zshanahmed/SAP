@@ -18,7 +18,7 @@ jobs:
 
     steps:
     - name: Remove old artifacts
-      uses: UIOWAjohnsonhj/001_SEP2021@v1
+      uses: UIOWAjohnsonhj/001_SEP2021@master
       with:
         age: '1 month'
         # Optional inputs
