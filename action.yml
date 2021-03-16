@@ -2,6 +2,8 @@ name: 'Remove artifacts'
 author: 'UIOWAjohnsonhj'
 description: ''
 runs-on: ubuntu-latest
+runs:
+  using:'composite'
 inputs:
   age:
     description: 'Artifacts older than this will be deleted (e.g. "2 months", "1 day"). Parsed by moment.'
