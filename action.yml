@@ -1,0 +1,18 @@
+name: 'Remove artifacts'
+author: 'UIOWAjohnsonhj'
+description: ''
+runs-on: ubuntu-latest
+inputs:
+  age:
+    description: 'Artifacts older than this will be deleted (e.g. "2 months", "1 day"). Parsed by moment.'
+    required: true
+  GITHUB_TOKEN:
+    description: 'Access token for the repository, available under the same name in secrets.'
+    required: true
+    default: ${{ github.token }}
+  skip-tags:
+    description: 'true/false. If enabled, tag build artifacts (e.g. release artifacts) will be kept.'
+    required: false
+  skip-recent:
+    description: 'Keep the specified number of artifacts even if they are older than the age.'
+    required: false
