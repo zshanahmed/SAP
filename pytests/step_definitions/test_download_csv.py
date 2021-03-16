@@ -15,7 +15,7 @@ localhost = 'http://127.0.0.1:8000/'
 @given(parsers.parse('I am on dashboard logged in as admin'))
 def login(firefoxBrowser):
     firefoxBrowser.get(localhost)
-    firefoxBrowser.find_element_by_id('id_username').send_keys('iba_admin1')
+    firefoxBrowser.find_element_by_id('id_username').send_keys('iba_admin')
     firefoxBrowser.find_element_by_id('id_password').send_keys('iba_sep_1')
     firefoxBrowser.find_element_by_id("submit").click()
 
