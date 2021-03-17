@@ -1,12 +1,13 @@
 import os
 import os.path
+import csv
 from django.contrib.auth import logout
 from django.contrib.auth import authenticate
 from django.contrib.auth.views import PasswordResetConfirmView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse
 from django.utils.encoding import force_bytes, force_text
-
+from django.http import StreamingHttpResponse
 from .models import Ally, StudentCategories, AllyStudentCategoryRelation
 from django.views import generic
 from django.views.generic import TemplateView, View
@@ -469,6 +470,21 @@ class ForgotPasswordConfirmView(TemplateView):
         else:
             messages.error(request, 'Password reset link is invalid. Please request a new password reset.')
 
+class Echo:
+    """An object that implements just the write method of the file-like
+    interface.
+    """
+    def write(self, value):
+        """Write the value by returning it, instead of storing in a buffer."""
+        return value
 
+class DownloadAllies(StreamingHttpResponse):
 
-
+    def allies_streaming(self, request, allies):
+        rows = allies
+        pseudo_buffer = Echo()
+        writer = csv.writer(pseudo_buffer)
+        response = StreamingHttpResponse((writer.writerow(row) for row in rows),
+                                         content_type="text/csv")
+        response['Content-Disposition'] = 'attachment; filename="somefilename.csv"'
+        return response
