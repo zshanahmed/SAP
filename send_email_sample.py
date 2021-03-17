@@ -13,7 +13,8 @@ message = Mail(
     subject='Sample Email From Science Alliance Portal',
     html_content='<strong>This is an email from Science Alliance Portal</strong>')
 try:
-    sg = SendGridAPIClient(os.environ.get('SENDGRID_API_KEY'))
+    # sg = SendGridAPIClient(os.environ.get('SENDGRID_API_KEY'))
+    sg = SendGridAPIClient('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')
     response = sg.send(message)
     print(response.status_code)
     print(response.body)

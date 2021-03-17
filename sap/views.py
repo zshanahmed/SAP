@@ -368,8 +368,8 @@ class ForgotPasswordView(TemplateView):
                     html_content=message_body)
 
                 try:
-                    # TODO: Change API key and invalidate the old one
                     # sg = SendGridAPIClient(os.environ.get('SENDGRID_API_KEY'))
+                    # TODO: Change API key and invalidate the old one
                     sg = SendGridAPIClient('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')
                     response = sg.send(email_content)
                     print(response.status_code)
@@ -458,19 +458,19 @@ class ForgotPasswordConfirmView(TemplateView):
                 user.is_active = True
                 # user.profile.reset_password = False
                 user.save()
-                messages.success(request, 'New password created successfully!')
+                messages.success(request, 'New Password Created Successfully!')
                 return redirect('sap:home')
             else:
                 context = {
-                    'form': form,
+                    'form': UserResetForgotPasswordForm(user),
                     'uid': uidb64,
                     'token': token
                 }
-                messages.error(request, 'Please make sure you correctly repeat the new password.')
+                messages.error(request, 'Password does not meet requirements.')
                 return render(request, 'sap/password-forgot-confirm.html', context)
         else:
             messages.error(request, 'Password reset link is invalid. Please request a new password reset.')
-
+            return redirect('sap:home')
 
 
 
