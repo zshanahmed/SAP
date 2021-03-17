@@ -44,6 +44,7 @@ jobs:
         path: |
           . 
           !venv/
+        retention-days: 7
   
   deploy-to-webapp:
     needs: build-and-test
