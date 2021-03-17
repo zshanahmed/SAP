@@ -853,7 +853,7 @@ class ForgotPasswordTest(TestCase):
             link, data=data, follow=True)
         self.assertEqual(response.status_code, HTTPStatus.OK)
         message = list(response.context['messages'])[0]
-        self.assertEqual(message.message, "New password created successfully!")
+        self.assertEqual(message.message, "New Password Created Successfully!")
 
     def test_reset_password_failure(self):
         """
