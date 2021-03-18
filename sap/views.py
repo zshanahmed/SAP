@@ -55,7 +55,21 @@ class ViewAllyProfileFromAdminDashboard(AccessMixin, View):
                 'ally': ally
             })
         except:
-            return HttpResponseNotFound("hello")
+            return HttpResponseNotFound()
+
+
+class EditAllyProfileFromAdminDashboard(AccessMixin, View):
+    def get(self, request, *args, **kwargs):
+        username = request.GET['username']
+        try:
+            user = User.objects.get(username=username)
+            ally = Ally.objects.get(user=user)
+            return render(request, 'sap/admin_ally_table/edit_ally.html', {
+                'ally': ally
+            })
+        except Exception as e:
+            print(e)
+            return HttpResponseNotFound()
 
 class ChangeAdminPassword(AccessMixin, View):
     """
