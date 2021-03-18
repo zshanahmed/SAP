@@ -1,12 +1,23 @@
+import os
+
+from django.shortcuts import render
+# tests file
 from django.test import TestCase, Client
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
+
 from .models import Ally, StudentCategories, AllyStudentCategoryRelation
 from django.urls import reverse
 from django.contrib.auth.models import User
 from http import HTTPStatus
-from .forms import UpdateAdminProfileForm
-from django.contrib.auth.forms import PasswordChangeForm
+from .forms import UpdateAdminProfileForm, UserResetForgotPasswordForm
+from django.contrib.auth.forms import PasswordChangeForm, PasswordResetForm
+
 
 # Create your tests here.
+from .tokens import password_reset_token
+
+
 class DummyTests(TestCase):
 
     def test_true(self):
@@ -68,7 +79,7 @@ class AdminAllyTableFeatureTests(TestCase):
         """
         Show View ally page for admin
         """
-        
+
         self.user.is_staff = True
         self.user.save()
         self.client.login(username=self.username, password=self.password)
@@ -77,7 +88,7 @@ class AdminAllyTableFeatureTests(TestCase):
         self.assertContains(
             response, "Ally Profile", html=True
         )
-    
+
     def test_view_non_ally_page_for_admin(self):
         """
         Show that the code return 404 when username is wrong
@@ -89,7 +100,7 @@ class AdminAllyTableFeatureTests(TestCase):
         response = self.client.get(
             '/allies/', {'username': 'something'})
         self.assertEqual(response.status_code, HTTPStatus.NOT_FOUND)
-    
+
     def test_view_ally_page_for_non_admin(self):
         """
         Show that the code return 403 when user is not admin
@@ -99,6 +110,19 @@ class AdminAllyTableFeatureTests(TestCase):
         response = self.client.get(
             '/allies/', {'username': 'something'})
         self.assertEqual(response.status_code, HTTPStatus.FORBIDDEN)
+    
+    def test_delete_ally(self):
+        self.user.is_staff = True
+        self.user.save()
+        self.client.login(username=self.username, password=self.password)
+        name = self.ally_user.first_name + ' ' + self.ally_user.last_name
+
+        response = self.client.get(reverse('sap:sap-dashboard'))
+        self.assertContains(response, name, html=True)
+        response = self.client.get('/delete/', {'username': self.ally_user.username}, follow=True)
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        self.assertNotContains(response, name, html=True)
+
 
 class AdminUpdateProfileAndPasswordTests(TestCase):
     def setUp(self):
@@ -454,6 +478,7 @@ class LoginRedirectTests(TestCase):
         self.assertEqual(response.status_code, HTTPStatus.OK)
         self.client.logout()
 
+
 class LogoutRedirectTests(TestCase):
 
     def setUp(self):
@@ -462,7 +487,7 @@ class LogoutRedirectTests(TestCase):
         self.client = Client()
 
         User.objects.create_user(self.username, 'email@test.com', self.password, is_staff=True)
-    
+
     def test_logout_for_admin(self):
         self.client.login(username=self.username, password=self.password)
         response = self.client.get(reverse('sap:logout'))
@@ -494,6 +519,7 @@ class AdminAccessTests(TestCase):
         self.client.login(username=self.username, password=self.password)
         response = self.client.get(reverse('sap:sap-analytics'))
         self.assertEqual(response.status_code, HTTPStatus.OK)
+
 
 class SignUpTests(TestCase):
     def setUp(self):
@@ -587,12 +613,12 @@ class SignUpTests(TestCase):
         self.assertTrue(categories.exists())
 
     def test_create_Grad(self):
-        response = self.c.post('/sign-up/', {'csrfmiddlewaretoken': ['TFosu1rFWp6S4SsYIV5Rb9FtBzoTavgrCsu31o9hTp975IuRpZeNgPJeBQiU6Cy5'], 
-        'firstName': ['glumpy'], 'lastName': ['guy'], 'new_username': ['big_guy1'], 
-        'new_email': ['eshaeffer@uiowa.edu'], 'new_password': ['123'], 'repeat_password': ['123'], 
-        'roleSelected': ['Graduate Student'], 
-        'stemGradCheckboxes': ['Biochemistry', 'Biology', 'Biomedical Engineering', 'Chemical Engineering'], 
-        'mentoringGradRadios': ['Yes'], 'mentoringGradCheckboxes': ['First generation college-student', 'Low-income', 'Underrepresented racial/ethnic minority', 'Transfer student', 'LGBTQ'], 
+        response = self.c.post('/sign-up/', {'csrfmiddlewaretoken': ['TFosu1rFWp6S4SsYIV5Rb9FtBzoTavgrCsu31o9hTp975IuRpZeNgPJeBQiU6Cy5'],
+        'firstName': ['glumpy'], 'lastName': ['guy'], 'new_username': ['big_guy1'],
+        'new_email': ['eshaeffer@uiowa.edu'], 'new_password': ['123'], 'repeat_password': ['123'],
+        'roleSelected': ['Graduate Student'],
+        'stemGradCheckboxes': ['Biochemistry', 'Biology', 'Biomedical Engineering', 'Chemical Engineering'],
+        'mentoringGradRadios': ['Yes'], 'mentoringGradCheckboxes': ['First generation college-student', 'Low-income', 'Underrepresented racial/ethnic minority', 'Transfer student', 'LGBTQ'],
         'labShadowRadios': ['Yes'], 'connectingRadios': ['Yes'], 'volunteerGradRadios': ['No'], 'gradTrainingRadios': ['Yes']})
         url = response.url
         self.assertEqual(url, '/')
@@ -629,11 +655,11 @@ class SignUpTests(TestCase):
 
 
     def test_Faculty(self):
-        response = self.c.post('/sign-up/', {'csrfmiddlewaretoken': ['gr9bKWMJLFrJZfcdKkdRhlyKLI0JeTh2ZefMhjulIFuY05e6romNm1CvLZUKa0zG'], 'firstName': ['Terry'], 'lastName': ['Braun'], 
-        'new_username': ['tbraun'], 'new_email': ['tbraun@uiowa.edu'], 'new_password': ['123'], 
-        'repeat_password': ['123'], 'roleSelected': ['Faculty'], 
-        'stemCheckboxes': ['Bioinformatics', 'Biomedical Engineering'], 'research-des': ['Me make big variant :)'], 
-        'openingRadios': ['Yes'], 'mentoringCheckboxes': ['First generation college-student', 'Underrepresented racial/ethnic minority', 'Transfer student'], 
+        response = self.c.post('/sign-up/', {'csrfmiddlewaretoken': ['gr9bKWMJLFrJZfcdKkdRhlyKLI0JeTh2ZefMhjulIFuY05e6romNm1CvLZUKa0zG'], 'firstName': ['Terry'], 'lastName': ['Braun'],
+        'new_username': ['tbraun'], 'new_email': ['tbraun@uiowa.edu'], 'new_password': ['123'],
+        'repeat_password': ['123'], 'roleSelected': ['Faculty'],
+        'stemCheckboxes': ['Bioinformatics', 'Biomedical Engineering'], 'research-des': ['Me make big variant :)'],
+        'openingRadios': ['Yes'], 'mentoringCheckboxes': ['First generation college-student', 'Underrepresented racial/ethnic minority', 'Transfer student'],
         'volunteerRadios': ['Yes'],'mentoringFacultyRadios':['Yes'], 'trainingRadios': ['Yes']})
         url = response.url
         self.assertEqual(url, '/')
@@ -669,9 +695,9 @@ class SignUpTests(TestCase):
         self.assertTrue(categories.exists())
 
     def test_Staff(self):
-        response = self.c.post('/sign-up/', {'csrfmiddlewaretoken': ['K5dFCUih0K6ZYklAemhvIWSpCebK86zdx4ric6ucIPLUQhAdtdT7hhp4r5etxoJY'], 
-        'firstName': ['hawk'], 'lastName': ['herky'], 'new_username': ['hawkherky'], 'new_email': ['hawkherky@uiowa.edu'], 
-        'new_password': ['hawk'], 'repeat_password': ['hawk'], 'roleSelected': ['Staff'], 
+        response = self.c.post('/sign-up/', {'csrfmiddlewaretoken': ['K5dFCUih0K6ZYklAemhvIWSpCebK86zdx4ric6ucIPLUQhAdtdT7hhp4r5etxoJY'],
+        'firstName': ['hawk'], 'lastName': ['herky'], 'new_username': ['hawkherky'], 'new_email': ['hawkherky@uiowa.edu'],
+        'new_password': ['hawk'], 'repeat_password': ['hawk'], 'roleSelected': ['Staff'],
         'studentsInterestedRadios': ['Yes'], 'howCanWeHelp': ['sasdasdasd']})
         url = response.url
         self.assertEqual(url, '/')
@@ -681,11 +707,11 @@ class SignUpTests(TestCase):
         self.assertTrue(user.exists())
         self.assertTrue(ally.exists())
 
-    
+
     # def test_Staff(self):
-    #     response = self.c.post('/sign-up/', {'csrfmiddlewaretoken': ['PoY77CUhmZ70AsUF3C1nISUsVErkhMjLyb4IEZCTjZafBiWyKGajNyYdVVlldTBp'], 
-    #     'firstName': ['chongu'], 'lastName': ['gumpy'], 'new_username': ['chonguG'], 
-    #     'new_email': ['chongu@uiowa.edu'], 'new_password': ['123'], 'repeat_password': ['123'], 
+    #     response = self.c.post('/sign-up/', {'csrfmiddlewaretoken': ['PoY77CUhmZ70AsUF3C1nISUsVErkhMjLyb4IEZCTjZafBiWyKGajNyYdVVlldTBp'],
+    #     'firstName': ['chongu'], 'lastName': ['gumpy'], 'new_username': ['chonguG'],
+    #     'new_email': ['chongu@uiowa.edu'], 'new_password': ['123'], 'repeat_password': ['123'],
     #     'roleSelected': ['Staff'], 'studentsInterestedRadios': ['Yes'], 'howCanWeHelp': ['give me $10000000']})
     #     url = response.url
     #     self.assertEqual(url, '/')
@@ -724,5 +750,149 @@ class NonAdminAccessTests(TestCase):
         self.client.login(username=self.username, password=self.password)
         response = self.client.get(reverse('sap:sap-analytics'))
         self.assertEqual(response.status_code, HTTPStatus.FORBIDDEN)
+
+
+class ForgotPasswordTest(TestCase):
+    def setUp(self):
+        self.username = 'user1'
+        self.password = 'user_password1'
+        self.email = 'email1@test.com'
+        self.client = Client()
+        self.user = User.objects.create_user(
+            self.username, self.email, self.password)
+
+    def test_get(self):
+        """
+        The view is valid
+        """
+        # self.user.save()
+        # self.client.login(username=self.username, password=self.password)
+        response = self.client.get(reverse('sap:password-forgot'))
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        self.assertContains(
+            response, "Send me instructions!", html=True
+        )
+
+    def test_enter_valid_reset_email_address(self):
+        """
+        Enter email address and receive a message
+        """
+        response = self.client.get(reverse('sap:password-forgot'))
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        self.assertContains(
+            response, "Send me instructions!", html=True
+        )
+
+        data = {
+            "email": "email1@test.com",
+        }
+        form = PasswordResetForm(
+            data=data
+        )
+        self.assertTrue(form.is_valid())
+
+        response = self.client.post(
+            reverse("sap:password-forgot"), data=data, follow=True)
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+
+    def test_enter_invalid_reset_email_address(self):
+        """
+        Enter invalid email address and receive a message
+        """
+        response = self.client.get(reverse('sap:password-forgot'))
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        self.assertContains(
+            response, "Send me instructions!", html=True
+        )
+
+        data = {
+            "email": "wrongemail@test.com",
+        }
+        form = PasswordResetForm(
+            data=data
+        )
+        self.assertTrue(form.is_valid())
+
+        response = self.client.post(
+            reverse('sap:password-forgot'), data=data, follow=True)
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+
+    def test_if_confirmation_link_work(self):
+        """
+        The unique link to reset password exists and works
+        """
+        token = password_reset_token.make_token(self.user)
+        uid = urlsafe_base64_encode(force_bytes(self.user.pk))
+        link = reverse('sap:password-forgot-confirm', args=[uid, token])
+
+        request = self.client.get(link)
+        self.assertEqual(request.status_code, HTTPStatus.OK)
+
+    def test_reset_password_success(self):
+        """
+        Successfully create new password
+        """
+        token = password_reset_token.make_token(self.user)
+        uid = urlsafe_base64_encode(force_bytes(self.user.pk))
+        link = reverse('sap:password-forgot-confirm', args=[uid, token])
+
+        request = self.client.get(link)
+        self.assertEqual(request.status_code, HTTPStatus.OK)
+
+        data = {
+            "new_password1": "user_password2",
+            "new_password2": "user_password2"
+        }
+        form = UserResetForgotPasswordForm(
+            user=self.user,
+            data=data
+        )
+        self.assertTrue(form.is_valid())
+
+        response = self.client.post(
+            link, data=data, follow=True)
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        message = list(response.context['messages'])[0]
+        self.assertEqual(message.message, "New Password Created Successfully!")
+
+    def test_reset_password_failure(self):
+        """
+        Fail to create new password
+        """
+        token = password_reset_token.make_token(self.user)
+        uid = urlsafe_base64_encode(force_bytes(self.user.pk))
+        link = reverse('sap:password-forgot-confirm', args=[uid, token])
+
+        request = self.client.get(link)
+        self.assertEqual(request.status_code, HTTPStatus.OK)
+
+        data = {
+            "new_password1": "user_password2",
+            "new_password2": "wrong_password"
+        }
+        form = UserResetForgotPasswordForm(
+            user=self.user,
+            data=data
+        )
+        self.assertFalse(form.is_valid())
+
+    # def test_confirmation_link_not_exist(self):
+    #     """
+    #     Cannot open invalid confirmation link
+    #     """
+    #     validate = URLValidator(verify_exists=True)
+    #     user = User.objects.create_user(username='admin',
+    #                                     email='email@test.com',
+    #                                     password='admin_password1',
+    #                                     is_staff=False)
+    #
+    #     token = password_reset_token.make_token(user)
+    #     uid = urlsafe_base64_encode(force_bytes(user.pk))
+    #     link = reverse('sap:password-forgot-confirm', args=[uid, token])
+    #     request = self.client.get(link)
+    #
+    #     # user.delete()
+    #     self.assertEqual(request.status_code, 500)
+
 
 

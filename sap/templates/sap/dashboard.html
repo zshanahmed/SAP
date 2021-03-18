@@ -259,6 +259,26 @@
                                         </tfoot>
                                         <tbody>
                                             {% for ally in allies_list %}
+                                                <!-- Logout Modal-->
+                                                <div class="modal fade" id="delAllyModal" tabindex="-1" role="dialog" aria-labelledby="delAllyModalLabel"
+                                                aria-hidden="true">
+                                                <div class="modal-dialog" role="document">
+                                                    <div class="modal-content">
+                                                        <div class="modal-header">
+                                                            <h5 class="modal-title" id="delAllyModalLabel">Are you sure you want to delete this user?</h5>
+                                                            <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                                                                <span aria-hidden="true">×</span>
+                                                            </button>
+                                                        </div>
+                                                        <div class="modal-body">Select confirm below if you want to delete this user</div>
+                                                        <div class="modal-footer">
+                                                            <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
+                                                            <a class="btn btn-danger" href="/delete/?username={{ ally.user.username }}">Confirm</a>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                </div>
+                                                
                                                 <tr>
                                                     <td>{{ ally.user.first_name }} {{ally.user.last_name}}</td>
                                                     <td>{{ ally.user_type }}</td>
@@ -276,8 +296,9 @@
                                                                     title="Edit"><i class="fa fa-edit"></i></a>
                                                             </li>
                                                             <li class="list-inline-item">
-                                                                <a class="btn btn-danger btn-sm" type="button" data-toggle="tooltip" data-placement="top"
-                                                                    title="Delete"><i class="fa fa-trash"></i></a>
+                                                                <a class="btn btn-danger btn-sm" href="#" data-toggle="modal" data-target="#delAllyModal">
+                                                                    <i class="fa fa-trash"></i>
+                                                                </a>
                                                             </li>
                                                         </ul>
                                                     </td>

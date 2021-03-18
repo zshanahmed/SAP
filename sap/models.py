@@ -12,7 +12,7 @@ class Ally(models.Model):
         on_delete=models.CASCADE,
     )
     hawk_id = models.CharField(max_length=100)
-    user_type = models.CharField(max_length=20)  # student/faculty/..
+    user_type = models.CharField(max_length=25)  # student/faculty/..
 
     def __str__(self):
         return self.hawk_id
