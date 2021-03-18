@@ -58,4 +58,6 @@ urlpatterns = [
         name='sap-about'),
 
     url('sign-up/', views.SignUpView.as_view(), name='sign-up'),
+
+    url(r'^download_allies/$', views.DownloadAllies.allies_streaming, name='download_allies'),
 ]

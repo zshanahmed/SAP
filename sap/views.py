@@ -25,6 +25,7 @@ from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from .tokens import password_reset_token, account_activation_token
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
+from datetime import date
 
 from .forms import UpdateAdminProfileForm
 from django.http import HttpResponseNotFound
@@ -478,13 +479,15 @@ class Echo:
         """Write the value by returning it, instead of storing in a buffer."""
         return value
 
-class DownloadAllies(StreamingHttpResponse):
+class DownloadAllies(AccessMixin, StreamingHttpResponse):
 
-    def allies_streaming(self, request, allies):
-        rows = allies
+    def allies_streaming(self):
+        rows = []
         pseudo_buffer = Echo()
         writer = csv.writer(pseudo_buffer)
-        response = StreamingHttpResponse((writer.writerow(row) for row in rows),
-                                         content_type="text/csv")
-        response['Content-Disposition'] = 'attachment; filename="somefilename.csv"'
+        response = StreamingHttpResponse((writer.writerow(row) for row in rows), content_type="text/csv")
+        today = date.today()
+        today = today.strftime("%b-%d-%Y")
+        fileName = today + "_ScienceAllianceAllies.csv"
+        response['Content-Disposition'] = 'attachment; filename=' + fileName
         return response
