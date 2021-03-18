@@ -62,7 +62,7 @@ class AccessMixin(LoginRequiredMixin):
         return super().dispatch(request, *args, **kwargs)
 
 
-class ViewAllyProfileFromAdminDashboard(AccessMixin, View):
+class ViewAllyProfileFromAdminDashboard(View):
     def get(self, request, *args, **kwargs):
         username = request.GET['username']
         try:
