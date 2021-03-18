@@ -515,7 +515,10 @@ class DownloadAllies(AccessMixin, HttpResponse):
         ar = []
         for item in dict.items():
             if item[0] in userFields or item[0] in allyFields or item[0] in categoryFields:
-                ar.append(item[1])
+                if item[0] == 'date_joined':
+                    ar.append(item[1].strftime("%b-%d-%Y"))
+                else:
+                    ar.append(item[1])
         return ar
 
     @staticmethod

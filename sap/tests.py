@@ -850,11 +850,13 @@ class DownloadAlliesTest(TestCase):
         return columns
 
     def cleanup(self, dict):
-        ar = np.array([])
+        ar = []
         for item in dict.items():
-            item2 = str(item[1])
             if item[0] in userFields or item[0] in allyFields or item[0] in categoryFields:
-                ar = np.append(ar, item[1])
+                if item[0] == 'date_joined':
+                    ar.append(item[1].strftime("%b-%d-%Y"))
+                else:
+                    ar.append(item[1])
         return ar
 
     def setUp(self):
@@ -919,20 +921,22 @@ class DownloadAlliesTest(TestCase):
         columns = self.fields_helper(Ally, columns)
         columns = self.fields_helper(StudentCategories, columns)
 
-        user1 = np.concatenate((self.cleanup(self.user1.__dict__),
-                                self.cleanup(self.ally1.__dict__),
-                                np.array([None, None, None, None, None, None])))
-        user2 = np.concatenate((self.cleanup(self.user2.__dict__),
-                                self.cleanup(self.ally2.__dict__),
-                                self.cleanup(self.categories2.__dict__)))
-        user3 = np.concatenate((self.cleanup(self.user3.__dict__),
-                                self.cleanup(self.ally3.__dict__),
-                                self.cleanup(self.categories3.__dict__)))
-        user4 = np.concatenate((self.cleanup(self.user4.__dict__),
-                                self.cleanup(self.ally4.__dict__),
-                                self.cleanup(self.categories4.__dict__)))
+        data = []
+        user1 = self.cleanup(self.user1.__dict__) + \
+                self.cleanup(self.ally1.__dict__) + [None, None, None, None, None, None]
+        user2 = self.cleanup(self.user2.__dict__) + \
+                self.cleanup(self.ally2.__dict__) + self.cleanup(self.categories2.__dict__)
 
-        data = np.stack((user1, user2, user3, user4))
+        user3 = self.cleanup(self.user3.__dict__) + \
+                self.cleanup(self.ally3.__dict__) + self.cleanup(self.categories3.__dict__)
+        user4 = self.cleanup(self.user4.__dict__) + \
+                self.cleanup(self.ally4.__dict__) + self.cleanup(self.categories4.__dict__)
+
+        data.append(user1)
+        data.append(user2)
+        data.append(user3)
+        data.append(user4)
+
         df = pd.DataFrame(data=data, columns=columns)
         df = df.replace(0, False)
         df = df.replace(1, True)
