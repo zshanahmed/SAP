@@ -11,7 +11,7 @@
     <meta name="description" content="">
     <meta name="author" content="">
 
-    <title>IBA - Dashboard</title>
+    <title>IBA - Analytics</title>
 
     <!-- Custom fonts for this template -->
     <link href="{% static '/vendor/fontawesome-free/css/all.min.css' %}" rel="stylesheet" type="text/css">
@@ -37,7 +37,7 @@
             <br>
             <!-- Sidebar - Brand -->
             <a class="sidebar-brand d-flex align-items-center justify-content-center" href="/ally-dashboard">
-                
+
                 <div class="sidebar-brand-icon rotate-n-15">
                     <img src="{% static '/img/Untitled-1.png' %}" alt="IBA Logo" width="151px" height="88px">
                 </div>
@@ -80,11 +80,11 @@
                 {% if messages %}
                 <div class="alert alert-primary alert-dismissible fade show" role="alert">
                     {% for message in messages %}
-                        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-                    {% endfor %}
-                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
+                    <li{% if message.tags %} class="{{ message.tags }}" {% endif %}>{{ message }}</li>
+                        {% endfor %}
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
                 </div>
                 {% endif %}
 
@@ -120,7 +120,7 @@
                             </div>
                         </li>
 
-                        
+
                         <div class="topbar-divider d-none d-sm-block"></div>
 
                         <!-- Nav Item - User Information -->
@@ -128,8 +128,7 @@
                             <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
                                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 <span class="mr-2 d-none d-lg-inline text-gray-600 small">{{ user.username }}</span>
-                                <img class="img-profile rounded-circle"
-                                    src="{% static '/img/undraw_profile.svg' %}">
+                                <img class="img-profile rounded-circle" src="{% static '/img/undraw_profile.svg' %}">
                             </a>
                             <!-- Dropdown - User Information -->
                             <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
@@ -142,6 +141,11 @@
                                 <a class="dropdown-item" href="/password">
                                     <i class="fas fa-key fa-sm fa-fw mr-2 text-gray-400"></i>
                                     Change Password
+                                </a>
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item" href="/create_iba_admin">
+                                    <i class="fas fa-user-plus fa-sm fa-fw mr-2 text-gray-400"></i>
+                                    Create new Admin
                                 </a>
                                 <!-- <a class="dropdown-item" href="#">
                                     <i class="fas fa-cogs fa-sm fa-fw mr-2 text-gray-400"></i>
@@ -165,143 +169,22 @@
                 <!-- End of Topbar -->
 
                 <div class="container-fluid">
-                
-                    <!-- DataTales Example -->
-                    <div class="card shadow mb-4">
-                        <div class="card-header py-3">
-                            <h6 class="m-0 font-weight-bold text-primary">Filters</h6>
-                        </div>
-                        <div class="card-body">
-                            <div class="table-responsive">
-                                <form class="user">
-                                    <div class="form-group row">
-                                        <div class="col-sm-6 mb-3 mb-sm-0">
-                                            <select class="form-control">
-                                                <option hidden>User Type</option>
-                                                <option value="">Faculty</option>
-                                                <option value="">Undergraduate Student</option>
-                                                <option value="">Graduate Student/Post-doc</option>
-                                            </select>
-                                        </div>
-                                        <div class="col-sm-6">
-                                            <select class="form-control">
-                                                <option hidden>STEM Area of Research</option>
-                                                <option value="">Physics</option>
-                                                <option value="">Biology</option>
-                                                <option value="">Computer Science</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div class="form-group row">
-                                        <div class="col-sm-6 mb-3 mb-sm-0">
-                                            <select class="form-control">
-                                                <option hidden>Mentorship Type</option>
-                                                <option value="">Mentor</option>
-                                                <option value="">Mentee</option>
-                                            </select>
-                                        </div>
-                                        <div class="col-sm-6">
-                                            <select class="form-control">
-                                                <option hidden>Year</option>
-                                                <option value="">Freshman</option>
-                                                <option value="">Sophomore</option>
-                                                <option value="">Junior</option>
-                                                <option value="">Senior</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <a href="#" class="btn btn-primary btn-user btn-block">
-                                        Apply Filters
-                                    </a>
-                                    
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                
-                </div>
-                <!-- Begin Page Content -->
-                <div class="container-fluid">
 
-                    <!-- DataTales Example -->
                     <div class="card shadow mb-4">
                         <div class="card-header py-3">
-                            <h6 class="m-0 font-weight-bold text-primary">IBA Science Ally Profiles</h6>
+                            <h6 class="m-0 font-weight-bold text-primary">Helpful Resources</h6>
                         </div>
                         <div class="card-body">
-                            <div class="table-responsive">
-                                {% if allies_list %}
-                                    <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
-                                        <thead>
-                                            <tr>
-                                                <th>Name</th>
-                                                <th>User Type</th>
-                                                <th>STEM AOR</th>
-                                                <th>Interested in Mentoring</th>
-                                                <th>Year</th>
-                                                <th></th>
-                                            </tr>
-                                        </thead>
-                                        <tfoot>
-                                            <tr>
-                                                <th>Name</th>
-                                                <th>User Type</th>
-                                                <th>STEM AOR</th>
-                                                <th>Interested in Mentoring</th>
-                                                <th>Year</th>
-                                                <th></th>
-                                            </tr>
-                                        </tfoot>
-                                        <tbody>
-                                            {% for ally in allies_list %}
-                                                <!-- Logout Modal-->
-                                                <div class="modal fade" id="delAllyModal" tabindex="-1" role="dialog" aria-labelledby="delAllyModalLabel"
-                                                aria-hidden="true">
-                                                <div class="modal-dialog" role="document">
-                                                    <div class="modal-content">
-                                                        <div class="modal-header">
-                                                            <h5 class="modal-title" id="delAllyModalLabel">Are you sure you want to delete this user?</h5>
-                                                            <button class="close" type="button" data-dismiss="modal" aria-label="Close">
-                                                                <span aria-hidden="true">×</span>
-                                                            </button>
-                                                        </div>
-                                                        <div class="modal-body">Select confirm below if you want to delete this user</div>
-                                                        <div class="modal-footer">
-                                                            <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
-                                                            <a class="btn btn-danger" href="/delete/?username={{ ally.user.username }}">Confirm</a>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                </div>
-                                                
-                                                <tr>
-                                                    <td>{{ ally.user.first_name }} {{ally.user.last_name}}</td>
-                                                    <td>{{ ally.user_type }}</td>
-                                                    <td>{{ ally.area_of_research }}</td>
-                                                    <td>{{ ally.interested_in_mentoring }}</td>
-                                                    <td>{{ ally.year }}</td>
-                                                    <td>
-                                                        <ul class="list-inline m-0" style="text-align: center">
-                                                            <li class="list-inline-item">
-                                                                <a href="/allies/?username={{ ally.user.username }}" class="btn btn-primary btn-sm" type="button" data-toggle="tooltip" data-placement="top"
-                                                                    title="Add"><i class="fa fa-eye"></i></a>
-                                                            </li>
-                                                        </ul>
-                                                    </td>
-                                                </tr>
-                                            {% endfor %}
-                                            
-                                        </tbody>
-                                    </table>
-                                {% else %}
-                                    <h6 class="m-0 font-weight-bold text-primary">No allies are available.</h6>
-                                {% endif %}
-                            </div>
+                            Following are some useful resources that might help in accquiring research positions at UIOWA:
+                            <ul>
+                                <li><a href="https://icru.research.uiowa.edu/info/students/how-find-research-position">ICRU</a></li>
+                                <li><a href="https://biology.uiowa.edu/undergraduate-program/research-opportunities/finding-research-mentor">Biology UIWOA</a></li>
+                                <li><a href="https://genetics.grad.uiowa.edu/faculty-and-research/directory">Interdisciplinary Graduate Program in Genetics</a></li>
+                            </ul>
                         </div>
                     </div>
 
                 </div>
-                <!-- /.container-fluid -->
 
             </div>
             <!-- End of Main Content -->

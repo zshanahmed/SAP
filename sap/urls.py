@@ -30,6 +30,10 @@ urlpatterns = [
         login_required(views.AnalyticsView.as_view(), login_url='home'),
         name='sap-analytics'),
 
+    url('resources/',
+        login_required(views.ResourcesView.as_view(), login_url='home'),
+        name='resources'),
+
     url(r'password-forgot/$', views.ForgotPasswordView.as_view(),
         name='password-forgot'),
 

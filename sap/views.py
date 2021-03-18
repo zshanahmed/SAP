@@ -177,6 +177,10 @@ class AboutPageView(TemplateView):
     template_name = "sap/about.html"
 
 
+class ResourcesView(TemplateView):
+    template_name = "sap/resources.html"
+
+
 class SupportPageView(TemplateView):
     template_name = "sap/support.html"
 
