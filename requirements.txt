@@ -11,3 +11,4 @@ django-crispy-forms==1.11.0
 sendgrid
 six
 requests
+pandas

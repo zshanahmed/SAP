@@ -3,6 +3,9 @@ import os
 from django.shortcuts import render
 # tests file
 from django.test import TestCase, Client
+import pandas as pd
+import numpy as np
+import io
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 
@@ -896,3 +899,139 @@ class ForgotPasswordTest(TestCase):
 
 
 
+
+userFields = ['last_login', 'username', 'first_name', 'last_name', 'email', 'is_active', 'date_joined']
+allyFields = ['user_type', 'area_of_research', 'openings_in_lab_serving_at', 'description_of_research_done_at_lab',
+              'interested_in_mentoring', 'interested_in_mentor_training', 'willing_to_offer_lab_shadowing',
+              'interested_in_connecting_with_other_mentors', 'willing_to_volunteer_for_events', 'works_at',
+              'people_who_might_be_interested_in_iba', 'how_can_science_ally_serve_you', 'year', 'major',
+              'information_release', 'interested_in_being_mentored', 'interested_in_joining_lab',
+              'has_lab_experience']
+categoryFields = ['under_represented_racial_ethnic', 'first_gen_college_student', 'transfer_student', 'lgbtq', 'low_income', 'rural']
+class DownloadAlliesTest(TestCase):
+
+
+    def fields_helper(self, model, columns):
+        for field in model._meta.get_fields():
+            fields = str(field).split(".")[-1]
+            if fields in userFields or fields in allyFields or fields in categoryFields:
+                columns.append(fields)
+
+        return columns
+
+    def cleanup(self, dict):
+        ar = []
+        for item in dict.items():
+            if item[0] in userFields or item[0] in allyFields or item[0] in categoryFields:
+                if item[0] == 'date_joined':
+                    ar.append(item[1].strftime("%b-%d-%Y"))
+                else:
+                    ar.append(item[1])
+        return ar
+
+    def setUp(self):
+        User.objects.all().delete()
+        Ally.objects.all().delete()
+        StudentCategories.objects.all().delete()
+        AllyStudentCategoryRelation.objects.all().delete()
+
+        self.client = Client()
+
+        self.loginuser = User.objects.create_user(username='glib', password='macaque', email='staff@uiowa.edu',
+                                              first_name='charlie', last_name='hebdo', is_staff=True)
+
+        self.user1 = User.objects.create_user(username='staff', password='123', email='staff@uiowa.edu',
+                                              first_name='charlie', last_name='hebdo')
+        self.user2 = User.objects.create_user(username='grad', password='123', email='gradf@uiowa.edu',
+                                              first_name='wolfgang', last_name='kremple')
+        self.user3 = User.objects.create_user(username='faculty', password='123', email='faculty@uiowa.edu',
+                                              first_name='Elias', last_name='Shaeffer')
+        self.user4 = User.objects.create_user(username='undergrad', password='123', email='undergrad@uiowa.edu',
+                                              first_name='Zeeshan', last_name='Ahmed')
+
+        self.ally1 = Ally.objects.create(user=self.user1, user_type='Staff', hawk_id=self.user1.username,
+                                            people_who_might_be_interested_in_iba=True,
+                                            how_can_science_ally_serve_you='help_me 0:')
+        self.ally2 = Ally.objects.create(user=self.user2, user_type='Graduate Student', hawk_id=self.user2.username,
+                                         area_of_research='Bioinformatics',
+                                         interested_in_mentoring=False,
+                                         willing_to_offer_lab_shadowing=True,
+                                         interested_in_connecting_with_other_mentors=False,
+                                         willing_to_volunteer_for_events=True,
+                                         interested_in_mentor_training=False
+                                         )
+        self.ally3 = Ally.objects.create(user=self.user3, user_type='Faculty', hawk_id=self.user3.username,
+                                         area_of_research='Biology',
+                                         openings_in_lab_serving_at=True,
+                                         description_of_research_done_at_lab='Big biology my guy',
+                                         interested_in_mentoring=True,
+                                         willing_to_volunteer_for_events=True,
+                                         interested_in_mentor_training=True
+                                         )
+        self.ally4 = Ally.objects.create(user=self.user4, user_type='Undergraduate Student', hawk_id=self.user4.username,
+                                         major='biomedical engineering', year='Freshman',
+                                         interested_in_joining_lab=True, has_lab_experience=False,
+                                         interested_in_mentoring=False,
+                                         information_release=True
+                                         )
+
+        self.categories2 = StudentCategories.objects.create(rural=True, first_gen_college_student=True,
+                                                            under_represented_racial_ethnic=True, transfer_student=True,
+                                                            lgbtq=True, low_income=True)
+        self.categories3 = StudentCategories.objects.create(rural=True, first_gen_college_student=False,
+                                                            under_represented_racial_ethnic=True, transfer_student=True,
+                                                            lgbtq=True, low_income=False)
+        self.categories4 = StudentCategories.objects.create(rural=True, first_gen_college_student=False,
+                                                            under_represented_racial_ethnic=True, transfer_student=False,
+                                                            lgbtq=True, low_income=False)
+
+        AllyStudentCategoryRelation.objects.create(ally_id=self.ally2.id, student_category_id=self.categories2.id)
+        AllyStudentCategoryRelation.objects.create(ally_id=self.ally3.id, student_category_id=self.categories3.id)
+        AllyStudentCategoryRelation.objects.create(ally_id=self.ally4.id, student_category_id=self.categories4.id)
+
+        columns = []
+        columns = self.fields_helper(User, columns)
+        columns = self.fields_helper(Ally, columns)
+        columns = self.fields_helper(StudentCategories, columns)
+
+        data = []
+        user1 = self.cleanup(self.user1.__dict__) + \
+                self.cleanup(self.ally1.__dict__) + [None, None, None, None, None, None]
+        user2 = self.cleanup(self.user2.__dict__) + \
+                self.cleanup(self.ally2.__dict__) + self.cleanup(self.categories2.__dict__)
+
+        user3 = self.cleanup(self.user3.__dict__) + \
+                self.cleanup(self.ally3.__dict__) + self.cleanup(self.categories3.__dict__)
+        user4 = self.cleanup(self.user4.__dict__) + \
+                self.cleanup(self.ally4.__dict__) + self.cleanup(self.categories4.__dict__)
+
+        data.append(user1)
+        data.append(user2)
+        data.append(user3)
+        data.append(user4)
+
+        df = pd.DataFrame(data=data, columns=columns)
+        df = df.replace(0, False)
+        df = df.replace(1, True)
+        df.fillna(value=np.nan, inplace=True)
+        df = df.replace('', np.nan)
+        self.df = df
+
+    def test_download_data(self):
+        """
+        Testing the download data feature. If I create 4 allies in the database - one of each type, complete with
+        ally categories then they should each appear in the CSV
+        """
+        self.client.login(username='glib', password='macaque')
+        response = self.client.get(reverse('sap:download_allies'))
+        f = io.BytesIO(response.content)
+        df = pd.read_csv(f)
+        pd.testing.assert_frame_equal(df, self.df)
+
+    def test_try_download_as_ally(self):
+        """
+        Testing the download data feature. I should get a 403 response if I try to get the path as regular user
+        """
+        self.client.login(username='staff', password='123')
+        response = self.client.get(reverse('sap:download_allies'))
+        self.assertEqual(response.status_code, 403)
