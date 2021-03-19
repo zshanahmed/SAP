@@ -867,6 +867,9 @@ class DownloadAlliesTest(TestCase):
 
         self.client = Client()
 
+        self.loginuser = User.objects.create_user(username='glib', password='macaque', email='staff@uiowa.edu',
+                                              first_name='charlie', last_name='hebdo', is_staff=True)
+
         self.user1 = User.objects.create_user(username='staff', password='123', email='staff@uiowa.edu',
                                               first_name='charlie', last_name='hebdo')
         self.user2 = User.objects.create_user(username='grad', password='123', email='gradf@uiowa.edu',
@@ -950,6 +953,7 @@ class DownloadAlliesTest(TestCase):
         Testing the download data feature. If I create 4 allies in the database - one of each type, complete with
         ally categories then they should each appear in the CSV
         """
+        self.client.login(username='glib', password='macaque')
         response = self.client.get(reverse('sap:download_allies'))
         f = io.BytesIO(response.content)
         df = pd.read_csv(f)

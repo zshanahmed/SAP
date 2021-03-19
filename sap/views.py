@@ -7,7 +7,7 @@ from django.contrib.auth.views import PasswordResetConfirmView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse
 from django.utils.encoding import force_bytes, force_text
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpRequest
 from .models import Ally, StudentCategories, AllyStudentCategoryRelation
 from django.views import generic
 from django.views.generic import TemplateView, View
@@ -530,22 +530,23 @@ class DownloadAllies(AccessMixin, HttpResponse):
 
         data = []
         for ally in allies:
-            userIndex = ally.user_id - 1
+            userId = ally.user_id
             allyId = ally.id
 
             category = categoryRelation.filter(ally_id=allyId)
             if category.exists():
-                categoryIndex = category[0].student_category_id - 1
-                tmp = DownloadAllies.cleanup(users[userIndex].__dict__) + DownloadAllies.cleanup(ally.__dict__) + \
-                      DownloadAllies.cleanup(categories[categoryIndex].__dict__)
+                categoryId = category[0].student_category_id
+                tmp = DownloadAllies.cleanup(users.filter(id=userId)[0].__dict__) + DownloadAllies.cleanup(ally.__dict__) + \
+                      DownloadAllies.cleanup(categories.filter(id=categoryId)[0].__dict__)
             else:
-                tmp = DownloadAllies.cleanup(users[userIndex].__dict__) + DownloadAllies.cleanup(ally.__dict__) + \
+                tmp = DownloadAllies.cleanup(users.filter(id=userId)[0].__dict__) + DownloadAllies.cleanup(ally.__dict__) + \
                       [None, None, None, None, None, None]
             data.append(tmp)
         return data
 
-    def allies_download(self):
+    def allies_download(request):
         response = HttpResponse(content_type='text/csv')
+
         today = date.today()
         today = today.strftime("%b-%d-%Y")
         fileName = today + "_ScienceAllianceAllies.csv"

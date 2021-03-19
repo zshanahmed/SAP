@@ -59,5 +59,5 @@ urlpatterns = [
 
     url('sign-up/', views.SignUpView.as_view(), name='sign-up'),
 
-    url(r'^download_allies/$', views.DownloadAllies.allies_download, name='download_allies'),
+    url(r'^download_allies/$', login_required(views.DownloadAllies.allies_download), name='download_allies'),
 ]
