@@ -61,45 +61,45 @@
                 <form method="post" class="user">{% csrf_token %}
                     <hr>
                     <div class="py-2">
-                        <strong>Please select your role in the university:</strong>
+                        <strong>Role in the university:</strong>
                         <div class="form-check form-check-inline">
                             <div class="px-2">
                                 {% if ally.user_type == 'Staff' %}
                                     <input type="radio" name="roleSelected" id="staffCheck" value="Staff" onclick="javascript:yesnoCheck('staffContent');"
-                                        required checked>
+                                        disabled checked>
                                 {% else %}
                                     <input type="radio" name="roleSelected" id="staffCheck" value="Staff" onclick="javascript:yesnoCheck('staffContent');"
-                                        required>
+                                        disabled>
                                 {% endif %}
                                 <label class="form-check-label" for="staffCheck">Staff</label>
                             </div>
                             <div class="px-2">
                                 {% if ally.user_type == 'Graduate Student' %}
                                     <input type="radio" name="roleSelected" id="gradCheck" value="Graduate Student"
-                                        onclick="javascript:yesnoCheck('gradContent');" required checked>
+                                        onclick="javascript:yesnoCheck('gradContent');" disabled checked>
                                 {% else %}
                                     <input type="radio" name="roleSelected" id="gradCheck" value="Graduate Student"
-                                        onclick="javascript:yesnoCheck('gradContent');" required>
+                                        onclick="javascript:yesnoCheck('gradContent');" disabled>
                                 {% endif %}
                                 <label class="form-check-label" for="gradCheck">Grad</label>
                             </div>
                             <div class="px-2">
                                 {% if ally.user_type == 'Undergraduate Student' %}
                                     <input type="radio" name="roleSelected" id="undergradCheck" value="Undergraduate Student"
-                                        onclick="javascript:yesnoCheck('undergradContent');" required checked>
+                                        onclick="javascript:yesnoCheck('undergradContent');" disabled checked>
                                 {% else %}
                                     <input type="radio" name="roleSelected" id="undergradCheck" value="Undergraduate Student"
-                                        onclick="javascript:yesnoCheck('undergradContent');" required>
+                                        onclick="javascript:yesnoCheck('undergradContent');" disabled>
                                 {% endif %}
                                 <label class="form-check-label" for="undergradCheck">Undergrad</label>
                             </div>
                             <div class="px-2">
                                 {% if ally.user_type == 'Faculty' %}
                                     <input type="radio" name="roleSelected" id="facultyCheck" value="Faculty"
-                                        onclick="javascript:yesnoCheck('facultyContent');" required checked>
+                                        onclick="javascript:yesnoCheck('facultyContent');" disabled checked>
                                 {% else %}
                                     <input type="radio" name="roleSelected" id="facultyCheck" value="Faculty"
-                                        onclick="javascript:yesnoCheck('facultyContent');" required>
+                                        onclick="javascript:yesnoCheck('facultyContent');" disabled>
                                 {% endif %}
                                 <label class="form-check-label" for="facultyCheck">Faculty</label>
                             </div>
@@ -129,13 +129,26 @@
             <div class="form-check" id="studentsInterestedRadios"></div>
         </div>
         <div class="py-1">
-            <div class="form-check" id="studentsInterestedRadios"><input type="radio" value="Yes"
-                    name="studentsInterestedRadios" id="yes" required=""> <label class="form-check-label"
-                    for="studentsInterestedRadios">Yes</label><br><input type="radio" value="No" name="studentsInterestedRadios"
-                    id="no" required=""> <label class="form-check-label" for="studentsInterestedRadios">No</label><br></div>
+            <div class="form-check" id="studentsInterestedRadios">
+                {% if ally.people_who_might_be_interested_in_iba %}
+                    <input type="radio" value="Yes" name="studentsInterestedRadios" id="yes" required checked>
+                    <label class="form-check-label" for="studentsInterestedRadios">Yes</label>
+                    <br>
+                    <input type="radio" value="No" name="studentsInterestedRadios" id="no" required="">
+                    <label class="form-check-label" for="studentsInterestedRadios">No</label>
+                    <br>
+                {% else %}
+                    <input type="radio" value="Yes" name="studentsInterestedRadios" id="yes" required>
+                    <label class="form-check-label" for="studentsInterestedRadios">Yes</label>
+                    <br>
+                    <input type="radio" value="No" name="studentsInterestedRadios" id="no" required checked>
+                    <label class="form-check-label" for="studentsInterestedRadios">No</label>
+                    <br>
+                {% endif %}
+            </div>
         </div>
         <div class="py-1"><strong>How can science alliance serve you?</strong></div>
-        <input name="howCanWeHelp" type="text" class="form-control form-control-user" id="howHelp" required>
+        <input name="howCanWeHelp" type="text" class="form-control form-control-user" id="howHelp" value="{{ ally.how_can_science_ally_serve_you }}" required>
     </div>
     
     <!-- Graduate Student Content -->
@@ -143,37 +156,53 @@
     <div id='gradContent' style="display: none">
         <div class="py-1">
             <strong>STEM Area of Research:</strong>
-            <div class="form-check" id="stemGradCheckboxes"><input type="checkbox" value="Biochemistry"
-                    name="stemGradCheckboxes" id="biochemistry"> <label class="form-check-label"
-                    for="stemGradCheckboxes">Biochemistry</label><br><input type="checkbox" value="Bioinformatics"
-                    name="stemGradCheckboxes" id="bioinformatics"> <label class="form-check-label"
-                    for="stemGradCheckboxes">Bioinformatics</label><br><input type="checkbox" value="Biology"
-                    name="stemGradCheckboxes" id="biology"> <label class="form-check-label"
-                    for="stemGradCheckboxes">Biology</label><br><input type="checkbox" value="Biomedical Engineering"
-                    name="stemGradCheckboxes" id="biomedicalengineering"> <label class="form-check-label"
-                    for="stemGradCheckboxes">Biomedical Engineering</label><br><input type="checkbox"
-                    value="Chemical Engineering" name="stemGradCheckboxes" id="chemicalengineering"> <label
-                    class="form-check-label" for="stemGradCheckboxes">Chemical Engineering</label><br><input type="checkbox"
-                    value="Chemistry" name="stemGradCheckboxes" id="chemistry"> <label class="form-check-label"
-                    for="stemGradCheckboxes">Chemistry</label><br><input type="checkbox"
-                    value="Computer Science and Engineering" name="stemGradCheckboxes" id="computerscienceandengineering">
-                <label class="form-check-label" for="stemGradCheckboxes">Computer Science and Engineering</label><br><input
-                    type="checkbox" value="Environmental Science" name="stemGradCheckboxes" id="environmentalscience">
-                <label class="form-check-label" for="stemGradCheckboxes">Environmental Science</label><br><input
-                    type="checkbox" value="Health and Human Physiology" name="stemGradCheckboxes"
-                    id="healthandhumanphysiology"> <label class="form-check-label" for="stemGradCheckboxes">Health and Human
-                    Physiology</label><br><input type="checkbox" value="Mathematics" name="stemGradCheckboxes"
-                    id="mathematics"> <label class="form-check-label" for="stemGradCheckboxes">Mathematics</label><br><input
-                    type="checkbox" value="Microbiology" name="stemGradCheckboxes" id="microbiology"> <label
-                    class="form-check-label" for="stemGradCheckboxes">Microbiology</label><br><input type="checkbox"
-                    value="Neuroscience" name="stemGradCheckboxes" id="neuroscience"> <label class="form-check-label"
-                    for="stemGradCheckboxes">Neuroscience</label><br><input type="checkbox" value="Nursing"
-                    name="stemGradCheckboxes" id="nursing"> <label class="form-check-label"
-                    for="stemGradCheckboxes">Nursing</label><br><input type="checkbox" value="Physics"
-                    name="stemGradCheckboxes" id="physics"> <label class="form-check-label"
-                    for="stemGradCheckboxes">Physics</label><br><input type="checkbox" value="Psychology"
-                    name="stemGradCheckboxes" id="psychology"> <label class="form-check-label"
-                    for="stemGradCheckboxes">Psychology</label><br></div>
+            <div class="form-check" id="stemGradCheckboxes">
+                <input type="checkbox" value="Biochemistry" name="stemGradCheckboxes" id="biochemistry"> 
+                <label class="form-check-label" for="stemGradCheckboxes">Biochemistry</label>
+                <br>
+                <input type="checkbox" value="Bioinformatics" name="stemGradCheckboxes" id="bioinformatics"> 
+                <label class="form-check-label" for="stemGradCheckboxes">Bioinformatics</label>
+                <br>
+                <input type="checkbox" value="Biology" name="stemGradCheckboxes" id="biology"> 
+                <label class="form-check-label" for="stemGradCheckboxes">Biology</label>
+                <br>
+                <input type="checkbox" value="Biomedical Engineering" name="stemGradCheckboxes" id="biomedicalengineering"> 
+                <label class="form-check-label" for="stemGradCheckboxes">Biomedical Engineering</label>
+                <br>
+                <input type="checkbox" value="Chemical Engineering" name="stemGradCheckboxes" id="chemicalengineering"> 
+                <label class="form-check-label" for="stemGradCheckboxes">Chemical Engineering</label>
+                <br>
+                <input type="checkbox" value="Chemistry" name="stemGradCheckboxes" id="chemistry"> 
+                <label class="form-check-label" for="stemGradCheckboxes">Chemistry</label>
+                <br>
+                <input type="checkbox" value="Computer Science and Engineering" name="stemGradCheckboxes" id="computerscienceandengineering">
+                <label class="form-check-label" for="stemGradCheckboxes">Computer Science and Engineering</label>
+                <br>
+                <input type="checkbox" value="Environmental Science" name="stemGradCheckboxes" id="environmentalscience">
+                <label class="form-check-label" for="stemGradCheckboxes">Environmental Science</label>
+                <br>
+                <input type="checkbox" value="Health and Human Physiology" name="stemGradCheckboxes" id="healthandhumanphysiology"> 
+                <label class="form-check-label" for="stemGradCheckboxes">Health and Human Physiology</label>
+                <br>
+                <input type="checkbox" value="Mathematics" name="stemGradCheckboxes" id="mathematics"> 
+                <label class="form-check-label" for="stemGradCheckboxes">Mathematics</label>
+                <br>
+                <input type="checkbox" value="Microbiology" name="stemGradCheckboxes" id="microbiology"> 
+                <label class="form-check-label" for="stemGradCheckboxes">Microbiology</label>
+                <br>
+                <input type="checkbox" value="Neuroscience" name="stemGradCheckboxes" id="neuroscience"> 
+                <label class="form-check-label" for="stemGradCheckboxes">Neuroscience</label>
+                <br>
+                <input type="checkbox" value="Nursing" name="stemGradCheckboxes" id="nursing"> 
+                <label class="form-check-label" for="stemGradCheckboxes">Nursing</label>
+                <br>
+                <input type="checkbox" value="Physics" name="stemGradCheckboxes" id="physics"> 
+                <label class="form-check-label" for="stemGradCheckboxes">Physics</label>
+                <br>
+                <input type="checkbox" value="Psychology" name="stemGradCheckboxes" id="psychology"> 
+                <label class="form-check-label" for="stemGradCheckboxes">Psychology</label>
+                <br>
+            </div>
         </div>
         <div class="py-1">
             <strong>Are you interested in mentoring students?</strong>
