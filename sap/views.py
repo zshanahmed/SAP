@@ -388,6 +388,8 @@ class ForgotPasswordView(TemplateView):
 
                 try:
                     #                     sg = SendGridAPIClient(os.environ.get('SENDGRID_API_KEY'))
+                    # sg = SendGridAPIClient(os.environ.get('SENDGRID_API_KEY'))
+                    # TODO: Change API key and invalidate the old one
                     sg = SendGridAPIClient('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')
                     response = sg.send(email_content)
                     print(response.status_code)
@@ -454,6 +456,7 @@ class ForgotPasswordConfirmView(TemplateView):
             return render(request, 'sap/password-forgot-confirm.html', context)
         else:
             messages.error(request, 'Password reset link is invalid. Please request a new password reset.')
+            return redirect('sap:home')
 
     def post(self, request, *args, **kwargs):
         path = request.path
@@ -480,15 +483,15 @@ class ForgotPasswordConfirmView(TemplateView):
                 return redirect('sap:home')
             else:
                 context = {
-                    'form': form,
+                    'form': UserResetForgotPasswordForm(user),
                     'uid': uidb64,
                     'token': token
                 }
-                messages.error(request, 'Password Could Not be Reset.')
-                return render(request, 'account/password-forgot-confirm.html', context)
+                messages.error(request, 'Password does not meet requirements.')
+                return render(request, 'sap/password-forgot-confirm.html', context)
         else:
             messages.error(request, 'Password reset link is invalid. Please request a new password reset.')
-
+            return redirect('sap:home')
 
 userFields = ['last_login', 'username', 'first_name', 'last_name', 'email', 'is_active', 'date_joined']
 allyFields = ['user_type', 'area_of_research', 'openings_in_lab_serving_at', 'description_of_research_done_at_lab',
