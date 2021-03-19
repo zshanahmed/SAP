@@ -1,6 +1,7 @@
 import os
 import os.path
 import csv
+from django.http import HttpResponseForbidden
 from django.contrib.auth import logout
 from django.contrib.auth import authenticate
 from django.contrib.auth.views import PasswordResetConfirmView
@@ -545,19 +546,21 @@ class DownloadAllies(AccessMixin, HttpResponse):
         return data
 
     def allies_download(request):
-        response = HttpResponse(content_type='text/csv')
-
-        today = date.today()
-        today = today.strftime("%b-%d-%Y")
-        fileName = today + "_ScienceAllianceAllies.csv"
-        response['Content-Disposition'] = 'attachment; filename=' + fileName
-
-        columns = []
-        columns = DownloadAllies.fields_helper(User, columns)
-        columns = DownloadAllies.fields_helper(Ally, columns)
-        columns = DownloadAllies.fields_helper(StudentCategories, columns)
-        data = DownloadAllies.get_data()
-        writer = csv.writer(response)
-        writer.writerow(columns)
-        writer.writerows(data)
-        return response
+        if request.user.is_staff:
+            response = HttpResponse(content_type='text/csv')
+            response = HttpResponse(content_type='text/csv')
+            today = date.today()
+            today = today.strftime("%b-%d-%Y")
+            fileName = today + "_ScienceAllianceAllies.csv"
+            response['Content-Disposition'] = 'attachment; filename=' + fileName
+            columns = []
+            columns = DownloadAllies.fields_helper(User, columns)
+            columns = DownloadAllies.fields_helper(Ally, columns)
+            columns = DownloadAllies.fields_helper(StudentCategories, columns)
+            data = DownloadAllies.get_data()
+            writer = csv.writer(response)
+            writer.writerow(columns)
+            writer.writerows(data)
+            return response
+        else:
+            return HttpResponseForbidden()
