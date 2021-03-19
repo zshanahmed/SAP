@@ -947,7 +947,6 @@ class DownloadAlliesTest(TestCase):
         df = df.replace('', np.nan)
         self.df = df
 
-
     def test_download_data(self):
         """
         Testing the download data feature. If I create 4 allies in the database - one of each type, complete with
@@ -958,3 +957,11 @@ class DownloadAlliesTest(TestCase):
         f = io.BytesIO(response.content)
         df = pd.read_csv(f)
         pd.testing.assert_frame_equal(df, self.df)
+
+    def test_try_download_as_ally(self):
+        """
+        Testing the download data feature. I should get a 403 response if I try to get the path as regular user
+        """
+        self.client.login(username='staff', password='123')
+        response = self.client.get(reverse('sap:download_allies'))
+        self.assertEqual(response.status_code, 403)

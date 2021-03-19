@@ -19,5 +19,5 @@ Should be able to download all the data in csv format from the dashboard
     Then I should have the csv file in my downloads
 
   Scenario: I try to download allies when not logged in as admin
-    Given I have logged in with username "haw2" and password "iba_sep_1"
+    Given I have logged in
     Then I should not be able to download users.

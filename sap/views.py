@@ -548,7 +548,6 @@ class DownloadAllies(AccessMixin, HttpResponse):
     def allies_download(request):
         if request.user.is_staff:
             response = HttpResponse(content_type='text/csv')
-            response = HttpResponse(content_type='text/csv')
             today = date.today()
             today = today.strftime("%b-%d-%Y")
             fileName = today + "_ScienceAllianceAllies.csv"
