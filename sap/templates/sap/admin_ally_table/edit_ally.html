@@ -2,6 +2,7 @@
 <html lang="en">
 
 {% load static %}
+{% load filter_tags %}
 
 <head>
 
@@ -148,7 +149,7 @@
             </div>
         </div>
         <div class="py-1"><strong>How can science alliance serve you?</strong></div>
-        <input name="howCanWeHelp" type="text" class="form-control form-control-user" id="howHelp" value="{{ ally.how_can_science_ally_serve_you }}" required>
+        <input name="howCanWeHelp" type="text" class="form-control form-control-user" id="howHelp" value='{{ ally.how_can_science_ally_serve_you }}'' required>
     </div>
     
     <!-- Graduate Student Content -->
@@ -157,111 +158,299 @@
         <div class="py-1">
             <strong>STEM Area of Research:</strong>
             <div class="form-check" id="stemGradCheckboxes">
-                <input type="checkbox" value="Biochemistry" name="stemGradCheckboxes" id="biochemistry"> 
+                {% if 'Biochemistry' in ally.area_of_research|split:"," %}
+                    <input type="checkbox" value="Biochemistry" name="stemGradCheckboxes" id="biochemistry" checked> 
+                {% else %}
+                    <input type="checkbox" value="Biochemistry" name="stemGradCheckboxes" id="biochemistry"> 
+                {% endif %}
                 <label class="form-check-label" for="stemGradCheckboxes">Biochemistry</label>
+                
                 <br>
-                <input type="checkbox" value="Bioinformatics" name="stemGradCheckboxes" id="bioinformatics"> 
+                
+                {% if 'Bioinformatics' in ally.area_of_research|split:"," %}
+                    <input type="checkbox" value="Bioinformatics" name="stemGradCheckboxes" id="bioinformatics" checked>
+                {% else %}
+                    <input type="checkbox" value="Bioinformatics" name="stemGradCheckboxes" id="bioinformatics">
+                {% endif %}                
                 <label class="form-check-label" for="stemGradCheckboxes">Bioinformatics</label>
+                
                 <br>
-                <input type="checkbox" value="Biology" name="stemGradCheckboxes" id="biology"> 
+                
+                {% if 'Biology' in ally.area_of_research|split:"," %}
+                    <input type="checkbox" value="Biology" name="stemGradCheckboxes" id="biology" checked> 
+                {% else %}
+                    <input type="checkbox" value="Biology" name="stemGradCheckboxes" id="biology"> 
+                {% endif %}                
                 <label class="form-check-label" for="stemGradCheckboxes">Biology</label>
+                
                 <br>
-                <input type="checkbox" value="Biomedical Engineering" name="stemGradCheckboxes" id="biomedicalengineering"> 
+                
+                {% if 'Biomedical Engineering' in ally.area_of_research|split:"," %}
+                    <input type="checkbox" value="Biomedical Engineering" name="stemGradCheckboxes" id="biomedicalengineering" checked> 
+                {% else %}
+                    <input type="checkbox" value="Biomedical Engineering" name="stemGradCheckboxes" id="biomedicalengineering"> 
+                {% endif %}   
                 <label class="form-check-label" for="stemGradCheckboxes">Biomedical Engineering</label>
+                
                 <br>
-                <input type="checkbox" value="Chemical Engineering" name="stemGradCheckboxes" id="chemicalengineering"> 
+                
+                {% if 'Chemical Engineering' in ally.area_of_research|split:"," %}
+                    <input type="checkbox" value="Chemical Engineering" name="stemGradCheckboxes" id="chemicalengineering" checked> 
+                {% else %}
+                    <input type="checkbox" value="Chemical Engineering" name="stemGradCheckboxes" id="chemicalengineering"> 
+                {% endif %} 
                 <label class="form-check-label" for="stemGradCheckboxes">Chemical Engineering</label>
+                
                 <br>
-                <input type="checkbox" value="Chemistry" name="stemGradCheckboxes" id="chemistry"> 
+                
+                {% if 'Chemistry' in ally.area_of_research|split:"," %}
+                    <input type="checkbox" value="Chemistry" name="stemGradCheckboxes" id="chemistry" checked> 
+                {% else %}
+                    <input type="checkbox" value="Chemistry" name="stemGradCheckboxes" id="chemistry"> 
+                {% endif %} 
                 <label class="form-check-label" for="stemGradCheckboxes">Chemistry</label>
+                
                 <br>
-                <input type="checkbox" value="Computer Science and Engineering" name="stemGradCheckboxes" id="computerscienceandengineering">
+                
+                {% if 'Computer Science and Engineering' in ally.area_of_research|split:"," %}
+                    <input type="checkbox" value="Computer Science and Engineering" name="stemGradCheckboxes" id="computerscienceandengineering" checked>
+                {% else %}
+                    <input type="checkbox" value="Computer Science and Engineering" name="stemGradCheckboxes" id="computerscienceandengineering">
+                {% endif %} 
                 <label class="form-check-label" for="stemGradCheckboxes">Computer Science and Engineering</label>
+                
                 <br>
-                <input type="checkbox" value="Environmental Science" name="stemGradCheckboxes" id="environmentalscience">
+
+                {% if 'Environmental Science' in ally.area_of_research|split:"," %}
+                    <input type="checkbox" value="Environmental Science" name="stemGradCheckboxes" id="environmentalscience" checked>
+                {% else %}
+                    <input type="checkbox" value="Environmental Science" name="stemGradCheckboxes" id="environmentalscience">
+                {% endif %} 
                 <label class="form-check-label" for="stemGradCheckboxes">Environmental Science</label>
+                
                 <br>
-                <input type="checkbox" value="Health and Human Physiology" name="stemGradCheckboxes" id="healthandhumanphysiology"> 
+
+                {% if 'Health and Human Physiology' in ally.area_of_research|split:"," %}
+                    <input type="checkbox" value="Health and Human Physiology" name="stemGradCheckboxes" id="healthandhumanphysiology" checked> 
+                {% else %}
+                    <input type="checkbox" value="Health and Human Physiology" name="stemGradCheckboxes" id="healthandhumanphysiology"> 
+                {% endif %} 
                 <label class="form-check-label" for="stemGradCheckboxes">Health and Human Physiology</label>
+                
                 <br>
-                <input type="checkbox" value="Mathematics" name="stemGradCheckboxes" id="mathematics"> 
+                
+                {% if 'Mathematics' in ally.area_of_research|split:"," %}
+                    <input type="checkbox" value="Mathematics" name="stemGradCheckboxes" id="mathematics" checked> 
+                {% else %}
+                    <input type="checkbox" value="Mathematics" name="stemGradCheckboxes" id="mathematics"> 
+                {% endif %} 
                 <label class="form-check-label" for="stemGradCheckboxes">Mathematics</label>
+                
                 <br>
-                <input type="checkbox" value="Microbiology" name="stemGradCheckboxes" id="microbiology"> 
+                
+                {% if 'Microbiology' in ally.area_of_research|split:"," %}
+                    <input type="checkbox" value="Microbiology" name="stemGradCheckboxes" id="microbiology" checked> 
+                {% else %}
+                    <input type="checkbox" value="Microbiology" name="stemGradCheckboxes" id="microbiology"> 
+                {% endif %} 
                 <label class="form-check-label" for="stemGradCheckboxes">Microbiology</label>
+                
                 <br>
-                <input type="checkbox" value="Neuroscience" name="stemGradCheckboxes" id="neuroscience"> 
+                
+                {% if 'Neuroscience' in ally.area_of_research|split:"," %}
+                    <input type="checkbox" value="Neuroscience" name="stemGradCheckboxes" id="neuroscience" checked> 
+                {% else %}
+                    <input type="checkbox" value="Neuroscience" name="stemGradCheckboxes" id="neuroscience"> 
+                {% endif %} 
                 <label class="form-check-label" for="stemGradCheckboxes">Neuroscience</label>
+                
                 <br>
-                <input type="checkbox" value="Nursing" name="stemGradCheckboxes" id="nursing"> 
+                
+                {% if 'Nursing' in ally.area_of_research|split:"," %}
+                    <input type="checkbox" value="Nursing" name="stemGradCheckboxes" id="nursing" checked> 
+                {% else %}
+                    <input type="checkbox" value="Nursing" name="stemGradCheckboxes" id="nursing"> 
+                {% endif %} 
                 <label class="form-check-label" for="stemGradCheckboxes">Nursing</label>
+                
                 <br>
-                <input type="checkbox" value="Physics" name="stemGradCheckboxes" id="physics"> 
+                
+                {% if 'Physics' in ally.area_of_research|split:"," %}
+                    <input type="checkbox" value="Physics" name="stemGradCheckboxes" id="physics" checked> 
+                {% else %}
+                    <input type="checkbox" value="Physics" name="stemGradCheckboxes" id="physics"> 
+                {% endif %} 
                 <label class="form-check-label" for="stemGradCheckboxes">Physics</label>
+                
                 <br>
-                <input type="checkbox" value="Psychology" name="stemGradCheckboxes" id="psychology"> 
+                
+                {% if 'Psychology' in ally.area_of_research|split:"," %}
+                    <input type="checkbox" value="Psychology" name="stemGradCheckboxes" id="psychology" checked> 
+                {% else %}
+                    <input type="checkbox" value="Psychology" name="stemGradCheckboxes" id="psychology"> 
+                {% endif %} 
                 <label class="form-check-label" for="stemGradCheckboxes">Psychology</label>
                 <br>
             </div>
         </div>
         <div class="py-1">
             <strong>Are you interested in mentoring students?</strong>
-            <div class="form-check" id="mentoringGradRadios"><input type="radio" value="Yes" name="mentoringGradRadios"
-                    id="yes" required=""> <label class="form-check-label" for="mentoringGradRadios">Yes</label><br><input
-                    type="radio" value="No" name="mentoringGradRadios" id="no" required=""> <label class="form-check-label"
-                    for="mentoringGradRadios">No</label><br></div>
+            <div class="form-check" id="mentoringGradRadios">                
+                {% if ally.interested_in_mentoring %}
+                    <input type="radio" value="Yes" name="mentoringGradRadios" id="yes" required checked>
+                    <label class="form-check-label" for="mentoringGradRadios">Yes</label>
+                    <br>
+                    <input type="radio" value="No" name="mentoringGradRadios" id="no" required>
+                    <label class="form-check-label" for="mentoringGradRadios">No</label>
+                    <br>
+                {% else %}
+                    <input type="radio" value="Yes" name="mentoringGradRadios" id="yes" required>
+                    <label class="form-check-label" for="mentoringGradRadios">Yes</label>
+                    <br>
+                    <input type="radio" value="No" name="mentoringGradRadios" id="no" required checked>
+                    <label class="form-check-label" for="mentoringGradRadios">No</label>
+                    <br>
+                {% endif %}
+            </div>
         </div>
-        <div class="py-1">
+        <!-- <div class="py-1">
             <strong>Are you interested in serving as a mentor to students who identify as any of the following? (check all
                 that apply)</strong>
-            <div class="form-check" id="mentoringGradCheckboxes"><input type="checkbox"
-                    value="First generation college-student" name="mentoringGradCheckboxes"
-                    id="firstgenerationcollege-student"> <label class="form-check-label" for="mentoringGradCheckboxes">First
-                    generation college-student</label><br><input type="checkbox" value="Low-income"
-                    name="mentoringGradCheckboxes" id="low-income"> <label class="form-check-label"
-                    for="mentoringGradCheckboxes">Low-income</label><br><input type="checkbox" value="Rural"
-                    name="mentoringGradCheckboxes" id="rural"> <label class="form-check-label"
-                    for="mentoringGradCheckboxes">Rural</label><br><input type="checkbox"
-                    value="Underrepresented racial/ethnic minority" name="mentoringGradCheckboxes"
-                    id="underrepresentedracial/ethnicminority"> <label class="form-check-label"
-                    for="mentoringGradCheckboxes">Underrepresented racial/ethnic minority</label><br><input type="checkbox"
-                    value="Transfer student" name="mentoringGradCheckboxes" id="transferstudent"> <label
-                    class="form-check-label" for="mentoringGradCheckboxes">Transfer student</label><br><input
-                    type="checkbox" value="LGBTQ" name="mentoringGradCheckboxes" id="lgbtq"> <label class="form-check-label"
-                    for="mentoringGradCheckboxes">LGBTQ</label><br></div>
-        </div>
+            <div class="form-check" id="mentoringGradCheckboxes">
+                {% if 'First generation college-student' in ally.area_of_research|split:"," %}
+                    <input type="checkbox" value="First generation college-student" name="mentoringGradCheckboxes" id="firstgenerationcollege-student" checked> 
+                {% else %}
+                    <input type="checkbox" value="First generation college-student" name="mentoringGradCheckboxes" id="firstgenerationcollege-student"> 
+                {% endif %}
+                <label class="form-check-label" for="mentoringGradCheckboxes">First generation college-student</label>
+                
+                <br>
+                
+                {% if 'Low-income' in ally.area_of_research|split:"," %}
+                    <input type="checkbox" value="Low-income" name="mentoringGradCheckboxes" id="low-income" checked> 
+                {% else %}
+                    <input type="checkbox" value="Low-income" name="mentoringGradCheckboxes" id="low-income"> 
+                {% endif %}
+                <label class="form-check-label" for="mentoringGradCheckboxes">Low-income</label>
+                
+                <br>
+                
+                {% if 'Rural' in ally.area_of_research|split:"," %}
+                    <input type="checkbox" value="Rural" name="mentoringGradCheckboxes" id="rural" checked> 
+                {% else %}
+                    <input type="checkbox" value="Rural" name="mentoringGradCheckboxes" id="rural"> 
+                {% endif %}
+                <label class="form-check-label" for="mentoringGradCheckboxes">Rural</label>
+                
+                <br>
+                
+                {% if 'Underrepresented racial/ethnic minority' in ally.area_of_research|split:"," %}
+                    <input type="checkbox" value="Underrepresented racial/ethnic minority" name="mentoringGradCheckboxes" id="underrepresentedracial/ethnicminority" checked> 
+                {% else %}
+                    <input type="checkbox" value="Underrepresented racial/ethnic minority" name="mentoringGradCheckboxes" id="underrepresentedracial/ethnicminority"> 
+                {% endif %}
+                <label class="form-check-label" for="mentoringGradCheckboxes">Underrepresented racial/ethnic minority</label>
+                
+                <br>
+                
+                {% if 'Transfer student' in ally.area_of_research|split:"," %}
+                    <input type="checkbox" value="Transfer student" name="mentoringGradCheckboxes" id="transferstudent" checked> 
+                {% else %}
+                    <input type="checkbox" value="Transfer student" name="mentoringGradCheckboxes" id="transferstudent"> 
+                {% endif %}
+                <label class="form-check-label" for="mentoringGradCheckboxes">Transfer student</label>
+                
+                <br>
+                
+                {% if 'LGBTQ' in ally.area_of_research|split:"," %}
+                    <input type="checkbox" value="LGBTQ" name="mentoringGradCheckboxes" id="lgbtq" checked> 
+                {% else %}
+                    <input type="checkbox" value="LGBTQ" name="mentoringGradCheckboxes" id="lgbtq"> 
+                {% endif %}
+                <label class="form-check-label" for="mentoringGradCheckboxes">LGBTQ</label>
+                <br>
+            </div>
+        </div> -->
         <div class="py-1">
             <strong>Would you be willing to offer lab shadowing to potential students?</strong>
-            <div class="form-check" id="labShadowRadios"><input type="radio" value="Yes" name="labShadowRadios" id="yes"
-                    required=""> <label class="form-check-label" for="labShadowRadios">Yes</label><br><input type="radio"
-                    value="No" name="labShadowRadios" id="no" required=""> <label class="form-check-label"
-                    for="labShadowRadios">No</label><br></div>
+            <div class="form-check" id="labShadowRadios">
+                {% if ally.willing_to_offer_lab_shadowing %}
+                    <input type="radio" value="Yes" name="labShadowRadios" id="yes" required checked>
+                    <label class="form-check-label" for="labShadowRadios">Yes</label>
+                    <br>
+                    <input type="radio" value="No" name="labShadowRadios" id="no" required>
+                    <label class="form-check-label" for="labShadowRadios">No</label>
+                    <br>
+                {% else %}
+                    <input type="radio" value="Yes" name="labShadowRadios" id="yes" required>
+                    <label class="form-check-label" for="labShadowRadios">Yes</label>
+                    <br>
+                    <input type="radio" value="No" name="labShadowRadios" id="no" required checked>
+                    <label class="form-check-label" for="labShadowRadios">No</label>
+                    <br>
+                {% endif %}
+            </div>
         </div>
         <div class="py-1">
             <strong>Are you interested in connecting with other mentors?</strong>
             <div class="form-check" id="connectingRadios">
-                <input type="radio" value="Yes" name="connectingRadios" id="yes" required=""> <label
-                    class="form-check-label" for="connectingRadios">Yes</label><br><input type="radio" value="No"
-                    name="connectingRadios" id="no" required=""> <label class="form-check-label"
-                    for="connectingRadios">No</label><br>
+                {% if ally.interested_in_connecting_with_other_mentors %}
+                    <input type="radio" value="Yes" name="connectingRadios" id="yes" required checked>
+                    <label class="form-check-label" for="connectingRadios">Yes</label>
+                    <br>
+                    <input type="radio" value="No" name="connectingRadios" id="no" required>
+                    <label class="form-check-label" for="connectingRadios">No</label>
+                    <br>
+                {% else %}
+                    <input type="radio" value="Yes" name="connectingRadios" id="yes" required>
+                    <label class="form-check-label" for="connectingRadios">Yes</label>
+                    <br>
+                    <input type="radio" value="No" name="connectingRadios" id="no" required checked>
+                    <label class="form-check-label" for="connectingRadios">No</label>
+                    <br>
+                {% endif %}
             </div>
         </div>
         <div class="py-1">
             <strong>Would you be willing to volunteer for panels, networking workshops, and other events as professional
                 development for students?</strong>
             <div class="form-check" id="volunteerGradRadios">
-                <input type="radio" value="Yes" name="volunteerGradRadios" id="yes" required=""> <label
-                    class="form-check-label" for="volunteerGradRadios">Yes</label><br><input type="radio" value="No"
-                    name="volunteerGradRadios" id="no" required=""> <label class="form-check-label"
-                    for="volunteerGradRadios">No</label><br>
+                {% if ally.willing_to_volunteer_for_events %}
+                    <input type="radio" value="Yes" name="volunteerGradRadios" id="yes" required checked>
+                    <label class="form-check-label" for="volunteerGradRadios">Yes</label>
+                    <br>
+                    <input type="radio" value="No" name="volunteerGradRadios" id="no" required>
+                    <label class="form-check-label" for="volunteerGradRadios">No</label>
+                    <br>
+                {% else %}
+                    <input type="radio" value="Yes" name="volunteerGradRadios" id="yes" required>
+                    <label class="form-check-label" for="volunteerGradRadios">Yes</label>
+                    <br>
+                    <input type="radio" value="No" name="volunteerGradRadios" id="no" required checked>
+                    <label class="form-check-label" for="volunteerGradRadios">No</label>
+                    <br>
+                {% endif %}
             </div>
         </div>
         <div class="py-1">
             <strong>Are you interested in mentor training?</strong>
-            <div class="form-check" id="gradTrainingRadios"><input type="radio" value="Yes" name="gradTrainingRadios"
-                    id="yes" required=""> <label class="form-check-label" for="gradTrainingRadios">Yes</label><br><input
-                    type="radio" value="No" name="gradTrainingRadios" id="no" required=""> <label class="form-check-label"
-                    for="gradTrainingRadios">No</label><br></div>
+            <div class="form-check" id="gradTrainingRadios">
+                {% if ally.interested_in_mentor_training %}
+                    <input type="radio" value="Yes" name="gradTrainingRadios" id="yes" required checked>
+                    <label class="form-check-label" for="gradTrainingRadios">Yes</label>
+                    <br>
+                    <input type="radio" value="No" name="gradTrainingRadios" id="no" required>
+                    <label class="form-check-label" for="gradTrainingRadios">No</label>
+                    <br>
+                {% else %}
+                    <input type="radio" value="Yes" name="gradTrainingRadios" id="yes" required>
+                    <label class="form-check-label" for="gradTrainingRadios">Yes</label>
+                    <br>
+                    <input type="radio" value="No" name="gradTrainingRadios" id="no" required checked>
+                    <label class="form-check-label" for="gradTrainingRadios">No</label>
+                    <br>
+                {% endif %}
+            </div>
         </div>
     
     </div>
