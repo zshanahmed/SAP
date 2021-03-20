@@ -75,6 +75,14 @@ class ViewAllyProfileFromAdminDashboard(AccessMixin, View):
 
 
 class EditAllyProfileFromAdminDashboard(AccessMixin, View):
+    def set_boolean(self, list, postDict):
+        dict = {}
+        for selection in list:
+            if postDict[selection][0] == 'Yes':
+                dict[selection] = True
+            else:
+                dict[selection] = False
+        return dict
     def get(self, request, *args, **kwargs):
         username = request.GET['username']
         try:
@@ -91,8 +99,24 @@ class EditAllyProfileFromAdminDashboard(AccessMixin, View):
         postDict = dict(request.POST)
         print(request.POST)
         if User.objects.filter(username=postDict["username"][0]).exists():
-            
-            print("User Role: ", postDict["roleSelected"][0])
+            user = User.objects.get(username=postDict["username"][0])
+            ally = Ally.objects.get(user=user)
+            if ally.user_type == 'Staff':
+                selections = self.set_boolean(
+                    ['studentsInterestedRadios'], postDict)
+
+                how_can_we_help = postDict["howCanWeHelp"][0]
+
+                ally.people_who_might_be_interested_in_iba = selections['studentsInterestedRadios']
+                ally.how_can_science_ally_serve_you = how_can_we_help
+
+                ally.save()
+            elif ally.user_type == 'Graduate Student':
+                pass
+            elif ally.user_type == 'Undergraduate Student':
+                pass
+            elif ally.user_type == 'Faculty':
+                pass
             messages.add_message(request, messages.WARNING,
                                  'Ally updated !')
         else:
