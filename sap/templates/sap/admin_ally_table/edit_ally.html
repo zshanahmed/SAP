@@ -460,17 +460,42 @@
     <div id='undergradContent' style="display: none">
         <div class="py-1">
             <strong>Year:</strong>
-            <div class="form-check" id="undergradRadios"><input type="radio" value="Freshman" name="undergradRadios"
-                    id="freshman" required=""> <label class="form-check-label"
-                    for="undergradRadios">Freshman</label><br><input type="radio" value="Sophomore" name="undergradRadios"
-                    id="sophomore" required=""> <label class="form-check-label"
-                    for="undergradRadios">Sophomore</label><br><input type="radio" value="Junior" name="undergradRadios"
-                    id="junior" required=""> <label class="form-check-label" for="undergradRadios">Junior</label><br><input
-                    type="radio" value="Senior" name="undergradRadios" id="senior" required=""> <label
-                    class="form-check-label" for="undergradRadios">Senior</label><br></div>
+            <div class="form-check" id="undergradRadios">
+                {% if ally.year == 'Freshman' %}
+                    <input type="radio" value="Freshman" name="undergradRadios" id="freshman" required="" checked> 
+                {% else %}
+                    <input type="radio" value="Freshman" name="undergradRadios" id="freshman" required=""> 
+                {% endif %}
+                <label class="form-check-label" for="undergradRadios">Freshman</label>
+                <br>
+                
+                {% if ally.year == 'Sophomore' %}
+                    <input type="radio" value="Sophomore" name="undergradRadios" id="sophomore" required="" checked>
+                {% else %}
+                    <input type="radio" value="Sophomore" name="undergradRadios" id="sophomore" required=""> 
+                {% endif %}
+                <label class="form-check-label" for="undergradRadios">Sophomore</label>
+                <br>
+
+                {% if ally.year == 'Junior' %}
+                    <input type="radio" value="Junior" name="undergradRadios" id="junior" required="" checked> 
+                {% else %}
+                    <input type="radio" value="Junior" name="undergradRadios" id="junior" required=""> 
+                {% endif %}
+                <label class="form-check-label" for="undergradRadios">Junior</label>
+                <br>
+                
+                {% if ally.year == 'Senior' %}
+                    <input type="radio" value="Senior" name="undergradRadios" id="senior" required="" checked>
+                {% else %}
+                    <input type="radio" value="Senior" name="undergradRadios" id="senior" required="">
+                {% endif %}
+                <label class="form-check-label" for="undergradRadios">Senior</label>
+                <br>
+            </div>
         </div>
     
-        <div class="py-1">
+        <!-- <div class="py-1">
             <strong>Do you identify as? (check all that apply)</strong>
             <div class="form-check" id="idUnderGradCheckboxes"><input type="checkbox"
                     value="First generation college-student" name="idUnderGradCheckboxes"
@@ -486,36 +511,70 @@
                     class="form-check-label" for="idUnderGradCheckboxes">Transfer student</label><br><input type="checkbox"
                     value="LGBTQ" name="idUnderGradCheckboxes" id="lgbtq"> <label class="form-check-label"
                     for="idUnderGradCheckboxes">LGBTQ</label><br></div>
-        </div>
+        </div> -->
     
         <div class="py-3">
             <input name="major" type="text" class="form-control form-control-user" id="major"
-                placeholder="Please enter your Major" required="">
+                placeholder="Please enter your Major" required="" value="{{ ally.major }}">
         </div>
         <div class="py-1">
             <strong>Are you interested in joining a lab?</strong>
             <div class="form-check" id="interestRadios">
-                <input type="radio" value="Yes" name="interestRadios" id="yes" required=""> <label class="form-check-label"
-                    for="interestRadios">Yes</label><br><input type="radio" value="No" name="interestRadios" id="no"
-                    required=""> <label class="form-check-label" for="interestRadios">No</label><br>
+                {% if ally.interested_in_joining_lab %}
+                    <input type="radio" value="Yes" name="interestRadios" id="yes" required checked>
+                    <label class="form-check-label" for="interestRadios">Yes</label>
+                    <br>
+                    <input type="radio" value="No" name="interestRadios" id="no" required>
+                    <label class="form-check-label" for="interestRadios">No</label>
+                    <br>
+                {% else %}
+                    <input type="radio" value="Yes" name="interestRadios" id="yes" required>
+                    <label class="form-check-label" for="interestRadios">Yes</label>
+                    <br>
+                    <input type="radio" value="No" name="interestRadios" id="no" required checked>
+                    <label class="form-check-label" for="interestRadios">No</label>
+                    <br>
+                {% endif %}
             </div>
         </div>
         <div class="py-1">
             <strong>Do you have experience working in a laboratory?</strong>
             <div class="form-check" id="experienceRadios">
-                <input type="radio" value="Yes" name="experienceRadios" id="yes" required=""> <label
-                    class="form-check-label" for="experienceRadios">Yes</label><br><input type="radio" value="No"
-                    name="experienceRadios" id="no" required=""> <label class="form-check-label"
-                    for="experienceRadios">No</label><br>
+                {% if ally.has_lab_experience %}
+                    <input type="radio" value="Yes" name="experienceRadios" id="yes" required checked>
+                    <label class="form-check-label" for="experienceRadios">Yes</label>
+                    <br>
+                    <input type="radio" value="No" name="experienceRadios" id="no" required>
+                    <label class="form-check-label" for="experienceRadios">No</label>
+                    <br>
+                {% else %}
+                    <input type="radio" value="Yes" name="experienceRadios" id="yes" required>
+                    <label class="form-check-label" for="experienceRadios">Yes</label>
+                    <br>
+                    <input type="radio" value="No" name="experienceRadios" id="no" required checked>
+                    <label class="form-check-label" for="experienceRadios">No</label>
+                    <br>
+                {% endif %}
             </div>
         </div>
         <div class="py-1">
             <strong>Are you interested in becoming a peer mentor?</strong>
             <div class="form-check" id="interestedRadios">
-                <input type="radio" value="Yes" name="interestedRadios" id="yes" required=""> <label
-                    class="form-check-label" for="interestedRadios">Yes</label><br><input type="radio" value="No"
-                    name="interestedRadios" id="no" required=""> <label class="form-check-label"
-                    for="interestedRadios">No</label><br>
+                {% if ally.interested_in_mentoring %}
+                    <input type="radio" value="Yes" name="interestedRadios" id="yes" required checked>
+                    <label class="form-check-label" for="interestedRadios">Yes</label>
+                    <br>
+                    <input type="radio" value="No" name="interestedRadios" id="no" required>
+                    <label class="form-check-label" for="interestedRadios">No</label>
+                    <br>
+                {% else %}
+                    <input type="radio" value="Yes" name="interestedRadios" id="yes" required>
+                    <label class="form-check-label" for="interestedRadios">Yes</label>
+                    <br>
+                    <input type="radio" value="No" name="interestedRadios" id="no" required checked>
+                    <label class="form-check-label" for="interestedRadios">No</label>
+                    <br>
+                {% endif %}
             </div>
         </div>
         <div class="py-1">
@@ -524,9 +583,21 @@
                 transcripts from that school to the University of Iowa Office of Admissions, and IBA may obtain a copy of
                 those transcripts from Admissions.</strong>
             <div class="form-check" id="agreementRadios">
-                <input type="radio" value="Yes" name="agreementRadios" id="yes" required=""> <label class="form-check-label"
-                    for="agreementRadios">Yes</label><br><input type="radio" value="No" name="agreementRadios" id="no"
-                    required=""> <label class="form-check-label" for="agreementRadios">No</label><br>
+                {% if ally.information_release %}
+                    <input type="radio" value="Yes" name="agreementRadios" id="yes" required checked>
+                    <label class="form-check-label" for="agreementRadios">Yes</label>
+                    <br>
+                    <input type="radio" value="No" name="agreementRadios" id="no" required>
+                    <label class="form-check-label" for="agreementRadios">No</label>
+                    <br>
+                {% else %}
+                    <input type="radio" value="Yes" name="agreementRadios" id="yes" required>
+                    <label class="form-check-label" for="agreementRadios">Yes</label>
+                    <br>
+                    <input type="radio" value="No" name="agreementRadios" id="no" required checked>
+                    <label class="form-check-label" for="agreementRadios">No</label>
+                    <br>
+                {% endif %}
             </div>
         </div>
     
