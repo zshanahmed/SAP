@@ -87,6 +87,19 @@ class EditAllyProfileFromAdminDashboard(AccessMixin, View):
             print(e)
             return HttpResponseNotFound()
 
+    def post(self, request):
+        postDict = dict(request.POST)
+        print(request.POST)
+        if User.objects.filter(username=postDict["username"][0]).exists():
+            
+            print("User Role: ", postDict["roleSelected"][0])
+            messages.add_message(request, messages.WARNING,
+                                 'Ally updated !')
+        else:
+            messages.add_message(request, messages.WARNING,
+                                 'Ally does not exist !')
+        return redirect('sap:sap-dashboard')
+
 class DeleteAllyProfileFromAdminDashboard(AccessMixin, View):
     def get(self, request, *args, **kwargs):
         username = request.GET['username']
