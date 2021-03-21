@@ -134,6 +134,8 @@ class EditAllyProfileFromAdminDashboard(AccessMixin, View):
                 ally.has_lab_experience=selections['experienceRadios']
                 ally.interested_in_mentoring=selections['interestedRadios']
                 ally.information_release = selections['agreementRadios']
+
+                ally.save()
             elif ally.user_type == 'Faculty':
                 pass
             messages.add_message(request, messages.WARNING,
