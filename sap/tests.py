@@ -68,14 +68,22 @@ class AdminAllyTableFeatureTests(TestCase):
             hawk_id='johndoe',
             user_type='Staff',
             works_at='College of Engineering',
-            area_of_research='Online Fingerprinting defence measures',
+            area_of_research='Computer Science and Engineering,Health and Human Physiology,Physics',
             description_of_research_done_at_lab='Created tools to fight fingerprinting',
             people_who_might_be_interested_in_iba=True,
             how_can_science_ally_serve_you='Help in connecting with like minded people',
             year='Senior',
             major='Electical Engineering',
             willing_to_offer_lab_shadowing=True,
-            willing_to_volunteer_for_events=True
+            willing_to_volunteer_for_events=True,
+            interested_in_mentoring=True,
+            interested_in_connecting_with_other_mentors=True,
+            interested_in_mentor_training=True,
+            interested_in_joining_lab=True,
+            has_lab_experience=True,
+            interested_in_mentoring=True,
+            information_release=True,
+            openings_in_lab_serving_at=True,
         )
 
     def test_view_ally_page_for_admin(self):
