@@ -112,9 +112,28 @@ class EditAllyProfileFromAdminDashboard(AccessMixin, View):
 
                 ally.save()
             elif ally.user_type == 'Graduate Student':
-                pass
+                selections = self.set_boolean(
+                    ['mentoringGradRadios', 'labShadowRadios', 'connectingRadios', 'volunteerGradRadios', 'gradTrainingRadios'], postDict)
+                stem_fields = ','.join(postDict['stemGradCheckboxes'])
+
+                ally.area_of_research = stem_fields
+                ally.interested_in_mentoring = selections['mentoringGradRadios']
+                ally.willing_to_offer_lab_shadowing = selections['labShadowRadios']
+                ally.interested_in_connecting_with_other_mentors = selections['connectingRadios']
+                ally.willing_to_volunteer_for_events = selections['volunteerGradRadios']
+                ally.interested_in_mentor_training = selections['gradTrainingRadios']
+
+                ally.save()
             elif ally.user_type == 'Undergraduate Student':
-                pass
+                selections = self.set_boolean(
+                    ['interestRadios', 'experienceRadios', 'interestedRadios', 'agreementRadios'], postDict)
+                
+                ally.year = postDict['undergradRadios'][0]
+                ally.major = postDict['major'][0]
+                ally.interested_in_joining_lab = selections['interestRadios']
+                ally.has_lab_experience=selections['experienceRadios']
+                ally.interested_in_mentoring=selections['interestedRadios']
+                ally.information_release = selections['agreementRadios']
             elif ally.user_type == 'Faculty':
                 pass
             messages.add_message(request, messages.WARNING,
