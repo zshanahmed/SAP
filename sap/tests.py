@@ -1,4 +1,5 @@
 import os
+from django.http import response
 
 from django.shortcuts import render
 
@@ -13,6 +14,8 @@ from django.contrib.auth.models import User
 from http import HTTPStatus
 from .forms import UpdateAdminProfileForm, UserResetForgotPasswordForm
 from django.contrib.auth.forms import PasswordChangeForm, PasswordResetForm
+
+from django.contrib.messages import get_messages
 
 
 # Create your tests here.
@@ -523,17 +526,26 @@ class LoginRedirectTests(TestCase):
         Admin users can access Dashboard
         """
         self.client.login(username="admin", password="admin_password1")
-        response = self.client.get(reverse("sap:sap-dashboard"))
-        self.assertEqual(response.status_code, HTTPStatus.OK)
+        response = self.client.get("/login_success/")
+        self.assertEqual(response.status_code, 302)
         self.client.logout()
+
+    def test_login_for_admin_fail(self):
+        """
+        Invalid password error for admin
+        """
+        self.client.post("/", {"username": "adm", "password": "admin"})
+        response = self.client.get(reverse("sap:home"))
+        self.assertEqual(response.status_code, HTTPStatus.OK)
 
     def test_login_for_nonadmin(self):
         """
         Non-admin users are redirected to About page
         """
         self.client.login(username="nonadmin", password="admin_password2")
-        response = self.client.get(reverse("sap:sap-about"))
-        self.assertEqual(response.status_code, HTTPStatus.OK)
+        response = self.client.get("/login_success/")
+        response2 = self.client.get("/about", follow=True)
+        self.assertEqual(response2.status_code, HTTPStatus.OK)
         self.client.logout()
 
 
@@ -944,6 +956,28 @@ class SignUpTests(TestCase):
         ally = Ally.objects.filter(user_id=user[0].id)
         self.assertTrue(user.exists())
         self.assertTrue(ally.exists())
+
+    def test_password_less_than_minimum(self):
+        response = self.c.post(
+            "/sign-up/",
+            {
+                "csrfmiddlewaretoken": [
+                    "K5dFCUih0K6ZYklAemhvIWSpCebK86zdx4ric6ucIPLUQhAdtdT7hhp4r5etxoJY"
+                ],
+                "firstName": ["hawk"],
+                "lastName": ["herky"],
+                "new_username": ["hawkherkydiff"],
+                "new_email": ["hawkherkydiff@uiowa.edu"],
+                "new_password": ["ddd"],
+                "repeat_password": ["ddd"],
+                "roleSelected": ["Staff"],
+                "studentsInterestedRadios": ["Yes"],
+                "howCanWeHelp": ["sasdasdasd"],
+            },
+        )
+        url = response.url
+        self.assertEqual(url, "/sign-up")
+        self.assertEqual(response.status_code, 302)
 
     # def test_Staff(self):
     #     response = self.c.post('/sign-up/', {'csrfmiddlewaretoken': ['PoY77CUhmZ70AsUF3C1nISUsVErkhMjLyb4IEZCTjZafBiWyKGajNyYdVVlldTBp'],
