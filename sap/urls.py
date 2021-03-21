@@ -53,6 +53,10 @@ urlpatterns = [
         login_required(views.CreateAdminView.as_view(), login_url='home'),
         name='create_iba_admin'),
 
+    url('create_event/',
+        login_required(views.CreateEventView.as_view(), login_url='home'),
+        name='create_event'),
+
     url('about/',
         login_required(views.AboutPageView.as_view(), login_url='about'),
         name='sap-about'),

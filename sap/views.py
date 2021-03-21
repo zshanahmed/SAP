@@ -28,6 +28,7 @@ from sendgrid.helpers.mail import Mail
 from .forms import UpdateAdminProfileForm
 from django.http import HttpResponseNotFound
 
+
 # Create your views here.
 
 
@@ -38,7 +39,7 @@ def login_success(request):
 
     if request.user.is_authenticated:
         if request.user.is_staff:
-        # users landing page
+            # users landing page
             return redirect('sap:sap-dashboard')
         else:
             return redirect('sap:sap-about')
@@ -55,6 +56,7 @@ class AccessMixin(LoginRequiredMixin):
     """
     Redirect users based on whether they are staff or not
     """
+
     def dispatch(self, request, *args, **kwargs):
         if not request.user.is_staff:
             return self.handle_no_permission()
@@ -73,6 +75,7 @@ class ViewAllyProfileFromAdminDashboard(AccessMixin, View):
         except:
             return HttpResponseNotFound("hello")
 
+
 class DeleteAllyProfileFromAdminDashboard(AccessMixin, View):
     def get(self, request, *args, **kwargs):
         username = request.GET['username']
@@ -81,7 +84,7 @@ class DeleteAllyProfileFromAdminDashboard(AccessMixin, View):
             ally = Ally.objects.get(user=user)
             ally.delete()
             user.delete()
-            messages.success(request, 'Successfully deleted the user '+username)
+            messages.success(request, 'Successfully deleted the user ' + username)
             return redirect('sap:sap-dashboard')
         except Exception as e:
             print(e)
@@ -92,6 +95,7 @@ class ChangeAdminPassword(AccessMixin, View):
     """
     Change the password for admin
     """
+
     def get(self, request, *args, **kwargs):
         form = PasswordChangeForm(request.user)
         return render(request, 'sap/change_password.html', {
@@ -118,6 +122,7 @@ class EditAdminProfile(AccessMixin, View):
     """
     Change the profile for admin
     """
+
     def get(self, request, *args, **kwargs):
         form = UpdateAdminProfileForm()
         return render(request, 'sap/profile.html', {
@@ -181,21 +186,21 @@ class CreateAdminView(AccessMixin, TemplateView):
             if newAdminDict[key][0] == '':
                 valid = False
         if valid:
-            #Check if username credentials are correct
+            # Check if username credentials are correct
             if authenticate(request, username=newAdminDict['current_username'][0],
                             password=newAdminDict['current_password'][0]) is not None:
-                #if are check username exists in database
+                # if are check username exists in database
                 if User.objects.filter(username=newAdminDict['new_username'][0]).exists():
                     messages.add_message(request, messages.ERROR, 'Account was not created because username exists')
                     return redirect('/create_iba_admin')
-                #Check if repeated password is same
+                # Check if repeated password is same
                 elif newAdminDict['new_password'][0] != newAdminDict['repeat_password'][0]:
                     messages.add_message(request, messages.ERROR, 'New password was not the same as repeated password')
                     return redirect('/create_iba_admin')
                 else:
                     messages.add_message(request, messages.SUCCESS, 'Account Created')
                     user = User.objects.create_user(newAdminDict['new_username'][0],
-                                             newAdminDict['new_email'][0], newAdminDict['new_password'][0])
+                                                    newAdminDict['new_email'][0], newAdminDict['new_password'][0])
                     user.is_staff = True
                     user.save()
                     return redirect('/dashboard')
@@ -205,6 +210,32 @@ class CreateAdminView(AccessMixin, TemplateView):
         else:
             messages.add_message(request, messages.ERROR, 'Account was not created because one or more fields were not entered')
             return redirect('/create_iba_admin')
+
+
+class CreateEventView(AccessMixin, TemplateView):
+    template_name = "sap/create_event.html"
+
+    def get(self, request):
+        return render(request, self.template_name)
+
+    def post(self, request):
+        new_event_dict = dict(request.POST)
+        print(new_event_dict)
+        event_title = new_event_dict['event_title']
+        event_description = new_event_dict['event_description']
+        event_date_time = new_event_dict['event_date_time']
+        event_location = new_event_dict['event_location']
+        print(event_title, '\n', event_description, '\n', event_date_time, '\n', event_location)
+        invite_ally_user_types = new_event_dict['role_selected']
+        invite_mentor_mentee = new_event_dict['mentor_status']
+        invite_ally_belonging_to_special_categories = new_event_dict['special_category']
+        invite_ally_belonging_to_special_categories = new_event_dict['research_area']
+        print('invite_ally_user_types = ', invite_ally_user_types)
+        print('invite_mentor_mentee = ', invite_mentor_mentee)
+        print('invite_ally_belonging_to_special_categories = ', invite_ally_belonging_to_special_categories)
+        return redirect('/create_event')
+
+
 
 
 class SignUpView(TemplateView):
@@ -226,7 +257,6 @@ class SignUpView(TemplateView):
                 categories.rural = True
         categories.save()
         return categories
-
 
     def set_boolean(self, list, postDict):
         dict = {}
@@ -260,12 +290,12 @@ class SignUpView(TemplateView):
                                             password=postDict["new_password"][0],
                                             email=postDict["new_email"][0],
                                             first_name=postDict["firstName"][0], last_name=postDict["lastName"][0])
-            
+
             if postDict['roleSelected'][0] == 'Staff':
                 selections = self.set_boolean(['studentsInterestedRadios'], postDict)
                 ally = Ally.objects.create(user=user, user_type=postDict['roleSelected'][0], hawk_id=user.username,
-                                            people_who_might_be_interested_in_iba=selections['studentsInterestedRadios'],
-                                            how_can_science_ally_serve_you=postDict['howCanWeHelp'])
+                                           people_who_might_be_interested_in_iba=selections['studentsInterestedRadios'],
+                                           how_can_science_ally_serve_you=postDict['howCanWeHelp'])
             else:
                 if postDict['roleSelected'][0] == 'Undergraduate Student':
                     try:
@@ -275,11 +305,11 @@ class SignUpView(TemplateView):
                     undergradList = ['interestRadios', 'experienceRadios', 'interestedRadios', 'agreementRadios']
                     selections = self.set_boolean(undergradList, postDict)
                     ally = Ally.objects.create(user=user, user_type=postDict['roleSelected'][0], hawk_id=user.username,
-                                            major=postDict['major'][0], year=postDict['undergradRadios'][0],
-                                            interested_in_joining_lab=selections['interestRadios'],
-                                            has_lab_experience=selections['experienceRadios'],
-                                            interested_in_mentoring=selections['interestedRadios'],
-                                            information_release=selections['agreementRadios'])
+                                               major=postDict['major'][0], year=postDict['undergradRadios'][0],
+                                               interested_in_joining_lab=selections['interestRadios'],
+                                               has_lab_experience=selections['experienceRadios'],
+                                               interested_in_mentoring=selections['interestedRadios'],
+                                               information_release=selections['agreementRadios'])
                 elif postDict['roleSelected'][0] == 'Graduate Student':
                     try:
                         stem_fields = ','.join(postDict['stemGradCheckboxes'])
@@ -293,9 +323,12 @@ class SignUpView(TemplateView):
                     gradList = ['mentoringGradRadios', 'labShadowRadios', 'connectingRadios', 'volunteerGradRadios', 'gradTrainingRadios']
                     selections = self.set_boolean(gradList, postDict)
                     ally = Ally.objects.create(user=user, user_type=postDict['roleSelected'][0], hawk_id=user.username,
-                    area_of_research=stem_fields, interested_in_mentoring=selections['mentoringGradRadios'], willing_to_offer_lab_shadowing=selections['labShadowRadios'], 
-                    interested_in_connecting_with_other_mentors=selections['connectingRadios'], willing_to_volunteer_for_events=selections['volunteerGradRadios'], interested_in_mentor_training= selections['gradTrainingRadios'])
-                
+                                               area_of_research=stem_fields, interested_in_mentoring=selections['mentoringGradRadios'],
+                                               willing_to_offer_lab_shadowing=selections['labShadowRadios'],
+                                               interested_in_connecting_with_other_mentors=selections['connectingRadios'],
+                                               willing_to_volunteer_for_events=selections['volunteerGradRadios'], \
+                                               interested_in_mentor_training=selections['gradTrainingRadios'])
+
                 elif postDict['roleSelected'][0] == 'Faculty':
                     try:
                         stem_fields = ','.join(postDict['stemCheckboxes'])
@@ -308,13 +341,14 @@ class SignUpView(TemplateView):
                     except KeyError:
                         categories = StudentCategories.objects.create()
                     ally = Ally.objects.create(user=user, user_type=postDict['roleSelected'][0], hawk_id=user.username,
-                    area_of_research = stem_fields, openings_in_lab_serving_at=selections['openingRadios'], 
-                    description_of_research_done_at_lab = postDict['research-des'][0], interested_in_mentoring=selections['mentoringFacultyRadios'], 
-                    willing_to_volunteer_for_events=selections['volunteerRadios'], interested_in_mentor_training=selections['trainingRadios'])
-                
+                                               area_of_research=stem_fields, openings_in_lab_serving_at=selections['openingRadios'],
+                                               description_of_research_done_at_lab=postDict['research-des'][0],
+                                               interested_in_mentoring=selections['mentoringFacultyRadios'],
+                                               willing_to_volunteer_for_events=selections['volunteerRadios'],
+                                               interested_in_mentor_training=selections['trainingRadios'])
+
                 AllyStudentCategoryRelation.objects.create(student_category_id=categories.id, ally_id=ally.id)
 
-           
             messages.success(request, "Account created")
             return redirect("sap:home")
 
@@ -326,6 +360,7 @@ class ForgotPasswordView(TemplateView):
     A view which allows users to reset their password in case they forget it.
     Send a confirmation emails with unique token
     """
+
     # template_name = "sap/password-forgot.html"
 
     def get(self, request, *args, **kwargs):
@@ -346,12 +381,11 @@ class ForgotPasswordView(TemplateView):
                 # user.profile.reset_password = True
                 user.save()
 
-
                 message_body = render_to_string('sap/password-forgot-mail.html', {
                     'user': user,
                     'protocol': 'http',
                     'domain': site.domain,
-                    'uid': urlsafe_base64_encode(force_bytes(user.pk)), # encode user's primary key
+                    'uid': urlsafe_base64_encode(force_bytes(user.pk)),  # encode user's primary key
                     'token': password_reset_token.make_token(user),
                 })
 
@@ -368,7 +402,7 @@ class ForgotPasswordView(TemplateView):
                     html_content=message_body)
 
                 try:
-#                     sg = SendGridAPIClient(os.environ.get('SENDGRID_API_KEY'))
+                    #                     sg = SendGridAPIClient(os.environ.get('SENDGRID_API_KEY'))
                     sg = SendGridAPIClient('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')
                     response = sg.send(email_content)
                     print(response.status_code)
@@ -412,6 +446,7 @@ class ForgotPasswordConfirmView(TemplateView):
     A unique to users who click to the reset forgot passwork link.
     Allow them to create new password.
     """
+
     # template_name = "sap/password-forgot-confirm.html"
     def get(self, request, *args, **kwargs):
         path = request.path
@@ -468,7 +503,3 @@ class ForgotPasswordConfirmView(TemplateView):
                 return render(request, 'account/password-forgot-confirm.html', context)
         else:
             messages.error(request, 'Password reset link is invalid. Please request a new password reset.')
-
-
-
-
