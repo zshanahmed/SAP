@@ -168,6 +168,32 @@ class AdminAllyTableFeatureTests(TestCase):
         message = list(response.context['messages'])[0]
         self.assertEqual(message.message, "Ally updated !")
 
+    def test_edit_non_ally_page_for_admin(self):
+        """
+        Show that the code return 404 when username is wrong
+        """
+
+        self.user.is_staff = True
+        self.user.save()
+        self.client.login(username=self.username, password=self.password)
+        response = self.client.get(
+            '/edit_allies/', {'username': 'something'})
+        self.assertEqual(response.status_code, HTTPStatus.NOT_FOUND)
+
+        response = self.client.post(
+            '/edit_allies/', {
+                'csrfmiddlewaretoken': ['XdNiZpT3jpCeRzd2kq8bbRPUmc0tKFP7dsxNaQNTUhblQPK7lne9sX0mrE5khfHH'],
+                'username': ['somthing'],
+                'studentsInterestedRadios': [str(self.ally.people_who_might_be_interested_in_iba)],
+                'howCanWeHelp': ['Finding Jobs']
+            }, follow=True
+        )
+        self.assertContains(
+            response, "Science Alliance Portal", html=True
+        )
+        message = list(response.context['messages'])[0]
+        self.assertEqual(message.message, "Ally does not exist !")
+
     def test_view_ally_page_for_admin(self):
         """
         Show View ally page for admin
