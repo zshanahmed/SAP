@@ -137,7 +137,19 @@ class EditAllyProfileFromAdminDashboard(AccessMixin, View):
 
                 ally.save()
             elif ally.user_type == 'Faculty':
-                pass
+                selections = self.set_boolean(
+                    ['openingRadios', 'mentoringFacultyRadios', 'volunteerRadios', 'trainingRadios'], postDict)
+                stem_fields = ','.join(postDict['stemGradCheckboxes'])
+                
+                ally.area_of_research = stem_fields
+                ally.description_of_research_done_at_lab = postDict['research-des'][0]
+                ally.openings_in_lab_serving_at=selections['openingRadios']
+                ally.interested_in_mentoring = selections['mentoringFacultyRadios']
+                ally.willing_to_volunteer_for_events = selections['volunteerRadios']
+                ally.interested_in_mentor_training = selections['trainingRadios']
+
+                ally.save()
+
             messages.add_message(request, messages.WARNING,
                                  'Ally updated !')
         else:
