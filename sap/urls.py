@@ -26,6 +26,10 @@ urlpatterns = [
         login_required(views.MentorsListView.as_view(), login_url='home'),
         name='ally-dashboard'),
 
+    url(r'^calendar/$',
+        login_required(views.CalendarView.as_view(), login_url='home'),
+        name='ally-calendar'),
+
     url('analytics/',
         login_required(views.AnalyticsView.as_view(), login_url='home'),
         name='sap-analytics'),

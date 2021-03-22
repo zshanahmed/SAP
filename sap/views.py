@@ -208,6 +208,9 @@ class ChangeAdminPassword(View):
         })
 
 
+class CalendarView(TemplateView):
+    template_name = "sap/calendar.html"
+
 class EditAdminProfile(View):
     """
     Change the profile for admin
