@@ -7,7 +7,7 @@ Feature: Sign up
     When I click the button with id: "sign-up"
     Then I should be on page with url: "http://127.0.0.1:8000/sign-up/"
 
-    Scenario: I try and create an account with an existing username
+  Scenario: I try and create an account with an existing username
     Given I have navigated to sign-up page
     When I fill in "iba_admin" into element: "new_username"
     And I fill in "hawk@uiowa.edu" into element: "new_email"
@@ -61,20 +61,18 @@ Feature: Sign up
     And I should be on page with url: "http://127.0.0.1:8000/"
     And be able to login with username "haw1", and password "iba_sep_1"
 
-  Scenario: I fill out the form and submit as a staff member
+  Scenario: I fill out the form with password length less than minimum allowed
     Given I have navigated to sign-up page
-    When I fill in "haw2" into element: "new_username"
-    And I fill in "name" into element: "firstName"
-    And I fill in "haw2@uiowa.edu" into element: "new_email"
-    And I fill in "lastName" into element: "lastName"
-    And I fill in "iba_sep_1" into element: "new_password"
-    And I fill in "iba_sep_1" into element: "repeat_password"
+    When I fill in "haw7" into element: "new_username"
+    And I fill in "nameishere" into element: "firstName"
+    And I fill in "haw7@uiowa.edu" into element: "new_email"
+    And I fill in "haw7lastName" into element: "lastName"
+    And I fill in "iba_" into element: "new_password"
+    And I fill in "iba_" into element: "repeat_password"
     And I click the radio button with id: "staffCheck"
     And I fill in staff form
-    Then I should see text: "Account created"
-    And I should be on page with url: "http://127.0.0.1:8000/"
-    And be able to login with username "haw2", and password "iba_sep_1"
-#
+    Then I should see text: "Password must be at least 8 characters long"
+
   Scenario: I fill out the form and submit as a faculty
     Given I have navigated to sign-up page
     When I fill in "haw3" into element: "new_username"
