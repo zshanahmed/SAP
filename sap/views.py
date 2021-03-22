@@ -1,7 +1,7 @@
 import os
 import os.path
 import csv
-from django.http import HttpResponseForbidden
+from django.http import HttpResponseForbidden, HttpResponse
 from django.contrib.auth import logout
 from django.contrib.auth import authenticate
 from django.contrib.auth.views import PasswordResetConfirmView

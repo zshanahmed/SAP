@@ -737,8 +737,8 @@ class SignUpTests(TestCase):
     def test_create_Undergrad(self):
         response = self.c.post('/sign-up/', { 'csrfmiddlewaretoken': ['At4HFZNsApVRWNye2Jcj4RVcWYf1fviv1kFbSZevLnNmJrWz4OyZhcAPn0JeaknZ'],
                                               'firstName': ['Zeeshan'], 'lastName': ['Ahmed'], 'new_username': ['zeeahmed1'],
-                                              'new_email': ['zeeahmed@uiowa.edu'], 'new_password': ['bigchungus'],
-                                              'repeat_password': ['bigchungus'], 'roleSelected': ['Undergraduate Student'],
+                                              'new_email': ['zeeahmed@uiowa.edu'], 'new_password': ['bigchungusmyNameGunga'],
+                                              'repeat_password': ['bigchungusmyNameGunga'], 'roleSelected': ['Undergraduate Student'],
                                               'undergradRadios': ['Senior'], 'major': ['Computer Science'], 'interestRadios': ['Yes'],
                                               'experienceRadios': ['Yes'], 'interestedRadios': ['Yes'],
                                               'agreementRadios': ['Yes']})
@@ -757,7 +757,7 @@ class SignUpTests(TestCase):
     def test_create_Grad(self):
         response = self.c.post('/sign-up/', {'csrfmiddlewaretoken': ['TFosu1rFWp6S4SsYIV5Rb9FtBzoTavgrCsu31o9hTp975IuRpZeNgPJeBQiU6Cy5'],
         'firstName': ['glumpy'], 'lastName': ['guy'], 'new_username': ['big_guy1'],
-        'new_email': ['eshaeffer@uiowa.edu'], 'new_password': ['123'], 'repeat_password': ['123'],
+        'new_email': ['eshaeffer@uiowa.edu'], 'new_password': ['123myNameGunga'], 'repeat_password': ['123myNameGunga'],
         'roleSelected': ['Graduate Student'],
         'stemGradCheckboxes': ['Biochemistry', 'Biology', 'Biomedical Engineering', 'Chemical Engineering'],
         'mentoringGradRadios': ['Yes'], 'mentoringGradCheckboxes': ['First generation college-student', 'Low-income', 'Underrepresented racial/ethnic minority', 'Transfer student', 'LGBTQ'],
@@ -778,7 +778,7 @@ class SignUpTests(TestCase):
         response = self.c.post('/sign-up/', {
             'csrfmiddlewaretoken': ['TFosu1rFWp6S4SsYIV5Rb9FtBzoTavgrCsu31o9hTp975IuRpZeNgPJeBQiU6Cy5'],
             'firstName': ['glumpy'], 'lastName': ['guy'], 'new_username': ['big_guy12'],
-            'new_email': ['eshaeffer@uiowa.edu'], 'new_password': ['123'], 'repeat_password': ['123'],
+            'new_email': ['eshaeffer@uiowa.edu'], 'new_password': ['123myNameGunga'], 'repeat_password': ['123myNameGunga'],
             'roleSelected': ['Graduate Student'],
             'mentoringGradRadios': ['Yes'],
             'labShadowRadios': ['Yes'], 'connectingRadios': ['Yes'], 'volunteerGradRadios': ['No'],
@@ -798,8 +798,8 @@ class SignUpTests(TestCase):
 
     def test_Faculty(self):
         response = self.c.post('/sign-up/', {'csrfmiddlewaretoken': ['gr9bKWMJLFrJZfcdKkdRhlyKLI0JeTh2ZefMhjulIFuY05e6romNm1CvLZUKa0zG'], 'firstName': ['Terry'], 'lastName': ['Braun'],
-        'new_username': ['tbraun'], 'new_email': ['tbraun@uiowa.edu'], 'new_password': ['123'],
-        'repeat_password': ['123'], 'roleSelected': ['Faculty'],
+        'new_username': ['tbraun'], 'new_email': ['tbraun@uiowa.edu'], 'new_password': ['123myNameGunga'],
+        'repeat_password': ['123myNameGunga'], 'roleSelected': ['Faculty'],
         'stemCheckboxes': ['Bioinformatics', 'Biomedical Engineering'], 'research-des': ['Me make big variant :)'],
         'openingRadios': ['Yes'], 'mentoringCheckboxes': ['First generation college-student', 'Underrepresented racial/ethnic minority', 'Transfer student'],
         'volunteerRadios': ['Yes'],'mentoringFacultyRadios':['Yes'], 'trainingRadios': ['Yes']})
@@ -819,8 +819,8 @@ class SignUpTests(TestCase):
         response = self.c.post('/sign-up/', {
             'csrfmiddlewaretoken': ['gr9bKWMJLFrJZfcdKkdRhlyKLI0JeTh2ZefMhjulIFuY05e6romNm1CvLZUKa0zG'],
             'firstName': ['Terry'], 'lastName': ['Braun'],
-            'new_username': ['tbraun2'], 'new_email': ['tbraun@uiowa.edu'], 'new_password': ['123'],
-            'repeat_password': ['123'], 'roleSelected': ['Faculty'],
+            'new_username': ['tbraun2'], 'new_email': ['tbraun@uiowa.edu'], 'new_password': ['123myNameGunga'],
+            'repeat_password': ['123myNameGunga'], 'roleSelected': ['Faculty'],
             'research-des': ['Me make big variant :)'],
             'openingRadios': ['Yes'],
             'volunteerRadios': ['Yes'], 'mentoringFacultyRadios': ['Yes'], 'trainingRadios': ['Yes']})
@@ -839,7 +839,7 @@ class SignUpTests(TestCase):
     def test_Staff(self):
         response = self.c.post('/sign-up/', {'csrfmiddlewaretoken': ['K5dFCUih0K6ZYklAemhvIWSpCebK86zdx4ric6ucIPLUQhAdtdT7hhp4r5etxoJY'],
         'firstName': ['hawk'], 'lastName': ['herky'], 'new_username': ['hawkherky'], 'new_email': ['hawkherky@uiowa.edu'],
-        'new_password': ['hawk'], 'repeat_password': ['hawk'], 'roleSelected': ['Staff'],
+        'new_password': ['hawkmyNameGunga'], 'repeat_password': ['hawkmyNameGunga'], 'roleSelected': ['Staff'],
         'studentsInterestedRadios': ['Yes'], 'howCanWeHelp': ['sasdasdasd']})
         url = response.url
         self.assertEqual(url, '/')
