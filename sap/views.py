@@ -1,3 +1,4 @@
+# noinspection PyInterpreter
 import os
 import os.path
 from django.contrib.auth import logout
@@ -91,7 +92,7 @@ class DeleteAllyProfileFromAdminDashboard(AccessMixin, View):
             return HttpResponseNotFound("")
 
 
-class ChangeAdminPassword(AccessMixin, View):
+class ChangeAdminPassword(View):
     """
     Change the password for admin
     """
