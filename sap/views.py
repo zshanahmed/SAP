@@ -182,7 +182,7 @@ class DeleteAllyProfileFromAdminDashboard(AccessMixin, View):
             return HttpResponseNotFound("")
 
 
-class ChangeAdminPassword(AccessMixin, View):
+class ChangeAdminPassword(View):
     """
     Change the password for admin
     """
@@ -208,7 +208,7 @@ class ChangeAdminPassword(AccessMixin, View):
         })
 
 
-class EditAdminProfile(AccessMixin, View):
+class EditAdminProfile(View):
     """
     Change the profile for admin
     """
