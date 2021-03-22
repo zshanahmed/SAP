@@ -8,7 +8,9 @@ from django.contrib.auth.views import PasswordResetConfirmView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse
 from django.utils.encoding import force_bytes, force_text
-from django.http import HttpResponse, HttpRequest
+from django.core.exceptions import ValidationError
+
+
 from .models import Ally, StudentCategories, AllyStudentCategoryRelation
 from django.views import generic
 from django.views.generic import TemplateView, View
@@ -45,7 +47,7 @@ def login_success(request):
 
     if request.user.is_authenticated:
         if request.user.is_staff:
-            # users landing page
+        # users landing page
             return redirect('sap:sap-dashboard')
         else:
             return redirect('sap:sap-about')
@@ -62,7 +64,6 @@ class AccessMixin(LoginRequiredMixin):
     """
     Redirect users based on whether they are staff or not
     """
-
     def dispatch(self, request, *args, **kwargs):
         if not request.user.is_staff:
             return self.handle_no_permission()
@@ -135,7 +136,7 @@ class EditAllyProfileFromAdminDashboard(AccessMixin, View):
             elif ally.user_type == 'Undergraduate Student':
                 selections = self.set_boolean(
                     ['interestRadios', 'experienceRadios', 'interestedRadios', 'agreementRadios'], postDict)
-                
+
                 ally.year = postDict['undergradRadios'][0]
                 ally.major = postDict['major'][0]
                 ally.interested_in_joining_lab = selections['interestRadios']
@@ -148,7 +149,7 @@ class EditAllyProfileFromAdminDashboard(AccessMixin, View):
                 selections = self.set_boolean(
                     ['openingRadios', 'mentoringFacultyRadios', 'volunteerRadios', 'trainingRadios'], postDict)
                 stem_fields = ','.join(postDict['stemGradCheckboxes'])
-                
+
                 ally.area_of_research = stem_fields
                 ally.description_of_research_done_at_lab = postDict['research-des'][0]
                 ally.openings_in_lab_serving_at=selections['openingRadios']
@@ -174,7 +175,7 @@ class DeleteAllyProfileFromAdminDashboard(AccessMixin, View):
             ally = Ally.objects.get(user=user)
             ally.delete()
             user.delete()
-            messages.success(request, 'Successfully deleted the user ' + username)
+            messages.success(request, 'Successfully deleted the user '+username)
             return redirect('sap:sap-dashboard')
         except Exception as e:
             print(e)
@@ -185,7 +186,6 @@ class ChangeAdminPassword(AccessMixin, View):
     """
     Change the password for admin
     """
-
     def get(self, request, *args, **kwargs):
         form = PasswordChangeForm(request.user)
         return render(request, 'sap/change_password.html', {
@@ -212,7 +212,6 @@ class EditAdminProfile(AccessMixin, View):
     """
     Change the profile for admin
     """
-
     def get(self, request, *args, **kwargs):
         form = UpdateAdminProfileForm()
         return render(request, 'sap/profile.html', {
@@ -323,6 +322,7 @@ class SignUpView(TemplateView):
         categories.save()
         return categories
 
+
     def set_boolean(self, list, postDict):
         dict = {}
         for selection in list:
@@ -337,6 +337,9 @@ class SignUpView(TemplateView):
 
     def post(self, request):
         postDict = dict(request.POST)
+
+        min_length = 8  # Minimum length for a valid password
+
         print(request.POST)
         if User.objects.filter(username=postDict["new_username"][0]).exists():
             messages.add_message(request, messages.WARNING,
@@ -347,9 +350,18 @@ class SignUpView(TemplateView):
                                  'Account can not be created because email already exists')
             return redirect('/sign-up')
         elif postDict["new_password"][0] != postDict["repeat_password"][0]:
-            messages.add_message(request, messages.WARNING,
-                                 'Repeated password is not the same as the inputted password')
-            return redirect('/sign-up')
+            messages.add_message(
+                request,
+                messages.WARNING,
+                "Repeated password is not the same as the inputted password",
+            )
+            return redirect("/sign-up")
+        elif len(postDict["new_password"][0]) < min_length:
+            messages.warning(
+                request,
+                "Password must be at least {0} characters long".format(min_length),
+            )
+            return redirect("/sign-up")
         else:
             user = User.objects.create_user(username=postDict["new_username"][0],
                                             password=postDict["new_password"][0],
@@ -517,7 +529,6 @@ class ForgotPasswordConfirmView(TemplateView):
     A unique to users who click to the reset forgot passwork link.
     Allow them to create new password.
     """
-
     # template_name = "sap/password-forgot-confirm.html"
     def get(self, request, *args, **kwargs):
         path = request.path

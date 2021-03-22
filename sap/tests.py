@@ -1,6 +1,8 @@
 import os
+from django.http import response
 
 from django.shortcuts import render
+
 # tests file
 from django.test import TestCase, Client
 import pandas as pd
@@ -15,6 +17,8 @@ from django.contrib.auth.models import User
 from http import HTTPStatus
 from .forms import UpdateAdminProfileForm, UserResetForgotPasswordForm
 from django.contrib.auth.forms import PasswordChangeForm, PasswordResetForm
+
+from django.contrib.messages import get_messages
 
 
 # Create your tests here.
@@ -241,6 +245,17 @@ class AdminAllyTableFeatureTests(TestCase):
         response = self.client.get('/delete/', {'username': self.ally_user.username}, follow=True)
         self.assertEqual(response.status_code, HTTPStatus.OK)
         self.assertNotContains(response, name, html=True)
+
+    def test_delete_ally_fail(self):
+        self.user.is_staff = True
+        self.user.save()
+        self.client.login(username=self.username, password=self.password)
+        name = self.ally_user.first_name + " " + self.ally_user.last_name
+
+        response = self.client.get(reverse("sap:sap-dashboard"))
+        self.assertContains(response, name, html=True)
+        response = self.client.get("/delete/", {"username": "nouserfound"}, follow=True)
+        self.assertEqual(response.status_code, HTTPStatus.NOT_FOUND)
 
 
 class AdminUpdateProfileAndPasswordTests(TestCase):
@@ -588,6 +603,14 @@ class LoginRedirectTests(TestCase):
         self.assertEqual(response.status_code, HTTPStatus.OK)
         self.client.logout()
 
+    def test_login_for_admin_fail(self):
+        """
+        Invalid password error for admin
+        """
+        self.client.post("/", {"username": "adm", "password": "admin"})
+        response = self.client.get(reverse("sap:home"))
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+
     def test_login_for_nonadmin(self):
         """
         Non-admin users are redirected to About page
@@ -826,6 +849,27 @@ class SignUpTests(TestCase):
         self.assertTrue(user.exists())
         self.assertTrue(ally.exists())
 
+    def test_password_less_than_minimum(self):
+        response = self.c.post(
+            "/sign-up/",
+            {
+                "csrfmiddlewaretoken": [
+                    "K5dFCUih0K6ZYklAemhvIWSpCebK86zdx4ric6ucIPLUQhAdtdT7hhp4r5etxoJY"
+                ],
+                "firstName": ["hawk"],
+                "lastName": ["herky"],
+                "new_username": ["hawkherkydiff"],
+                "new_email": ["hawkherkydiff@uiowa.edu"],
+                "new_password": ["ddd"],
+                "repeat_password": ["ddd"],
+                "roleSelected": ["Staff"],
+                "studentsInterestedRadios": ["Yes"],
+                "howCanWeHelp": ["sasdasdasd"],
+            },
+        )
+        url = response.url
+        self.assertEqual(url, "/sign-up")
+        self.assertEqual(response.status_code, 302)
 
     # def test_Staff(self):
     #     response = self.c.post('/sign-up/', {'csrfmiddlewaretoken': ['PoY77CUhmZ70AsUF3C1nISUsVErkhMjLyb4IEZCTjZafBiWyKGajNyYdVVlldTBp'],
