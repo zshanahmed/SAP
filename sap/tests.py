@@ -62,21 +62,137 @@ class AdminAllyTableFeatureTests(TestCase):
                                         first_name='John',
                                         last_name='Doe')
 
-
         self.ally = Ally.objects.create(
             user=self.ally_user,
             hawk_id='johndoe',
             user_type='Staff',
             works_at='College of Engineering',
-            area_of_research='Online Fingerprinting defence measures',
+            area_of_research='Computer Science and Engineering,Health and Human Physiology,Physics',
             description_of_research_done_at_lab='Created tools to fight fingerprinting',
             people_who_might_be_interested_in_iba=True,
             how_can_science_ally_serve_you='Help in connecting with like minded people',
             year='Senior',
             major='Electical Engineering',
             willing_to_offer_lab_shadowing=True,
-            willing_to_volunteer_for_events=True
+            willing_to_volunteer_for_events=True,
+            interested_in_mentoring=True,
+            interested_in_connecting_with_other_mentors=True,
+            interested_in_mentor_training=True,
+            interested_in_joining_lab=True,
+            has_lab_experience=True,
+            information_release=True,
+            openings_in_lab_serving_at=True,
         )
+
+    def test_edit_ally_page_for_admin(self):
+        """
+        Show and Complete Edit ally page for admin
+        """
+
+        self.user.is_staff = True
+        self.user.save()
+        self.client.login(username=self.username, password=self.password)
+        
+        # Testing for Staff user type
+        response = self.client.get(
+            '/edit_allies/', {'username': self.ally_user.username})
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        self.assertContains(
+            response, "Edit Ally Profile", html=True
+        )
+        
+        response = self.client.post(
+            '/edit_allies/', {
+                'csrfmiddlewaretoken': ['XdNiZpT3jpCeRzd2kq8bbRPUmc0tKFP7dsxNaQNTUhblQPK7lne9sX0mrE5khfHH'],
+                'username': [self.ally_user.username],
+                'studentsInterestedRadios': [str(self.ally.people_who_might_be_interested_in_iba)],
+                'howCanWeHelp': ['Finding Jobs']
+            }, follow=True
+        )
+        self.assertContains(
+            response, "Science Alliance Portal", html=True
+        )
+        message = list(response.context['messages'])[0]
+        self.assertEqual(message.message, "Ally updated !")
+
+        # Testing for Graduate Student user type
+        self.ally.user_type="Graduate Student"
+        self.ally.save()
+        response = self.client.post(
+            '/edit_allies/', {
+                'csrfmiddlewaretoken': ['XdNiZpT3jpCeRzd2kq8bbRPUmc0tKFP7dsxNaQNTUhblQPK7lne9sX0mrE5khfHH'],
+                'username': [self.ally_user.username],
+                'stemGradCheckboxes': ['Bioinformatics','Computer Science and Engineering', 'Health and Human Physiology', 'Neuroscience', 'Physics'],
+                'mentoringGradRadios': ['Yes'],
+                'labShadowRadios': ['No'],
+                'connectingRadios': ['No'],
+                'volunteerGradRadios': ['No'],
+                'gradTrainingRadios': ['Yes']
+            }, follow=True
+        )
+        self.assertContains(
+            response, "Science Alliance Portal", html=True
+        )
+        message = list(response.context['messages'])[0]
+        self.assertEqual(message.message, "Ally updated !")
+
+        # Testing for UnderGrad Student user type
+        self.ally.user_type = "Undergraduate Student"
+        self.ally.save()
+        response = self.client.post(
+            '/edit_allies/', {
+                'csrfmiddlewaretoken': ['XdNiZpT3jpCeRzd2kq8bbRPUmc0tKFP7dsxNaQNTUhblQPK7lne9sX0mrE5khfHH'],
+                'username': [self.ally_user.username],
+                'undergradRadios': ['Freshman'], 'major': ['Psychology'], 'interestRadios': ['No'], 'experienceRadios': ['Yes'], 'interestedRadios': ['No'], 'agreementRadios': ['Yes']
+            }, follow=True
+        )
+        self.assertContains(
+            response, "Science Alliance Portal", html=True
+        )
+        message = list(response.context['messages'])[0]
+        self.assertEqual(message.message, "Ally updated !")
+
+        # Testing for Faculty user type
+        self.ally.user_type = "Faculty"
+        self.ally.save()
+        response = self.client.post(
+            '/edit_allies/', {
+                'csrfmiddlewaretoken': ['XdNiZpT3jpCeRzd2kq8bbRPUmc0tKFP7dsxNaQNTUhblQPK7lne9sX0mrE5khfHH'],
+                'username': [self.ally_user.username],
+                'stemGradCheckboxes': ['Biochemistry', 'Bioinformatics', 'Biology'], 'research-des': ['Authorship Obfuscation'], 'openingRadios': ['No'], 'mentoringFacultyRadios': ['No'], 'volunteerRadios': ['Yes'], 'trainingRadios': ['Yes']
+            }, follow=True
+        )
+        self.assertContains(
+            response, "Science Alliance Portal", html=True
+        )
+        message = list(response.context['messages'])[0]
+        self.assertEqual(message.message, "Ally updated !")
+
+    def test_edit_non_ally_page_for_admin(self):
+        """
+        Show that the code return 404 when username is wrong
+        """
+
+        self.user.is_staff = True
+        self.user.save()
+        self.client.login(username=self.username, password=self.password)
+        response = self.client.get(
+            '/edit_allies/', {'username': 'something'})
+        self.assertEqual(response.status_code, HTTPStatus.NOT_FOUND)
+
+        response = self.client.post(
+            '/edit_allies/', {
+                'csrfmiddlewaretoken': ['XdNiZpT3jpCeRzd2kq8bbRPUmc0tKFP7dsxNaQNTUhblQPK7lne9sX0mrE5khfHH'],
+                'username': ['somthing'],
+                'studentsInterestedRadios': [str(self.ally.people_who_might_be_interested_in_iba)],
+                'howCanWeHelp': ['Finding Jobs']
+            }, follow=True
+        )
+        self.assertContains(
+            response, "Science Alliance Portal", html=True
+        )
+        message = list(response.context['messages'])[0]
+        self.assertEqual(message.message, "Ally does not exist !")
 
     def test_view_ally_page_for_admin(self):
         """

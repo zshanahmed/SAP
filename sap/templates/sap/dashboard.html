@@ -168,7 +168,7 @@
 
                 </nav>
                 <!-- End of Topbar -->
-                <div class="container-fluid col-9 float-left">
+                <div class="container-fluid col-9 float-left"  id="filter_container">
                     <!-- DataTales Example -->
                     <div class="card shadow mb-4">
                         <div class="card-header py-3">
@@ -221,8 +221,8 @@
                         </div>
                     </div>
                 </div>
-                <div class="container-fluid col-3 float-right">
-                    <div style="height: 27px; visibility: hidden"></div>
+                <div class="container-fluid col-3 float-right" id="download_container">
+                    <!-- <div style="height: 27px; visibility: hidden"></div> -->
                     <div class="card shadow mb-4">
                         <div class="card-header py-3">
                             <h6 class="m-0 font-weight-bold text-primary">Download or Upload Ally Profiles</h6>
@@ -316,7 +316,7 @@
                                                                     title="Add"><i class="fa fa-eye"></i></a>
                                                             </li>
                                                             <li class="list-inline-item">
-                                                                <a class="btn btn-success btn-sm" type="button" data-toggle="tooltip" data-placement="top"
+                                                                <a href="/edit_allies/?username={{ ally.user.username }}" class="btn btn-success btn-sm" type="button" data-toggle="tooltip" data-placement="top"
                                                                     title="Edit"><i class="fa fa-edit"></i></a>
                                                             </li>
                                                             <li class="list-inline-item">

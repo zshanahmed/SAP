@@ -79,7 +79,91 @@ class ViewAllyProfileFromAdminDashboard(AccessMixin, View):
                 'ally': ally
             })
         except:
-            return HttpResponseNotFound("hello")
+            return HttpResponseNotFound()
+
+
+class EditAllyProfileFromAdminDashboard(AccessMixin, View):
+    def set_boolean(self, list, postDict):
+        dict = {}
+        for selection in list:
+            if postDict[selection][0] == 'Yes':
+                dict[selection] = True
+            else:
+                dict[selection] = False
+        return dict
+    def get(self, request, *args, **kwargs):
+        username = request.GET['username']
+        try:
+            user = User.objects.get(username=username)
+            ally = Ally.objects.get(user=user)
+            return render(request, 'sap/admin_ally_table/edit_ally.html', {
+                'ally': ally
+            })
+        except Exception as e:
+            print(e)
+            return HttpResponseNotFound()
+
+    def post(self, request):
+        postDict = dict(request.POST)
+        print(request.POST)
+        if User.objects.filter(username=postDict["username"][0]).exists():
+            user = User.objects.get(username=postDict["username"][0])
+            ally = Ally.objects.get(user=user)
+            if ally.user_type == 'Staff':
+                selections = self.set_boolean(
+                    ['studentsInterestedRadios'], postDict)
+
+                how_can_we_help = postDict["howCanWeHelp"][0]
+
+                ally.people_who_might_be_interested_in_iba = selections['studentsInterestedRadios']
+                ally.how_can_science_ally_serve_you = how_can_we_help
+
+                ally.save()
+            elif ally.user_type == 'Graduate Student':
+                selections = self.set_boolean(
+                    ['mentoringGradRadios', 'labShadowRadios', 'connectingRadios', 'volunteerGradRadios', 'gradTrainingRadios'], postDict)
+                stem_fields = ','.join(postDict['stemGradCheckboxes'])
+
+                ally.area_of_research = stem_fields
+                ally.interested_in_mentoring = selections['mentoringGradRadios']
+                ally.willing_to_offer_lab_shadowing = selections['labShadowRadios']
+                ally.interested_in_connecting_with_other_mentors = selections['connectingRadios']
+                ally.willing_to_volunteer_for_events = selections['volunteerGradRadios']
+                ally.interested_in_mentor_training = selections['gradTrainingRadios']
+
+                ally.save()
+            elif ally.user_type == 'Undergraduate Student':
+                selections = self.set_boolean(
+                    ['interestRadios', 'experienceRadios', 'interestedRadios', 'agreementRadios'], postDict)
+                
+                ally.year = postDict['undergradRadios'][0]
+                ally.major = postDict['major'][0]
+                ally.interested_in_joining_lab = selections['interestRadios']
+                ally.has_lab_experience=selections['experienceRadios']
+                ally.interested_in_mentoring=selections['interestedRadios']
+                ally.information_release = selections['agreementRadios']
+
+                ally.save()
+            elif ally.user_type == 'Faculty':
+                selections = self.set_boolean(
+                    ['openingRadios', 'mentoringFacultyRadios', 'volunteerRadios', 'trainingRadios'], postDict)
+                stem_fields = ','.join(postDict['stemGradCheckboxes'])
+                
+                ally.area_of_research = stem_fields
+                ally.description_of_research_done_at_lab = postDict['research-des'][0]
+                ally.openings_in_lab_serving_at=selections['openingRadios']
+                ally.interested_in_mentoring = selections['mentoringFacultyRadios']
+                ally.willing_to_volunteer_for_events = selections['volunteerRadios']
+                ally.interested_in_mentor_training = selections['trainingRadios']
+
+                ally.save()
+
+            messages.add_message(request, messages.WARNING,
+                                 'Ally updated !')
+        else:
+            messages.add_message(request, messages.WARNING,
+                                 'Ally does not exist !')
+        return redirect('sap:sap-dashboard')
 
 
 class DeleteAllyProfileFromAdminDashboard(AccessMixin, View):
