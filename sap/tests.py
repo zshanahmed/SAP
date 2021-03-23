@@ -6,7 +6,7 @@ from django.test import TestCase, Client
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 
-from .models import Ally, StudentCategories, AllyStudentCategoryRelation
+from .models import Ally, StudentCategories, AllyStudentCategoryRelation, Event, EventAllyRelation
 from django.urls import reverse
 from django.contrib.auth.models import User
 from http import HTTPStatus
@@ -826,3 +826,90 @@ class ForgotPasswordViewTest(TestCase):
 
         request = self.client.get(link)
         self.assertEqual(request.status_code, HTTPStatus.OK)
+
+
+class CreateEventTests(TestCase):
+    def setUp(self):
+        self.username = 'admin'
+        self.password = 'admin_password1'
+        self.user = User.objects.create_user(self.username, 'email@test.com', self.password)
+        self.user.is_staff = True
+        self.user.save()
+        self.client = Client()
+        self.client.login(username=self.username, password=self.password)
+
+        self.ally_user = User.objects.create_user(username='johndoe',
+                                                  email='johndoe@uiowa.edu',
+                                                  password='johndoe',
+                                                  first_name='John',
+                                                  last_name='Doe')
+
+        self.ally = Ally.objects.create(
+            user=self.ally_user,
+            hawk_id='johndoe',
+            user_type='Graduate Student',
+            works_at='College of Engineering',
+            area_of_research='Biochemistry',
+            major='Electrical Engineering',
+            willing_to_volunteer_for_events=True
+        )
+
+        self.category = StudentCategories.objects.create(lgbtq=True)
+        self.student_ally_rel = AllyStudentCategoryRelation.objects.create(
+            ally=self.ally,
+            student_category=self.category
+        )
+
+    def test_get(self):
+        response = self.client.get('/create_event/')
+        self.assertEqual(response.status_code, 200)
+
+    def test_invite_all(self):
+        response = self.client.post('/create_event/', {
+            'csrfmiddlewaretoken': ['gr9bKWMJLFrJZfcdKkdRhlyKLI0JeTh2ZefMhjulIFuY05e6romNm1CvLZUKa0zG'],
+            'event_title': ['title of the event'],
+            'event_description': ['description of the event'],
+            'event_location': ['https://zoom.us/abc123edf'],
+            'event_date_time': ['2021-03-31T15:32'],
+            'invite_all': 'true'
+        })
+
+        url = response.url
+        event = Event.objects.filter(title='title of the event')
+        assert url == '/dashboard'
+        assert event.exists()
+        assert EventAllyRelation.objects.filter(event=event[0], ally=self.ally).exists()
+
+    def test_invite_biochem_student(self):
+        response = self.client.post('/create_event/', {
+            'csrfmiddlewaretoken': ['gr9bKWMJLFrJZfcdKkdRhlyKLI0JeTh2ZefMhjulIFuY05e6romNm1CvLZUKa0zG'],
+            'event_title': ['title of the event 2'],
+            'event_description': ['description of the event 2'],
+            'event_location': ['https://zoom.us/abc123edf2'],
+            'event_date_time': ['2021-03-31T15:32'],
+            'role_selected': ['Graduate Student'],
+            'mentor_status': ['Mentors', 'Mentees'],
+            'research_area': ['Biochemistry']
+        })
+
+        url = response.url
+        event = Event.objects.filter(title='title of the event 2')
+        assert url == '/dashboard'
+        assert event.exists()
+        assert EventAllyRelation.objects.filter(event=event[0], ally=self.ally).exists()
+
+    def test_invite_special_category_student(self):
+        response = self.client.post('/create_event/', {
+            'csrfmiddlewaretoken': ['gr9bKWMJLFrJZfcdKkdRhlyKLI0JeTh2ZefMhjulIFuY05e6romNm1CvLZUKa0zG'],
+            'event_title': ['title of the event 3'],
+            'event_description': ['description of the event 3'],
+            'event_location': ['https://zoom.us/abc123edf2'],
+            'event_date_time': ['2021-03-31T15:32'],
+            'special_category': ['First generation college-student', 'Rural', 'Low-income', 'Underrepresented racial/ethnic minority', 'Transfer Student', 'LGBTQ'],
+        })
+
+        url = response.url
+        event = Event.objects.filter(title='title of the event 3')
+        assert url == '/dashboard'
+        assert event.exists()
+        assert EventAllyRelation.objects.filter(event=event[0], ally=self.ally).exists()

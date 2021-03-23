@@ -7,7 +7,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse
 from django.utils.encoding import force_bytes, force_text
 
-from .models import Ally, StudentCategories, AllyStudentCategoryRelation
+from .models import Ally, StudentCategories, AllyStudentCategoryRelation, Event, EventAllyRelation
 from django.views import generic
 from django.views.generic import TemplateView, View
 from django.contrib import messages
@@ -27,6 +27,7 @@ from sendgrid.helpers.mail import Mail
 
 from .forms import UpdateAdminProfileForm
 from django.http import HttpResponseNotFound
+from django.utils.dateparse import parse_datetime
 
 
 # Create your views here.
@@ -220,20 +221,94 @@ class CreateEventView(AccessMixin, TemplateView):
 
     def post(self, request):
         new_event_dict = dict(request.POST)
-        print(new_event_dict)
-        event_title = new_event_dict['event_title']
-        event_description = new_event_dict['event_description']
-        event_date_time = new_event_dict['event_date_time']
-        event_location = new_event_dict['event_location']
-        print(event_title, '\n', event_description, '\n', event_date_time, '\n', event_location)
-        invite_ally_user_types = new_event_dict['role_selected']
-        invite_mentor_mentee = new_event_dict['mentor_status']
-        invite_ally_belonging_to_special_categories = new_event_dict['special_category']
-        invite_ally_belonging_to_special_categories = new_event_dict['research_area']
-        print('invite_ally_user_types = ', invite_ally_user_types)
-        print('invite_mentor_mentee = ', invite_mentor_mentee)
-        print('invite_ally_belonging_to_special_categories = ', invite_ally_belonging_to_special_categories)
-        return redirect('/create_event')
+        event_title = new_event_dict['event_title'][0]
+        event_description = new_event_dict['event_description'][0]
+        event_date_time = new_event_dict['event_date_time'][0]
+        event_location = new_event_dict['event_location'][0]
+
+        if 'role_selected' in new_event_dict:
+            invite_ally_user_types = new_event_dict['role_selected']
+        else:
+            invite_ally_user_types = []
+
+        if 'mentor_status' in new_event_dict:
+            invite_mentor_mentee = new_event_dict['mentor_status']
+        else:
+            invite_mentor_mentee = []
+
+        if 'special_category' in new_event_dict:
+            invite_ally_belonging_to_special_categories = new_event_dict['special_category']
+        else:
+            invite_ally_belonging_to_special_categories = []
+
+        if 'research_area' in new_event_dict:
+            invite_ally_belonging_to_research_area = new_event_dict['research_area']
+        else:
+            invite_ally_belonging_to_research_area = []
+
+
+        if 'invite_all' in new_event_dict:
+            invite_all_selected = True
+        else:
+            invite_all_selected = []
+
+        event = Event.objects.create(title=event_title,
+                                     description=event_description,
+                                     datetime=parse_datetime(event_date_time + '-0500'), # converting time to central time before storing in db
+                                     location=event_location
+                                     )
+
+        if invite_all_selected:
+            allies_to_be_invited = list(Ally.objects.all())
+        else:
+            allies_to_be_invited = []
+
+            allies_to_be_invited.extend(Ally.objects.filter(user_type__in=invite_ally_user_types))
+
+            if 'Mentors' in invite_mentor_mentee:
+                allies_to_be_invited.extend(Ally.objects.filter(interested_in_mentoring=True))
+
+            if 'Mentees' in invite_mentor_mentee:
+                allies_to_be_invited.extend(Ally.objects.filter(interested_in_mentor_training=True))
+
+
+            allies_to_be_invited.extend(Ally.objects.filter(area_of_research__in=invite_ally_belonging_to_research_area))
+            student_categories_to_include_for_event = []
+
+            for category in invite_ally_belonging_to_special_categories:
+                if  category == 'First generation college-student':
+                    student_categories_to_include_for_event.extend(StudentCategories.objects.filter(first_gen_college_student=True))
+
+                elif category == 'Low-income':
+                    student_categories_to_include_for_event.extend(StudentCategories.objects.filter(low_income=True))
+
+                elif category == 'Underrepresented racial/ethnic minority':
+                    student_categories_to_include_for_event.extend(StudentCategories.objects.filter(under_represented_racial_ethnic=True))
+
+                elif category == 'LGBTQ':
+                    student_categories_to_include_for_event.extend(StudentCategories.objects.filter(lgbtq=True))
+
+                elif category == 'Rural':
+                    student_categories_to_include_for_event.extend(StudentCategories.objects.filter(rural=True))
+
+            invited_allies_ids = AllyStudentCategoryRelation.objects.filter(student_category__in=student_categories_to_include_for_event).values('ally')
+            allies_to_be_invited.extend(
+                Ally.objects.filter(id__in=invited_allies_ids)
+                )
+
+        all_event_ally_objs = []
+        invited_allies = set()
+        allies_to_be_invited = set(allies_to_be_invited)
+
+        for ally in allies_to_be_invited:
+            event_ally_rel_obj = EventAllyRelation(event=event, ally=ally)
+            all_event_ally_objs.append(event_ally_rel_obj)
+            invited_allies.add(event_ally_rel_obj.ally)
+
+
+        EventAllyRelation.objects.bulk_create(all_event_ally_objs)
+
+        return redirect('/dashboard')
 
 
 
@@ -272,7 +347,6 @@ class SignUpView(TemplateView):
 
     def post(self, request):
         postDict = dict(request.POST)
-        print(request.POST)
         if User.objects.filter(username=postDict["new_username"][0]).exists():
             messages.add_message(request, messages.WARNING,
                                  'Account can not be created because username already exists')
@@ -404,10 +478,12 @@ class ForgotPasswordView(TemplateView):
                 try:
                     #                     sg = SendGridAPIClient(os.environ.get('SENDGRID_API_KEY'))
                     sg = SendGridAPIClient('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')
+                    ''' TODO: Nam, do we need this print statement? If not, please remove it
                     response = sg.send(email_content)
                     print(response.status_code)
                     print(response.body)
                     print(response.headers)
+                    '''
                 except Exception as e:
                     print(e.email_content)
 

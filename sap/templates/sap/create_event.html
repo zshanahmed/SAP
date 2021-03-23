@@ -25,6 +25,47 @@
     <!-- Custom styles for this template-->
     <link href="{% static 'css/sb-admin-2.min.css' %}" rel="stylesheet">
 
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+
+    <script type= "text/javascript">
+        function toggle_invite_all(){
+            invite_all_checkbox = document.getElementById("invite_all")
+            var allInputs = document.getElementsByTagName("input");
+            var num_of_unchecked_boxes
+            for (var i = 0, max = allInputs.length; i < max; i++){
+
+                if (allInputs[i].name == 'invite_all') continue;
+
+                if (allInputs[i].type === 'checkbox')
+
+                    if (allInputs[i].checked == false){
+                        invite_all_checkbox.checked = false;
+                        return;
+                    }
+            }
+
+            invite_all_checkbox.checked = true;
+        }
+
+
+        function invite_all_click() {
+            invite_all_checkbox = document.getElementById("invite_all")
+            if (invite_all_checkbox.checked == true){
+                value = true
+            }
+            else{
+                value = false
+            }
+
+            var allInputs = document.getElementsByTagName("input");
+            for (var i = 0, max = allInputs.length; i < max; i++){
+                if (allInputs[i].type === 'checkbox')
+                    allInputs[i].checked = value;
+            }
+        }
+
+    </script>
+
 </head>
 <body class="bg-gradient-primary">
     <div class="container">
@@ -51,19 +92,30 @@
                             <form method="post" class="user">{% csrf_token %}
 
                                 <div class="form-group">
-                                    <input name="event_title" type="text" class="form-control form-control-user" id="event_title" placeholder="Title of the Event">
+                                    <input name="event_title" type="text" class="form-control form-control-user" id="event_title" placeholder="Title of the Event" required>
                                 </div>
                                 <div class="form-group">
-                                    <input name="event_description" type="text" class="form-control form-control-user" id="event_description" placeholder="Description of the Event">
+                                    <input name="event_description" type="text" class="form-control form-control-user" id="event_description" placeholder="Description of the Event" required>
                                 </div>
                                 <div class="form-group">
                                     <p style="font-size: 12px;margin-left: 20px;margin-bottom: 0px;">*Enter date and time of the event in central time</p>
                                     <input name="event_date_time" type="datetime-local" class="form-control form-control-user" id="event_date_time"
-                                           placeholder="Date and Time of the Event in mm/dd/yyyy, hh/mm (AM or PM)">
+                                           placeholder="Date and Time of the Event in mm/dd/yyyy, hh/mm (AM or PM)" required>
                                 </div>
                                 <div class="form-group">
                                     <input name="event_location" type="text" class="form-control form-control-user" id="event_location"
-                                           placeholder="Location of the Event (Meeting url or Building and room number)">
+                                           placeholder="Location of the event (meeting link or address)" required>
+                                </div>
+
+
+                                <div class="py-2">
+                                    <strong>Invite all allies:</strong>
+                                    <div class="form-check form-check-inline" >
+                                        <div class="px-2">
+                                            <input type="checkbox" name="invite_all" id="invite_all" value="invite_all" onclick="javascript:invite_all_click();">
+                                            <label class="form-check-label" for="invite_all">Invite all</label>
+                                        </div>
+                                    </div>
                                 </div>
 
                                 <div class="py-2">
@@ -71,19 +123,19 @@
 
                                     <div class="form-check form-check-inline" id="invite_ally_roles">
                                         <div class="px-2">
-                                            <input type="checkbox" name="role_selected" id="staffCheck" value="Staff">
+                                            <input type="checkbox" onclick="javascript:toggle_invite_all();" name="role_selected" id="staffCheck" value="Staff">
                                             <label class="form-check-label" for="staffCheck">Staff</label>
                                         </div>
                                         <div class="px-2">
-                                            <input type="checkbox" name="role_selected" id="gradCheck" value="Graduate Student">
+                                            <input type="checkbox" onclick="javascript:toggle_invite_all();" name="role_selected" id="gradCheck" value="Graduate Student">
                                             <label class="form-check-label" for="gradCheck">Grad</label>
                                         </div>
                                         <div class="px-2">
-                                            <input type="checkbox" name="role_selected" id="undergradCheck" value="Undergraduate Student">
+                                            <input type="checkbox" onclick="javascript:toggle_invite_all();" name="role_selected" id="undergradCheck" value="Undergraduate Student">
                                             <label class="form-check-label" for="undergradCheck">Undergrad</label>
                                         </div>
                                         <div class="px-2">
-                                            <input type="checkbox" name="role_selected" id="facultyCheck" value="Faculty">
+                                            <input type="checkbox" onclick="javascript:toggle_invite_all();" name="role_selected" id="facultyCheck" value="Faculty">
                                             <label class="form-check-label" for="facultyCheck">Faculty</label>
                                         </div>
 
@@ -95,11 +147,11 @@
 
                                     <div class="form-check form-check-inline" id="invite_mentors">
                                         <div class="px-2">
-                                            <input type="checkbox" name="mentor_status" id="mentors" value="Mentors">
+                                            <input type="checkbox" onclick="javascript:toggle_invite_all();" name="mentor_status" id="mentors" value="Mentors">
                                             <label class="form-check-label" for="mentors">Mentors</label>
                                         </div>
                                         <div class="px-2">
-                                            <input type="checkbox" name="mentor_status" id="mentees" value="Mentees">
+                                            <input type="checkbox" onclick="javascript:toggle_invite_all();" name="mentor_status" id="mentees" value="Mentees">
                                             <label class="form-check-label" for="mentees">Mentees</label>
                                         </div>
 
@@ -111,27 +163,27 @@
 
                                     <div class="form-check">
                                         <div class="px-2">
-                                            <input type="checkbox" name="special_category" id="first_gen_coll_stu" value="First generation college-student">
+                                            <input type="checkbox" onclick="javascript:toggle_invite_all();" name="special_category" id="first_gen_coll_stu" value="First generation college-student">
                                             <label class="form-check-label" for="first_gen_coll_stu">First generation college-student</label>
                                         </div>
                                         <div class="px-2">
-                                            <input type="checkbox" name="special_category" id="rural" value="Rural">
+                                            <input type="checkbox" onclick="javascript:toggle_invite_all();" name="special_category" id="rural" value="Rural">
                                             <label class="form-check-label" for="rural">Rural</label>
                                         </div>
                                         <div class="px-2">
-                                            <input type="checkbox" name="special_category" id="low_income" value="Low-income">
+                                            <input type="checkbox" onclick="javascript:toggle_invite_all();" name="special_category" id="low_income" value="Low-income">
                                             <label class="form-check-label" for="low_income">Low-income</label>
                                         </div>
                                         <div class="px-2">
-                                            <input type="checkbox" name="special_category" id="under_represented" value="under_represented">
+                                            <input type="checkbox" onclick="javascript:toggle_invite_all();" name="special_category" id="under_represented" value="Underrepresented racial/ethnic minority">
                                             <label class="form-check-label" for="under_represented">Underrepresented racial/ethnic minority</label>
                                         </div>
                                         <div class="px-2">
-                                            <input type="checkbox" name="special_category" id="transfer_student" value="Transfer Student">
+                                            <input type="checkbox" onclick="javascript:toggle_invite_all();" name="special_category" id="transfer_student" value="Transfer Student">
                                             <label class="form-check-label" for="transfer_student">Transfer Student</label>
                                         </div>
                                         <div class="px-2">
-                                            <input type="checkbox" name="special_category" id="lgbtq" value="LGBTQ">
+                                            <input type="checkbox" onclick="javascript:toggle_invite_all();" name="special_category" id="lgbtq" value="LGBTQ">
                                             <label class="form-check-label" for="lgbtq">LGBTQ</label>
                                         </div>
 
@@ -141,35 +193,35 @@
                                 <div class="py-2">
                                     <div><strong>Area of research:</strong></div>
                                     <div class="form-check" id="stemGradCheckboxes">
-                                          <input type="checkbox" value="Biochemistry" name="research_area" id="biochemistry">
+                                          <input type="checkbox" onclick="javascript:toggle_invite_all();" value="Biochemistry" name="research_area" id="biochemistry">
                                           <label class="form-check-label" for="biochemistry">Biochemistry</label><br>
-                                          <input type="checkbox" value="Bioinformatics" name="research_area" id="bioinformatics">
+                                          <input type="checkbox" onclick="javascript:toggle_invite_all();" value="Bioinformatics" name="research_area" id="bioinformatics">
                                           <label class="form-check-label" for="bioinformatics">Bioinformatics</label><br>
-                                          <input type="checkbox" value="Biology" name="research_area" id="biology">
+                                          <input type="checkbox" onclick="javascript:toggle_invite_all();" value="Biology" name="research_area" id="biology">
                                           <label class="form-check-label" for="biology">Biology</label><br>
-                                          <input type="checkbox" value="Biomedical Engineering" name="research_area" id="biomedicalengineering">
+                                          <input type="checkbox" onclick="javascript:toggle_invite_all();" value="Biomedical Engineering" name="research_area" id="biomedicalengineering">
                                           <label class="form-check-label" for="biomedicalengineering">Biomedical Engineering</label><br>
-                                          <input type="checkbox" value="Chemical Engineering" name="research_area" id="chemicalengineering">
+                                          <input type="checkbox" onclick="javascript:toggle_invite_all();" value="Chemical Engineering" name="research_area" id="chemicalengineering">
                                           <label class="form-check-label" for="chemicalengineering">Chemical Engineering</label><br>
-                                          <input type="checkbox" value="Chemistry" name="research_area" id="chemistry">
+                                          <input type="checkbox" onclick="javascript:toggle_invite_all();" value="Chemistry" name="research_area" id="chemistry">
                                           <label class="form-check-label" for="chemistry">Chemistry</label><br>
-                                          <input type="checkbox" value="Computer Science and Engineering" name="research_area" id="computerscienceandengineering">
+                                          <input type="checkbox" onclick="javascript:toggle_invite_all();" value="Computer Science and Engineering" name="research_area" id="computerscienceandengineering">
                                           <label class="form-check-label" for="computerscienceandengineering">Computer Science and Engineering</label><br>
-                                          <input type="checkbox" value="Environmental Science" name="research_area" id="environmentalscience">
+                                          <input type="checkbox" onclick="javascript:toggle_invite_all();" value="Environmental Science" name="research_area" id="environmentalscience">
                                           <label class="form-check-label" for="environmentalscience">Environmental Science</label><br>
-                                          <input type="checkbox" value="Health and Human Physiology" name="research_area" id="healthandhumanphysiology">
+                                          <input type="checkbox" onclick="javascript:toggle_invite_all();" value="Health and Human Physiology" name="research_area" id="healthandhumanphysiology">
                                           <label class="form-check-label" for="healthandhumanphysiology">Health and Human Physiology</label><br>
-                                          <input type="checkbox" value="Mathematics" name="research_area" id="mathematics">
+                                          <input type="checkbox" onclick="javascript:toggle_invite_all();" value="Mathematics" name="research_area" id="mathematics">
                                           <label class="form-check-label" for="mathematics">Mathematics</label><br>
-                                          <input type="checkbox" value="Microbiology" name="research_area" id="microbiology">
+                                          <input type="checkbox" onclick="javascript:toggle_invite_all();" value="Microbiology" name="research_area" id="microbiology">
                                           <label class="form-check-label" for="microbiology">Microbiology</label><br>
-                                          <input type="checkbox" value="Neuroscience" name="research_area" id="neuroscience">
+                                          <input type="checkbox" onclick="javascript:toggle_invite_all();" value="Neuroscience" name="research_area" id="neuroscience">
                                           <label class="form-check-label" for="neuroscience">Neuroscience</label><br>
-                                          <input type="checkbox" value="Nursing" name="research_area" id="nursing">
+                                          <input type="checkbox" onclick="javascript:toggle_invite_all();" value="Nursing" name="research_area" id="nursing">
                                           <label class="form-check-label" for="nursing">Nursing</label><br>
-                                          <input type="checkbox" value="Physics" name="research_area" id="physics">
+                                          <input type="checkbox" onclick="javascript:toggle_invite_all();" value="Physics" name="research_area" id="physics">
                                           <label class="form-check-label" for="physics">Physics</label><br>
-                                          <input type="checkbox" value="Psychology" name="research_area" id="psychology">
+                                          <input type="checkbox" onclick="javascript:toggle_invite_all();" value="Psychology" name="research_area" id="psychology">
                                           <label class="form-check-label" for="psychology">Psychology</label><br>
                                     </div>
 
