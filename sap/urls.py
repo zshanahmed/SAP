@@ -61,5 +61,11 @@ urlpatterns = [
 
     url('sign-up/', views.SignUpView.as_view(), name='sign-up'),
 
+    url(r'sign-up-done/$', views.SignUpDoneView.as_view(),
+        name='sign-up-done'),
+
+    url(r'sign-up-confirm/(?P<uidb64>[\w-]+)/(?P<token>[\w-]+)$', views.SignUpConfirmView.as_view(),
+        name='sign-up-confirm'),
+
     url(r'^download_allies/$', login_required(views.DownloadAllies.allies_download), name='download_allies'),
 ]

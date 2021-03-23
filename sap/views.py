@@ -405,10 +405,44 @@ class SignUpView(TemplateView):
 
             AllyStudentCategoryRelation.objects.create(student_category_id=categories.id, ally_id=ally.id)
 
+        return user, ally
+
+    def send_verification_email(self, user, site, entered_email):
+        """
+        Send verification email to finish sign-up, basically set is_active to True
+        """
+        message_body = render_to_string('sap/sign-up-mail.html', {
+            'user': user,
+            'protocol': 'http',
+            'domain': site.domain,
+            'uid': urlsafe_base64_encode(force_bytes(user.pk)),  # encode user's primary key
+            'token': account_activation_token.make_token(user),
+        })
+
+        email_content = Mail(
+            from_email="iba@uiowa.edu",
+            to_emails=entered_email,
+            subject='Action Required: Confirm Your New Account',
+            html_content=message_body)
+
+        try:
+            # sg = SendGridAPIClient(os.environ.get('SENDGRID_API_KEY'))
+            # TODO: Change API key and invalidate the old one
+            sg = SendGridAPIClient('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')
+            response = sg.send(email_content)
+
+        except Exception as e:
+            print(e.email_content)
+
     def get(self, request):
         return render(request, self.template_name)
 
     def post(self, request):
+        """
+        If user/ally is in the db but is_active=False, that user/ally is deemed "replaceable", meaning new account can
+        be created with its email address.
+        If user/ally is in the db but is_active=True, cannot create new account with that email address.
+        """
         postDict = dict(request.POST)
 
         min_length = 8  # Minimum length for a valid password
@@ -449,10 +483,11 @@ class SignUpView(TemplateView):
                     )
                     return redirect("/sign-up")
                 else:
-                    self.create_new_user(postDict=postDict)
+                    user, ally = self.create_new_user(postDict=postDict)
+                    site = get_current_site(request)
+                    self.send_verification_email(user=user, site=site, entered_email=postDict["new_email"][0])
 
-                    messages.success(request, "Account created!")
-                    return redirect("sap:home")
+                    return redirect("sap:sign-up-done")
 
         elif not User.objects.filter(email=postDict["new_email"][0]).exists():
             if User.objects.filter(username=postDict["new_username"][0]).exists():
@@ -477,14 +512,26 @@ class SignUpView(TemplateView):
                 )
                 return redirect("/sign-up")
             else:
-                self.create_new_user(postDict=postDict)
+                user, ally = self.create_new_user(postDict=postDict)
+                site = get_current_site(request)
+                self.send_verification_email(user=user, site=site, entered_email=postDict["new_email"][0])
 
-                messages.success(request, "Account created!")
-                return redirect("sap:home")
+                return redirect("sap:sign-up-done")
             
 
 
         return redirect("sap:home")
+
+
+class SignUpDoneView(TemplateView):
+    """
+    A view which is presented if the user successfully fill out the form presented in Sign-Up view
+    """
+    template_name = "sap/sign-up-done.html"
+
+
+class SignUpConfirmView(TemplateView):
+    pass
 
 
 class ForgotPasswordView(TemplateView):
@@ -528,7 +575,7 @@ class ForgotPasswordView(TemplateView):
                 # message_body = 'http:' + '//' + site.domain + message_
 
                 email_content = Mail(
-                    from_email='team1sep@hotmail.com',
+                    from_email="iba@uiowa.edu",
                     to_emails=entered_email,
                     subject='Reset Password for Science Alliance Portal',
                     html_content=message_body)
@@ -555,7 +602,7 @@ class ForgotPasswordView(TemplateView):
 
 class ForgotPasswordDoneView(TemplateView):
     """
-    A view which is presented if the user entered valid email ing Forget Password view
+    A view which is presented if the user entered valid email in Forget Password view
     """
     template_name = "sap/password-forgot-done.html"
 
@@ -637,6 +684,7 @@ class ForgotPasswordConfirmView(TemplateView):
         else:
             messages.error(request, 'Password reset link is invalid. Please request a new password reset.')
             return redirect('sap:home')
+
 
 userFields = ['last_login', 'username', 'first_name', 'last_name', 'email', 'is_active', 'date_joined']
 allyFields = ['user_type', 'area_of_research', 'openings_in_lab_serving_at', 'description_of_research_done_at_lab',
