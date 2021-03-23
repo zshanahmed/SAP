@@ -239,8 +239,8 @@
                                     <div class="form-group row text-center col-12">
                                             <form action="{% url 'sap:download_allies'%}" method="post" enctype="multipart/form-data">
                                                 {% csrf_token %}
-                                                <input id="uploadbutton" type="file" value="Browse" name="file" accept="text/csv">
-                                                <a type="submit" class="btn btn-primary btn-user btn-block" id="uploadCsv">
+                                                <input id="uploadCsv" type="file" value="Browse" name="file" accept="text/csv">
+                                                <a type="submit" class="btn btn-primary btn-user btn-block" id="submitUpload">
                                                     Upload <i class="fas fa-upload"></i>
                                                 </a>
                                             </form>

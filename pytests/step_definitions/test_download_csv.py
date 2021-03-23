@@ -73,10 +73,3 @@ def login(chromeBrowser):
 @when(parsers.parse('I fill in "{text}" into element: "{elementID}"'))
 def fill_in_textBox(chromeBrowser, text, elementID):
     chromeBrowser.find_element_by_id(elementID).send_keys(text)
-
-@then((parsers.parse('I should not be able to download users.')))
-def check_download(chromeBrowser):
-    time.sleep(5)
-    chromeBrowser.get(localhost + 'download_allies/')
-    time.sleep(5)
-    assert '403' in chromeBrowser.page_source

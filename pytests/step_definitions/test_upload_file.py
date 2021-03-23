@@ -9,29 +9,30 @@ from selenium.webdriver.common.keys import Keys
 scenarios('../features/upload_file.feature')
 localhost = 'http://127.0.0.1:8000/'
 
-@pytest.mark.usefixtures('firefoxBrowser')
 @pytest.mark.usefixtures('chromeBrowser')
+
 
 ########################
 ### Step Definitions ###
 ########################
 
 @given(parsers.parse('I am on dashboard logged in as admin'))
-def login(firefoxBrowser):
-    firefoxBrowser.get(localhost)
-    firefoxBrowser.find_element_by_id('id_username').send_keys('iba_admin')
-    firefoxBrowser.find_element_by_id('id_password').send_keys('iba_sep_1')
-    firefoxBrowser.find_element_by_id("submit").click()
+def login(chromeBrowser):
+    chromeBrowser.get(localhost)
+    chromeBrowser.find_element_by_id('id_username').send_keys('iba_admin')
+    chromeBrowser.find_element_by_id('id_password').send_keys('iba_sep_1')
+    chromeBrowser.find_element_by_id("submit").click()
 
 @when(parsers.parse('I click the button with id: "{buttonID}"'))
-def click_button(firefoxBrowser, buttonID):
-    firefoxBrowser.find_element_by_id(buttonID).click()
+def click_button(chromeBrowser, buttonID):
+    chromeBrowser.find_element_by_id(buttonID).click()
 
-@then(parsers.parse('I should have the csv file in my downloads'))
-def have_csv(firefoxBrowser):
+## Make sure downloads are empty before you run this test.
+@then(parsers.parse('I should have the error file in my downloads'))
+def have_csv(chromeBrowser):
     today = date.today()
     day = today.strftime("%b-%d-%Y")
-    filename = day + "_ScienceAllianceAllies.csv"
+    filename = day + "_Not-Uploaded-Allies.csv"
     ## may need to change for windows
     path_to_download_folder = str(os.path.join(Path.home(), "Downloads"))
     time.sleep(1)
@@ -48,27 +49,6 @@ def goto_signup(chromeBrowser):
     chromeBrowser.get(localhost)
     chromeBrowser.find_element_by_id('sign-up').click()
 
-@when(parsers.parse('I click the radio button with id: "{idButton}"'))
-def click_radio(chromeBrowser, idButton):
-    chromeBrowser.find_element_by_id(idButton).click()
-
-@when(parsers.parse('I enter my username {username} and password {password}'))
-def input_login(chromeBrowser, username, password):
-    chromeBrowser.find_element_by_id('id_username').send_keys(username)
-    chromeBrowser.find_element_by_id('id_password').send_keys(password, Keys.RETURN)
-
-@when(parsers.parse('I fill in staff form'))
-def fill_out_staff(chromeBrowser):
-    chromeBrowser.find_element_by_xpath('/html/body/div[1]/div/div/div/div/div/form/div[7]/div[1]/div/input[1]').click()
-    chromeBrowser.find_element_by_id('howHelp').send_keys('you cannot help me, for I am just a sea sponge')
-    chromeBrowser.find_element_by_id('submit_new_ally').click()
-
-@given(parsers.parse('I have logged in'))
-def login(chromeBrowser):
-    chromeBrowser.get(localhost)
-    chromeBrowser.find_element_by_id('id_username').send_keys("haw2")
-    chromeBrowser.find_element_by_id('id_password').send_keys("iba_sep_1")
-    chromeBrowser.find_element_by_id("submit").click()
 
 @when(parsers.parse('I fill in "{text}" into element: "{elementID}"'))
 def fill_in_textBox(chromeBrowser, text, elementID):
@@ -80,3 +60,21 @@ def check_download(chromeBrowser):
     chromeBrowser.get(localhost + 'download_allies/')
     time.sleep(5)
     assert '403' in chromeBrowser.page_source
+
+@then(parsers.parse('I should see text: "{text}"'))
+def check_test(chromeBrowser, text):
+    assert (text in chromeBrowser.page_source)
+
+@when(parsers.parse('I select file using "{elementID}" with name: "{file}"'))
+def addFile(chromeBrowser, elementID, file):
+
+    path = os.path.abspath(file)
+    element = chromeBrowser.find_element_by_id(elementID)
+    element.send_keys(path)
+
+@then(parsers.parse('I should see entries with names: "{name}"'))
+def check_if_names_there(chromeBrowser, name):
+    names = name.split(", ")
+    source = chromeBrowser.page_source
+    for theName in names:
+        assert theName in source

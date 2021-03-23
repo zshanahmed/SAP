@@ -2,14 +2,14 @@
 Feature: Upload Feature
 IBA admin should have the ability to upload files and create allies in the previous data or our downloaded CSV format.
 
-  Scenario: I click the button to download a csv
+  Scenario: I click the button to upload a csv of records, but I have not selected a file
     Given I am on dashboard logged in as admin
-    When I click the button with id: "uploadCsv"
-    Then I should see a file viewer
+    When I click the button with id: "submitUpload"
+    Then I should see text: "Please select a file to upload!"
 
   Scenario: I upload some allies
     Given I am on dashboard logged in as admin
-    When I click the button with id: "uploadCsv"
-    And I select file with name: "allies.csv"
-    And I click the button with id: "submit"
-    Then I should see entries with names: "elias, zeeshan, nam, bigGoonga"
+    When I select file using "uploadCsv" with name: "./pytests/assets/allies.csv"
+    And I click the button with id: "submitUpload"
+    Then I should see entries with names: "Elias, Zeeshan, Nam, Biggoonga"
+    And I should have the error file in my downloads
