@@ -664,9 +664,13 @@ class DownloadAllies(AccessMixin, HttpResponse):
 
 class UploadAllies(AccessMixin, HttpResponse):
     def upload_allies(request):
-        response = HttpResponse(content_type='text/csv')
-        today = date.today()
-        today = today.strftime("%b-%d-%Y")
-        fileName = today + "_Not-Uploaded-Allies.csv"
-        response['Content-Disposition'] = 'attachment; filename=' + fileName
-        return response
+        if request.method == 'POST':
+            if request.user.is_staff:
+                response = HttpResponse(content_type='text/csv')
+                today = date.today()
+                today = today.strftime("%b-%d-%Y")
+                fileName = today + "_Not-Uploaded-Allies.csv"
+                response['Content-Disposition'] = 'attachment; filename=' + fileName
+                return response
+            else:
+                return HttpResponseForbidden()

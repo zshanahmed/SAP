@@ -1204,10 +1204,19 @@ class UploadFileTest(TestCase):
         self.client = Client()
         self.loginUser = User.objects.create_user(username='glib', password='macaque', email='staff@uiowa.edu',
                                                   first_name='charlie', last_name='hebdo', is_staff=True)
-        self.client.login(username=self.loginUser.username, password=self.loginUser.password)
+
+        self.badGuy = User.objects.create_user(username='bad', password='badguy1234', email='badguy@uiowa.edu',
+                                               first_name='reallyBadGuy', last_name='I\'m bad')
 
 
     def testUpload_filetype1(self):
+        self.client.login(username='glib', password='macaque')
         with open('./pytests/assets/allies.csv', 'r') as f:
             response = self.client.post(reverse('sap:upload_allies'), {'attachment': f})
-        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.status_code, 200)
+
+    def test_post_notStaff(self):
+        self.client.login(username='bad', password='badguy1234')
+        with open('./pytests/assets/allies.csv', 'r') as f:
+            response = self.client.post(reverse('sap:upload_allies'), {'attachment': f})
+        self.assertEqual(response.status_code, 403)
