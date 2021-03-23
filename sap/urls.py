@@ -46,6 +46,8 @@ urlpatterns = [
     url(r'^allies/$', login_required(views.ViewAllyProfileFromAdminDashboard.as_view()),
         name='admin_view_ally'),
 
+    url(r'^edit_allies/$', login_required(views.EditAllyProfileFromAdminDashboard.as_view()),
+        name='admin_edit_ally'),
     url(r'^delete/$', login_required(views.DeleteAllyProfileFromAdminDashboard.as_view()),
         name='admin_delete_ally'),
 
@@ -61,5 +63,7 @@ urlpatterns = [
         login_required(views.AboutPageView.as_view(), login_url='about'),
         name='sap-about'),
 
-    url('sign-up/', views.SignUpView.as_view(), name='sign-up')
+    url('sign-up/', views.SignUpView.as_view(), name='sign-up'),
+
+    url(r'^download_allies/$', login_required(views.DownloadAllies.allies_download), name='download_allies'),
 ]
