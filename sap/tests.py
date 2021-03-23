@@ -1209,5 +1209,5 @@ class UploadFileTest(TestCase):
 
     def testUpload_filetype1(self):
         with open('./pytests/assets/allies.csv', 'r') as f:
-            response = self.client.post(reverse('sap:allies_upload'), {'attachment': f})
-        self.assertEqual(response.status_code, 200)
+            response = self.client.post(reverse('sap:upload_allies'), {'attachment': f})
+        self.assertEqual(response.status_code, 302)

@@ -62,4 +62,6 @@ urlpatterns = [
     url('sign-up/', views.SignUpView.as_view(), name='sign-up'),
 
     url(r'^download_allies/$', login_required(views.DownloadAllies.allies_download), name='download_allies'),
+
+    url(r'^upload_allies/$', login_required(views.UploadAllies.upload_allies), name='upload_allies'),
 ]
