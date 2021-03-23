@@ -322,7 +322,6 @@ class SignUpView(TemplateView):
         categories.save()
         return categories
 
-
     def set_boolean(self, list, postDict):
         dict = {}
         for selection in list:
@@ -332,6 +331,80 @@ class SignUpView(TemplateView):
                 dict[selection] = False
         return dict
 
+    def create_new_user(self, postDict):
+        """
+        Create new user and associated ally based on what user inputs in sign-up page
+        """
+        user = User.objects.create_user(username=postDict["new_username"][0],
+                                        password=postDict["new_password"][0],
+                                        email=postDict["new_email"][0],
+                                        first_name=postDict["firstName"][0],
+                                        last_name=postDict["lastName"][0],
+                                        is_active=False  # Important! Set to False until user verify via email
+                                        )
+
+        if postDict['roleSelected'][0] == 'Staff':
+            selections = self.set_boolean(['studentsInterestedRadios'], postDict)
+            ally = Ally.objects.create(user=user, user_type=postDict['roleSelected'][0], hawk_id=user.username,
+                                       people_who_might_be_interested_in_iba=selections['studentsInterestedRadios'],
+                                       how_can_science_ally_serve_you=postDict['howCanWeHelp'])
+        else:
+            if postDict['roleSelected'][0] == 'Undergraduate Student':
+                try:
+                    categories = self.make_categories(postDict["idUnderGradCheckboxes"])
+                except KeyError:
+                    categories = StudentCategories.objects.create()
+                undergradList = ['interestRadios', 'experienceRadios', 'interestedRadios', 'agreementRadios']
+                selections = self.set_boolean(undergradList, postDict)
+                ally = Ally.objects.create(user=user, user_type=postDict['roleSelected'][0], hawk_id=user.username,
+                                           major=postDict['major'][0], year=postDict['undergradRadios'][0],
+                                           interested_in_joining_lab=selections['interestRadios'],
+                                           has_lab_experience=selections['experienceRadios'],
+                                           interested_in_mentoring=selections['interestedRadios'],
+                                           information_release=selections['agreementRadios'])
+            elif postDict['roleSelected'][0] == 'Graduate Student':
+                try:
+                    stem_fields = ','.join(postDict['stemGradCheckboxes'])
+                except KeyError:
+                    stem_fields = None
+                try:
+                    categories = self.make_categories(postDict['mentoringGradCheckboxes'])
+                except KeyError:
+                    categories = StudentCategories.objects.create()
+
+                gradList = ['mentoringGradRadios', 'labShadowRadios', 'connectingRadios', 'volunteerGradRadios',
+                            'gradTrainingRadios']
+                selections = self.set_boolean(gradList, postDict)
+                ally = Ally.objects.create(user=user, user_type=postDict['roleSelected'][0], hawk_id=user.username,
+                                           area_of_research=stem_fields,
+                                           interested_in_mentoring=selections['mentoringGradRadios'],
+                                           willing_to_offer_lab_shadowing=selections['labShadowRadios'],
+                                           interested_in_connecting_with_other_mentors=selections[
+                                               'connectingRadios'],
+                                           willing_to_volunteer_for_events=selections['volunteerGradRadios'],
+                                           interested_in_mentor_training=selections['gradTrainingRadios'])
+
+            elif postDict['roleSelected'][0] == 'Faculty':
+                try:
+                    stem_fields = ','.join(postDict['stemCheckboxes'])
+                except KeyError:
+                    stem_fields = None
+                facultyList = ['openingRadios', 'volunteerRadios', 'trainingRadios', 'mentoringFacultyRadios']
+                selections = self.set_boolean(facultyList, postDict)
+                try:
+                    categories = self.make_categories(postDict['mentoringCheckboxes'])
+                except KeyError:
+                    categories = StudentCategories.objects.create()
+                ally = Ally.objects.create(user=user, user_type=postDict['roleSelected'][0], hawk_id=user.username,
+                                           area_of_research=stem_fields,
+                                           openings_in_lab_serving_at=selections['openingRadios'],
+                                           description_of_research_done_at_lab=postDict['research-des'][0],
+                                           interested_in_mentoring=selections['mentoringFacultyRadios'],
+                                           willing_to_volunteer_for_events=selections['volunteerRadios'],
+                                           interested_in_mentor_training=selections['trainingRadios'])
+
+            AllyStudentCategoryRelation.objects.create(student_category_id=categories.id, ally_id=ally.id)
+
     def get(self, request):
         return render(request, self.template_name)
 
@@ -340,98 +413,76 @@ class SignUpView(TemplateView):
 
         min_length = 8  # Minimum length for a valid password
 
-        print(request.POST)
-        if User.objects.filter(username=postDict["new_username"][0]).exists():
-            messages.add_message(request, messages.WARNING,
-                                 'Account can not be created because username already exists')
-            return redirect('/sign-up')
-        elif User.objects.filter(email=postDict["new_email"][0]).exists():
-            messages.add_message(request, messages.WARNING,
-                                 'Account can not be created because email already exists')
-            return redirect('/sign-up')
-        elif postDict["new_password"][0] != postDict["repeat_password"][0]:
-            messages.add_message(
-                request,
-                messages.WARNING,
-                "Repeated password is not the same as the inputted password",
-            )
-            return redirect("/sign-up")
-        elif len(postDict["new_password"][0]) < min_length:
-            messages.warning(
-                request,
-                "Password must be at least {0} characters long".format(min_length),
-            )
-            return redirect("/sign-up")
-        else:
-            user = User.objects.create_user(username=postDict["new_username"][0],
-                                            password=postDict["new_password"][0],
-                                            email=postDict["new_email"][0],
-                                            first_name=postDict["firstName"][0], last_name=postDict["lastName"][0])
+        if User.objects.filter(email=postDict["new_email"][0]).exists():
+            user_temp = User.objects.get(email=postDict["new_email"][0])
 
-            if postDict['roleSelected'][0] == 'Staff':
-                selections = self.set_boolean(['studentsInterestedRadios'], postDict)
-                ally = Ally.objects.create(user=user, user_type=postDict['roleSelected'][0], hawk_id=user.username,
-                                           people_who_might_be_interested_in_iba=selections['studentsInterestedRadios'],
-                                           how_can_science_ally_serve_you=postDict['howCanWeHelp'])
+            if user_temp.is_active: # If user is active, cannot create new account
+                messages.add_message(request, messages.WARNING,
+                                     'Account can not be created because an account associated with this email address already exists!')
+                return redirect('/sign-up')
+
+            else:   # If user is not active, delete user_temp and create new user on db with is_active=False
+                ally_temp = Ally.objects.get(user=user_temp)
+                ally_temp.delete()
+                user_temp.delete()
+
+                # print(request.POST)
+                if User.objects.filter(username=postDict["new_username"][0]).exists():
+                    messages.add_message(request, messages.WARNING,
+                                         'Account can not be created because username already exists!')
+                    return redirect('/sign-up')
+                # elif User.objects.filter(email=postDict["new_email"][0]).exists():
+                #     messages.add_message(request, messages.WARNING,
+                #                          'Account can not be created because email already exists')
+                #     return redirect('/sign-up')
+                elif postDict["new_password"][0] != postDict["repeat_password"][0]:
+                    messages.add_message(
+                        request,
+                        messages.WARNING,
+                        "Repeated password is not the same as the inputted password!",
+                    )
+                    return redirect("/sign-up")
+                elif len(postDict["new_password"][0]) < min_length:
+                    messages.warning(
+                        request,
+                        "Password must be at least {0} characters long".format(min_length),
+                    )
+                    return redirect("/sign-up")
+                else:
+                    self.create_new_user(postDict=postDict)
+
+                    messages.success(request, "Account created!")
+                    return redirect("sap:home")
+
+        elif not User.objects.filter(email=postDict["new_email"][0]).exists():
+            if User.objects.filter(username=postDict["new_username"][0]).exists():
+                messages.add_message(request, messages.WARNING,
+                                     'Account can not be created because username already exists!')
+                return redirect('/sign-up')
+            # elif User.objects.filter(email=postDict["new_email"][0]).exists():
+            #     messages.add_message(request, messages.WARNING,
+            #                          'Account can not be created because email already exists')
+            #     return redirect('/sign-up')
+            elif postDict["new_password"][0] != postDict["repeat_password"][0]:
+                messages.add_message(
+                    request,
+                    messages.WARNING,
+                    "Repeated password is not the same as the inputted password!",
+                )
+                return redirect("/sign-up")
+            elif len(postDict["new_password"][0]) < min_length:
+                messages.warning(
+                    request,
+                    "Password must be at least {0} characters long".format(min_length),
+                )
+                return redirect("/sign-up")
             else:
-                if postDict['roleSelected'][0] == 'Undergraduate Student':
-                    try:
-                        categories = self.make_categories(postDict["idUnderGradCheckboxes"])
-                    except KeyError:
-                        categories = StudentCategories.objects.create()
-                    undergradList = ['interestRadios', 'experienceRadios', 'interestedRadios', 'agreementRadios']
-                    selections = self.set_boolean(undergradList, postDict)
-                    ally = Ally.objects.create(user=user, user_type=postDict['roleSelected'][0], hawk_id=user.username,
-                                               major=postDict['major'][0], year=postDict['undergradRadios'][0],
-                                               interested_in_joining_lab=selections['interestRadios'],
-                                               has_lab_experience=selections['experienceRadios'],
-                                               interested_in_mentoring=selections['interestedRadios'],
-                                               information_release=selections['agreementRadios'])
-                elif postDict['roleSelected'][0] == 'Graduate Student':
-                    try:
-                        stem_fields = ','.join(postDict['stemGradCheckboxes'])
-                    except KeyError:
-                        stem_fields = None
-                    try:
-                        categories = self.make_categories(postDict['mentoringGradCheckboxes'])
-                    except KeyError:
-                        categories = StudentCategories.objects.create()
+                self.create_new_user(postDict=postDict)
 
-                    gradList = ['mentoringGradRadios', 'labShadowRadios', 'connectingRadios', 'volunteerGradRadios',
-                                'gradTrainingRadios']
-                    selections = self.set_boolean(gradList, postDict)
-                    ally = Ally.objects.create(user=user, user_type=postDict['roleSelected'][0], hawk_id=user.username,
-                                               area_of_research=stem_fields,
-                                               interested_in_mentoring=selections['mentoringGradRadios'],
-                                               willing_to_offer_lab_shadowing=selections['labShadowRadios'],
-                                               interested_in_connecting_with_other_mentors=selections[
-                                                   'connectingRadios'],
-                                               willing_to_volunteer_for_events=selections['volunteerGradRadios'],
-                                               interested_in_mentor_training=selections['gradTrainingRadios'])
+                messages.success(request, "Account created!")
+                return redirect("sap:home")
+            
 
-                elif postDict['roleSelected'][0] == 'Faculty':
-                    try:
-                        stem_fields = ','.join(postDict['stemCheckboxes'])
-                    except KeyError:
-                        stem_fields = None
-                    facultyList = ['openingRadios', 'volunteerRadios', 'trainingRadios', 'mentoringFacultyRadios']
-                    selections = self.set_boolean(facultyList, postDict)
-                    try:
-                        categories = self.make_categories(postDict['mentoringCheckboxes'])
-                    except KeyError:
-                        categories = StudentCategories.objects.create()
-                    ally = Ally.objects.create(user=user, user_type=postDict['roleSelected'][0], hawk_id=user.username,
-                                               area_of_research=stem_fields,
-                                               openings_in_lab_serving_at=selections['openingRadios'],
-                                               description_of_research_done_at_lab=postDict['research-des'][0],
-                                               interested_in_mentoring=selections['mentoringFacultyRadios'],
-                                               willing_to_volunteer_for_events=selections['volunteerRadios'],
-                                               interested_in_mentor_training=selections['trainingRadios'])
-
-                AllyStudentCategoryRelation.objects.create(student_category_id=categories.id, ally_id=ally.id)
-
-            messages.success(request, "Account created")
-            return redirect("sap:home")
 
         return redirect("sap:home")
 
@@ -483,7 +534,6 @@ class ForgotPasswordView(TemplateView):
                     html_content=message_body)
 
                 try:
-                    #                     sg = SendGridAPIClient(os.environ.get('SENDGRID_API_KEY'))
                     # sg = SendGridAPIClient(os.environ.get('SENDGRID_API_KEY'))
                     # TODO: Change API key and invalidate the old one
                     sg = SendGridAPIClient('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')
