@@ -168,9 +168,7 @@
 
                 </nav>
                 <!-- End of Topbar -->
-
-                <div class="container-fluid">
-                
+                <div class="container-fluid col-9 float-left"  id="filter_container">
                     <!-- DataTales Example -->
                     <div class="card shadow mb-4">
                         <div class="card-header py-3">
@@ -181,53 +179,79 @@
                                 <form class="user">
                                     <div class="form-group row">
                                         <div class="col-sm-6 mb-3 mb-sm-0">
-                                            <select class="form-control">
-                                                <option hidden>User Type</option>
-                                                <option value="">Faculty</option>
-                                                <option value="">Undergraduate Student</option>
-                                                <option value="">Graduate Student/Post-doc</option>
+                                            <select class="form-control" name="userType">
+                                                <option value="user type">User Type</option>
+                                                <option value="faculty">Faculty</option>
+                                                <option value="undergraduate student">Undergraduate Student</option>
+                                                <option value="graduate student">Graduate Student/Post-doc</option>
                                             </select>
                                         </div>
                                         <div class="col-sm-6">
-                                            <select class="form-control">
-                                                <option hidden>STEM Area of Research</option>
-                                                <option value="">Physics</option>
-                                                <option value="">Biology</option>
-                                                <option value="">Computer Science</option>
+                                            <select class="form-control" name="stemAOR">
+                                                <option value="STEM AOR">STEM Area of Research</option>
+                                                <option value="physics">Physics</option>
+                                                <option value="biology">Biology</option>
+                                                <option value="computer science">Computer Science</option>
                                             </select>
                                         </div>
                                     </div>
                                     <div class="form-group row">
                                         <div class="col-sm-6 mb-3 mb-sm-0">
-                                            <select class="form-control">
-                                                <option hidden>Mentorship Type</option>
-                                                <option value="">Mentor</option>
-                                                <option value="">Mentee</option>
+                                            <select class="form-control" name="mentorship">
+                                                <option value="mentorship">Mentorship Type</option>
+                                                <option value="mentor">Mentor</option>
+                                                <option value="mentee">Mentee</option>
                                             </select>
                                         </div>
                                         <div class="col-sm-6">
-                                            <select class="form-control">
-                                                <option hidden>Year</option>
-                                                <option value="">Freshman</option>
-                                                <option value="">Sophomore</option>
-                                                <option value="">Junior</option>
-                                                <option value="">Senior</option>
+                                            <select class="form-control" name="year">
+                                                <option value="year">Year</option>
+                                                <option value="freshman">Freshman</option>
+                                                <option value="sophmore">Sophomore</option>
+                                                <option value="junior">Junior</option>
+                                                <option value="senior">Senior</option>
                                             </select>
                                         </div>
                                     </div>
                                     <a href="#" class="btn btn-primary btn-user btn-block">
                                         Apply Filters
                                     </a>
-                                    
                                 </form>
                             </div>
                         </div>
                     </div>
-                
                 </div>
+                <div class="container-fluid col-3 float-right" id="download_container">
+                    <!-- <div style="height: 27px; visibility: hidden"></div> -->
+                    <div class="card shadow mb-4">
+                        <div class="card-header py-3">
+                            <h6 class="m-0 font-weight-bold text-primary">Download or Upload Ally Profiles</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <form class="user">
+                                    <div class="form-group row text-center col-12">
+                                        <a href="{% url 'sap:download_allies'  %}" class="btn btn-primary btn-user btn-block" id="downloadCsv">
+                                            Download <i class="fas fa-download"></i>
+                                        </a>
+
+                                    </div>
+                                    <div class="form-group row text-center col-12">
+                                        <a href="#" class="btn btn-primary btn-user btn-block" id="uploadCsv">
+                                            Upload <i class="fas fa-upload"></i>
+                                        </a>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="height: 300px; visibility: hidden">
+                </div>
+
                 <!-- Begin Page Content -->
                 <div class="container-fluid">
-
                     <!-- DataTales Example -->
                     <div class="card shadow mb-4">
                         <div class="card-header py-3">
@@ -293,7 +317,7 @@
                                                                     title="Add"><i class="fa fa-eye"></i></a>
                                                             </li>
                                                             <li class="list-inline-item">
-                                                                <a class="btn btn-success btn-sm" type="button" data-toggle="tooltip" data-placement="top"
+                                                                <a href="/edit_allies/?username={{ ally.user.username }}" class="btn btn-success btn-sm" type="button" data-toggle="tooltip" data-placement="top"
                                                                     title="Edit"><i class="fa fa-edit"></i></a>
                                                             </li>
                                                             <li class="list-inline-item">
