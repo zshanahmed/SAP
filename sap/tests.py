@@ -1059,6 +1059,11 @@ class ForgotPasswordTest(TestCase):
 
 
 
+def wack_test_db():
+    User.objects.all().delete()
+    Ally.objects.all().delete()
+    StudentCategories.objects.all().delete()
+    AllyStudentCategoryRelation.objects.all().delete()
 
 userFields = ['last_login', 'username', 'first_name', 'last_name', 'email', 'is_active', 'date_joined']
 allyFields = ['user_type', 'area_of_research', 'openings_in_lab_serving_at', 'description_of_research_done_at_lab',
@@ -1090,10 +1095,7 @@ class DownloadAlliesTest(TestCase):
         return ar
 
     def setUp(self):
-        User.objects.all().delete()
-        Ally.objects.all().delete()
-        StudentCategories.objects.all().delete()
-        AllyStudentCategoryRelation.objects.all().delete()
+        wack_test_db()
 
         self.client = Client()
 
@@ -1195,3 +1197,17 @@ class DownloadAlliesTest(TestCase):
         self.client.login(username='staff', password='123')
         response = self.client.get(reverse('sap:download_allies'))
         self.assertEqual(response.status_code, 403)
+
+class UploadFileTest(TestCase):
+    def setUp(self):
+        wack_test_db()
+        self.client = Client()
+        self.loginUser = User.objects.create_user(username='glib', password='macaque', email='staff@uiowa.edu',
+                                                  first_name='charlie', last_name='hebdo', is_staff=True)
+        self.client.login(username=self.loginUser.username, password=self.loginUser.password)
+
+
+    def testUpload_filetype1(self):
+        with open('./pytests/assets/allies.csv', 'r') as f:
+            response = self.client.post(reverse('sap:allies_upload'), {'attachment': f})
+        self.assertEqual(response.status_code, 200)
