@@ -28,6 +28,17 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
 
     <script type= "text/javascript">
+
+        // function that by default selects invites all for event
+        window.onload = function() {
+          var allInputs = document.getElementsByTagName("input");
+            for (var i = 0, max = allInputs.length; i < max; i++){
+                if (allInputs[i].type === 'checkbox')
+                    allInputs[i].checked = true;
+            }
+        };
+
+        // function that checks all the checkboxes when invite all  checkbox is clicked
         function toggle_invite_all(){
             invite_all_checkbox = document.getElementById("invite_all")
             var allInputs = document.getElementsByTagName("input");
@@ -47,7 +58,7 @@
             invite_all_checkbox.checked = true;
         }
 
-
+        // function that unchecks invite all  checkbox when some other checkbox is unchecked
         function invite_all_click() {
             invite_all_checkbox = document.getElementById("invite_all")
             if (invite_all_checkbox.checked == true){
