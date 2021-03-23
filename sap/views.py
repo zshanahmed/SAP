@@ -590,8 +590,8 @@ class ForgotPasswordView(TemplateView):
                     # sg = SendGridAPIClient(os.environ.get('SENDGRID_API_KEY'))
                     # TODO: Change API key and invalidate the old one
                     sg = SendGridAPIClient('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')
-                    ''' TODO: Nam, do we need this print statement? If not, please remove it
                     response = sg.send(email_content)
+                    ''' TODO: Nam, do we need this print statement? If not, please remove it
                     print(response.status_code)
                     print(response.body)
                     print(response.headers)
