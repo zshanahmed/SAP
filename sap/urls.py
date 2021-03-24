@@ -20,6 +20,9 @@ urlpatterns = [
     url(r'^dashboard/$',
         login_required(views.AlliesListView.as_view(), login_url='home'),
         name='sap-dashboard'),
+    url(r'^apply_filters/$',
+        login_required(views.AlliesListView.as_view()),
+        name='apply_filters'),
 
     url('analytics/',
         login_required(views.AnalyticsView.as_view(), login_url='home'),

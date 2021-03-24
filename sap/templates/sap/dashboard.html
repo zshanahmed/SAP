@@ -176,7 +176,8 @@
                         </div>
                         <div class="card-body">
                             <div class="table-responsive">
-                                <form class="user">
+                                <form class="user" method="post">
+                                    {% csrf_token %}
                                     <div class="form-group row">
                                         <div class="col-sm-6 mb-3 mb-sm-0">
                                             <strong>STEM Area of Research</strong>
@@ -250,9 +251,9 @@
                                             </div> 
                                         </div>
                                     </div>
-                                    <a href="#" class="btn btn-primary btn-user btn-block">
+                                    <a href="{% url 'sap:apply_filters'  %}" class="btn btn-primary btn-user btn-block">
                                         Apply Filters
-                                    </a>
+                                    <a/>
                                 </form>
                             </div>
                         </div>
