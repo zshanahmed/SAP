@@ -231,8 +231,8 @@ class AdminAllyTableFeatureTests(TestCase):
 
         self.client.login(username=self.username, password=self.password)
         response = self.client.get(
-            '/allies/', {'username': 'something'})
-        self.assertEqual(response.status_code, HTTPStatus.FORBIDDEN)
+            '/allies/', {'username': self.ally_user.username})
+        self.assertEqual(response.status_code, HTTPStatus.OK)
     
     def test_delete_ally(self):
         self.user.is_staff = True
