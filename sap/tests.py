@@ -66,9 +66,37 @@ class AdminAllyTableFeatureTests(TestCase):
                                         first_name='John',
                                         last_name='Doe')
 
+        self.ally_user1 = User.objects.create_user(username='johndoe1',
+                                                  email='johndoe1@uiowa.edu',
+                                                  password='johndoe1',
+                                                  first_name='John1',
+                                                  last_name='Doe1')
+
         self.ally = Ally.objects.create(
             user=self.ally_user,
             hawk_id='johndoe',
+            user_type='Staff',
+            works_at='College of Engineering',
+            area_of_research='Computer Science and Engineering,Health and Human Physiology,Physics',
+            description_of_research_done_at_lab='Created tools to fight fingerprinting',
+            people_who_might_be_interested_in_iba=True,
+            how_can_science_ally_serve_you='Help in connecting with like minded people',
+            year='Senior',
+            major='Electical Engineering',
+            willing_to_offer_lab_shadowing=True,
+            willing_to_volunteer_for_events=True,
+            interested_in_mentoring=True,
+            interested_in_connecting_with_other_mentors=True,
+            interested_in_mentor_training=True,
+            interested_in_joining_lab=True,
+            has_lab_experience=True,
+            information_release=True,
+            openings_in_lab_serving_at=True,
+        )
+
+        self.ally1 = Ally.objects.create(
+            user=self.ally_user1,
+            hawk_id='johndoe1',
             user_type='Staff',
             works_at='College of Engineering',
             area_of_research='Computer Science and Engineering,Health and Human Physiology,Physics',
@@ -231,7 +259,7 @@ class AdminAllyTableFeatureTests(TestCase):
 
         self.client.login(username=self.username, password=self.password)
         response = self.client.get(
-            '/allies/', {'username': self.ally_user.username})
+            '/allies/', {'username': self.ally_user1.username})
         self.assertEqual(response.status_code, HTTPStatus.OK)
     
     def test_delete_ally(self):
