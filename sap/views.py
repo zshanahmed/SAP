@@ -345,7 +345,9 @@ class SignUpView(TemplateView):
 
         if postDict['roleSelected'][0] == 'Staff':
             selections = self.set_boolean(['studentsInterestedRadios'], postDict)
-            ally = Ally.objects.create(user=user, user_type=postDict['roleSelected'][0], hawk_id=user.username,
+            ally = Ally.objects.create(user=user,
+                                       user_type=postDict['roleSelected'][0],
+                                       hawk_id=user.username,
                                        people_who_might_be_interested_in_iba=selections['studentsInterestedRadios'],
                                        how_can_science_ally_serve_you=postDict['howCanWeHelp'])
         else:
@@ -356,8 +358,11 @@ class SignUpView(TemplateView):
                     categories = StudentCategories.objects.create()
                 undergradList = ['interestRadios', 'experienceRadios', 'interestedRadios', 'agreementRadios']
                 selections = self.set_boolean(undergradList, postDict)
-                ally = Ally.objects.create(user=user, user_type=postDict['roleSelected'][0], hawk_id=user.username,
-                                           major=postDict['major'][0], year=postDict['undergradRadios'][0],
+                ally = Ally.objects.create(user=user,
+                                           user_type=postDict['roleSelected'][0],
+                                           hawk_id=user.username,
+                                           major=postDict['major'][0],
+                                           year=postDict['undergradRadios'][0],
                                            interested_in_joining_lab=selections['interestRadios'],
                                            has_lab_experience=selections['experienceRadios'],
                                            interested_in_mentoring=selections['interestedRadios'],
@@ -375,12 +380,13 @@ class SignUpView(TemplateView):
                 gradList = ['mentoringGradRadios', 'labShadowRadios', 'connectingRadios', 'volunteerGradRadios',
                             'gradTrainingRadios']
                 selections = self.set_boolean(gradList, postDict)
-                ally = Ally.objects.create(user=user, user_type=postDict['roleSelected'][0], hawk_id=user.username,
+                ally = Ally.objects.create(user=user,
+                                           user_type=postDict['roleSelected'][0],
+                                           hawk_id=user.username,
                                            area_of_research=stem_fields,
                                            interested_in_mentoring=selections['mentoringGradRadios'],
                                            willing_to_offer_lab_shadowing=selections['labShadowRadios'],
-                                           interested_in_connecting_with_other_mentors=selections[
-                                               'connectingRadios'],
+                                           interested_in_connecting_with_other_mentors=selections['connectingRadios'],
                                            willing_to_volunteer_for_events=selections['volunteerGradRadios'],
                                            interested_in_mentor_training=selections['gradTrainingRadios'])
 
@@ -395,7 +401,9 @@ class SignUpView(TemplateView):
                     categories = self.make_categories(postDict['mentoringCheckboxes'])
                 except KeyError:
                     categories = StudentCategories.objects.create()
-                ally = Ally.objects.create(user=user, user_type=postDict['roleSelected'][0], hawk_id=user.username,
+                ally = Ally.objects.create(user=user,
+                                           user_type=postDict['roleSelected'][0],
+                                           hawk_id=user.username,
                                            area_of_research=stem_fields,
                                            openings_in_lab_serving_at=selections['openingRadios'],
                                            description_of_research_done_at_lab=postDict['research-des'][0],
@@ -627,13 +635,6 @@ class ForgotPasswordDoneView(TemplateView):
     A view which is presented if the user entered valid email in Forget Password view
     """
     template_name = "sap/password-forgot-done.html"
-
-
-class ForgotPasswordMail(TemplateView):
-    """
-    Email template for Forgot Password Feature
-    """
-    template_name = "sap/password-forgot-mail.html"
 
 
 class ForgotPasswordConfirmView(TemplateView):
