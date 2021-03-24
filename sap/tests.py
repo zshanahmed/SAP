@@ -917,7 +917,7 @@ class ForgotPasswordTest(TestCase):
     def setUp(self):
         self.username = 'user1'
         self.password = 'user_password1'
-        self.email = 'email1@test.com'
+        self.email = 'santhoshraj29600@gmail.com'
         self.client = Client()
         self.user = User.objects.create_user(
             self.username, self.email, self.password)
@@ -945,7 +945,7 @@ class ForgotPasswordTest(TestCase):
         )
 
         data = {
-            "email": "email1@test.com",
+            "email": "santhoshraj29600@gmail.com",
         }
         form = PasswordResetForm(
             data=data
@@ -967,7 +967,7 @@ class ForgotPasswordTest(TestCase):
         )
 
         data = {
-            "email": "wrongemail@test.com",
+            "email": "santhoshraj29600@gmail.com",
         }
         form = PasswordResetForm(
             data=data
