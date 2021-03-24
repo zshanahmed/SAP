@@ -72,8 +72,8 @@ class Event(models.Model):
 
 class EventAllyRelation(models.Model):
     event = models.ForeignKey(Event,
-                              on_delete=models.DO_NOTHING
+                              on_delete=models.CASCADE
                               )
     ally = models.ForeignKey(Ally,
-                             on_delete=models.DO_NOTHING
+                             on_delete=models.CASCADE
                              )
