@@ -675,53 +675,100 @@ class SignUpTests(TestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_entered_existing_user(self):
-        response = self.c.post('/sign-up/', {'csrfmiddlewaretoken': ['MIyNUVJILbLGKrHXjz4m4fWt4d13TUOkkvRtCpStSmxkW8PKomuz3ESTYF8VVQil'],
-                                  'firstName': ['Elias'], 'lastName': ['Shaeffer'], 'new_username': ['admin'],
-                                  'new_email': ['eshaeffer@uiowa.edu'], 'new_password': ['ddd'], 'repeat_password':
-                                      ['dddd'], 'roleSelected': ['Graduate Student'],
-                                  'stemGradCheckboxes': ['Biochemistry'], 'mentoringGradRadios': ['Yes'],
-                                  'mentoringGradCheckboxes': ['First generation college-student'],
-                                  'labShadowRadios': ['Yes'], 'connectingRadios': ['Yes'],
-                                  'volunteerGradRadios': ['Yes'], 'gradTrainingRadios': ['Yes']})
+        response = self.c.post(
+            '/sign-up/',
+            {
+                'csrfmiddlewaretoken': ['MIyNUVJILbLGKrHXjz4m4fWt4d13TUOkkvRtCpStSmxkW8PKomuz3ESTYF8VVQil'],
+                'firstName': ['Elias'],
+                'lastName': ['Shaeffer'],
+                'new_username': ['admin'],
+                'new_email': ['eshaeffer@uiowa.edu'],
+                'new_password': ['ddd'],
+                'repeat_password': ['dddd'],
+                'roleSelected': ['Graduate Student'],
+                'stemGradCheckboxes': ['Biochemistry'],
+                'mentoringGradRadios': ['Yes'],
+                'mentoringGradCheckboxes': ['First generation college-student'],
+                'labShadowRadios': ['Yes'],
+                'connectingRadios': ['Yes'],
+                'volunteerGradRadios': ['Yes'],
+                'gradTrainingRadios': ['Yes'],
+            }
+        )
         url = response.url
         self.assertEqual(url, '/sign-up')
         self.assertEqual(response.status_code, 302)
 
     def test_entered_existing_email(self):
-        response = self.c.post('/sign-up/', {'csrfmiddlewaretoken': ['MIyNUVJILbLGKrHXjz4m4fWt4d13TUOkkvRtCpStSmxkW8PKomuz3ESTYF8VVQil'],
-                                  'firstName': ['Elias'], 'lastName': ['Shaeffer'], 'new_username': ['admin1'],
-                                  'new_email': ['email@test.com'], 'new_password': ['ddd'], 'repeat_password':
-                                      ['dddd'], 'roleSelected': ['Graduate Student'],
-                                  'stemGradCheckboxes': ['Biochemistry'], 'mentoringGradRadios': ['Yes'],
-                                  'mentoringGradCheckboxes': ['First generation college-student'],
-                                  'labShadowRadios': ['Yes'], 'connectingRadios': ['Yes'],
-                                  'volunteerGradRadios': ['Yes'], 'gradTrainingRadios': ['Yes']})
+        response = self.c.post(
+            '/sign-up/',
+            {
+                'csrfmiddlewaretoken': ['MIyNUVJILbLGKrHXjz4m4fWt4d13TUOkkvRtCpStSmxkW8PKomuz3ESTYF8VVQil'],
+                'firstName': ['Elias'],
+                'lastName': ['Shaeffer'],
+                'new_username': ['admin1'],
+                'new_email': ['email@test.com'],
+                'new_password': ['ddd'], 'repeat_password': ['dddd'],
+                'roleSelected': ['Graduate Student'],
+                'stemGradCheckboxes': ['Biochemistry'],
+                'mentoringGradRadios': ['Yes'],
+                'mentoringGradCheckboxes': ['First generation college-student'],
+                'labShadowRadios': ['Yes'],
+                'connectingRadios': ['Yes'],
+                'volunteerGradRadios': ['Yes'],
+                'gradTrainingRadios': ['Yes'],
+            }
+        )
         url = response.url
         self.assertEqual(url, '/sign-up')
         self.assertEqual(response.status_code, 302)
 
     def test_password_not_same(self):
-        response = self.c.post('/sign-up/', {'csrfmiddlewaretoken': ['MIyNUVJILbLGKrHXjz4m4fWt4d13TUOkkvRtCpStSmxkW8PKomuz3ESTYF8VVQil'],
-                                  'firstName': ['Elias'], 'lastName': ['Shaeffer'], 'new_username': ['admin1123'],
-                                  'new_email': ['email123@test.com'], 'new_password': ['ddd'], 'repeat_password':
-                                      ['ddddd'], 'roleSelected': ['Graduate Student'],
-                                  'stemGradCheckboxes': ['Biochemistry'], 'mentoringGradRadios': ['Yes'],
-                                  'mentoringGradCheckboxes': ['First generation college-student'],
-                                  'labShadowRadios': ['Yes'], 'connectingRadios': ['Yes'],
-                                  'volunteerGradRadios': ['Yes'], 'gradTrainingRadios': ['Yes']})
+        response = self.c.post(
+            '/sign-up/',
+            {
+                'csrfmiddlewaretoken': ['MIyNUVJILbLGKrHXjz4m4fWt4d13TUOkkvRtCpStSmxkW8PKomuz3ESTYF8VVQil'],
+                'firstName': ['Elias'],
+                'lastName': ['Shaeffer'],
+                'new_username': ['admin1123'],
+                'new_email': ['email123@test.com'],
+                'new_password': ['ddd'],
+                'repeat_password': ['ddddd'],
+                'roleSelected': ['Graduate Student'],
+                'stemGradCheckboxes': ['Biochemistry'],
+                'mentoringGradRadios': ['Yes'],
+                'mentoringGradCheckboxes': ['First generation college-student'],
+                'labShadowRadios': ['Yes'],
+                'connectingRadios': ['Yes'],
+                'volunteerGradRadios': ['Yes'],
+                'gradTrainingRadios': ['Yes'],
+            }
+        )
         url = response.url
         self.assertEqual(url, '/sign-up')
         self.assertEqual(response.status_code, 302)
 
     def test_create_Undergrad(self):
-        response = self.c.post('/sign-up/', { 'csrfmiddlewaretoken': ['At4HFZNsApVRWNye2Jcj4RVcWYf1fviv1kFbSZevLnNmJrWz4OyZhcAPn0JeaknZ'],
-                                              'firstName': ['Zeeshan'], 'lastName': ['Ahmed'], 'new_username': ['zeeahmed'],
-                                              'new_email': ['zeeahmed@uiowa.edu'], 'new_password': ['bigchungus'],
-                                              'repeat_password': ['bigchungus'], 'roleSelected': ['Undergraduate Student'],
-                                              'undergradRadios': ['Senior'], 'idUnderGradCheckboxes': ['First generation college-student'],
-                                              'major': ['Computer Science'], 'interestRadios': ['Yes'],
-                                              'experienceRadios': ['Yes'], 'interestedRadios': ['Yes'],
-                                              'agreementRadios': ['Yes']})
+        response = self.c.post(
+            '/sign-up/',
+            {
+                'csrfmiddlewaretoken': ['At4HFZNsApVRWNye2Jcj4RVcWYf1fviv1kFbSZevLnNmJrWz4OyZhcAPn0JeaknZ'],
+                'firstName': ['Zeeshan'],
+                'lastName': ['Ahmed'],
+                'new_username': ['zeeahmed'],
+                'new_email': ['zeeahmed@uiowa.edu'],
+                'new_password': ['bigchungus'],
+                'repeat_password': ['bigchungus'],
+                'roleSelected': ['Undergraduate Student'],
+                'undergradRadios': ['Senior'],
+                'idUnderGradCheckboxes': ['First generation college-student'],
+                'major': ['Computer Science'],
+                'interestRadios': ['Yes'],
+                'experienceRadios': ['Yes'],
+                'interestedRadios': ['Yes'],
+                'agreementRadios': ['Yes'],
+            }
+        )
         url = response.url
         self.assertEqual(url, '/')
         self.assertEqual(response.status_code, 302)
@@ -735,13 +782,25 @@ class SignUpTests(TestCase):
         self.assertTrue(categories.exists())
 
     def test_create_Undergrad(self):
-        response = self.c.post('/sign-up/', { 'csrfmiddlewaretoken': ['At4HFZNsApVRWNye2Jcj4RVcWYf1fviv1kFbSZevLnNmJrWz4OyZhcAPn0JeaknZ'],
-                                              'firstName': ['Zeeshan'], 'lastName': ['Ahmed'], 'new_username': ['zeeahmed1'],
-                                              'new_email': ['zeeahmed@uiowa.edu'], 'new_password': ['bigchungusmyNameGunga'],
-                                              'repeat_password': ['bigchungusmyNameGunga'], 'roleSelected': ['Undergraduate Student'],
-                                              'undergradRadios': ['Senior'], 'major': ['Computer Science'], 'interestRadios': ['Yes'],
-                                              'experienceRadios': ['Yes'], 'interestedRadios': ['Yes'],
-                                              'agreementRadios': ['Yes']})
+        response = self.c.post(
+            '/sign-up/',
+            {
+                'csrfmiddlewaretoken': ['At4HFZNsApVRWNye2Jcj4RVcWYf1fviv1kFbSZevLnNmJrWz4OyZhcAPn0JeaknZ'],
+                'firstName': ['Zeeshan'],
+                'lastName': ['Ahmed'],
+                'new_username': ['zeeahmed1'],
+                'new_email': ['zeeahmed@uiowa.edu'],
+                'new_password': ['bigchungusmyNameGunga'],
+                'repeat_password': ['bigchungusmyNameGunga'],
+                'roleSelected': ['Undergraduate Student'],
+                'undergradRadios': ['Senior'],
+                'major': ['Computer Science'],
+                'interestRadios': ['Yes'],
+                'experienceRadios': ['Yes'],
+                'interestedRadios': ['Yes'],
+                'agreementRadios': ['Yes'],
+            }
+        )
         url = response.url
         self.assertEqual(url, '/')
         self.assertEqual(response.status_code, 302)
@@ -755,13 +814,28 @@ class SignUpTests(TestCase):
         self.assertTrue(categories.exists())
 
     def test_create_Grad(self):
-        response = self.c.post('/sign-up/', {'csrfmiddlewaretoken': ['TFosu1rFWp6S4SsYIV5Rb9FtBzoTavgrCsu31o9hTp975IuRpZeNgPJeBQiU6Cy5'],
-        'firstName': ['glumpy'], 'lastName': ['guy'], 'new_username': ['big_guy1'],
-        'new_email': ['eshaeffer@uiowa.edu'], 'new_password': ['123myNameGunga'], 'repeat_password': ['123myNameGunga'],
-        'roleSelected': ['Graduate Student'],
-        'stemGradCheckboxes': ['Biochemistry', 'Biology', 'Biomedical Engineering', 'Chemical Engineering'],
-        'mentoringGradRadios': ['Yes'], 'mentoringGradCheckboxes': ['First generation college-student', 'Low-income', 'Underrepresented racial/ethnic minority', 'Transfer student', 'LGBTQ'],
-        'labShadowRadios': ['Yes'], 'connectingRadios': ['Yes'], 'volunteerGradRadios': ['No'], 'gradTrainingRadios': ['Yes']})
+        response = self.c.post(
+            '/sign-up/',
+            {
+                'csrfmiddlewaretoken': ['TFosu1rFWp6S4SsYIV5Rb9FtBzoTavgrCsu31o9hTp975IuRpZeNgPJeBQiU6Cy5'],
+                'firstName': ['glumpy'],
+                'lastName': ['guy'],
+                'new_username': ['big_guy1'],
+                'new_email': ['eshaeffer@uiowa.edu'],
+                'new_password': ['123myNameGunga'],
+                'repeat_password': ['123myNameGunga'],
+                'roleSelected': ['Graduate Student'],
+                'stemGradCheckboxes': ['Biochemistry', 'Biology', 'Biomedical Engineering', 'Chemical Engineering'],
+                'mentoringGradRadios': ['Yes'],
+                'mentoringGradCheckboxes': ['First generation college-student', 'Low-income',
+                                            'Underrepresented racial/ethnic minority',
+                                            'Transfer student', 'LGBTQ'],
+                'labShadowRadios': ['Yes'],
+                'connectingRadios': ['Yes'],
+                'volunteerGradRadios': ['No'],
+                'gradTrainingRadios': ['Yes'],
+            }
+        )
         url = response.url
         self.assertEqual(url, '/')
         self.assertEqual(response.status_code, 302)
@@ -775,14 +849,24 @@ class SignUpTests(TestCase):
         self.assertTrue(categories.exists())
 
     def test_create_Grad_noBoxes(self):
-        response = self.c.post('/sign-up/', {
-            'csrfmiddlewaretoken': ['TFosu1rFWp6S4SsYIV5Rb9FtBzoTavgrCsu31o9hTp975IuRpZeNgPJeBQiU6Cy5'],
-            'firstName': ['glumpy'], 'lastName': ['guy'], 'new_username': ['big_guy12'],
-            'new_email': ['eshaeffer@uiowa.edu'], 'new_password': ['123myNameGunga'], 'repeat_password': ['123myNameGunga'],
-            'roleSelected': ['Graduate Student'],
-            'mentoringGradRadios': ['Yes'],
-            'labShadowRadios': ['Yes'], 'connectingRadios': ['Yes'], 'volunteerGradRadios': ['No'],
-            'gradTrainingRadios': ['Yes']})
+        response = self.c.post(
+            '/sign-up/',
+            {
+                'csrfmiddlewaretoken': ['TFosu1rFWp6S4SsYIV5Rb9FtBzoTavgrCsu31o9hTp975IuRpZeNgPJeBQiU6Cy5'],
+                'firstName': ['glumpy'],
+                'lastName': ['guy'],
+                'new_username': ['big_guy12'],
+                'new_email': ['eshaeffer@uiowa.edu'],
+                'new_password': ['123myNameGunga'],
+                'repeat_password': ['123myNameGunga'],
+                'roleSelected': ['Graduate Student'],
+                'mentoringGradRadios': ['Yes'],
+                'labShadowRadios': ['Yes'],
+                'connectingRadios': ['Yes'],
+                'volunteerGradRadios': ['No'],
+                'gradTrainingRadios': ['Yes'],
+            }
+        )
         url = response.url
         self.assertEqual(url, '/')
         self.assertEqual(response.status_code, 302)
@@ -795,14 +879,27 @@ class SignUpTests(TestCase):
         self.assertTrue(categoryRelation.exists())
         self.assertTrue(categories.exists())
 
-
     def test_Faculty(self):
-        response = self.c.post('/sign-up/', {'csrfmiddlewaretoken': ['gr9bKWMJLFrJZfcdKkdRhlyKLI0JeTh2ZefMhjulIFuY05e6romNm1CvLZUKa0zG'], 'firstName': ['Terry'], 'lastName': ['Braun'],
-        'new_username': ['tbraun'], 'new_email': ['tbraun@uiowa.edu'], 'new_password': ['123myNameGunga'],
-        'repeat_password': ['123myNameGunga'], 'roleSelected': ['Faculty'],
-        'stemCheckboxes': ['Bioinformatics', 'Biomedical Engineering'], 'research-des': ['Me make big variant :)'],
-        'openingRadios': ['Yes'], 'mentoringCheckboxes': ['First generation college-student', 'Underrepresented racial/ethnic minority', 'Transfer student'],
-        'volunteerRadios': ['Yes'],'mentoringFacultyRadios':['Yes'], 'trainingRadios': ['Yes']})
+        response = self.c.post(
+            '/sign-up/',
+            {
+                'csrfmiddlewaretoken': ['gr9bKWMJLFrJZfcdKkdRhlyKLI0JeTh2ZefMhjulIFuY05e6romNm1CvLZUKa0zG'],
+                'firstName': ['Terry'], 'lastName': ['Braun'],
+                'new_username': ['tbraun'],
+                'new_email': ['tbraun@uiowa.edu'],
+                'new_password': ['123myNameGunga'],
+                'repeat_password': ['123myNameGunga'],
+                'roleSelected': ['Faculty'],
+                'stemCheckboxes': ['Bioinformatics', 'Biomedical Engineering'],
+                'research-des': ['Me make big variant :)'],
+                'openingRadios': ['Yes'],
+                'mentoringCheckboxes': ['First generation college-student',
+                                        'Underrepresented racial/ethnic minority', 'Transfer student'],
+                'volunteerRadios': ['Yes'],
+                'mentoringFacultyRadios': ['Yes'],
+                'trainingRadios': ['Yes'],
+            }
+        )
         url = response.url
         self.assertEqual(url, '/')
         self.assertEqual(response.status_code, 302)
@@ -816,14 +913,24 @@ class SignUpTests(TestCase):
         self.assertTrue(categories.exists())
 
     def test_Faculty_noSelect(self):
-        response = self.c.post('/sign-up/', {
-            'csrfmiddlewaretoken': ['gr9bKWMJLFrJZfcdKkdRhlyKLI0JeTh2ZefMhjulIFuY05e6romNm1CvLZUKa0zG'],
-            'firstName': ['Terry'], 'lastName': ['Braun'],
-            'new_username': ['tbraun2'], 'new_email': ['tbraun@uiowa.edu'], 'new_password': ['123myNameGunga'],
-            'repeat_password': ['123myNameGunga'], 'roleSelected': ['Faculty'],
-            'research-des': ['Me make big variant :)'],
-            'openingRadios': ['Yes'],
-            'volunteerRadios': ['Yes'], 'mentoringFacultyRadios': ['Yes'], 'trainingRadios': ['Yes']})
+        response = self.c.post(
+            '/sign-up/',
+            {
+                'csrfmiddlewaretoken': ['gr9bKWMJLFrJZfcdKkdRhlyKLI0JeTh2ZefMhjulIFuY05e6romNm1CvLZUKa0zG'],
+                'firstName': ['Terry'],
+                'lastName': ['Braun'],
+                'new_username': ['tbraun2'],
+                'new_email': ['tbraun@uiowa.edu'],
+                'new_password': ['123myNameGunga'],
+                'repeat_password': ['123myNameGunga'],
+                'roleSelected': ['Faculty'],
+                'research-des': ['Me make big variant :)'],
+                'openingRadios': ['Yes'],
+                'volunteerRadios': ['Yes'],
+                'mentoringFacultyRadios': ['Yes'],
+                'trainingRadios': ['Yes'],
+            }
+        )
         url = response.url
         self.assertEqual(url, '/')
         self.assertEqual(response.status_code, 302)
@@ -837,10 +944,21 @@ class SignUpTests(TestCase):
         self.assertTrue(categories.exists())
 
     def test_Staff(self):
-        response = self.c.post('/sign-up/', {'csrfmiddlewaretoken': ['K5dFCUih0K6ZYklAemhvIWSpCebK86zdx4ric6ucIPLUQhAdtdT7hhp4r5etxoJY'],
-        'firstName': ['hawk'], 'lastName': ['herky'], 'new_username': ['hawkherky'], 'new_email': ['hawkherky@uiowa.edu'],
-        'new_password': ['hawkmyNameGunga'], 'repeat_password': ['hawkmyNameGunga'], 'roleSelected': ['Staff'],
-        'studentsInterestedRadios': ['Yes'], 'howCanWeHelp': ['sasdasdasd']})
+        response = self.c.post(
+            '/sign-up/',
+            {
+                'csrfmiddlewaretoken': ['K5dFCUih0K6ZYklAemhvIWSpCebK86zdx4ric6ucIPLUQhAdtdT7hhp4r5etxoJY'],
+                'firstName': ['hawk'],
+                'lastName': ['herky'],
+                'new_username': ['hawkherky'],
+                'new_email': ['hawkherky@uiowa.edu'],
+                'new_password': ['hawkmyNameGunga'],
+                'repeat_password': ['hawkmyNameGunga'],
+                'roleSelected': ['Staff'],
+                'studentsInterestedRadios': ['Yes'],
+                'howCanWeHelp': ['sasdasdasd'],
+            }
+        )
         url = response.url
         self.assertEqual(url, '/')
         self.assertEqual(response.status_code, 302)
@@ -853,9 +971,7 @@ class SignUpTests(TestCase):
         response = self.c.post(
             "/sign-up/",
             {
-                "csrfmiddlewaretoken": [
-                    "K5dFCUih0K6ZYklAemhvIWSpCebK86zdx4ric6ucIPLUQhAdtdT7hhp4r5etxoJY"
-                ],
+                "csrfmiddlewaretoken": ["K5dFCUih0K6ZYklAemhvIWSpCebK86zdx4ric6ucIPLUQhAdtdT7hhp4r5etxoJY"],
                 "firstName": ["hawk"],
                 "lastName": ["herky"],
                 "new_username": ["hawkherkydiff"],
