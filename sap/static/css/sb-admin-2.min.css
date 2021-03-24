@@ -10300,3 +10300,8 @@ body.sidebar-toggled footer.sticky-footer {
   border-bottom: 3px solid #FFCD00;
   padding-bottom: 0.01em;
 }
+
+input #file-upload-button{
+  border:none;
+  color:
+}
