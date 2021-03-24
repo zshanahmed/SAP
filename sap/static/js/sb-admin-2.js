@@ -79,7 +79,7 @@
   $('input[type="file"]').change(function(e){
             var fileName = e.target.files[0].name;
             console.log(fileName);
-            alert('The file "' + fileName +  '" has been selected.');
+            alert('The file "' + fileName +  '" has been selected for Upload.');
   });
 
 })(jQuery); // End of use strict
