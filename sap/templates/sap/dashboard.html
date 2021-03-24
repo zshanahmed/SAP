@@ -21,6 +21,7 @@
 
     <!-- Custom styles for this template -->
     <link href="{% static '/css/sb-admin-2.min.css' %}" rel="stylesheet">
+    <link href="{% static '/css/sb-admin.css' %}" rel="stylesheet">
 
     <!-- Custom styles for this page -->
     <link href="{% static '/vendor/datatables/dataTables.bootstrap4.min.css' %}" rel="stylesheet">
@@ -225,22 +226,22 @@
                     <!-- <div style="height: 27px; visibility: hidden"></div> -->
                     <div class="card shadow mb-4">
                         <div class="card-header py-3">
-                            <h6 class="m-0 font-weight-bold text-primary">Download or Upload Ally Profiles</h6>
+                            <h6 class="m-0 font-weight-bold text-primary">Download or Upload Allies</h6>
                         </div>
                         <div class="card-body">
                             <div class="table-responsive">
                                 <div class="form-group row text-center col-12">
-                                    <form class="user">
-                                        <a href="{% url 'sap:download_allies'  %}" class="btn btn-primary btn-user btn-block" id="downloadCsv">
+                                    <form class="user text-center col-12">
+                                        <a href="{% url 'sap:download_allies'  %}" class="btn btn-primary btn-user btn-block px-md-4" id="downloadCsv">
                                             Download <i class="fas fa-download"></i>
                                         </a>
                                     </form>
                                 </div>
                                 <div class="form-group row text-center col-12">
-                                        <form action="{% url 'sap:upload_allies'%}" method="post" enctype="multipart/form-data" class="user">
+                                        <form action="{% url 'sap:upload_allies'%}" method="post" enctype="multipart/form-data" class="user overflow-hidden">
                                             {% csrf_token %}
-                                            <input id="uploadCsv" type="file" value="Browse" name="file" accept="csv" class="btn btn-primary btn-user btn-block">
-                                            <button type="submit" formmethod="post" class="btn btn-primary btn-user btn-block" id="submitUpload">
+                                            <input id="uploadCsv" type="file" value="Browse" name="file" accept="csv">
+                                            <button type="submit" formmethod="post" class="btn btn-primary btn-user btn-block px-md-4 mt-3" id="submitUpload">
                                                 Upload <i class="fas fa-upload"></i>
                                             </button>
                                         </form>
@@ -400,7 +401,6 @@
 
     <!-- Custom scripts for all pages-->
     <script src="{% static '/js/sb-admin-2.min.js' %}"></script>
-    <script src="{% static '/js/sb-admin-2.js' %}"></script>
 
     <!-- Page level plugins -->
     <script src="{% static '/vendor/datatables/jquery.dataTables.min.js' %}"></script>
