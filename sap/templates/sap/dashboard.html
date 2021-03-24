@@ -235,11 +235,10 @@
                                             Download <i class="fas fa-download"></i>
                                         </a>
                                     </form>
-                                </div>
-                                <div class="form-group row text-center col-12">
                                         <form action="{% url 'sap:upload_allies'%}" method="post" enctype="multipart/form-data" class="user text-center col-12">
                                             {% csrf_token %}
-                                            <label for="uploadCsv" class="btn btn-primary btn-user btn-block px-md-4">Choose File <i class="fas fa-file"></i></label>
+                                            <hr/>
+                                            <label id="uploadCsvLabel" for="uploadCsv" class="btn btn-secondary btn-user btn-block px-md-4 text-truncate">Choose File <i class="fas fa-file"></i></label>
                                             <input id="uploadCsv" type="file" value="Browse" name="file" accept="csv" hidden>
                                             <button type="submit" formmethod="post" class="btn btn-primary btn-user btn-block px-md-4 mt-3" id="submitUpload">
                                                 Upload <i class="fas fa-upload"></i>
@@ -255,7 +254,7 @@
                 </div>
 
                 <!-- Begin Page Content -->
-                <div class="container-fluid mt-3">
+                <div class="container-fluid mt-5">
                     <!-- DataTales Example -->
                     <div class="card shadow mb-4">
                         <div class="card-header py-3">

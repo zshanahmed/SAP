@@ -2263,6 +2263,7 @@ fieldset:disabled a.btn {
   color: #fff;
   background-color: #858796;
   border-color: #858796;
+  box-shadow: 2px 2px 4px lightgray;
 }
 .btn-secondary:hover {
   color: #fff;

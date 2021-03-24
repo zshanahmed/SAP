@@ -79,7 +79,7 @@
   $('input[type="file"]').change(function(e){
             var fileName = e.target.files[0].name;
             console.log(fileName);
-            alert('The file "' + fileName +  '" has been selected for Upload.');
+            $('#uploadCsvLabel').text(fileName);
   });
 
 })(jQuery); // End of use strict
