@@ -10,8 +10,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="description" content="">
     <meta name="author" content="">
-
-    <title>Admin - Profile</title>
+    {% if user.is_staff %}
+        <title>Admin - Profile</title>
+    {% else %}
+        <title>Ally - Profile</title>
+    {% endif %}
 
     <!-- Custom fonts for this template-->
     <link href="{% static 'vendor/fontawesome-free/css/all.min.css' %}" rel="stylesheet" type="text/css">
@@ -44,11 +47,19 @@
             <div class="card-body p-0">
                 <!-- Nested Row within Card Body -->
                 <div class="row">
-                    <a class="col-lg-5 d-none d-lg-block bg-register-image" href="{% url 'sap:sap-dashboard'%}"></a>
+                    {% if user.is_staff %}
+                        <a class="col-lg-5 d-none d-lg-block bg-register-image" href="{% url 'sap:sap-dashboard'%}"></a>
+                    {% else %}
+                        <a class="col-lg-5 d-none d-lg-block bg-register-image" href="{% url 'sap:ally-dashboard'%}"></a>
+                    {% endif %}
                     <div class="col-lg-7">
                         <div class="p-5">
                             <div class="text-center">
-                                <h1 class="h4 text-gray-900 mb-4">Admin Profile</h1>
+                                {% if user.is_staff %}
+                                    <h1 class="h4 text-gray-900 mb-4">Admin Profile</h1>
+                                {% else %}
+                                    <h1 class="h4 text-gray-900 mb-4">Ally Profile</h1>
+                                {% endif %}
                             </div>
                             <form class="user" method="POST"> 
                                 {% csrf_token %}
@@ -59,8 +70,11 @@
                                     <input type="email" class="form-control form-control-user" name="email" id="exampleInputEmail"
                                         placeholder="Email Address" value='{{ user.email }}' required>
                                 </div>
-        
-                                <button type="submit" class="btn btn-primary btn-user btn-block">Update Admin Profile</button>
+                                {% if user.is_staff %}
+                                    <button type="submit" class="btn btn-primary btn-user btn-block">Update Admin Profile</button>
+                                {% else %}
+                                    <button type="submit" class="btn btn-primary btn-user btn-block">Update Ally Profile</button>
+                                {% endif %}
                                 <hr>
                             </form>
                             

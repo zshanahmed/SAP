@@ -47,10 +47,10 @@ def login_success(request):
 
     if request.user.is_authenticated:
         if request.user.is_staff:
-        # users landing page
+            # users landing page
             return redirect('sap:sap-dashboard')
         else:
-            return redirect('sap:sap-about')
+            return redirect('sap:ally-dashboard')
     else:
         messages.error(request, 'Username or password is incorrect!')
 
@@ -70,7 +70,7 @@ class AccessMixin(LoginRequiredMixin):
         return super().dispatch(request, *args, **kwargs)
 
 
-class ViewAllyProfileFromAdminDashboard(AccessMixin, View):
+class ViewAllyProfileFromAdminDashboard(View):
     def get(self, request, *args, **kwargs):
         username = request.GET['username']
         try:
@@ -182,7 +182,7 @@ class DeleteAllyProfileFromAdminDashboard(AccessMixin, View):
             return HttpResponseNotFound("")
 
 
-class ChangeAdminPassword(AccessMixin, View):
+class ChangeAdminPassword(View):
     """
     Change the password for admin
     """
@@ -208,7 +208,10 @@ class ChangeAdminPassword(AccessMixin, View):
         })
 
 
-class EditAdminProfile(AccessMixin, View):
+class CalendarView(TemplateView):
+    template_name = "sap/calendar.html"
+
+class EditAdminProfile(View):
     """
     Change the profile for admin
     """
@@ -246,6 +249,14 @@ class AlliesListView(AccessMixin, generic.ListView):
         return Ally.objects.order_by('-id')
 
 
+class MentorsListView(generic.ListView):
+    template_name = 'sap/dashboard_ally.html'
+    context_object_name = 'allies_list'
+
+    def get_queryset(self):
+        return Ally.objects.order_by('-id')
+
+
 class AnalyticsView(AccessMixin, TemplateView):
     template_name = "sap/analytics.html"
 
@@ -256,6 +267,10 @@ class AdminProfileView(TemplateView):
 
 class AboutPageView(TemplateView):
     template_name = "sap/about.html"
+
+
+class ResourcesView(TemplateView):
+    template_name = "sap/resources.html"
 
 
 class SupportPageView(TemplateView):
@@ -367,12 +382,12 @@ class SignUpView(TemplateView):
                                             password=postDict["new_password"][0],
                                             email=postDict["new_email"][0],
                                             first_name=postDict["firstName"][0], last_name=postDict["lastName"][0])
-
+            
             if postDict['roleSelected'][0] == 'Staff':
                 selections = self.set_boolean(['studentsInterestedRadios'], postDict)
                 ally = Ally.objects.create(user=user, user_type=postDict['roleSelected'][0], hawk_id=user.username,
-                                           people_who_might_be_interested_in_iba=selections['studentsInterestedRadios'],
-                                           how_can_science_ally_serve_you=postDict['howCanWeHelp'])
+                                            people_who_might_be_interested_in_iba=selections['studentsInterestedRadios'],
+                                            how_can_science_ally_serve_you=postDict['howCanWeHelp'])
             else:
                 if postDict['roleSelected'][0] == 'Undergraduate Student':
                     try:
@@ -430,6 +445,7 @@ class SignUpView(TemplateView):
 
                 AllyStudentCategoryRelation.objects.create(student_category_id=categories.id, ally_id=ally.id)
 
+           
             messages.success(request, "Account created")
             return redirect("sap:home")
 
@@ -461,6 +477,7 @@ class ForgotPasswordView(TemplateView):
                 user.is_active = False  # User needs to be inactive for the reset password duration
                 # user.profile.reset_password = True
                 user.save()
+
 
                 message_body = render_to_string('sap/password-forgot-mail.html', {
                     'user': user,

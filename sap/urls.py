@@ -6,7 +6,8 @@ from django.contrib.auth.decorators import login_required
 
 app_name = 'sap'
 urlpatterns = [
-    path('', auth_views.LoginView.as_view(template_name='sap/login.html'), name='home'),
+    path('', auth_views.LoginView.as_view(
+        template_name='sap/login.html'), name='home'),
 
     path('logout/', views.logout_request, name='logout'),
 
@@ -21,9 +22,21 @@ urlpatterns = [
         login_required(views.AlliesListView.as_view(), login_url='home'),
         name='sap-dashboard'),
 
+    url(r'^ally-dashboard/$',
+        login_required(views.MentorsListView.as_view(), login_url='home'),
+        name='ally-dashboard'),
+
+    url(r'^calendar/$',
+        login_required(views.CalendarView.as_view(), login_url='home'),
+        name='ally-calendar'),
+
     url('analytics/',
         login_required(views.AnalyticsView.as_view(), login_url='home'),
         name='sap-analytics'),
+
+    url('resources/',
+        login_required(views.ResourcesView.as_view(), login_url='home'),
+        name='resources'),
 
     url(r'password-forgot/$', views.ForgotPasswordView.as_view(),
         name='password-forgot'),

@@ -289,7 +289,7 @@ class AdminUpdateProfileAndPasswordTests(TestCase):
         self.user.save()
         self.client.login(username=self.username, password=self.password)
         response = self.client.get(reverse('sap:change_password'))
-        self.assertEqual(response.status_code, HTTPStatus.FORBIDDEN)
+        self.assertEqual(response.status_code, HTTPStatus.OK)
         
     def test_update_profile_page_for_admin(self):
         """
@@ -312,7 +312,7 @@ class AdminUpdateProfileAndPasswordTests(TestCase):
         self.user.save()
         self.client.login(username=self.username, password=self.password)
         response = self.client.get(reverse('sap:sap-admin_profile'))
-        self.assertEqual(response.status_code, HTTPStatus.FORBIDDEN)
+        self.assertEqual(response.status_code, HTTPStatus.OK)
 
     def test_failure_mismatched_new_pass_change_password(self):
         """
