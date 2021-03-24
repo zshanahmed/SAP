@@ -229,23 +229,22 @@
                         </div>
                         <div class="card-body">
                             <div class="table-responsive">
-                                <form class="user">
-                                    <div class="form-group row text-center col-12">
+                                <div class="form-group row text-center col-12">
+                                    <form class="user">
                                         <a href="{% url 'sap:download_allies'  %}" class="btn btn-primary btn-user btn-block" id="downloadCsv">
                                             Download <i class="fas fa-download"></i>
                                         </a>
-
-                                    </div>
-                                    <div class="form-group row text-center col-12">
-                                            <form action="{% url 'sap:upload_allies'%}" method="post" enctype="multipart/form-data">
-                                                {% csrf_token %}
-                                                <input id="uploadCsv" type="file" value="Browse" name="file" accept="csv">
-                                                <button type="submit" formmethod="post" class="btn btn-primary btn-user btn-block" id="submitUpload">
-                                                    Upload <i class="fas fa-upload"></i>
-                                                </button>
-                                            </form>
-                                    </div>
-                                </form>
+                                    </form>
+                                </div>
+                                <div class="form-group row text-center col-12">
+                                        <form action="{% url 'sap:upload_allies'%}" method="post" enctype="multipart/form-data" class="user">
+                                            {% csrf_token %}
+                                            <input id="uploadCsv" type="file" value="Browse" name="file" accept="csv" class="btn btn-primary btn-user btn-block">
+                                            <button type="submit" formmethod="post" class="btn btn-primary btn-user btn-block" id="submitUpload">
+                                                Upload <i class="fas fa-upload"></i>
+                                            </button>
+                                        </form>
+                                </div>
                             </div>
                         </div>
                     </div>
