@@ -748,38 +748,38 @@ class SignUpTests(TestCase):
         self.assertEqual(url, '/sign-up')
         self.assertEqual(response.status_code, 302)
 
-    def test_create_Undergrad(self):
-        response = self.c.post(
-            '/sign-up/',
-            {
-                'csrfmiddlewaretoken': ['At4HFZNsApVRWNye2Jcj4RVcWYf1fviv1kFbSZevLnNmJrWz4OyZhcAPn0JeaknZ'],
-                'firstName': ['Zeeshan'],
-                'lastName': ['Ahmed'],
-                'new_username': ['zeeahmed'],
-                'new_email': ['zeeahmed@uiowa.edu'],
-                'new_password': ['bigchungus'],
-                'repeat_password': ['bigchungus'],
-                'roleSelected': ['Undergraduate Student'],
-                'undergradRadios': ['Senior'],
-                'idUnderGradCheckboxes': ['First generation college-student'],
-                'major': ['Computer Science'],
-                'interestRadios': ['Yes'],
-                'experienceRadios': ['Yes'],
-                'interestedRadios': ['Yes'],
-                'agreementRadios': ['Yes'],
-            }
-        )
-        url = response.url
-        self.assertEqual(url, '/')
-        self.assertEqual(response.status_code, 302)
-        user = User.objects.filter(username="zeeahmed")
-        ally = Ally.objects.filter(user_id=user[0].id)
-        categoryRelation = AllyStudentCategoryRelation.objects.filter(ally_id=ally[0].id)
-        categories = StudentCategories.objects.filter(id=categoryRelation[0].student_category_id)
-        self.assertTrue(user.exists())
-        self.assertTrue(ally.exists())
-        self.assertTrue(categoryRelation.exists())
-        self.assertTrue(categories.exists())
+    # def test_create_Undergrad(self):
+    #     response = self.c.post(
+    #         '/sign-up/',
+    #         {
+    #             'csrfmiddlewaretoken': ['At4HFZNsApVRWNye2Jcj4RVcWYf1fviv1kFbSZevLnNmJrWz4OyZhcAPn0JeaknZ'],
+    #             'firstName': ['Zeeshan'],
+    #             'lastName': ['Ahmed'],
+    #             'new_username': ['zeeahmed'],
+    #             'new_email': ['zeeahmed@uiowa.edu'],
+    #             'new_password': ['bigchungus'],
+    #             'repeat_password': ['bigchungus'],
+    #             'roleSelected': ['Undergraduate Student'],
+    #             'undergradRadios': ['Senior'],
+    #             'idUnderGradCheckboxes': ['First generation college-student'],
+    #             'major': ['Computer Science'],
+    #             'interestRadios': ['Yes'],
+    #             'experienceRadios': ['Yes'],
+    #             'interestedRadios': ['Yes'],
+    #             'agreementRadios': ['Yes'],
+    #         }
+    #     )
+    #     url = response.url
+    #     self.assertEqual(url, '/')
+    #     self.assertEqual(response.status_code, 302)
+    #     user = User.objects.filter(username="zeeahmed")
+    #     ally = Ally.objects.filter(user_id=user[0].id)
+    #     categoryRelation = AllyStudentCategoryRelation.objects.filter(ally_id=ally[0].id)
+    #     categories = StudentCategories.objects.filter(id=categoryRelation[0].student_category_id)
+    #     self.assertTrue(user.exists())
+    #     self.assertTrue(ally.exists())
+    #     self.assertTrue(categoryRelation.exists())
+    #     self.assertTrue(categories.exists())
 
     def test_create_Undergrad(self):
         response = self.c.post(
@@ -802,7 +802,7 @@ class SignUpTests(TestCase):
             }
         )
         url = response.url
-        self.assertEqual(url, '/')
+        self.assertEqual(url, '/sign-up-done/')
         self.assertEqual(response.status_code, 302)
         user = User.objects.filter(username="zeeahmed1")
         ally = Ally.objects.filter(user_id=user[0].id)
@@ -837,7 +837,7 @@ class SignUpTests(TestCase):
             }
         )
         url = response.url
-        self.assertEqual(url, '/')
+        self.assertEqual(url, '/sign-up-done/')
         self.assertEqual(response.status_code, 302)
         user = User.objects.filter(username="big_guy1")
         ally = Ally.objects.filter(user_id=user[0].id)
@@ -868,7 +868,7 @@ class SignUpTests(TestCase):
             }
         )
         url = response.url
-        self.assertEqual(url, '/')
+        self.assertEqual(url, '/sign-up-done/')
         self.assertEqual(response.status_code, 302)
         user = User.objects.filter(username="big_guy12")
         ally = Ally.objects.filter(user_id=user[0].id)
@@ -901,7 +901,7 @@ class SignUpTests(TestCase):
             }
         )
         url = response.url
-        self.assertEqual(url, '/')
+        self.assertEqual(url, '/sign-up-done/')
         self.assertEqual(response.status_code, 302)
         user = User.objects.filter(username="tbraun")
         ally = Ally.objects.filter(user_id=user[0].id)
@@ -932,7 +932,7 @@ class SignUpTests(TestCase):
             }
         )
         url = response.url
-        self.assertEqual(url, '/')
+        self.assertEqual(url, '/sign-up-done/')
         self.assertEqual(response.status_code, 302)
         user = User.objects.filter(username="tbraun2")
         ally = Ally.objects.filter(user_id=user[0].id)
@@ -960,7 +960,7 @@ class SignUpTests(TestCase):
             }
         )
         url = response.url
-        self.assertEqual(url, '/')
+        self.assertEqual(url, '/sign-up-done/')
         self.assertEqual(response.status_code, 302)
         user = User.objects.filter(username="hawkherky")
         ally = Ally.objects.filter(user_id=user[0].id)
