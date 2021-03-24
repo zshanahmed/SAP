@@ -178,8 +178,10 @@
                             <div class="table-responsive">
                                 <form class="user" method="post">
                                     {% csrf_token %}
+                                    
                                     <div class="form-group row">
                                         <div class="col-sm-6 mb-3 mb-sm-0">
+                                            <input type="hidden" name="form_type" value="filters">
                                             <strong>STEM Area of Research</strong>
                                             <div id="stemGradCheckboxes">
                                                 <input type="checkbox" value="Biochemistry" name="stemGradCheckboxes" id="biochemistry">
@@ -251,9 +253,7 @@
                                             </div> 
                                         </div>
                                     </div>
-                                    <a href="{% url 'sap:apply_filters'  %}" class="btn btn-primary btn-user btn-block">
-                                        Apply Filters
-                                    <a/>
+                                    <button type="submit" class="btn btn-primary btn-user btn-block">Apply Filters</button>
                                 </form>
                             </div>
                         </div>

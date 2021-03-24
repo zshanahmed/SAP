@@ -238,13 +238,26 @@ class EditAdminProfile(AccessMixin, View):
         })
 
 
-class AlliesListView(AccessMixin, generic.ListView):
-    template_name = 'sap/dashboard.html'
-    context_object_name = 'allies_list'
+class AlliesListView(AccessMixin, TemplateView):
 
-    def get_queryset(self):
-        return Ally.objects.order_by('-id')
+    def get(self, request):
+        allies_list = Ally.objects.order_by('-id')
+        return render(request, 'sap/dashboard.html', {'allies_list': allies_list})
 
+    def post(self, request):
+        if request.POST.get("form_type") == 'filters':
+            postDict = dict(request.POST)
+            stemfields = postDict['stemGradCheckboxes']
+            allies_list = Ally.objects.order_by('-id')
+            for ally in allies_list:
+                if ally.area_of_research:
+                    aor = ally.area_of_research.split(',')
+                else:
+                    aor = []
+                if not bool(set(stemfields) & set(aor)):
+                    allies_list = allies_list.exclude(id=ally.id)
+            return render(request, 'sap/dashboard.html', {'allies_list': allies_list, 'filters': })
+    
 
 class AnalyticsView(AccessMixin, TemplateView):
     template_name = "sap/analytics.html"
