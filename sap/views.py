@@ -517,10 +517,6 @@ class SignUpView(TemplateView):
                 self.send_verification_email(user=user, site=site, entered_email=postDict["new_email"][0])
 
                 return redirect("sap:sign-up-done")
-            
-
-
-        return redirect("sap:home")
 
 
 class SignUpDoneView(TemplateView):
@@ -531,7 +527,33 @@ class SignUpDoneView(TemplateView):
 
 
 class SignUpConfirmView(TemplateView):
-    pass
+    """
+    Only for those who click on verification email during sign-up.
+    No POST method.
+    """
+    def get(self, request, *args, **kwargs):
+        path = request.path
+        path_1, token = os.path.split(path)
+        path_0, uidb64 = os.path.split(path_1)
+
+        try:
+            uid = force_text(urlsafe_base64_decode(uidb64))
+            user = User.objects.get(pk=uid)
+        except (TypeError, ValueError, OverflowError, User.DoesNotExist) as e:
+            messages.warning(request, str(e))
+            user = None
+
+        if user is not None and user.is_active:
+            messages.success(request, 'Account already verified.')
+            return redirect('sap:home')
+        elif user is not None and account_activation_token.check_token(user, token):
+            user.is_active = True  # activates the user
+            user.save()
+            messages.success(request, 'Account successfully created! You can now log in with your new account.')
+            return redirect('sap:home')
+        else:
+            messages.error(request, 'Invalid account activation link.')
+            return redirect('sap:home')
 
 
 class ForgotPasswordView(TemplateView):
@@ -607,13 +629,6 @@ class ForgotPasswordDoneView(TemplateView):
     template_name = "sap/password-forgot-done.html"
 
 
-class ForgotPasswordCompleteView(TemplateView):
-    """
-    A view which
-    """
-    template_name = "sap/password-forgot-complete.html"
-
-
 class ForgotPasswordMail(TemplateView):
     """
     Email template for Forgot Password Feature
@@ -623,7 +638,7 @@ class ForgotPasswordMail(TemplateView):
 
 class ForgotPasswordConfirmView(TemplateView):
     """
-    A unique to users who click to the reset forgot passwork link.
+    A unique view to users who click to the reset forgot passwork link.
     Allow them to create new password.
     """
     # template_name = "sap/password-forgot-confirm.html"

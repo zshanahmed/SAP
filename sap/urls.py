@@ -40,9 +40,6 @@ urlpatterns = [
     url(r'password-forgot-mail/', views.ForgotPasswordMail.as_view(),
         name='password-forgot-mail'),
 
-    url(r'password-forgot-complete$', views.ForgotPasswordCompleteView.as_view(),
-        name='password-forgot-complete'),
-
     url(r'^allies/$', login_required(views.ViewAllyProfileFromAdminDashboard.as_view()),
         name='admin_view_ally'),
 
