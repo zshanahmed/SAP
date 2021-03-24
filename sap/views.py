@@ -281,7 +281,6 @@ class AlliesListView(AccessMixin, TemplateView):
 
             return render(request, 'sap/dashboard.html', {'allies_list': allies_list})
     
-
 class AnalyticsView(AccessMixin, TemplateView):
     template_name = "sap/analytics.html"
 
