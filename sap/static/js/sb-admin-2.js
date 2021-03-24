@@ -75,4 +75,11 @@
       .find(".modal-footer a")
       .attr("href", "/delete/?username=" + recipient);
   });
+
+  $('input[type="file"]').change(function(e){
+            var fileName = e.target.files[0].name;
+            console.log(fileName);
+            alert('The file "' + fileName +  '" has been selected.');
+  });
+
 })(jQuery); // End of use strict
