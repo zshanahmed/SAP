@@ -1,6 +1,8 @@
+import io
 import os
 import os.path
 import csv
+import uuid
 from django.http import HttpResponseForbidden, HttpResponse
 from django.contrib.auth import logout
 from django.contrib.auth import authenticate
@@ -9,8 +11,8 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse
 from django.utils.encoding import force_bytes, force_text
 from django.core.exceptions import ValidationError
-
-
+from django.db import IntegrityError
+import xlsxwriter
 from .models import Ally, StudentCategories, AllyStudentCategoryRelation
 from django.views import generic
 from django.views.generic import TemplateView, View
@@ -598,7 +600,6 @@ allyFields = ['user_type', 'area_of_research', 'openings_in_lab_serving_at', 'de
 categoryFields = ['under_represented_racial_ethnic', 'first_gen_college_student', 'transfer_student', 'lgbtq',
                   'low_income', 'rural']
 
-
 class DownloadAllies(AccessMixin, HttpResponse):
 
     @staticmethod
@@ -663,14 +664,113 @@ class DownloadAllies(AccessMixin, HttpResponse):
             return HttpResponseForbidden()
 
 class UploadAllies(AccessMixin, HttpResponse):
+
+    @staticmethod
+    def makeAlliesFromFile(df):
+        columns = list(df.columns)
+        errorLog = {}
+        passwordLog = {}
+        if columns == (userFields + allyFields + categoryFields):
+            allyData = df[allyFields].to_dict('index')
+            userData = df[userFields].to_dict('index')
+            categoryData = df[categoryFields].to_dict('index')
+            for ally in allyData.items():
+                if ("Staff" == ally[1]['user_type'] or "Graduate Student" == ally[1]['user_type']
+                        or "Undergraduate Student" == ally[1]['user_type'] or "Faculty" == ally[1]['user_type']):
+                    password = uuid.uuid4().hex[0:9]
+                    user = userData[ally[0]]
+                    try:
+                        user = User.objects.create_user(username=user['username'], password=password, email=user['email'],
+                                                    first_name=user['first_name'], last_name=user['last_name'])
+                        passwordLog[ally[0]] = password
+                        try:
+                            ally1 = Ally.objects.create(user=user, user_type=ally[1]['user_type'], hawk_id=user.username,
+                                                       area_of_research=ally[1]['area_of_research'],
+                                                       interested_in_mentoring=ally[1]['interested_in_mentoring'],
+                                                       willing_to_offer_lab_shadowing=ally[1]['willing_to_offer_lab_shadowing'],
+                                                    interested_in_connecting_with_other_mentors=ally[1]['interested_in_connecting_with_other_mentors'],
+                                                       willing_to_volunteer_for_events=ally[1]['willing_to_volunteer_for_events'],
+                                                       interested_in_mentor_training=ally[1]['interested_in_mentor_training'],
+                                                       major=ally[1]['major'], information_release=ally[1]['information_release'],
+                                                       has_lab_experience=ally[1]['has_lab_experience'],
+                                                       year=ally[1]['year'], interested_in_being_mentored=ally[1]['interested_in_being_mentored'],
+                                                       description_of_research_done_at_lab=ally[1]['description_of_research_done_at_lab'],
+                                                       interested_in_joining_lab=ally[1]['interested_in_joining_lab'],
+                                                       openings_in_lab_serving_at=ally[1]['openings_in_lab_serving_at'],
+                                                       people_who_might_be_interested_in_iba=ally[1]['people_who_might_be_interested_in_iba'],
+                                                       how_can_science_ally_serve_you=ally[1]['how_can_science_ally_serve_you'],
+                                                       works_at=ally[1]['works_at'])
+                            if not (ally[1]['user_type'] == "Staff"):
+                                category = categoryData[ally[0]]
+                                categories = StudentCategories.objects.create(rural=category['rural'],
+                                                                              transfer_student=category['transfer_student'],
+                                                                              lgbtq=category['lgbtq'],
+                                                                              low_income=category['low_income'],
+                                                                              first_gen_college_student=category['first_gen_college_student'],
+                                                                              under_represented_racial_ethnic=category['under_represented_racial_ethnic'])
+                                AllyStudentCategoryRelation.objects.create(ally_id=ally1.id,
+                                                                           student_category_id=categories.id)
+                        except IntegrityError:
+                            errorLog[ally[0]] = "Ally already exists in the database"
+
+                    except IntegrityError:
+                        errorLog[ally[0]] = "user with username: " + user['username'] + " or email: " + user['email'] \
+                                            + " already exists in database"
+                else:
+                    errorLog[ally[0]] = "Improperly formated -  user_type must be: Staff, Faculty, " \
+                                        "Undergraduate Student, or Graduate Student"
+        else:
+            errorLog[0] = "Was not able to read the file, because the columns were improperly formatted"
+        return errorLog, passwordLog
+
+    @staticmethod
+    def processFile(file):
+        df = pd.read_csv(file)
+        errorLog, passwordLog = UploadAllies.makeAlliesFromFile(df)
+        return df, errorLog, passwordLog
+
     def upload_allies(request):
-        if request.method == 'POST':
-            if request.user.is_staff:
-                response = HttpResponse(content_type='text/csv')
+        if request.user.is_staff:
+            try:
+                file = request.FILES['file']
+                df, errorLog, passwordLog = UploadAllies.processFile(file)
+
+                output = io.BytesIO()
+                workbook = xlsxwriter.Workbook(output)
+                passwords = workbook.add_worksheet('New Passwords')
+                errors = workbook.add_worksheet('Errors Uploading')
+                passwords.write(0, 0, 'Username')
+                passwords.write(0, 1, 'Email')
+                passwords.write(0, 2, 'New Password')
+                errors.write(0, 0, 'row of failure')
+                errors.write(0, 1, 'failure mode')
+                row = 1
+                column = 0
+                for error in errorLog.items():
+                    errors.write(row, column, error[0])
+                    errors.write(row, column + 1, error[1])
+                    row += 1
+                row = 1
+                for password in passwordLog.items():
+                    passwords.write(row, column, df['username'][password[0]])
+                    passwords.write(row, column + 1, df['email'][password[0]])
+                    passwords.write(row, column + 2, password[1])
+                    row += 1
+                workbook.close()
+                output.seek(0)
+
                 today = date.today()
                 today = today.strftime("%b-%d-%Y")
-                fileName = today + "_Not-Uploaded-Allies.csv"
+                fileName = today + "_SAP_Upload-log.xlsx"
+                response = HttpResponse(
+                    output,
+                    content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                )
                 response['Content-Disposition'] = 'attachment; filename=' + fileName
                 return response
-            else:
-                return HttpResponseForbidden()
+            except KeyError:
+                messages.add_message(request, messages.ERROR, 'Please select a file to upload!')
+
+            return redirect('sap:sap-dashboard')
+        else:
+            return HttpResponseForbidden()

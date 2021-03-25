@@ -32,7 +32,7 @@ def click_button(chromeBrowser, buttonID):
 def have_csv(chromeBrowser):
     today = date.today()
     day = today.strftime("%b-%d-%Y")
-    filename = day + "_Not-Uploaded-Allies.csv"
+    filename = day + "SAP_Upload-log.xlsx"
     ## may need to change for windows
     path_to_download_folder = str(os.path.join(Path.home(), "Downloads"))
     time.sleep(1)

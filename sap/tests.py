@@ -1075,8 +1075,8 @@ allyFields = ['user_type', 'area_of_research', 'openings_in_lab_serving_at', 'de
 categoryFields = ['under_represented_racial_ethnic', 'first_gen_college_student', 'transfer_student', 'lgbtq', 'low_income', 'rural']
 class DownloadAlliesTest(TestCase):
 
-
-    def fields_helper(self, model, columns):
+    @staticmethod
+    def fields_helper(model, columns):
         for field in model._meta.get_fields():
             fields = str(field).split(".")[-1]
             if fields in userFields or fields in allyFields or fields in categoryFields:
@@ -1084,7 +1084,8 @@ class DownloadAlliesTest(TestCase):
 
         return columns
 
-    def cleanup(self, dict):
+    @staticmethod
+    def cleanup(dict):
         ar = []
         for item in dict.items():
             if item[0] in userFields or item[0] in allyFields or item[0] in categoryFields:
@@ -1152,20 +1153,20 @@ class DownloadAlliesTest(TestCase):
         AllyStudentCategoryRelation.objects.create(ally_id=self.ally4.id, student_category_id=self.categories4.id)
 
         columns = []
-        columns = self.fields_helper(User, columns)
-        columns = self.fields_helper(Ally, columns)
-        columns = self.fields_helper(StudentCategories, columns)
+        columns = DownloadAlliesTest.fields_helper(User, columns)
+        columns = DownloadAlliesTest.fields_helper(Ally, columns)
+        columns = DownloadAlliesTest.fields_helper(StudentCategories, columns)
 
         data = []
-        user1 = self.cleanup(self.user1.__dict__) + \
-                self.cleanup(self.ally1.__dict__) + [None, None, None, None, None, None]
-        user2 = self.cleanup(self.user2.__dict__) + \
-                self.cleanup(self.ally2.__dict__) + self.cleanup(self.categories2.__dict__)
+        user1 = DownloadAlliesTest.cleanup(self.user1.__dict__) + \
+                DownloadAlliesTest.cleanup(self.ally1.__dict__) + [None, None, None, None, None, None]
+        user2 = DownloadAlliesTest.cleanup(self.user2.__dict__) + \
+                DownloadAlliesTest.cleanup(self.ally2.__dict__) + DownloadAlliesTest.cleanup(self.categories2.__dict__)
 
-        user3 = self.cleanup(self.user3.__dict__) + \
-                self.cleanup(self.ally3.__dict__) + self.cleanup(self.categories3.__dict__)
-        user4 = self.cleanup(self.user4.__dict__) + \
-                self.cleanup(self.ally4.__dict__) + self.cleanup(self.categories4.__dict__)
+        user3 = DownloadAlliesTest.cleanup(self.user3.__dict__) + \
+                DownloadAlliesTest.cleanup(self.ally3.__dict__) + DownloadAlliesTest.cleanup(self.categories3.__dict__)
+        user4 = DownloadAlliesTest.cleanup(self.user4.__dict__) + \
+                DownloadAlliesTest.cleanup(self.ally4.__dict__) + DownloadAlliesTest.cleanup(self.categories4.__dict__)
 
         data.append(user1)
         data.append(user2)
@@ -1208,8 +1209,12 @@ class UploadFileTest(TestCase):
         self.badGuy = User.objects.create_user(username='bad', password='badguy1234', email='badguy@uiowa.edu',
                                                first_name='reallyBadGuy', last_name='I\'m bad')
 
+        self.df = pd.read_csv('./pytests/assets/allies.csv')
 
-    def testUpload_filetype1(self):
+
+
+
+    def testUpload_return_response(self):
         self.client.login(username='glib', password='macaque')
         with open('./pytests/assets/allies.csv', 'r') as f:
             response = self.client.post(reverse('sap:upload_allies'), {'attachment': f})
@@ -1220,3 +1225,35 @@ class UploadFileTest(TestCase):
         with open('./pytests/assets/allies.csv', 'r') as f:
             response = self.client.post(reverse('sap:upload_allies'), {'attachment': f})
         self.assertEqual(response.status_code, 403)
+
+    def test_add_allies_fileType1_(self):
+        self.client.login(username='glib', password='macaque')
+        with open('./pytests/assets/allies.csv', 'r') as f:
+            self.client.post(reverse('sap:upload_allies'), {'attachment': f})
+
+        allies = Ally.objects.all()
+
+        self.assertEqual(len(allies), 5)
+
+        columns = []
+        columns = DownloadAlliesTest.fields_helper(User, columns)
+        columns = DownloadAlliesTest.fields_helper(Ally, columns)
+        columns = DownloadAlliesTest.fields_helper(StudentCategories, columns)
+
+        data = []
+        for user in allies:
+            if user.user_type != "Staff":
+                categories = StudentCategories.objects.filter(
+                    id=AllyStudentCategoryRelation.objects.filter(ally_id=user.id)[0].student_category_id)[0]
+                data.append(DownloadAlliesTest.cleanup(User.objects.filter(id=user.user_id)[0].__dict__) +
+                            DownloadAlliesTest.cleanup(user.__dict__) + DownloadAlliesTest.cleanup(categories.__dict__))
+            else:
+                data.append(DownloadAlliesTest.cleanup(User.objects.filter(id=user.user_id)[0].__dict__) +
+                            DownloadAlliesTest.cleanup(user.__dict__) + [None, None, None, None, None, None])
+
+        df = pd.DataFrame(columns=columns, data=data)
+        df = df.replace(0, False)
+        df = df.replace(1, True)
+        df.fillna(value=np.nan, inplace=True)
+        df = df.replace('', np.nan)
+        pd.testing.assert_frame_equal(df, self.df)

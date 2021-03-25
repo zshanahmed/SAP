@@ -3,3 +3,4 @@ last_login,username,first_name,last_name,email,is_active,date_joined,user_type,a
 ,Zahmed,Zeeshan,Ahmed,zahmed@uiowa.edu,TRUE,Mar-23-2021,Graduate Student,Computer Science and Engineering,FALSE,,FALSE,TRUE,TRUE,TRUE,TRUE,,FALSE,,,,FALSE,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE
 ,nlee,Nam,Le,nlee@uiowa.edu,TRUE,Mar-23-2021,Graduate Student,Computer Science and Engineering,FALSE,,TRUE,TRUE,TRUE,TRUE,TRUE,,FALSE,,,,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE
 ,biggoongachonk,Biggoonga,chonk,biggoongachonk@uiowa.edu,TRUE,Mar-23-2021,Faculty,"Biochemistry,Bioinformatics,Biology",TRUE,big research,TRUE,TRUE,FALSE,FALSE,TRUE,,FALSE,,,,FALSE,FALSE,FALSE,FALSE,TRUE,TRUE,FALSE,TRUE,FALSE,TRUE
+,trex,trex,dino,trex@uiowa.edu,True,Mar-24-2021,Staff,,False,,False,False,False,False,False,,False,['no'],,,False,False,False,False,,,,,,
