@@ -1258,3 +1258,6 @@ class UploadFileTest(TestCase):
         df.fillna(value=np.nan, inplace=True)
         df = df.replace('', np.nan)
         pd.testing.assert_frame_equal(df, self.df)
+
+#    def test_add_allies_fileType2(self):
+

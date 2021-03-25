@@ -595,7 +595,6 @@ allyFields = ['user_type', 'area_of_research', 'openings_in_lab_serving_at', 'de
               'has_lab_experience']
 categoryFields = ['under_represented_racial_ethnic', 'first_gen_college_student', 'transfer_student', 'lgbtq',
                   'low_income', 'rural']
-
 class DownloadAllies(AccessMixin, HttpResponse):
 
     @staticmethod
@@ -662,103 +661,116 @@ class DownloadAllies(AccessMixin, HttpResponse):
 class UploadAllies(AccessMixin, HttpResponse):
 
     @staticmethod
-    def makeAlliesFromFile(df):
+    def cleanupFrame(df):
+        return df
+
+    @staticmethod
+    def makeAlliesFromDatatFrame(df):
         columns = list(df.columns)
         errorLog = {}
         passwordLog = {}
-        if columns == (userFields + allyFields + categoryFields):
-            allyData = df[allyFields].to_dict('index')
-            userData = df[userFields].to_dict('index')
-            categoryData = df[categoryFields].to_dict('index')
-            for ally in allyData.items():
-                if ("Staff" == ally[1]['user_type'] or "Graduate Student" == ally[1]['user_type']
-                        or "Undergraduate Student" == ally[1]['user_type'] or "Faculty" == ally[1]['user_type']):
-                    password = uuid.uuid4().hex[0:9]
-                    user = userData[ally[0]]
+        allyData = df[allyFields].to_dict('index')
+        userData = df[userFields].to_dict('index')
+        categoryData = df[categoryFields].to_dict('index')
+        for ally in allyData.items():
+            if ("Staff" == ally[1]['user_type'] or "Graduate Student" == ally[1]['user_type']
+                    or "Undergraduate Student" == ally[1]['user_type'] or "Faculty" == ally[1]['user_type']):
+                password = uuid.uuid4().hex[0:9]
+                user = userData[ally[0]]
+                try:
+                    time = datetime.datetime.strptime(user['date_joined'], '%b-%d-%Y')
+                    #time = datetime.strptime(user['date_joined'], "%Y-%m-%d")
+                    user = User.objects.create_user(username=user['username'], password=password, email=user['email'],
+                                                first_name=user['first_name'], last_name=user['last_name'],
+                                                    date_joined=time)
+                    passwordLog[ally[0]] = password
                     try:
-                        time = datetime.datetime.strptime(user['date_joined'], '%b-%d-%Y')
-                        #time = datetime.strptime(user['date_joined'], "%Y-%m-%d")
-                        user = User.objects.create_user(username=user['username'], password=password, email=user['email'],
-                                                    first_name=user['first_name'], last_name=user['last_name'],
-                                                        date_joined=time)
-                        passwordLog[ally[0]] = password
-                        try:
-                            ally1 = Ally.objects.create(user=user, user_type=ally[1]['user_type'], hawk_id=user.username,
-                                                       area_of_research=ally[1]['area_of_research'],
-                                                       interested_in_mentoring=ally[1]['interested_in_mentoring'],
-                                                       willing_to_offer_lab_shadowing=ally[1]['willing_to_offer_lab_shadowing'],
-                                                    interested_in_connecting_with_other_mentors=ally[1]['interested_in_connecting_with_other_mentors'],
-                                                       willing_to_volunteer_for_events=ally[1]['willing_to_volunteer_for_events'],
-                                                       interested_in_mentor_training=ally[1]['interested_in_mentor_training'],
-                                                       major=ally[1]['major'], information_release=ally[1]['information_release'],
-                                                       has_lab_experience=ally[1]['has_lab_experience'],
-                                                       year=ally[1]['year'], interested_in_being_mentored=ally[1]['interested_in_being_mentored'],
-                                                       description_of_research_done_at_lab=ally[1]['description_of_research_done_at_lab'],
-                                                       interested_in_joining_lab=ally[1]['interested_in_joining_lab'],
-                                                       openings_in_lab_serving_at=ally[1]['openings_in_lab_serving_at'],
-                                                       people_who_might_be_interested_in_iba=ally[1]['people_who_might_be_interested_in_iba'],
-                                                       how_can_science_ally_serve_you=ally[1]['how_can_science_ally_serve_you'],
-                                                       works_at=ally[1]['works_at'])
-                            if not (ally[1]['user_type'] == "Staff"):
-                                category = categoryData[ally[0]]
-                                categories = StudentCategories.objects.create(rural=category['rural'],
-                                                                              transfer_student=category['transfer_student'],
-                                                                              lgbtq=category['lgbtq'],
-                                                                              low_income=category['low_income'],
-                                                                              first_gen_college_student=category['first_gen_college_student'],
-                                                                              under_represented_racial_ethnic=category['under_represented_racial_ethnic'])
-                                AllyStudentCategoryRelation.objects.create(ally_id=ally1.id,
-                                                                           student_category_id=categories.id)
-                        except IntegrityError:
-                            errorLog[ally[0]] = "Ally already exists in the database"
-
+                        ally1 = Ally.objects.create(user=user, user_type=ally[1]['user_type'], hawk_id=user.username,
+                                                   area_of_research=ally[1]['area_of_research'],
+                                                   interested_in_mentoring=ally[1]['interested_in_mentoring'],
+                                                   willing_to_offer_lab_shadowing=ally[1]['willing_to_offer_lab_shadowing'],
+                                                interested_in_connecting_with_other_mentors=ally[1]['interested_in_connecting_with_other_mentors'],
+                                                   willing_to_volunteer_for_events=ally[1]['willing_to_volunteer_for_events'],
+                                                   interested_in_mentor_training=ally[1]['interested_in_mentor_training'],
+                                                   major=ally[1]['major'], information_release=ally[1]['information_release'],
+                                                   has_lab_experience=ally[1]['has_lab_experience'],
+                                                   year=ally[1]['year'], interested_in_being_mentored=ally[1]['interested_in_being_mentored'],
+                                                   description_of_research_done_at_lab=ally[1]['description_of_research_done_at_lab'],
+                                                   interested_in_joining_lab=ally[1]['interested_in_joining_lab'],
+                                                   openings_in_lab_serving_at=ally[1]['openings_in_lab_serving_at'],
+                                                   people_who_might_be_interested_in_iba=ally[1]['people_who_might_be_interested_in_iba'],
+                                                   how_can_science_ally_serve_you=ally[1]['how_can_science_ally_serve_you'],
+                                                   works_at=ally[1]['works_at'])
+                        if not (ally[1]['user_type'] == "Staff"):
+                            category = categoryData[ally[0]]
+                            categories = StudentCategories.objects.create(rural=category['rural'],
+                                                                          transfer_student=category['transfer_student'],
+                                                                          lgbtq=category['lgbtq'],
+                                                                          low_income=category['low_income'],
+                                                                          first_gen_college_student=category['first_gen_college_student'],
+                                                                          under_represented_racial_ethnic=category['under_represented_racial_ethnic'])
+                            AllyStudentCategoryRelation.objects.create(ally_id=ally1.id,
+                                                                       student_category_id=categories.id)
                     except IntegrityError:
-                        errorLog[ally[0]] = "user with username: " + user['username'] + " or email: " + user['email'] \
-                                            + " already exists in database"
-                else:
-                    errorLog[ally[0]] = "Improperly formated -  user_type must be: Staff, Faculty, " \
-                                        "Undergraduate Student, or Graduate Student"
-        else:
-            errorLog[0] = "Was not able to read the file, because the columns were improperly formatted"
+                        errorLog[ally[0]] = "Ally already exists in the database"
+
+                except IntegrityError:
+                    errorLog[ally[0]] = "user with username: " + user['username'] + " or email: " + user['email'] \
+                                        + " already exists in database"
+            else:
+                errorLog[ally[0]] = "Improperly formated -  user_type must be: Staff, Faculty, " \
+                                    "Undergraduate Student, or Graduate Student"
         return errorLog, passwordLog
 
     @staticmethod
     def processFile(file):
-        df = pd.read_csv(file)
-        df = df.replace(df.fillna('', inplace=True))
-        errorLog, passwordLog = UploadAllies.makeAlliesFromFile(df)
-        return df, errorLog, passwordLog
+        errorLog = {}
+        passwordLog = {}
+        try:
+            df = pd.read_csv(file)
+            df = df.replace(df.fillna('', inplace=True))
+            columns = list(df.columns)
+            if columns != (userFields + allyFields + categoryFields):
+                df = UploadAllies.cleanupFrame(df)
+            errorLog, passwordLog = UploadAllies.makeAlliesFromDatatFrame(df)
+        except:
+            df = pd.DataFrames
+            errorLog[0] = 'unable to process Data'
+        return UploadAllies.makeFile(df, errorLog, passwordLog)
+
+    @staticmethod
+    def makeFile(df, errorLog, passwordLog):
+        output = io.BytesIO()
+        workbook = xlsxwriter.Workbook(output)
+        passwords = workbook.add_worksheet('New Passwords')
+        errors = workbook.add_worksheet('Errors Uploading')
+        passwords.write(0, 0, 'Username')
+        passwords.write(0, 1, 'Email')
+        passwords.write(0, 2, 'New Password')
+        errors.write(0, 0, 'row of failure')
+        errors.write(0, 1, 'failure mode')
+        row = 1
+        column = 0
+        for error in errorLog.items():
+            errors.write(row, column, error[0])
+            errors.write(row, column + 1, error[1])
+            row += 1
+        row = 1
+        for password in passwordLog.items():
+            passwords.write(row, column, df['username'][password[0]])
+            passwords.write(row, column + 1, df['email'][password[0]])
+            passwords.write(row, column + 2, password[1])
+            row += 1
+        workbook.close()
+        output.seek(0)
+        return output
+
 
     def upload_allies(request):
         if request.user.is_staff:
             try:
                 file = request.FILES['file']
-                df, errorLog, passwordLog = UploadAllies.processFile(file)
-
-                output = io.BytesIO()
-                workbook = xlsxwriter.Workbook(output)
-                passwords = workbook.add_worksheet('New Passwords')
-                errors = workbook.add_worksheet('Errors Uploading')
-                passwords.write(0, 0, 'Username')
-                passwords.write(0, 1, 'Email')
-                passwords.write(0, 2, 'New Password')
-                errors.write(0, 0, 'row of failure')
-                errors.write(0, 1, 'failure mode')
-                row = 1
-                column = 0
-                for error in errorLog.items():
-                    errors.write(row, column, error[0])
-                    errors.write(row, column + 1, error[1])
-                    row += 1
-                row = 1
-                for password in passwordLog.items():
-                    passwords.write(row, column, df['username'][password[0]])
-                    passwords.write(row, column + 1, df['email'][password[0]])
-                    passwords.write(row, column + 2, password[1])
-                    row += 1
-                workbook.close()
-                output.seek(0)
-
+                output = UploadAllies.processFile(file)
                 today = date.today()
                 today = today.strftime("%b-%d-%Y")
                 fileName = today + "_SAP_Upload-log.xlsx"
