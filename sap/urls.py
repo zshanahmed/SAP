@@ -61,12 +61,17 @@ urlpatterns = [
 
     url(r'^edit_allies/$', login_required(views.EditAllyProfileFromAdminDashboard.as_view()),
         name='admin_edit_ally'),
+
     url(r'^delete/$', login_required(views.DeleteAllyProfileFromAdminDashboard.as_view()),
         name='admin_delete_ally'),
 
     url('create_iba_admin/',
         login_required(views.CreateAdminView.as_view(), login_url='home'),
         name='create_iba_admin'),
+
+    url('create_event/',
+        login_required(views.CreateEventView.as_view(), login_url='home'),
+        name='create_event'),
 
     url('about/',
         login_required(views.AboutPageView.as_view(), login_url='about'),
