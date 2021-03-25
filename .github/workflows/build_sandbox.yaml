@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - sandbox
-      - 136_sendgrid_key_environment_variable # TODO: Remove this line
 
 env:
   WEBAPP_NAME: 'sep-team1-iba'  # Replace with the name of your Azure web app
