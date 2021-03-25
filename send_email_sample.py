@@ -12,12 +12,11 @@ message = Mail(
     to_emails='bodhi.psyche@gmail.com',
     subject='Sample Email From Science Alliance Portal',
     html_content='<strong>This is an email from Science Alliance Portal</strong>')
-try:
-    sg = SendGridAPIClient(os.environ.get('SENDGRID_API_KEY'))
-    #sg = SendGridAPIClient('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')
-    response = sg.send(message)
-    print(response.status_code)
-    print(response.body)
-    print(response.headers)
-except Exception as e:
-    print(e.message)
+
+sg = SendGridAPIClient(os.environ.get('SENDGRID_API_KEY'))
+response = sg.send(message)
+'''
+print(response.status_code)
+print(response.body)
+print(response.headers)
+'''

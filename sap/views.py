@@ -589,18 +589,17 @@ class ForgotPasswordView(TemplateView):
                     #                     sg = ridAPIClient(os.environ.get('SENDGRID_API_KEY'))
                     sg = SendGridAPIClient(os.environ.get('SENDGRID_API_KEY'))
                     # TODO: Change API key and invalidate the old one
-                    #sg = SendGridAPIClient('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')
                     response = sg.send(email_content)
-                    ''' TODO: Nam, do we need this print statement? If not, please remove it
+                    return redirect('/password-forgot-done')
+                    ''' 
                     print(response.status_code)
                     print(response.body)
                     print(response.headers)
                     '''
                 except Exception as e:
-                    print(str(e)) # TODO: Need to remove this try except block because we are silently ignoring the email send failures
-                    # It's ok for email send to fail but we MUST know when a failure happens so that we can fix it
+                    print(str(e)) # Need to raise exception when send email fails because it is not the expected behavior
+                    return HttpResponseServerError()
 
-                return redirect('/password-forgot-done')
 
             else:
                 return redirect('/password-forgot-done')
