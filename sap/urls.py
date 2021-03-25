@@ -48,6 +48,7 @@ urlpatterns = [
 
     url(r'^edit_allies/$', login_required(views.EditAllyProfileFromAdminDashboard.as_view()),
         name='admin_edit_ally'),
+
     url(r'^delete/$', login_required(views.DeleteAllyProfileFromAdminDashboard.as_view()),
         name='admin_delete_ally'),
 
