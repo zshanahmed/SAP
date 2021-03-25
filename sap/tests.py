@@ -1211,15 +1211,6 @@ class UploadFileTest(TestCase):
 
         self.df = pd.read_csv('./pytests/assets/allies.csv')
 
-
-
-
-    def testUpload_return_response(self):
-        self.client.login(username='glib', password='macaque')
-        with open('./pytests/assets/allies.csv', 'r') as f:
-            response = self.client.post(reverse('sap:upload_allies'), {'attachment': f})
-        self.assertEqual(response.status_code, 200)
-
     def test_post_notStaff(self):
         self.client.login(username='bad', password='badguy1234')
         with open('./pytests/assets/allies.csv', 'r') as f:
@@ -1228,11 +1219,21 @@ class UploadFileTest(TestCase):
 
     def test_add_allies_fileType1_(self):
         self.client.login(username='glib', password='macaque')
-        with open('./pytests/assets/allies.csv', 'r') as f:
-            self.client.post(reverse('sap:upload_allies'), {'attachment': f})
+        name = './pytests/assets/allies.csv'
+        absPath = os.path.abspath(name)
+
+        with open(absPath, 'rb') as f:
+            headers = {
+                'HTTP_CONTENT_TYPE': 'multipart/form-data',
+                'HTTP_CONTENT_DISPOSITION': 'attachment; filename=' + 'allies.csv'}
+#            request = factory.post(reverse(string, args=[args]), {'file': data},
+#                                   **headers)
+            response = self.client.post(reverse('sap:upload_allies'), {'file': f}, **headers)
+
+        enctype = "multipart/form-data"
+        self.assertEqual(response.status_code, 200)
 
         allies = Ally.objects.all()
-
         self.assertEqual(len(allies), 5)
 
         columns = []

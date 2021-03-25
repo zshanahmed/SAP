@@ -1,8 +1,4 @@
-import io
-import os
-import os.path
-import csv
-import uuid
+import io, os, os.path, csv, uuid, datetime
 from django.http import HttpResponseForbidden, HttpResponse
 from django.contrib.auth import logout
 from django.contrib.auth import authenticate
@@ -680,8 +676,11 @@ class UploadAllies(AccessMixin, HttpResponse):
                     password = uuid.uuid4().hex[0:9]
                     user = userData[ally[0]]
                     try:
+                        time = datetime.datetime.strptime(user['date_joined'], '%b-%d-%Y')
+                        #time = datetime.strptime(user['date_joined'], "%Y-%m-%d")
                         user = User.objects.create_user(username=user['username'], password=password, email=user['email'],
-                                                    first_name=user['first_name'], last_name=user['last_name'])
+                                                    first_name=user['first_name'], last_name=user['last_name'],
+                                                        date_joined=time)
                         passwordLog[ally[0]] = password
                         try:
                             ally1 = Ally.objects.create(user=user, user_type=ally[1]['user_type'], hawk_id=user.username,
@@ -726,6 +725,7 @@ class UploadAllies(AccessMixin, HttpResponse):
     @staticmethod
     def processFile(file):
         df = pd.read_csv(file)
+        df = df.replace(df.fillna('', inplace=True))
         errorLog, passwordLog = UploadAllies.makeAlliesFromFile(df)
         return df, errorLog, passwordLog
 
