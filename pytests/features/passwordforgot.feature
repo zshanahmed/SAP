@@ -3,7 +3,7 @@ Feature: Forgot Password
   Reset password with registered email address if users forget old passwords
 
   Scenario: I click on the Forgot Password button
-    Given I am on login page
+    Given I go to home page
     When I click the button with id: "password-forgot"
     Then I should be on page with url: "http://127.0.0.1:8000/password-forgot/"
 
