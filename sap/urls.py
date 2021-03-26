@@ -6,11 +6,13 @@ from django.contrib.auth.decorators import login_required
 
 app_name = 'sap'
 urlpatterns = [
-    path('', auth_views.LoginView.as_view(template_name='sap/login.html'), name='home'),
+    path('', auth_views.LoginView.as_view(
+        template_name='sap/login.html'), name='home'),
 
     path('logout/', views.logout_request, name='logout'),
 
-    url(r'login_success/$', views.login_success, name='login_success'),
+    url(r'login_success/$', views.login_success,
+        name='login_success'),
 
     url(r'^password/$', login_required(views.ChangeAdminPassword.as_view()),
         name='change_password'),
@@ -21,9 +23,21 @@ urlpatterns = [
         login_required(views.AlliesListView.as_view(), login_url='home'),
         name='sap-dashboard'),
 
+    url(r'^ally-dashboard/$',
+        login_required(views.MentorsListView.as_view(), login_url='home'),
+        name='ally-dashboard'),
+
+    url(r'^calendar/$',
+        login_required(views.CalendarView.as_view(), login_url='home'),
+        name='ally-calendar'),
+
     url('analytics/',
         login_required(views.AnalyticsView.as_view(), login_url='home'),
         name='sap-analytics'),
+
+    url('resources/',
+        login_required(views.ResourcesView.as_view(), login_url='home'),
+        name='resources'),
 
     url(r'password-forgot/$', views.ForgotPasswordView.as_view(),
         name='password-forgot'),
@@ -37,17 +51,12 @@ urlpatterns = [
     url(r'password-forgot-confirm/(?P<uidb64>[\w-]+)/(?P<token>[\w-]+)$', views.ForgotPasswordConfirmView.as_view(),
         name='password-forgot-confirm'),
 
-    url(r'password-forgot-mail/', views.ForgotPasswordMail.as_view(),
-        name='password-forgot-mail'),
-
-    url(r'password-forgot-complete$', views.ForgotPasswordCompleteView.as_view(),
-        name='password-forgot-complete'),
-
     url(r'^allies/$', login_required(views.ViewAllyProfileFromAdminDashboard.as_view()),
         name='admin_view_ally'),
 
     url(r'^edit_allies/$', login_required(views.EditAllyProfileFromAdminDashboard.as_view()),
         name='admin_edit_ally'),
+
     url(r'^delete/$', login_required(views.DeleteAllyProfileFromAdminDashboard.as_view()),
         name='admin_delete_ally'),
 
@@ -55,11 +64,22 @@ urlpatterns = [
         login_required(views.CreateAdminView.as_view(), login_url='home'),
         name='create_iba_admin'),
 
+    url('create_event/',
+        login_required(views.CreateEventView.as_view(), login_url='home'),
+        name='create_event'),
+
     url('about/',
         login_required(views.AboutPageView.as_view(), login_url='about'),
         name='sap-about'),
 
-    url('sign-up/', views.SignUpView.as_view(), name='sign-up'),
+    url('sign-up/', views.SignUpView.as_view(),
+        name='sign-up'),
+
+    url(r'sign-up-done/$', views.SignUpDoneView.as_view(),
+        name='sign-up-done'),
+
+    url(r'sign-up-confirm/(?P<uidb64>[\w-]+)/(?P<token>[\w-]+)$', views.SignUpConfirmView.as_view(),
+        name='sign-up-confirm'),
 
     url(r'^download_allies/$', login_required(views.DownloadAllies.allies_download), name='download_allies'),
 

@@ -8,11 +8,11 @@ Feature: Login
     Given that I am on the login page
     When I enter my username iba_admin and password iba_sep_1
     Then I should see the page with title Science Alliance Portal
-  
+
   Scenario: I want to login using valid username and password as ally
     Given that I am on the login page
     When I enter my username john and password doe
-    Then I should see the page with title This page will be for About
+    Then I should see the page with title Science Alliance Portal
 
   Scenario: I try to login with invalid username and password
     Given that I am on the login page
@@ -22,4 +22,4 @@ Feature: Login
   Scenario: I forgot my password while trying to login
     Given that I am on the login page
     When I click on Forgot Password?
-    Then I should see the page with title Forgot Your Password? 
+    Then I should see the page with title Forgot Your Password?

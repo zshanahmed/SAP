@@ -2,6 +2,7 @@ from django.conf import settings
 from django.db import models
 from django.contrib.auth.models import User
 
+
 # Create your models here.
 
 # Need to figure out how to include the following
@@ -41,6 +42,7 @@ class Ally(models.Model):
     interested_in_joining_lab = models.BooleanField(default=False)
     has_lab_experience = models.BooleanField(default=False)
 
+
 class StudentCategories(models.Model):
     under_represented_racial_ethnic = models.BooleanField(default=False)
     first_gen_college_student = models.BooleanField(default=False)
@@ -59,3 +61,19 @@ class AllyStudentCategoryRelation(models.Model):
         StudentCategories,
         on_delete=models.CASCADE,
     )
+
+
+class Event(models.Model):
+    title = models.CharField(max_length=200, null=True)
+    description = models.CharField(max_length=1000, null=True)
+    datetime = models.DateTimeField()
+    location = models.CharField(max_length=500, null=True)
+
+
+class EventAllyRelation(models.Model):
+    event = models.ForeignKey(Event,
+                              on_delete=models.CASCADE
+                              )
+    ally = models.ForeignKey(Ally,
+                             on_delete=models.CASCADE
+                             )
