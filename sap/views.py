@@ -549,8 +549,7 @@ class SignUpView(TemplateView):
             html_content=message_body)
 
         try:
-            # sg = SendGridAPIClient(os.environ.get('SENDGRID_API_KEY'))
-            sg = SendGridAPIClient('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')
+            sg = SendGridAPIClient(os.environ.get('SENDGRID_API_KEY'))
             response = sg.send(email_content)
 
         except Exception as e:
