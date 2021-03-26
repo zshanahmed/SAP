@@ -1307,8 +1307,7 @@ class ForgotPasswordTest(TestCase):
         self.password = 'user_password1'
         self.email = 'email1@test.com'
         self.client = Client()
-        self.user = User.objects.create_user(
-            self.username, self.email, self.password)
+        self.user = User.objects.create_user(self.username, self.email, self.password)
 
     def test_get(self):
         """
@@ -1346,7 +1345,7 @@ class ForgotPasswordTest(TestCase):
 
     def test_enter_invalid_reset_email_address(self):
         """
-        Enter invalid email address and receive a message
+        Enter invalid email address and receive a message.
         """
         response = self.client.get(reverse('sap:password-forgot'))
         self.assertEqual(response.status_code, HTTPStatus.OK)
@@ -1366,6 +1365,28 @@ class ForgotPasswordTest(TestCase):
             reverse('sap:password-forgot'), data=data, follow=True)
         self.assertEqual(response.status_code, HTTPStatus.OK)
 
+    def test_enter_invalid_form(self):
+        """
+        Enter invalid text in email field.
+        """
+        response = self.client.get(reverse('sap:password-forgot'))
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        self.assertContains(
+            response, "Send me instructions!", html=True
+        )
+
+        data = {
+            "email": "not_an_email_address",
+        }
+        form = PasswordResetForm(
+            data=data
+        )
+        self.assertFalse(form.is_valid())
+
+        response = self.client.post(
+            reverse('sap:password-forgot'), data=data, follow=True)
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+
     def test_if_confirmation_link_work(self):
         """
         The unique link to reset password exists and works
@@ -1379,7 +1400,7 @@ class ForgotPasswordTest(TestCase):
 
     def test_reset_password_success(self):
         """
-        Successfully create new password
+        Successfully create new password.
         """
         token = password_reset_token.make_token(self.user)
         uid = urlsafe_base64_encode(force_bytes(self.user.pk))
@@ -1406,7 +1427,7 @@ class ForgotPasswordTest(TestCase):
 
     def test_reset_password_failure(self):
         """
-        Fail to create new password
+        Fail to create new password.
         """
         token = password_reset_token.make_token(self.user)
         uid = urlsafe_base64_encode(force_bytes(self.user.pk))
@@ -1425,24 +1446,51 @@ class ForgotPasswordTest(TestCase):
         )
         self.assertFalse(form.is_valid())
 
-    # def test_confirmation_link_not_exist(self):
-    #     """
-    #     Cannot open invalid confirmation link
-    #     """
-    #     validate = URLValidator(verify_exists=True)
-    #     user = User.objects.create_user(username='admin',
-    #                                     email='email@test.com',
-    #                                     password='admin_password1',
-    #                                     is_staff=False)
-    #
-    #     token = password_reset_token.make_token(user)
-    #     uid = urlsafe_base64_encode(force_bytes(user.pk))
-    #     link = reverse('sap:password-forgot-confirm', args=[uid, token])
-    #     request = self.client.get(link)
-    #
-    #     # user.delete()
-    #     self.assertEqual(request.status_code, 500)
+        response = self.client.post(
+            link, data=data, follow=True)
+        # self.assertEqual(response.url, link)
+        self.assertEqual(response.status_code, HTTPStatus.OK)
 
+    def test_confirmation_link_fail_for_getMethod(self):
+        """
+        Cannot open invalid confirmation link.
+        """
+        token = password_reset_token.make_token(self.user)
+        uid = urlsafe_base64_encode(force_bytes(self.user.pk))
+        link = reverse('sap:password-forgot-confirm', args=[uid, token])
+
+        self.user.delete()
+
+        request = self.client.get(link)
+        self.assertEqual(request.status_code, HTTPStatus.FOUND)
+
+    def test_confirmation_link_fail_for_postMethod(self):
+        """
+        Fail to create new password.
+        """
+        token = password_reset_token.make_token(self.user)
+        uid = urlsafe_base64_encode(force_bytes(self.user.pk))
+        link = reverse('sap:password-forgot-confirm', args=[uid, token])
+
+        request = self.client.get(link)
+        self.assertEqual(request.status_code, HTTPStatus.OK)
+
+        data = {
+            "new_password1": "user_password2",
+            "new_password2": "user_password2"
+        }
+        form = UserResetForgotPasswordForm(
+            user=self.user,
+            data=data
+        )
+        self.assertTrue(form.is_valid())
+
+        self.user.delete()
+
+        response = self.client.post(
+            link, data=data, follow=True)
+        # self.assertEqual(response.url, link)
+        self.assertEqual(response.status_code, HTTPStatus.OK)
 
 
 
