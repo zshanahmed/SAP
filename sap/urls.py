@@ -20,23 +20,23 @@ urlpatterns = [
         name='sap-admin_profile'),
 
     url(r'^dashboard/$',
-        login_required(views.AlliesListView.as_view(), login_url='home'),
+        login_required(views.AlliesListView.as_view()),
         name='sap-dashboard'),
 
     url(r'^ally-dashboard/$',
-        login_required(views.MentorsListView.as_view(), login_url='home'),
+        login_required(views.MentorsListView.as_view()),
         name='ally-dashboard'),
 
     url(r'^calendar/$',
-        login_required(views.CalendarView.as_view(), login_url='home'),
+        login_required(views.CalendarView.as_view()),
         name='ally-calendar'),
 
     url('analytics/',
-        login_required(views.AnalyticsView.as_view(), login_url='home'),
+        login_required(views.AnalyticsView.as_view()),
         name='sap-analytics'),
 
     url('resources/',
-        login_required(views.ResourcesView.as_view(), login_url='home'),
+        login_required(views.ResourcesView.as_view()),
         name='resources'),
 
     url(r'password-forgot/$', views.ForgotPasswordView.as_view(),
@@ -61,15 +61,15 @@ urlpatterns = [
         name='admin_delete_ally'),
 
     url('create_iba_admin/',
-        login_required(views.CreateAdminView.as_view(), login_url='home'),
+        login_required(views.CreateAdminView.as_view()),
         name='create_iba_admin'),
 
     url('create_event/',
-        login_required(views.CreateEventView.as_view(), login_url='home'),
+        login_required(views.CreateEventView.as_view()),
         name='create_event'),
 
     url('about/',
-        login_required(views.AboutPageView.as_view(), login_url='about'),
+        login_required(views.AboutPageView.as_view()),
         name='sap-about'),
 
     url('sign-up/', views.SignUpView.as_view(),
