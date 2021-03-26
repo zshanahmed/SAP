@@ -6,7 +6,8 @@ from django.contrib.auth.decorators import login_required
 
 app_name = 'sap'
 urlpatterns = [
-    path('', auth_views.LoginView.as_view(template_name='sap/login.html'), name='home'),
+    path('', auth_views.LoginView.as_view(
+        template_name='sap/login.html'), name='home'),
 
     path('logout/', views.logout_request, name='logout'),
 
@@ -22,9 +23,21 @@ urlpatterns = [
         login_required(views.AlliesListView.as_view(), login_url='home'),
         name='sap-dashboard'),
 
+    url(r'^ally-dashboard/$',
+        login_required(views.MentorsListView.as_view(), login_url='home'),
+        name='ally-dashboard'),
+
+    url(r'^calendar/$',
+        login_required(views.CalendarView.as_view(), login_url='home'),
+        name='ally-calendar'),
+
     url('analytics/',
         login_required(views.AnalyticsView.as_view(), login_url='home'),
         name='sap-analytics'),
+
+    url('resources/',
+        login_required(views.ResourcesView.as_view(), login_url='home'),
+        name='resources'),
 
     url(r'password-forgot/$', views.ForgotPasswordView.as_view(),
         name='password-forgot'),
@@ -43,12 +56,17 @@ urlpatterns = [
 
     url(r'^edit_allies/$', login_required(views.EditAllyProfileFromAdminDashboard.as_view()),
         name='admin_edit_ally'),
+
     url(r'^delete/$', login_required(views.DeleteAllyProfileFromAdminDashboard.as_view()),
         name='admin_delete_ally'),
 
     url('create_iba_admin/',
         login_required(views.CreateAdminView.as_view(), login_url='home'),
         name='create_iba_admin'),
+
+    url('create_event/',
+        login_required(views.CreateEventView.as_view(), login_url='home'),
+        name='create_event'),
 
     url('about/',
         login_required(views.AboutPageView.as_view(), login_url='about'),

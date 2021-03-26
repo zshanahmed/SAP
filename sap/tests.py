@@ -2,7 +2,6 @@ import os
 from django.http import response
 
 from django.shortcuts import render
-
 # tests file
 from django.test import TestCase, Client
 import pandas as pd
@@ -11,7 +10,7 @@ import io
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 
-from .models import Ally, StudentCategories, AllyStudentCategoryRelation
+from .models import Ally, StudentCategories, AllyStudentCategoryRelation, Event, EventAllyRelation
 from django.urls import reverse
 from django.contrib.auth.models import User
 from http import HTTPStatus
@@ -66,9 +65,37 @@ class AdminAllyTableFeatureTests(TestCase):
                                         first_name='John',
                                         last_name='Doe')
 
+        self.ally_user1 = User.objects.create_user(username='johndoe1',
+                                                  email='johndoe1@uiowa.edu',
+                                                  password='johndoe1',
+                                                  first_name='John1',
+                                                  last_name='Doe1')
+
         self.ally = Ally.objects.create(
             user=self.ally_user,
             hawk_id='johndoe',
+            user_type='Staff',
+            works_at='College of Engineering',
+            area_of_research='Computer Science and Engineering,Health and Human Physiology,Physics',
+            description_of_research_done_at_lab='Created tools to fight fingerprinting',
+            people_who_might_be_interested_in_iba=True,
+            how_can_science_ally_serve_you='Help in connecting with like minded people',
+            year='Senior',
+            major='Electical Engineering',
+            willing_to_offer_lab_shadowing=True,
+            willing_to_volunteer_for_events=True,
+            interested_in_mentoring=True,
+            interested_in_connecting_with_other_mentors=True,
+            interested_in_mentor_training=True,
+            interested_in_joining_lab=True,
+            has_lab_experience=True,
+            information_release=True,
+            openings_in_lab_serving_at=True,
+        )
+
+        self.ally1 = Ally.objects.create(
+            user=self.ally_user1,
+            hawk_id='johndoe1',
             user_type='Staff',
             works_at='College of Engineering',
             area_of_research='Computer Science and Engineering,Health and Human Physiology,Physics',
@@ -96,7 +123,7 @@ class AdminAllyTableFeatureTests(TestCase):
         self.user.is_staff = True
         self.user.save()
         self.client.login(username=self.username, password=self.password)
-        
+
         # Testing for Staff user type
         response = self.client.get(
             '/edit_allies/', {'username': self.ally_user.username})
@@ -104,7 +131,7 @@ class AdminAllyTableFeatureTests(TestCase):
         self.assertContains(
             response, "Edit Ally Profile", html=True
         )
-        
+
         response = self.client.post(
             '/edit_allies/', {
                 'csrfmiddlewaretoken': ['XdNiZpT3jpCeRzd2kq8bbRPUmc0tKFP7dsxNaQNTUhblQPK7lne9sX0mrE5khfHH'],
@@ -231,8 +258,8 @@ class AdminAllyTableFeatureTests(TestCase):
 
         self.client.login(username=self.username, password=self.password)
         response = self.client.get(
-            '/allies/', {'username': 'something'})
-        self.assertEqual(response.status_code, HTTPStatus.FORBIDDEN)
+            '/allies/', {'username': self.ally_user1.username})
+        self.assertEqual(response.status_code, HTTPStatus.OK)
     
     def test_delete_ally(self):
         self.user.is_staff = True
@@ -289,7 +316,7 @@ class AdminUpdateProfileAndPasswordTests(TestCase):
         self.user.save()
         self.client.login(username=self.username, password=self.password)
         response = self.client.get(reverse('sap:change_password'))
-        self.assertEqual(response.status_code, HTTPStatus.FORBIDDEN)
+        self.assertEqual(response.status_code, HTTPStatus.OK)
         
     def test_update_profile_page_for_admin(self):
         """
@@ -312,7 +339,7 @@ class AdminUpdateProfileAndPasswordTests(TestCase):
         self.user.save()
         self.client.login(username=self.username, password=self.password)
         response = self.client.get(reverse('sap:sap-admin_profile'))
-        self.assertEqual(response.status_code, HTTPStatus.FORBIDDEN)
+        self.assertEqual(response.status_code, HTTPStatus.OK)
 
     def test_failure_mismatched_new_pass_change_password(self):
         """
@@ -621,7 +648,6 @@ class LoginRedirectTests(TestCase):
 
         response = self.client.get(reverse("sap:login_success"))
         self.assertEqual(response.status_code, HTTPStatus.FOUND)
-
 
 class LogoutRedirectTests(TestCase):
 
@@ -1629,3 +1655,89 @@ class DownloadAlliesTest(TestCase):
         self.client.login(username='staff', password='123')
         response = self.client.get(reverse('sap:download_allies'))
         self.assertEqual(response.status_code, 403)
+
+class CreateEventTests(TestCase):
+    def setUp(self):
+        self.username = 'admin'
+        self.password = 'admin_password1'
+        self.user = User.objects.create_user(self.username, 'email@test.com', self.password)
+        self.user.is_staff = True
+        self.user.save()
+        self.client = Client()
+        self.client.login(username=self.username, password=self.password)
+
+        self.ally_user = User.objects.create_user(username='johndoe',
+                                                  email='johndoe@uiowa.edu',
+                                                  password='johndoe',
+                                                  first_name='John',
+                                                  last_name='Doe')
+
+        self.ally = Ally.objects.create(
+            user=self.ally_user,
+            hawk_id='johndoe',
+            user_type='Graduate Student',
+            works_at='College of Engineering',
+            area_of_research='Biochemistry',
+            major='Electrical Engineering',
+            willing_to_volunteer_for_events=True
+        )
+
+        self.category = StudentCategories.objects.create(lgbtq=True)
+        self.student_ally_rel = AllyStudentCategoryRelation.objects.create(
+            ally=self.ally,
+            student_category=self.category
+        )
+
+    def test_get(self):
+        response = self.client.get('/create_event/')
+        self.assertEqual(response.status_code, 200)
+
+    def test_invite_all(self):
+        response = self.client.post('/create_event/', {
+            'csrfmiddlewaretoken': ['gr9bKWMJLFrJZfcdKkdRhlyKLI0JeTh2ZefMhjulIFuY05e6romNm1CvLZUKa0zG'],
+            'event_title': ['title of the event'],
+            'event_description': ['description of the event'],
+            'event_location': ['https://zoom.us/abc123edf'],
+            'event_date_time': ['2021-03-31T15:32'],
+            'invite_all': 'true'
+        })
+
+        url = response.url
+        event = Event.objects.filter(title='title of the event')
+        assert url == '/dashboard'
+        assert event.exists()
+        assert EventAllyRelation.objects.filter(event=event[0], ally=self.ally).exists()
+
+    def test_invite_biochem_student(self):
+        response = self.client.post('/create_event/', {
+            'csrfmiddlewaretoken': ['gr9bKWMJLFrJZfcdKkdRhlyKLI0JeTh2ZefMhjulIFuY05e6romNm1CvLZUKa0zG'],
+            'event_title': ['title of the event 2'],
+            'event_description': ['description of the event 2'],
+            'event_location': ['https://zoom.us/abc123edf2'],
+            'event_date_time': ['2021-03-31T15:32'],
+            'role_selected': ['Graduate Student'],
+            'mentor_status': ['Mentors', 'Mentees'],
+            'research_area': ['Biochemistry']
+        })
+
+        url = response.url
+        event = Event.objects.filter(title='title of the event 2')
+        assert url == '/dashboard'
+        assert event.exists()
+        assert EventAllyRelation.objects.filter(event=event[0], ally=self.ally).exists()
+
+    def test_invite_special_category_student(self):
+        response = self.client.post('/create_event/', {
+            'csrfmiddlewaretoken': ['gr9bKWMJLFrJZfcdKkdRhlyKLI0JeTh2ZefMhjulIFuY05e6romNm1CvLZUKa0zG'],
+            'event_title': ['title of the event 3'],
+            'event_description': ['description of the event 3'],
+            'event_location': ['https://zoom.us/abc123edf2'],
+            'event_date_time': ['2021-03-31T15:32'],
+            'special_category': ['First generation college-student', 'Rural', 'Low-income', 'Underrepresented racial/ethnic minority', 'Transfer Student', 'LGBTQ'],
+        })
+
+        url = response.url
+        event = Event.objects.filter(title='title of the event 3')
+        assert url == '/dashboard'
+        assert event.exists()
+        assert EventAllyRelation.objects.filter(event=event[0], ally=self.ally).exists()
