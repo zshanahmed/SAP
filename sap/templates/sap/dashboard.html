@@ -283,7 +283,7 @@
                                             {% csrf_token %}
                                             <hr/>
                                             <label id="uploadCsvLabel" for="uploadCsv" class="btn btn-secondary btn-user btn-block px-md-4 text-truncate">Choose File <i class="fas fa-file"></i></label>
-                                            <input id="uploadCsv" type="file" value="Browse" name="file" accept="csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" hidden>
+                                            <input id="uploadCsv" type="file" value="Browse" name="file" accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" hidden>
                                             <button type="submit" formmethod="post" class="btn btn-primary btn-user btn-block px-md-4 mt-3" id="submitUpload">
                                                 Upload <i class="fas fa-upload"></i>
                                             </button>
