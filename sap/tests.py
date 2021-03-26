@@ -121,7 +121,6 @@ class AdminAllyTableFeatureTests(TestCase):
             openings_in_lab_serving_at=True,
         )
 
-<<<<<<< HEAD
     def test_year_filter_for_admin(self):
         """
         Show all allies conforming to year filters
@@ -192,8 +191,6 @@ class AdminAllyTableFeatureTests(TestCase):
             response, self.ally_user.first_name + ' ' + self.ally_user.last_name, html=True
         )
     
-=======
->>>>>>> sandbox
     def test_edit_ally_page_for_admin(self):
         """
         Show and Complete Edit ally page for admin
