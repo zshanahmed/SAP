@@ -243,13 +243,53 @@ class EditAdminProfile(View):
         })
 
 
-class AlliesListView(AccessMixin, generic.ListView):
-    template_name = 'sap/dashboard.html'
-    context_object_name = 'allies_list'
+class AlliesListView(AccessMixin, TemplateView):
 
-    def get_queryset(self):
-        return Ally.objects.order_by('-id')
+    def get(self, request):
+        allies_list = Ally.objects.order_by('-id')
+        for ally in allies_list:
+            if not ally.user.is_active:
+                allies_list = allies_list.exclude(id=ally.id)
+        return render(request, 'sap/dashboard.html', {'allies_list': allies_list})
 
+    def post(self, request):
+        if request.POST.get("form_type") == 'filters':
+            postDict = dict(request.POST)
+            if 'stemGradCheckboxes' in postDict:
+                stemfields = postDict['stemGradCheckboxes']
+                exclude_from_aor_default = False
+            else:
+                exclude_from_aor_default = True
+                stemfields =[]
+            if 'undergradYear' in postDict:
+                exclude_from_year_default = False
+                undergradYear = postDict['undergradYear']
+            else:
+                exclude_from_year_default = True
+                undergradYear = []
+            allies_list = Ally.objects.order_by('-id')
+            if not (exclude_from_year_default and exclude_from_aor_default):
+                for ally in allies_list:
+                    exclude_from_aor = exclude_from_aor_default
+                    exclude_from_year = exclude_from_year_default
+
+                    if ally.area_of_research:
+                        aor = ally.area_of_research.split(',')
+                    else:
+                        aor = []
+                    if (stemfields) and (not bool(set(stemfields) & set(aor))):
+                        exclude_from_aor = True
+
+                    
+                    if (undergradYear) and (ally.year not in undergradYear):
+                        exclude_from_year = True
+                    
+                    if exclude_from_aor and exclude_from_year:
+                        allies_list = allies_list.exclude(id=ally.id)
+            for ally in allies_list:
+                if not ally.user.is_active:
+                    allies_list = allies_list.exclude(id=ally.id)
+            return render(request, 'sap/dashboard.html', {'allies_list': allies_list})
 
 class MentorsListView(generic.ListView):
     template_name = 'sap/dashboard_ally.html'
@@ -257,7 +297,6 @@ class MentorsListView(generic.ListView):
 
     def get_queryset(self):
         return Ally.objects.order_by('-id')
-
 
 class AnalyticsView(AccessMixin, TemplateView):
     template_name = "sap/analytics.html"
