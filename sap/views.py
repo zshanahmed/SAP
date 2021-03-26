@@ -242,6 +242,9 @@ class AlliesListView(AccessMixin, TemplateView):
 
     def get(self, request):
         allies_list = Ally.objects.order_by('-id')
+        for ally in allies_list:
+            if not ally.user.is_active:
+                allies_list = allies_list.exclude(id=ally.id)
         return render(request, 'sap/dashboard.html', {'allies_list': allies_list})
 
     def post(self, request):
@@ -278,7 +281,9 @@ class AlliesListView(AccessMixin, TemplateView):
                     
                     if exclude_from_aor and exclude_from_year:
                         allies_list = allies_list.exclude(id=ally.id)
-
+            for ally in allies_list:
+                if not ally.user.is_active:
+                    allies_list = allies_list.exclude(id=ally.id)
             return render(request, 'sap/dashboard.html', {'allies_list': allies_list})
     
 class AnalyticsView(AccessMixin, TemplateView):
