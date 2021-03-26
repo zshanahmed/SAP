@@ -326,16 +326,6 @@ class AdminAllyTableFeatureTests(TestCase):
         response = self.client.get(
             '/allies/', {'username': 'something'})
         self.assertEqual(response.status_code, HTTPStatus.NOT_FOUND)
-
-    def test_view_ally_page_for_non_admin(self):
-        """
-        Show that the code return 403 when user is not admin
-        """
-
-        self.client.login(username=self.username, password=self.password)
-        response = self.client.get(
-            '/allies/', {'username': self.ally_user1.username})
-        self.assertEqual(response.status_code, HTTPStatus.OK)
     
     def test_delete_ally(self):
         self.user.is_staff = True
