@@ -1,0 +1,19 @@
+{% autoescape off %}
+<h3>
+    Hello {{ user.get_username }},
+</h3>
+
+You received this email because you requested to create a new account.
+<br><br>
+To create a new account on {{ domain }},
+click the link below to verify your identity:
+<br><br>
+<a href="{{ protocol }}://{{ domain }}{% url 'sap:sign-up-confirm' uidb64=uid token=token %}">Click here to activate your account!</a>
+<br><br>
+If clicking the link does not work, please try to copy and paste it in your browser.
+<br><br>
+Best wishes,
+<br><br>
+IBA team
+
+{% endautoescape %}
