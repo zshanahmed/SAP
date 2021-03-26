@@ -649,6 +649,7 @@ class LoginRedirectTests(TestCase):
         response = self.client.get(reverse("sap:login_success"))
         self.assertEqual(response.status_code, HTTPStatus.FOUND)
 
+
 class LogoutRedirectTests(TestCase):
 
     def setUp(self):
@@ -1655,6 +1656,7 @@ class DownloadAlliesTest(TestCase):
         self.client.login(username='staff', password='123')
         response = self.client.get(reverse('sap:download_allies'))
         self.assertEqual(response.status_code, 403)
+
 
 class CreateEventTests(TestCase):
     def setUp(self):

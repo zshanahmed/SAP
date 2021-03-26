@@ -417,8 +417,6 @@ class CreateEventView(AccessMixin, TemplateView):
         return redirect('/dashboard')
 
 
-
-
 class SignUpView(TemplateView):
     template_name = "sap/sign-up.html"
 
@@ -698,7 +696,6 @@ class ForgotPasswordView(TemplateView):
                 user.is_active = False  # User needs to be inactive for the reset password duration
                 # user.profile.reset_password = True
                 user.save()
-
 
                 message_body = render_to_string('sap/password-forgot-mail.html', {
                     'user': user,
