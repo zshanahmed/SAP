@@ -147,3 +147,5 @@ MESSAGE_TAGS = {
 }
 
 LOGIN_URL = 'sap:home'
+
+AUTHENTICATION_BACKENDS = ['django.contrib.auth.backends.AllowAllUsersModelBackend']

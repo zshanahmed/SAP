@@ -7,7 +7,7 @@ from selenium.webdriver.chrome.options import Options
 
 
 @pytest.fixture
-def firefoxBrowser():
+def chromeBrowser():
     fireFoxOptions = webdriver.FirefoxOptions()
     fireFoxOptions.headless = True
     b = webdriver.Firefox(options=fireFoxOptions)
