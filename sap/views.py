@@ -651,7 +651,7 @@ class ForgotPasswordView(TemplateView):
                     print(response.headers)
                     '''
                 except Exception as e:
-                    print(e.email_content)
+                    print(e)
 
                 return redirect('/password-forgot-done')
 
