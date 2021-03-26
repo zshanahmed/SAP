@@ -22,6 +22,7 @@ def login(chromeBrowser):
     chromeBrowser.find_element_by_id('id_username').send_keys('iba_admin')
     chromeBrowser.find_element_by_id('id_password').send_keys('iba_sep_1')
     chromeBrowser.find_element_by_id("submit").click()
+    time.sleep(1)
 
 @when(parsers.parse('I click the button with id: "{buttonID}"'))
 def click_button(chromeBrowser, buttonID):
@@ -41,6 +42,11 @@ def have_csv(chromeBrowser):
     initial_path = os.path.join(path_to_download_folder, initalFile)
     shutil.move(initial_path, os.path.join(path_to_download_folder, filename))
     time.sleep(1)
+    tmp = chromeBrowser.current_url
+    chromeBrowser.get(localhost)
+    time.sleep(1)
+    chromeBrowser.get(tmp)
+    time.sleep(1)
     assert os.path.isfile(os.path.join(path_to_download_folder, filename))
     os.remove(os.path.join(path_to_download_folder, filename))
 
@@ -56,9 +62,7 @@ def fill_in_textBox(chromeBrowser, text, elementID):
 
 @then((parsers.parse('I should not be able to download users.')))
 def check_download(chromeBrowser):
-    time.sleep(5)
     chromeBrowser.get(localhost + 'download_allies/')
-    time.sleep(5)
     assert '403' in chromeBrowser.page_source
 
 @then(parsers.parse('I should see text: "{text}"'))
@@ -72,9 +76,24 @@ def addFile(chromeBrowser, elementID, file):
     element = chromeBrowser.find_element_by_id(elementID)
     element.send_keys(path)
 
+@when(parsers.parse('I refresh the page'))
+def refresh(chromeBrowser):
+    chromeBrowser.refresh()
+
 @then(parsers.parse('I should see entries with names: "{name}"'))
 def check_if_names_there(chromeBrowser, name):
+    table = chromeBrowser.find_element_by_id('dataTable')
+    bool_array = []
+    ar = []
     names = name.split(", ")
-    source = chromeBrowser.page_source
-    for theName in names:
-        assert theName in source
+    count = 0
+    for row in table.find_elements_by_css_selector('tr'):
+        for cell in row.find_elements_by_tag_name('td'):
+            if count % 6 == 0:
+                ar.append(cell.text)
+            count += 1
+
+    print(ar)
+
+    for name in names:
+        assert name in ar

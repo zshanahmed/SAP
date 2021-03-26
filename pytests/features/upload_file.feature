@@ -11,5 +11,13 @@ IBA admin should have the ability to upload files and create allies in the previ
     Given I am on dashboard logged in as admin
     When I select file using "uploadCsv" with name: "./pytests/assets/allies.csv"
     And I click the button with id: "submitUpload"
-    Then I should see entries with names: "Elias, Zeeshan, Nam, Biggoonga"
+    And I refresh the page
+    Then I should see entries with names: "Elias Shaeffer, Zeeshan Ahmed, Nam Le, Biggoonga chonk"
     And I should have the error file in my downloads
+
+  Scenario: I upload some allies with a xls spreadsheet
+    Given I am on dashboard logged in as admin
+    When I select file using "uploadCsv" with name: "./pytests/assets/allies2.xlsx"
+    And I click the button with id: "submitUpload"
+    And I refresh the page
+    Then I should see entries with names: "Elias Shaeffer, Zeeshan Ahmed, Nam Le, Biggoonga chonk, enigma L backward, Gribby S glibbyBoop, Man Mega, pipestomp P windbag, trex dino"
