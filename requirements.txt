@@ -12,3 +12,5 @@ sendgrid
 six
 requests
 pandas
+xlsxwriter
+openpyxl

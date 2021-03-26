@@ -82,4 +82,6 @@ urlpatterns = [
         name='sign-up-confirm'),
 
     url(r'^download_allies/$', login_required(views.DownloadAllies.allies_download), name='download_allies'),
+
+    url(r'^upload_allies/$', login_required(views.UploadAllies.upload_allies), name='upload_allies'),
 ]

@@ -184,7 +184,7 @@
                             <div class="table-responsive">
                                 <form class="user" method="post">
                                     {% csrf_token %}
-                                    
+
                                     <div class="form-group row">
                                         <div class="col-sm-6 mb-3 mb-sm-0">
                                             <input type="hidden" name="form_type" value="filters">
@@ -238,25 +238,25 @@
                                             </div>
                                         </div>
                                         <div class="col-sm-6">
-                                            
-                                            <strong>Year:</strong> 
+
+                                            <strong>Year:</strong>
                                             <div id="undergradYear">
                                                 <input type="checkbox" value="Freshman" name="undergradYear" id="freshman" >
                                                 <label class="form-check-label" for="undergradYear">Freshman</label>
                                                 <br>
-                                                
+
                                                 <input type="checkbox" value="Sophomore" name="undergradYear" id="sophomore" >
                                                 <label class="form-check-label" for="undergradYear">Sophomore</label>
                                                 <br>
-                                                
+
                                                 <input type="checkbox" value="Junior" name="undergradYear" id="junior" >
                                                 <label class="form-check-label" for="undergradYear">Junior</label>
                                                 <br>
-                                                
+
                                                 <input type="checkbox" value="Senior" name="undergradYear" id="senior" >
                                                 <label class="form-check-label" for="undergradYear">Senior</label>
                                                 <br>
-                                            </div> 
+                                            </div>
                                         </div>
                                     </div>
                                     <button type="submit" class="btn btn-primary btn-user btn-block">Apply Filters</button>
@@ -269,26 +269,32 @@
                     <!-- <div style="height: 27px; visibility: hidden"></div> -->
                     <div class="card shadow mb-4">
                         <div class="card-header py-3">
-                            <h6 class="m-0 font-weight-bold text-primary">Download or Upload Ally Profiles</h6>
+                            <h6 class="m-0 font-weight-bold text-primary">Download or Upload Allies</h6>
                         </div>
                         <div class="card-body">
                             <div class="table-responsive">
-                                <form class="user">
-                                    <div class="form-group row text-center col-12">
-                                        <a href="{% url 'sap:download_allies'  %}" class="btn btn-primary btn-user btn-block" id="downloadCsv">
+                                <div class="form-group row text-center col-12">
+                                    <form class="user text-center col-12">
+                                        <a href="{% url 'sap:download_allies'  %}" class="btn btn-primary btn-user btn-block px-md-4" id="downloadCsv">
                                             Download <i class="fas fa-download"></i>
                                         </a>
-
-                                    </div>
-                                    <div class="form-group row text-center col-12">
-                                        <a href="#" class="btn btn-primary btn-user btn-block" id="uploadCsv">
-                                            Upload <i class="fas fa-upload"></i>
-                                        </a>
-                                    </div>
-                                </form>
+                                    </form>
+                                        <form action="{% url 'sap:upload_allies'%}" method="post" enctype="multipart/form-data" class="user text-center col-12">
+                                            {% csrf_token %}
+                                            <hr/>
+                                            <label id="uploadCsvLabel" for="uploadCsv" class="btn btn-secondary btn-user btn-block px-md-4 text-truncate">Choose File <i class="fas fa-file"></i></label>
+                                            <input id="uploadCsv" type="file" value="Browse" name="file" accept="csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" hidden>
+                                            <button type="submit" formmethod="post" class="btn btn-primary btn-user btn-block px-md-4 mt-3" id="submitUpload">
+                                                Upload <i class="fas fa-upload"></i>
+                                            </button>
+                                        </form>
+                                </div>
                             </div>
                         </div>
                     </div>
+                </div>
+
+                <div style="height: 300px; visibility: hidden">
                 </div>
 
                 <!-- Begin Page Content -->
@@ -437,7 +443,6 @@
     <script src="{% static '/vendor/jquery-easing/jquery.easing.min.js' %}"></script>
 
     <!-- Custom scripts for all pages-->
-    <script src="{% static '/js/sb-admin-2.min.js' %}"></script>
     <script src="{% static '/js/sb-admin-2.js' %}"></script>
 
     <!-- Page level plugins -->

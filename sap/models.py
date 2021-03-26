@@ -50,7 +50,7 @@ class StudentCategories(models.Model):
     lgbtq = models.BooleanField(default=False)
     low_income = models.BooleanField(default=False)
     rural = models.BooleanField(default=False)
-
+    ##TODO: Add disabled
 
 class AllyStudentCategoryRelation(models.Model):
     ally = models.ForeignKey(

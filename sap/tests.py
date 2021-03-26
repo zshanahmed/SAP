@@ -9,6 +9,7 @@ import numpy as np
 import io
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
+import sap.views as views
 
 from .models import Ally, StudentCategories, AllyStudentCategoryRelation, Event, EventAllyRelation
 from django.urls import reverse
@@ -190,7 +191,7 @@ class AdminAllyTableFeatureTests(TestCase):
         self.assertContains(
             response, self.ally_user.first_name + ' ' + self.ally_user.last_name, html=True
         )
-    
+
     def test_edit_ally_page_for_admin(self):
         """
         Show and Complete Edit ally page for admin
@@ -1586,6 +1587,11 @@ class ForgotPasswordTest(TestCase):
         self.assertEqual(response.status_code, HTTPStatus.OK)
 
 
+def wack_test_db():
+    User.objects.all().delete()
+    Ally.objects.all().delete()
+    StudentCategories.objects.all().delete()
+    AllyStudentCategoryRelation.objects.all().delete()
 
 userFields = ['last_login', 'username', 'first_name', 'last_name', 'email', 'is_active', 'date_joined']
 allyFields = ['user_type', 'area_of_research', 'openings_in_lab_serving_at', 'description_of_research_done_at_lab',
@@ -1597,8 +1603,8 @@ allyFields = ['user_type', 'area_of_research', 'openings_in_lab_serving_at', 'de
 categoryFields = ['under_represented_racial_ethnic', 'first_gen_college_student', 'transfer_student', 'lgbtq', 'low_income', 'rural']
 class DownloadAlliesTest(TestCase):
 
-
-    def fields_helper(self, model, columns):
+    @staticmethod
+    def fields_helper(model, columns):
         for field in model._meta.get_fields():
             fields = str(field).split(".")[-1]
             if fields in userFields or fields in allyFields or fields in categoryFields:
@@ -1606,7 +1612,8 @@ class DownloadAlliesTest(TestCase):
 
         return columns
 
-    def cleanup(self, dict):
+    @staticmethod
+    def cleanup(dict):
         ar = []
         for item in dict.items():
             if item[0] in userFields or item[0] in allyFields or item[0] in categoryFields:
@@ -1617,10 +1624,7 @@ class DownloadAlliesTest(TestCase):
         return ar
 
     def setUp(self):
-        User.objects.all().delete()
-        Ally.objects.all().delete()
-        StudentCategories.objects.all().delete()
-        AllyStudentCategoryRelation.objects.all().delete()
+        wack_test_db()
 
         self.client = Client()
 
@@ -1677,20 +1681,20 @@ class DownloadAlliesTest(TestCase):
         AllyStudentCategoryRelation.objects.create(ally_id=self.ally4.id, student_category_id=self.categories4.id)
 
         columns = []
-        columns = self.fields_helper(User, columns)
-        columns = self.fields_helper(Ally, columns)
-        columns = self.fields_helper(StudentCategories, columns)
+        columns = DownloadAlliesTest.fields_helper(User, columns)
+        columns = DownloadAlliesTest.fields_helper(Ally, columns)
+        columns = DownloadAlliesTest.fields_helper(StudentCategories, columns)
 
         data = []
-        user1 = self.cleanup(self.user1.__dict__) + \
-                self.cleanup(self.ally1.__dict__) + [None, None, None, None, None, None]
-        user2 = self.cleanup(self.user2.__dict__) + \
-                self.cleanup(self.ally2.__dict__) + self.cleanup(self.categories2.__dict__)
+        user1 = DownloadAlliesTest.cleanup(self.user1.__dict__) + \
+                DownloadAlliesTest.cleanup(self.ally1.__dict__) + [None, None, None, None, None, None]
+        user2 = DownloadAlliesTest.cleanup(self.user2.__dict__) + \
+                DownloadAlliesTest.cleanup(self.ally2.__dict__) + DownloadAlliesTest.cleanup(self.categories2.__dict__)
 
-        user3 = self.cleanup(self.user3.__dict__) + \
-                self.cleanup(self.ally3.__dict__) + self.cleanup(self.categories3.__dict__)
-        user4 = self.cleanup(self.user4.__dict__) + \
-                self.cleanup(self.ally4.__dict__) + self.cleanup(self.categories4.__dict__)
+        user3 = DownloadAlliesTest.cleanup(self.user3.__dict__) + \
+                DownloadAlliesTest.cleanup(self.ally3.__dict__) + DownloadAlliesTest.cleanup(self.categories3.__dict__)
+        user4 = DownloadAlliesTest.cleanup(self.user4.__dict__) + \
+                DownloadAlliesTest.cleanup(self.ally4.__dict__) + DownloadAlliesTest.cleanup(self.categories4.__dict__)
 
         data.append(user1)
         data.append(user2)
@@ -1722,6 +1726,103 @@ class DownloadAlliesTest(TestCase):
         self.client.login(username='staff', password='123')
         response = self.client.get(reverse('sap:download_allies'))
         self.assertEqual(response.status_code, 403)
+
+class UploadFileTest(TestCase):
+
+    @staticmethod
+    def makeFrame():
+        columns = []
+        columns = DownloadAlliesTest.fields_helper(User, columns)
+        columns = DownloadAlliesTest.fields_helper(Ally, columns)
+        columns = DownloadAlliesTest.fields_helper(StudentCategories, columns)
+
+        allies = Ally.objects.all()
+        data = []
+        for user in allies:
+            if user.user_type != "Staff":
+                categories = StudentCategories.objects.filter(
+                    id=AllyStudentCategoryRelation.objects.filter(ally_id=user.id)[0].student_category_id)[0]
+                data.append(DownloadAlliesTest.cleanup(User.objects.filter(id=user.user_id)[0].__dict__) +
+                            DownloadAlliesTest.cleanup(user.__dict__) + DownloadAlliesTest.cleanup(categories.__dict__))
+            else:
+                data.append(DownloadAlliesTest.cleanup(User.objects.filter(id=user.user_id)[0].__dict__) +
+                            DownloadAlliesTest.cleanup(user.__dict__) + [None, None, None, None, None, None])
+
+        df = pd.DataFrame(columns=columns, data=data)
+        df = df.replace(0, False)
+        df = df.replace(1, True)
+        df.fillna(value=np.nan, inplace=True)
+        df = df.replace('', np.nan)
+        return df
+
+
+    def setUp(self):
+        wack_test_db()
+        self.client = Client()
+        self.loginUser = User.objects.create_user(username='glib', password='macaque', email='staff@uiowa.edu',
+                                                  first_name='charlie', last_name='hebdo', is_staff=True)
+
+        self.badGuy = User.objects.create_user(username='bad', password='badguy1234', email='badguy@uiowa.edu',
+                                               first_name='reallyBadGuy', last_name='I\'m bad')
+
+        self.df = pd.read_csv('./pytests/assets/allies.csv')
+        self.df1 = pd.read_excel('./pytests/assets/allies2.xlsx')
+
+    def test_post_notStaff(self):
+        self.client.login(username='bad', password='badguy1234')
+        with open('./pytests/assets/allies.csv', 'r') as f:
+            response = self.client.post(reverse('sap:upload_allies'), {'attachment': f})
+        self.assertEqual(response.status_code, 403)
+
+    def test_add_allies_fileType1_(self):
+        self.client.login(username='glib', password='macaque')
+        name = './pytests/assets/allies.csv'
+        absPath = os.path.abspath(name)
+
+        with open(absPath, 'rb') as f:
+            headers = {
+                'HTTP_CONTENT_TYPE': 'multipart/form-data',
+                'HTTP_CONTENT_DISPOSITION': 'attachment; filename=' + 'allies.csv'}
+#            request = factory.post(reverse(string, args=[args]), {'file': data},
+#                                   **headers)
+            response = self.client.post(reverse('sap:upload_allies'), {'file': f}, **headers)
+
+        self.assertEqual(response.status_code, 200)
+
+        allies = Ally.objects.all()
+        self.assertEqual(len(allies), 5)
+
+        df = UploadFileTest.makeFrame()
+
+        pd.testing.assert_frame_equal(df, self.df)
+
+    def test_add_allies_fileType2(self):
+        wack_test_db()
+        self.loginUser = User.objects.create_user(username='glib', password='macaque', email='staff@uiowa.edu',
+                                                  first_name='charlie', last_name='hebdo', is_staff=True)
+        self.client.login(username='glib', password='macaque')
+
+        name = './pytests/assets/allies2.xlsx'
+        absPath = os.path.abspath(name)
+        with open(absPath, 'rb') as f:
+            headers = {
+                'HTTP_CONTENT_TYPE': 'multipart/form-data',
+                'HTTP_CONTENT_DISPOSITION': 'attachment; filename=' + 'allies2.xlsx'}
+            #            request = factory.post(reverse(string, args=[args]), {'file': data},
+            #                                   **headers)
+            response = self.client.post(reverse('sap:upload_allies'), {'file': f}, **headers)
+        self.assertEqual(response.status_code, 200)
+        allies = Ally.objects.all()
+
+        df = UploadFileTest.makeFrame()
+        df1, errorLog = views.UploadAllies.cleanupFrame(self.df1)
+        df1 = df1[userFields + allyFields + categoryFields]
+        df['last_login'] = ''
+        for category in categoryFields:
+            df[category][3] = False
+        df = df.fillna(value='')
+        pd.testing.assert_frame_equal(df, df1)
+
 
 
 class CreateEventTests(TestCase):
