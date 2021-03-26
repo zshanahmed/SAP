@@ -22,7 +22,7 @@ from django.contrib.messages import get_messages
 
 
 # Create your tests here.
-from .tokens import password_reset_token
+from .tokens import password_reset_token, account_activation_token
 
 
 class DummyTests(TestCase):
@@ -1194,7 +1194,10 @@ class SignUpTests(TestCase):
     #     self.assertTrue(categoryRelation.exists())
     #     self.assertTrue(categories.exists())
 
-    def test_signup_confirm_already_verified(self):
+    def test_signup_confirm_success(self):
+        """
+        The unique link to activate password exists and works
+        """
         self.user.is_active = False
         self.ally = Ally.objects.create(user=self.user,
                                         user_type=['Graduate Student'],
@@ -1207,34 +1210,69 @@ class SignUpTests(TestCase):
                                         interested_in_mentor_training=True)
         self.user.save()
         self.client.logout()
-        #
-        # response = self.c.post(
-        #     '/sign-up/',
-        #     {
-        #         # 'csrfmiddlewaretoken': ['MIyNUVJILbLGKrHXjz4m4fWt4d13TUOkkvRtCpStSmxkW8PKomuz3ESTYF8VVQil'],
-        #         'firstName': ['Elias'],
-        #         'lastName': ['Shaeffer'],
-        #         'new_username': self.another_username,
-        #         'new_email': self.another_email,
-        #         'new_password': self.password,
-        #         'repeat_password': self.password,
-        #         'roleSelected': ['Graduate Student'],
-        #         'stemGradCheckboxes': ['Biochemistry'],
-        #         'mentoringGradRadios': ['Yes'],
-        #         'mentoringGradCheckboxes': ['First generation college-student'],
-        #         'labShadowRadios': ['Yes'],
-        #         'connectingRadios': ['Yes'],
-        #         'volunteerGradRadios': ['Yes'],
-        #         'gradTrainingRadios': ['Yes'],
-        #     }
-        # )
-        token = password_reset_token.make_token(self.user)
-        uid = urlsafe_base64_encode(force_bytes(self.user.pk))
-        link = reverse('sap:password-forgot-confirm', args=[uid, token])
 
-        url = response.url
-        self.assertEqual(url, '/sign-up')
-        self.assertEqual(response.status_code, 302)
+        token = account_activation_token.make_token(self.user)
+        uid = urlsafe_base64_encode(force_bytes(self.user.pk))
+        link = reverse('sap:sign-up-confirm', args=[uid, token])
+
+        request = self.client.get(link)
+        self.assertEqual(request.status_code, HTTPStatus.FOUND)
+
+    def test_signup_confirm_active_user(self):
+        """
+        User is already active.
+        """
+        self.user.is_active = False
+        self.ally = Ally.objects.create(user=self.user,
+                                        user_type=['Graduate Student'],
+                                        hawk_id=self.user.username,
+                                        area_of_research=['Biochemistry'],
+                                        interested_in_mentoring=False,
+                                        willing_to_offer_lab_shadowing=False,
+                                        interested_in_connecting_with_other_mentors=False,
+                                        willing_to_volunteer_for_events=False,
+                                        interested_in_mentor_training=True)
+        self.user.save()
+        self.client.logout()
+
+        token = account_activation_token.make_token(self.user)
+        uid = urlsafe_base64_encode(force_bytes(self.user.pk))
+        link = reverse('sap:sign-up-confirm', args=[uid, token])
+
+        self.user.is_active = True
+        self.user.save()
+
+        request = self.client.get(link)
+        self.assertEqual(request.status_code, HTTPStatus.FOUND)
+
+    def test_signup_confirm_invalid(self):
+        """
+        Invalid activation link.
+        """
+        self.user.is_active = False
+        self.ally = Ally.objects.create(user=self.user,
+                                        user_type=['Graduate Student'],
+                                        hawk_id=self.user.username,
+                                        area_of_research=['Biochemistry'],
+                                        interested_in_mentoring=False,
+                                        willing_to_offer_lab_shadowing=False,
+                                        interested_in_connecting_with_other_mentors=False,
+                                        willing_to_volunteer_for_events=False,
+                                        interested_in_mentor_training=True)
+        self.user.save()
+        self.client.logout()
+
+        token = account_activation_token.make_token(self.user)
+        uid = urlsafe_base64_encode(force_bytes(self.user.pk))
+        link = reverse('sap:sign-up-confirm', args=[uid, token])
+
+        self.user.delete()
+
+        self.user.is_active = True
+        self.user.save()
+
+        request = self.client.get(link)
+        self.assertEqual(request.status_code, HTTPStatus.FOUND)
 
 
 class NonAdminAccessTests(TestCase):

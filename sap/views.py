@@ -608,9 +608,6 @@ class ForgotPasswordView(TemplateView):
                     # TODO: Change API key and invalidate the old one
                     sg = SendGridAPIClient('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')
                     response = sg.send(email_content)
-                    print(response.status_code)
-                    print(response.body)
-                    print(response.headers)
                 except Exception as e:
                     print(e)
 
