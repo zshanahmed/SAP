@@ -290,7 +290,14 @@ class AlliesListView(AccessMixin, TemplateView):
                 if not ally.user.is_active:
                     allies_list = allies_list.exclude(id=ally.id)
             return render(request, 'sap/dashboard.html', {'allies_list': allies_list})
-    
+
+class MentorsListView(generic.ListView):
+    template_name = 'sap/dashboard_ally.html'
+    context_object_name = 'allies_list'
+
+    def get_queryset(self):
+        return Ally.objects.order_by('-id')
+
 class AnalyticsView(AccessMixin, TemplateView):
     template_name = "sap/analytics.html"
 
