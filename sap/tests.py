@@ -585,23 +585,23 @@ class CreateAdminViewTest(TestCase):
 class LoginRedirectTests(TestCase):
 
     def setUp(self):
-        self.username = 'admin'
-        self.password = 'admin_password1'
+        self.username = 'user'
+        self.password = 'user_password1'
+        self.email = 'email@test.com'
         self.client = Client()
 
-        user1 = User.objects.create_user(username ='admin', email='email@test.com', password='admin_password1',
-                                         is_staff=True)
-        user1 = User.objects.create_user(username='nonadmin', email='email@test.com', password='admin_password2',
-                                         is_staff=False)
+        self.user = User.objects.create_user(self.username, self.email, self.password)
 
     def test_login_for_admin(self):
         """
-        Admin users can access Dashboard
+        Admin users are redirected to Dashboard after logging in
         """
-        self.client.login(username='admin', password='admin_password1')
-        response = self.client.get(reverse('sap:sap-dashboard'))
-        self.assertEqual(response.status_code, HTTPStatus.OK)
-        self.client.logout()
+        self.user.is_staff = True
+        self.user.save()
+        self.client.login(username=self.username, password=self.password)
+
+        response = self.client.get(reverse("sap:login_success"))
+        self.assertEqual(response.status_code, HTTPStatus.FOUND)
 
     def test_login_for_admin_fail(self):
         """
@@ -615,10 +615,12 @@ class LoginRedirectTests(TestCase):
         """
         Non-admin users are redirected to About page
         """
-        self.client.login(username='nonadmin', password='admin_password2')
-        response = self.client.get(reverse('sap:sap-about'))
-        self.assertEqual(response.status_code, HTTPStatus.OK)
-        self.client.logout()
+        self.user.is_staff = False
+        self.user.save()
+        self.client.login(username=self.username, password=self.password)
+
+        response = self.client.get(reverse("sap:login_success"))
+        self.assertEqual(response.status_code, HTTPStatus.FOUND)
 
 
 class LogoutRedirectTests(TestCase):
@@ -666,25 +668,125 @@ class AdminAccessTests(TestCase):
 class SignUpTests(TestCase):
     def setUp(self):
         self.username = 'admin'
+        self.usernameActive = 'user_active'
         self.password = 'admin_password1'
-        self.user = User.objects.create_user(self.username, 'email@test.com', self.password)
+        self.email = 'email@test.com'
+        self.emailActive = 'email_active@test.com'
+        self.user = User.objects.create_user(username=self.username, email=self.email, password=self.password)
+        self.userActive = User.objects.create_user(username=self.usernameActive, email=self.emailActive, password=self.password,
+                                             is_active=True)
         self.c = Client()
 
-    def test_get(self):
-        response = self.c.get('/sign-up/')
-        self.assertEqual(response.status_code, 200)
+        self.another_username = 'another_username'
+        self.another_email = 'another_email@uiowa.edu'
 
-    def test_entered_existing_user(self):
+    def test_get(self):
+        """
+        Sign-up page exists.
+        """
+        response = self.c.get('/sign-up/')
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+
+    def test_entered_existing_active_emailaddress(self):
+        """
+        Cannot create new account if enter known email address and its is_active=True.
+        """
+        self.user.is_active = True
+        self.user.save()
         response = self.c.post(
             '/sign-up/',
             {
                 'csrfmiddlewaretoken': ['MIyNUVJILbLGKrHXjz4m4fWt4d13TUOkkvRtCpStSmxkW8PKomuz3ESTYF8VVQil'],
                 'firstName': ['Elias'],
                 'lastName': ['Shaeffer'],
-                'new_username': ['admin'],
-                'new_email': ['eshaeffer@uiowa.edu'],
-                'new_password': ['ddd'],
-                'repeat_password': ['dddd'],
+                'new_username': ['admin1'],
+                'new_email': self.user.email,
+                'new_password': self.password,
+                'repeat_password': self.password,
+                'roleSelected': ['Graduate Student'],
+                'stemGradCheckboxes': ['Biochemistry'],
+                'mentoringGradRadios': ['Yes'],
+                'mentoringGradCheckboxes': ['First generation college-student'],
+                'labShadowRadios': ['Yes'],
+                'connectingRadios': ['Yes'],
+                'volunteerGradRadios': ['Yes'],
+                'gradTrainingRadios': ['Yes'],
+            }
+        )
+        self.assertEqual(response.url, '/sign-up')
+        self.assertEqual(response.status_code, HTTPStatus.FOUND)
+
+    def test_entered_existing_inactive_emailAddress(self):
+        """
+        If user enters inactive email address.
+        All other requirement satisfies.
+        A new account for that inactive email address can be created.
+        """
+        self.user.is_active = False
+        self.ally = Ally.objects.create(user=self.user,
+                                        user_type=['Graduate Student'],
+                                        hawk_id=self.user.username,
+                                        area_of_research=['Biochemistry'],
+                                        interested_in_mentoring=False,
+                                        willing_to_offer_lab_shadowing=False,
+                                        interested_in_connecting_with_other_mentors=False,
+                                        willing_to_volunteer_for_events=False,
+                                        interested_in_mentor_training=True)
+        self.user.save()
+        self.client.logout()
+        response = self.c.post(
+            '/sign-up/',
+            {
+                # 'csrfmiddlewaretoken': ['MIyNUVJILbLGKrHXjz4m4fWt4d13TUOkkvRtCpStSmxkW8PKomuz3ESTYF8VVQil'],
+                'firstName': ['Elias'],
+                'lastName': ['Shaeffer'],
+                'new_username': self.another_username,
+                'new_email': self.user.email,
+                'new_password': self.password,
+                'repeat_password': self.password,
+                'roleSelected': ['Graduate Student'],
+                'stemGradCheckboxes': ['Biochemistry'],
+                'mentoringGradRadios': ['Yes'],
+                'mentoringGradCheckboxes': ['First generation college-student'],
+                'labShadowRadios': ['Yes'],
+                'connectingRadios': ['Yes'],
+                'volunteerGradRadios': ['Yes'],
+                'gradTrainingRadios': ['Yes'],
+            }
+        )
+        url = response.url
+        self.assertEqual(url, '/sign-up-done/')
+        self.assertEqual(self.user.is_active, False)
+        self.assertEqual(response.status_code, HTTPStatus.FOUND)
+
+    def test_entered_existing_inactive_emailAddress_existing_username(self):
+        """
+        If user enters inactive email address.
+        However existing username is entered.
+        A new account for that inactive email address cannot be created.
+        """
+        self.user.is_active = False
+        self.ally = Ally.objects.create(user=self.user,
+                                        user_type=['Graduate Student'],
+                                        hawk_id=self.user.username,
+                                        area_of_research=['Biochemistry'],
+                                        interested_in_mentoring=False,
+                                        willing_to_offer_lab_shadowing=False,
+                                        interested_in_connecting_with_other_mentors=False,
+                                        willing_to_volunteer_for_events=False,
+                                        interested_in_mentor_training=True)
+        self.user.save()
+        self.client.logout()
+        response = self.c.post(
+            '/sign-up/',
+            {
+                # 'csrfmiddlewaretoken': ['MIyNUVJILbLGKrHXjz4m4fWt4d13TUOkkvRtCpStSmxkW8PKomuz3ESTYF8VVQil'],
+                'firstName': ['Elias'],
+                'lastName': ['Shaeffer'],
+                'new_username': self.userActive.username,
+                'new_email': self.user.email,
+                'new_password': self.password,
+                'repeat_password': self.password,
                 'roleSelected': ['Graduate Student'],
                 'stemGradCheckboxes': ['Biochemistry'],
                 'mentoringGradRadios': ['Yes'],
@@ -697,18 +799,106 @@ class SignUpTests(TestCase):
         )
         url = response.url
         self.assertEqual(url, '/sign-up')
-        self.assertEqual(response.status_code, 302)
+        self.assertEqual(self.user.is_active, False)
+        self.assertEqual(response.status_code, HTTPStatus.FOUND)
 
-    def test_entered_existing_email(self):
+    def test_entered_existing_inactive_emailAddress_mismatched_password(self):
+        """
+        If user enters inactive email address.
+        However mismatched passwords are entered.
+        A new account for that inactive email address cannot be created.
+        """
+        self.user.is_active = False
+        self.ally = Ally.objects.create(user=self.user,
+                                        user_type=['Graduate Student'],
+                                        hawk_id=self.user.username,
+                                        area_of_research=['Biochemistry'],
+                                        interested_in_mentoring=False,
+                                        willing_to_offer_lab_shadowing=False,
+                                        interested_in_connecting_with_other_mentors=False,
+                                        willing_to_volunteer_for_events=False,
+                                        interested_in_mentor_training=True)
+        self.user.save()
+        self.client.logout()
+        response = self.c.post(
+            '/sign-up/',
+            {
+                # 'csrfmiddlewaretoken': ['MIyNUVJILbLGKrHXjz4m4fWt4d13TUOkkvRtCpStSmxkW8PKomuz3ESTYF8VVQil'],
+                'firstName': ['Elias'],
+                'lastName': ['Shaeffer'],
+                'new_username': self.another_username,
+                'new_email': self.user.email,
+                'new_password': ['password??232'],
+                'repeat_password': ['password??'],
+                'roleSelected': ['Graduate Student'],
+                'stemGradCheckboxes': ['Biochemistry'],
+                'mentoringGradRadios': ['Yes'],
+                'mentoringGradCheckboxes': ['First generation college-student'],
+                'labShadowRadios': ['Yes'],
+                'connectingRadios': ['Yes'],
+                'volunteerGradRadios': ['Yes'],
+                'gradTrainingRadios': ['Yes'],
+            }
+        )
+        url = response.url
+        self.assertEqual(url, '/sign-up')
+        self.assertEqual(self.user.is_active, False)
+        self.assertEqual(response.status_code, HTTPStatus.FOUND)
+
+    def test_entered_existing_inactive_emailAddress_bad_password(self):
+        """
+        If user enters inactive email address.
+        However new pass < 8 chars.
+        A new account for that inactive email address cannot be created.
+        """
+        self.user.is_active = False
+        self.ally = Ally.objects.create(user=self.user,
+                                        user_type=['Graduate Student'],
+                                        hawk_id=self.user.username,
+                                        area_of_research=['Biochemistry'],
+                                        interested_in_mentoring=False,
+                                        willing_to_offer_lab_shadowing=False,
+                                        interested_in_connecting_with_other_mentors=False,
+                                        willing_to_volunteer_for_events=False,
+                                        interested_in_mentor_training=True)
+        self.user.save()
+        self.client.logout()
+        response = self.c.post(
+            '/sign-up/',
+            {
+                # 'csrfmiddlewaretoken': ['MIyNUVJILbLGKrHXjz4m4fWt4d13TUOkkvRtCpStSmxkW8PKomuz3ESTYF8VVQil'],
+                'firstName': ['Elias'],
+                'lastName': ['Shaeffer'],
+                'new_username': self.another_username,
+                'new_email': self.user.email,
+                'new_password': ['ddd'],
+                'repeat_password': ['ddd'],
+                'roleSelected': ['Graduate Student'],
+                'stemGradCheckboxes': ['Biochemistry'],
+                'mentoringGradRadios': ['Yes'],
+                'mentoringGradCheckboxes': ['First generation college-student'],
+                'labShadowRadios': ['Yes'],
+                'connectingRadios': ['Yes'],
+                'volunteerGradRadios': ['Yes'],
+                'gradTrainingRadios': ['Yes'],
+            }
+        )
+        url = response.url
+        self.assertEqual(url, '/sign-up')
+        self.assertEqual(self.user.is_active, False)
+        self.assertEqual(response.status_code, HTTPStatus.FOUND)
+
+    def test_entered_unknown_emailAddress_existing_username(self):
         response = self.c.post(
             '/sign-up/',
             {
                 'csrfmiddlewaretoken': ['MIyNUVJILbLGKrHXjz4m4fWt4d13TUOkkvRtCpStSmxkW8PKomuz3ESTYF8VVQil'],
                 'firstName': ['Elias'],
                 'lastName': ['Shaeffer'],
-                'new_username': ['admin1'],
-                'new_email': ['email@test.com'],
-                'new_password': ['ddd'], 'repeat_password': ['dddd'],
+                'new_username': self.user.username,
+                'new_email': self.another_email,
+                'new_password': self.password,
+                'repeat_password': self.password,
                 'roleSelected': ['Graduate Student'],
                 'stemGradCheckboxes': ['Biochemistry'],
                 'mentoringGradRadios': ['Yes'],
@@ -732,7 +922,7 @@ class SignUpTests(TestCase):
                 'lastName': ['Shaeffer'],
                 'new_username': ['admin1123'],
                 'new_email': ['email123@test.com'],
-                'new_password': ['ddd'],
+                'new_password': self.password,
                 'repeat_password': ['ddddd'],
                 'roleSelected': ['Graduate Student'],
                 'stemGradCheckboxes': ['Biochemistry'],
@@ -790,8 +980,8 @@ class SignUpTests(TestCase):
                 'lastName': ['Ahmed'],
                 'new_username': ['zeeahmed1'],
                 'new_email': ['zeeahmed@uiowa.edu'],
-                'new_password': ['bigchungusmyNameGunga'],
-                'repeat_password': ['bigchungusmyNameGunga'],
+                'new_password': self.password,
+                'repeat_password': self.password,
                 'roleSelected': ['Undergraduate Student'],
                 'undergradRadios': ['Senior'],
                 'major': ['Computer Science'],
@@ -822,8 +1012,8 @@ class SignUpTests(TestCase):
                 'lastName': ['guy'],
                 'new_username': ['big_guy1'],
                 'new_email': ['eshaeffer@uiowa.edu'],
-                'new_password': ['123myNameGunga'],
-                'repeat_password': ['123myNameGunga'],
+                'new_password': self.password,
+                'repeat_password': self.password,
                 'roleSelected': ['Graduate Student'],
                 'stemGradCheckboxes': ['Biochemistry', 'Biology', 'Biomedical Engineering', 'Chemical Engineering'],
                 'mentoringGradRadios': ['Yes'],
@@ -857,8 +1047,8 @@ class SignUpTests(TestCase):
                 'lastName': ['guy'],
                 'new_username': ['big_guy12'],
                 'new_email': ['eshaeffer@uiowa.edu'],
-                'new_password': ['123myNameGunga'],
-                'repeat_password': ['123myNameGunga'],
+                'new_password': self.password,
+                'repeat_password': self.password,
                 'roleSelected': ['Graduate Student'],
                 'mentoringGradRadios': ['Yes'],
                 'labShadowRadios': ['Yes'],
@@ -887,8 +1077,8 @@ class SignUpTests(TestCase):
                 'firstName': ['Terry'], 'lastName': ['Braun'],
                 'new_username': ['tbraun'],
                 'new_email': ['tbraun@uiowa.edu'],
-                'new_password': ['123myNameGunga'],
-                'repeat_password': ['123myNameGunga'],
+                'new_password': self.password,
+                'repeat_password': self.password,
                 'roleSelected': ['Faculty'],
                 'stemCheckboxes': ['Bioinformatics', 'Biomedical Engineering'],
                 'research-des': ['Me make big variant :)'],
@@ -921,8 +1111,8 @@ class SignUpTests(TestCase):
                 'lastName': ['Braun'],
                 'new_username': ['tbraun2'],
                 'new_email': ['tbraun@uiowa.edu'],
-                'new_password': ['123myNameGunga'],
-                'repeat_password': ['123myNameGunga'],
+                'new_password': self.password,
+                'repeat_password': self.password,
                 'roleSelected': ['Faculty'],
                 'research-des': ['Me make big variant :)'],
                 'openingRadios': ['Yes'],
@@ -952,8 +1142,8 @@ class SignUpTests(TestCase):
                 'lastName': ['herky'],
                 'new_username': ['hawkherky'],
                 'new_email': ['hawkherky@uiowa.edu'],
-                'new_password': ['hawkmyNameGunga'],
-                'repeat_password': ['hawkmyNameGunga'],
+                'new_password': self.password,
+                'repeat_password': self.password,
                 'roleSelected': ['Staff'],
                 'studentsInterestedRadios': ['Yes'],
                 'howCanWeHelp': ['sasdasdasd'],
@@ -1003,6 +1193,48 @@ class SignUpTests(TestCase):
     #     self.assertTrue(ally.exists())
     #     self.assertTrue(categoryRelation.exists())
     #     self.assertTrue(categories.exists())
+
+    def test_signup_confirm_already_verified(self):
+        self.user.is_active = False
+        self.ally = Ally.objects.create(user=self.user,
+                                        user_type=['Graduate Student'],
+                                        hawk_id=self.user.username,
+                                        area_of_research=['Biochemistry'],
+                                        interested_in_mentoring=False,
+                                        willing_to_offer_lab_shadowing=False,
+                                        interested_in_connecting_with_other_mentors=False,
+                                        willing_to_volunteer_for_events=False,
+                                        interested_in_mentor_training=True)
+        self.user.save()
+        self.client.logout()
+        #
+        # response = self.c.post(
+        #     '/sign-up/',
+        #     {
+        #         # 'csrfmiddlewaretoken': ['MIyNUVJILbLGKrHXjz4m4fWt4d13TUOkkvRtCpStSmxkW8PKomuz3ESTYF8VVQil'],
+        #         'firstName': ['Elias'],
+        #         'lastName': ['Shaeffer'],
+        #         'new_username': self.another_username,
+        #         'new_email': self.another_email,
+        #         'new_password': self.password,
+        #         'repeat_password': self.password,
+        #         'roleSelected': ['Graduate Student'],
+        #         'stemGradCheckboxes': ['Biochemistry'],
+        #         'mentoringGradRadios': ['Yes'],
+        #         'mentoringGradCheckboxes': ['First generation college-student'],
+        #         'labShadowRadios': ['Yes'],
+        #         'connectingRadios': ['Yes'],
+        #         'volunteerGradRadios': ['Yes'],
+        #         'gradTrainingRadios': ['Yes'],
+        #     }
+        # )
+        token = password_reset_token.make_token(self.user)
+        uid = urlsafe_base64_encode(force_bytes(self.user.pk))
+        link = reverse('sap:password-forgot-confirm', args=[uid, token])
+
+        url = response.url
+        self.assertEqual(url, '/sign-up')
+        self.assertEqual(response.status_code, 302)
 
 
 class NonAdminAccessTests(TestCase):

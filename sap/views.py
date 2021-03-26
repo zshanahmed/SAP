@@ -2,7 +2,7 @@ import os
 import os.path
 import csv
 from django.http import HttpResponseForbidden, HttpResponse
-from django.contrib.auth import logout
+from django.contrib.auth import logout, login
 from django.contrib.auth import authenticate
 from django.contrib.auth.views import PasswordResetConfirmView
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -435,14 +435,17 @@ class SignUpView(TemplateView):
 
         try:
             # sg = SendGridAPIClient(os.environ.get('SENDGRID_API_KEY'))
-            # TODO: Change API key and invalidate the old one
             sg = SendGridAPIClient('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')
             response = sg.send(email_content)
 
         except Exception as e:
-            print(e.email_content)
+            print(e)
 
     def get(self, request):
+        """
+        First log current user out
+        """
+        logout(request)
         return render(request, self.template_name)
 
     def post(self, request):
@@ -459,8 +462,8 @@ class SignUpView(TemplateView):
             user_temp = User.objects.get(email=postDict["new_email"][0])
 
             if user_temp.is_active: # If user is active, cannot create new account
-                messages.add_message(request, messages.WARNING,
-                                     'Account can not be created because an account associated with this email address already exists!')
+                messages.warning(request,
+                                 'Account can not be created because an account associated with this email address already exists!')
                 return redirect('/sign-up')
 
             else:   # If user is not active, delete user_temp and create new user on db with is_active=False
@@ -470,25 +473,20 @@ class SignUpView(TemplateView):
 
                 # print(request.POST)
                 if User.objects.filter(username=postDict["new_username"][0]).exists():
-                    messages.add_message(request, messages.WARNING,
-                                         'Account can not be created because username already exists!')
+                    messages.warning(request,
+                                     'Account can not be created because username already exists!')
                     return redirect('/sign-up')
                 # elif User.objects.filter(email=postDict["new_email"][0]).exists():
                 #     messages.add_message(request, messages.WARNING,
                 #                          'Account can not be created because email already exists')
                 #     return redirect('/sign-up')
                 elif postDict["new_password"][0] != postDict["repeat_password"][0]:
-                    messages.add_message(
-                        request,
-                        messages.WARNING,
-                        "Repeated password is not the same as the inputted password!",
-                    )
+                    messages.warning(request,
+                                     "Repeated password is not the same as the inputted password!",)
                     return redirect("/sign-up")
                 elif len(postDict["new_password"][0]) < min_length:
-                    messages.warning(
-                        request,
-                        "Password must be at least {0} characters long".format(min_length),
-                    )
+                    messages.warning(request,
+                                     "Password must be at least {0} characters long".format(min_length),)
                     return redirect("/sign-up")
                 else:
                     user, ally = self.create_new_user(postDict=postDict)
@@ -499,25 +497,20 @@ class SignUpView(TemplateView):
 
         elif not User.objects.filter(email=postDict["new_email"][0]).exists():
             if User.objects.filter(username=postDict["new_username"][0]).exists():
-                messages.add_message(request, messages.WARNING,
-                                     'Account can not be created because username already exists!')
+                messages.warning(request,
+                                 'Account can not be created because username already exists!')
                 return redirect('/sign-up')
             # elif User.objects.filter(email=postDict["new_email"][0]).exists():
             #     messages.add_message(request, messages.WARNING,
             #                          'Account can not be created because email already exists')
             #     return redirect('/sign-up')
             elif postDict["new_password"][0] != postDict["repeat_password"][0]:
-                messages.add_message(
-                    request,
-                    messages.WARNING,
-                    "Repeated password is not the same as the inputted password!",
-                )
+                messages.warning(request,
+                                 "Repeated password is not the same as the inputted password!")
                 return redirect("/sign-up")
             elif len(postDict["new_password"][0]) < min_length:
-                messages.warning(
-                    request,
-                    "Password must be at least {0} characters long".format(min_length),
-                )
+                messages.warning(request,
+                                 "Password must be at least {0} characters long".format(min_length))
                 return redirect("/sign-up")
             else:
                 user, ally = self.create_new_user(postDict=postDict)
@@ -619,7 +612,7 @@ class ForgotPasswordView(TemplateView):
                     print(response.body)
                     print(response.headers)
                 except Exception as e:
-                    print(e.email_content)
+                    print(e)
 
                 return redirect('/password-forgot-done')
 

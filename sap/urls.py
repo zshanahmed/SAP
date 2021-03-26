@@ -10,7 +10,8 @@ urlpatterns = [
 
     path('logout/', views.logout_request, name='logout'),
 
-    url(r'login_success/$', views.login_success, name='login_success'),
+    url(r'login_success/$', views.login_success,
+        name='login_success'),
 
     url(r'^password/$', login_required(views.ChangeAdminPassword.as_view()),
         name='change_password'),
@@ -53,7 +54,8 @@ urlpatterns = [
         login_required(views.AboutPageView.as_view(), login_url='about'),
         name='sap-about'),
 
-    url('sign-up/', views.SignUpView.as_view(), name='sign-up'),
+    url('sign-up/', views.SignUpView.as_view(),
+        name='sign-up'),
 
     url(r'sign-up-done/$', views.SignUpDoneView.as_view(),
         name='sign-up-done'),
