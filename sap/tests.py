@@ -88,6 +88,104 @@ class AdminAllyTableFeatureTests(TestCase):
             openings_in_lab_serving_at=True,
         )
 
+        self.ally_user_2 = User.objects.create_user(username='johndoe_2',
+                                                  email='johndoe@uiowa.edu',
+                                                  password='johndoe',
+                                                  first_name='John',
+                                                  last_name='Doe',
+                                                  is_active=False)
+
+        self.ally_2 = Ally.objects.create(
+            user=self.ally_user_2,
+            hawk_id='johndoe_2',
+            user_type='Staff',
+            works_at='College of Engineering',
+            description_of_research_done_at_lab='Created tools to fight fingerprinting',
+            people_who_might_be_interested_in_iba=True,
+            how_can_science_ally_serve_you='Help in connecting with like minded people',
+            year='Senior',
+            major='Electical Engineering',
+            willing_to_offer_lab_shadowing=True,
+            willing_to_volunteer_for_events=True,
+            interested_in_mentoring=True,
+            interested_in_connecting_with_other_mentors=True,
+            interested_in_mentor_training=True,
+            interested_in_joining_lab=True,
+            has_lab_experience=True,
+            information_release=True,
+            openings_in_lab_serving_at=True,
+        )
+
+    def test_year_filter_for_admin(self):
+        """
+        Show all allies conforming to year filters
+        """
+        self.user.is_staff = True
+        self.user.is_active = True
+        self.user.save()
+        self.client.login(username=self.username, password=self.password)
+
+        # Should return no allies
+        response = self.client.post(
+            '/dashboard/', {
+                'csrfmiddlewaretoken': ['XdNiZpT3jpCeRzd2kq8bbRPUmc0tKFP7dsxNaQNTUhblQPK7lne9sX0mrE5khfHH'],
+                'undergradYear': ['Junior'],
+                'form_type': 'filters'
+            }, follow=True
+        )
+
+        self.assertContains(
+            response, "No allies are available.", html=True
+        )
+
+        # Should find our johndoe
+        response = self.client.post(
+            '/dashboard/', {
+                'csrfmiddlewaretoken': ['XdNiZpT3jpCeRzd2kq8bbRPUmc0tKFP7dsxNaQNTUhblQPK7lne9sX0mrE5khfHH'],
+                'undergradYear': ['Senior'],
+                'form_type': 'filters'
+            }, follow=True
+        )
+
+        self.assertContains(
+            response, self.ally_user.first_name + ' ' + self.ally_user.last_name, html=True
+        )
+
+    def test_stem_aor_filter_for_admin(self):
+        """
+        Show all allies conforming to stem aor filters
+        """
+        self.user.is_staff = True
+        self.user.is_active = True
+        self.user.save()
+        self.client.login(username=self.username, password=self.password)
+
+        # Should return no allies
+        response = self.client.post(
+            '/dashboard/', {
+                'csrfmiddlewaretoken': ['XdNiZpT3jpCeRzd2kq8bbRPUmc0tKFP7dsxNaQNTUhblQPK7lne9sX0mrE5khfHH'],
+                'stemGradCheckboxes': ['Bioinformatics'],
+                'form_type': 'filters'
+            }, follow=True
+        )
+
+        self.assertContains(
+            response, "No allies are available.", html=True
+        )
+
+        # Should find our johndoe
+        response = self.client.post(
+            '/dashboard/', {
+                'csrfmiddlewaretoken': ['XdNiZpT3jpCeRzd2kq8bbRPUmc0tKFP7dsxNaQNTUhblQPK7lne9sX0mrE5khfHH'],
+                'stemGradCheckboxes': ['Physics'],
+                'form_type': 'filters'
+            }, follow=True
+        )
+
+        self.assertContains(
+            response, self.ally_user.first_name + ' ' + self.ally_user.last_name, html=True
+        )
+    
     def test_edit_ally_page_for_admin(self):
         """
         Show and Complete Edit ally page for admin
