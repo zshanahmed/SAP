@@ -10,7 +10,6 @@ import numpy as np
 import io
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
-
 import sap.views as views
 
 from .models import Ally, StudentCategories, AllyStudentCategoryRelation
@@ -1240,7 +1239,7 @@ class UploadFileTest(TestCase):
                                                first_name='reallyBadGuy', last_name='I\'m bad')
 
         self.df = pd.read_csv('./pytests/assets/allies.csv')
-        self.df1 = pd.read_csv('./pytests/assets/allies2.csv')
+        self.df1 = pd.read_excel('./pytests/assets/allies2.xlsx')
 
     def test_post_notStaff(self):
         self.client.login(username='bad', password='badguy1234')
@@ -1276,22 +1275,24 @@ class UploadFileTest(TestCase):
                                                   first_name='charlie', last_name='hebdo', is_staff=True)
         self.client.login(username='glib', password='macaque')
 
-        name = './pytests/assets/allies2.csv'
+        name = './pytests/assets/allies2.xlsx'
         absPath = os.path.abspath(name)
         with open(absPath, 'rb') as f:
             headers = {
                 'HTTP_CONTENT_TYPE': 'multipart/form-data',
-                'HTTP_CONTENT_DISPOSITION': 'attachment; filename=' + 'allies2.csv'}
+                'HTTP_CONTENT_DISPOSITION': 'attachment; filename=' + 'allies2.xlsx'}
             #            request = factory.post(reverse(string, args=[args]), {'file': data},
             #                                   **headers)
             response = self.client.post(reverse('sap:upload_allies'), {'file': f}, **headers)
         self.assertEqual(response.status_code, 200)
         allies = Ally.objects.all()
-        self.assertEqual(len(allies), 4)
 
         df = UploadFileTest.makeFrame()
-
-        df1 = views.UploadAllies.cleanupFrame(self.df1)
-
+        df1, errorLog = views.UploadAllies.cleanupFrame(self.df1)
+        df1 = df1[userFields + allyFields + categoryFields]
+        df['last_login'] = ''
+        for category in categoryFields:
+            df[category][3] = False
+        df = df.fillna(value='')
         pd.testing.assert_frame_equal(df, df1)
 

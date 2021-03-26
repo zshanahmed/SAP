@@ -13,3 +13,4 @@ six
 requests
 pandas
 xlsxwriter
+openpyxl

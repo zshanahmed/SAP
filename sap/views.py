@@ -658,20 +658,141 @@ class DownloadAllies(AccessMixin, HttpResponse):
         else:
             return HttpResponseForbidden()
 
+
+boolFields=['Do you currently have openings for undergraduate students in your lab?',
+            'Would you be willing to offer lab shadowing to potential students?',
+            'Are you interested in mentoring students?',
+            'Are you interested in connecting with other mentors?',
+            'Would you be willing to volunteer for panels, networking workshops, and other events as professional development for students?',
+            'Are you interested in mentor training?',
+            'Do you know students who would be interested in the Science Alliance?',
+            'Are you interested in joining a lab?',
+            'Do you have experience working in a laboratory?',
+            'Are you interested in becoming a peer mentor?']
 class UploadAllies(AccessMixin, HttpResponse):
 
     @staticmethod
     def cleanupFrame(df):
-        return df
+        errorlog = {}
+        try:
+            df = df.drop(['Workflow ID', 'Status', 'Name'], axis=1)
+        except KeyError:
+            errorlog[1000] = "Could not drop unnecessary columns \'Workflow ID\', \'Status\', \'Name\'"
+        try:
+            df1 = pd.DataFrame({"Name": df['Initiator']})
+        except KeyError:
+            errorlog[2000] = "CRITICAL ERROR: The \'Initiator\' column is not present, cannot proceed"
+            return df, errorlog
+        try:
+            df2 = df1.applymap(lambda x: x.split('\n'))
+            df2 = df2.applymap(lambda x: x[0] + x[1])
+            df2 = df2.replace(regex=['\d'], value='')
+            df2 = df2['Name'].str.split(', ', n=1, expand=True)
+            df2 = df2.rename({0: 'last_name', 1: 'first_name'}, axis=1)
+            df = df.join(df2)
+            df['email'] = df['Initiator'].str.extract(r'(.*@uiowa.edu)')
+            df = df.drop(['Initiator'], axis=1)
+        except:
+            errorlog[3000] = "CRITICAL ERROR: data could not be extracted from \'Initiator\' column " \
+                             "and added as columns"
+            return df, errorlog
+        try:
+            df[boolFields] = df[boolFields].fillna(value=False)
+            df[boolFields] = df[boolFields].replace('Yes (Yes)', True)
+            df[boolFields] = df[boolFields].replace('No (No)', False)
+            df['interested_in_mentoring'] = False
+            for i in range(0, len(df)):
+                df['interested_in_mentoring'][i] = df['Are you interested in becoming a peer mentor?'][i] or \
+                                                   df['Are you interested in mentoring students?'][i]
+            df = df.drop(['Are you interested in becoming a peer mentor?',
+                          'Are you interested in mentoring students?'], axis=1)
+            df = df.rename({
+                'Do you currently have openings for undergraduate students in your lab?': 'openings_in_lab_serving_at',
+                'Would you be willing to offer lab shadowing to potential students?': 'willing_to_offer_lab_shadowing',
+                'Are you interested in connecting with other mentors?': 'interested_in_connecting_with_other_mentors',
+                'Would you be willing to volunteer for panels, networking workshops, and other events as professional development for students?': 'willing_to_volunteer_for_events',
+                'Are you interested in mentor training?': 'interested_in_mentor_training',
+                'Do you know students who would be interested in the Science Alliance?': 'people_who_might_be_interested_in_iba',
+                'Are you interested in joining a lab?': 'interested_in_joining_lab',
+                'Do you have experience working in a laboratory?': 'has_lab_experience'
+            }, axis=1)
+        except KeyError:
+            errorlog[4000] = "CRITICAL ERROR: boolean could not replace blanks. Ensure the following are present:" + \
+                str(boolFields)
+            return df, errorlog
+        try:
+            df = df.fillna(value='')
+            df['STEM Area of Research'] = df['STEM Area of Research'].replace(regex=[r'\([^)]*\)', '\n'],value='')
+            df['STEM Area of Research'] = df['STEM Area of Research'].replace(regex=r'\s', value=',')
+            df['University Type'] = df['University Type'].replace(regex=[r'\s\([^)]*\)', '/Post-doc'], value='')
+            df['Year'] = df['Year'].replace(regex=r'\s\([^)]*\)', value='')
+            df = df.rename({'STEM Area of Research': 'area_of_research',
+                            'University Type': 'user_type',
+                            'Please provide a short description of the type of research done by undergrads': 'description_of_research_done_at_lab',
+                            'Year': 'year', 'Major': 'major',
+                            'How can the Science Alliance serve you?': 'how_can_science_ally_serve_you'},
+                           axis=1)
+        except KeyError:
+            errorlog[5000] = "CRITICAL ERROR: problem in tidying charfield columns. ensure the following is present:" \
+            "STEM Area of Research, University Type, Please provide a short description of the type of research done by undergrads, " \
+            "Year, Major"
+            return df, errorlog
+        try:
+            df['Submission Date'] = df['Submission Date'].map(lambda x: x.strftime("%b-%d-%Y"))
+            df = df.rename({'Submission Date': 'date_joined'}, axis=1)
+        except KeyError:
+            errorlog[6000] = "CRITICAL ERROR: problem converting timestamp to date, please ensure Submission Date is a column"
+            return df, errorlog
+        try:
+            df['username'] = ''
+            for i in range(0, len(df)):
+                hawkid = df['first_name'][i][0] + df['last_name'][i]
+                df['username'][i] = hawkid.lower()
+        except:
+            errorlog[7000] = "CRITICAL ERROR: Could not convert first name and last name to hawkid. Please Ensure the " \
+            "Initiator is present"
+            return df, errorlog
+        df['information_release'] = False
+        df['interested_in_being_mentored'] = False
+        df['is_active'] = True
+        df['works_at'] = ''
+        df['last_login'] = ''
+        df[categoryFields] = False
+        try:
+            # pd.set_option('display.max_columns', 100)
+            # print(df)
+            for i in range(0, len(df)):
+                tmp = df['Are you interested in serving as a mentor to students who identify as any of the following (check all that may apply)'][i]
+                if 'First generation college-student' in tmp:
+                    df['first_gen_college_student'][i] = True
+                if 'LGBTQ' in tmp:
+                    df['lgbtq'][i] = True
+                if 'Transfer student' in tmp:
+                    df['transfer_student'][i] = True
+                if 'Underrepresented racial/ethnic minority' in tmp:
+                    df['under_represented_racial_ethnic'][i] = True
+            df = df.drop(['Are you interested in serving as a mentor to students who identify as any of the following (check all that may apply)'], axis=1)
+        except:
+            errorlog[8000] = "Possible data error: willing to mentor may be inaccurate. Please ensure the column: " \
+            "\'Are you interested in serving as a mentor to students who identify as any of the following (check all that may apply)\'" \
+            " is present"
+        return df, errorlog
+
 
     @staticmethod
-    def makeAlliesFromDatatFrame(df):
+    def makeAlliesFromDataFrame(df, errorLog):
         columns = list(df.columns)
-        errorLog = {}
         passwordLog = {}
-        allyData = df[allyFields].to_dict('index')
-        userData = df[userFields].to_dict('index')
-        categoryData = df[categoryFields].to_dict('index')
+        allyData = {}
+        userData = {}
+        categoryData = {}
+        try:
+            allyData = df[allyFields].to_dict('index')
+            userData = df[userFields].to_dict('index')
+            categoryData = df[categoryFields].to_dict('index')
+        except KeyError:
+            errorLog[9000] = "CRITICAL ERROR: Data does not contain necessary columns. Please ensure that the data has columns:\n" + \
+                str(userFields + allyFields + categoryFields)
         for ally in allyData.items():
             if ("Staff" == ally[1]['user_type'] or "Graduate Student" == ally[1]['user_type']
                     or "Undergraduate Student" == ally[1]['user_type'] or "Faculty" == ally[1]['user_type']):
@@ -726,16 +847,21 @@ class UploadAllies(AccessMixin, HttpResponse):
     def processFile(file):
         errorLog = {}
         passwordLog = {}
+        df = pd.DataFrame()
         try:
             df = pd.read_csv(file)
-            df = df.replace(df.fillna('', inplace=True))
-            columns = list(df.columns)
-            if columns != (userFields + allyFields + categoryFields):
-                df = UploadAllies.cleanupFrame(df)
-            errorLog, passwordLog = UploadAllies.makeAlliesFromDatatFrame(df)
         except:
-            df = pd.DataFrames
-            errorLog[0] = 'unable to process Data'
+            try:
+                df = pd.read_excel(file)
+            except:
+                errorLog[900] = "Problem reading file: was it stored in .csv or xlsx?"
+
+        columns = list(df.columns)
+        if columns != (userFields + allyFields + categoryFields):
+            df, errorLog = UploadAllies.cleanupFrame(df)
+        else:
+            df = df.replace(df.fillna('', inplace=True))
+        errorLog, passwordLog = UploadAllies.makeAlliesFromDataFrame(df, errorLog)
         return UploadAllies.makeFile(df, errorLog, passwordLog)
 
     @staticmethod
