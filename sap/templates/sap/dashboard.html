@@ -361,7 +361,7 @@
                                                         <ul class="list-inline m-0" style="text-align: center">
                                                             <li class="list-inline-item">
                                                                 <a href="/allies/?username={{ ally.user.username }}" class="btn btn-primary btn-sm" type="button" data-toggle="tooltip" data-placement="top"
-                                                                    title="Add"><i class="fa fa-eye"></i></a>
+                                                                    title="View"><i class="fa fa-eye"></i></a>
                                                             </li>
                                                             <li class="list-inline-item">
                                                                 <a href="/edit_allies/?username={{ ally.user.username }}" class="btn btn-success btn-sm" type="button" data-toggle="tooltip" data-placement="top"
@@ -370,7 +370,8 @@
                                                             <li class="list-inline-item">
                                                                 <!-- <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#exampleModal" data-whatever="/delete/?username={{ ally.user.username }}"><i class="fa fa-trash"></i></button> -->
 
-                                                                <a class="btn btn-danger btn-sm" href="/delete/?username={{ ally.user.username }}" data-toggle="modal" data-url="{{ ally.user.username }}" data-target="#delAllyModal" data-url="/delete/?username={{ ally.user.username }}">
+                                                                <a class="btn btn-danger btn-sm" href="/delete/?username={{ ally.user.username }}" data-toggle="modal"
+                                                                   title="Delete" data-url="{{ ally.user.username }}" data-target="#delAllyModal"  title="View">
                                                                     <i class="fa fa-trash"></i>
                                                                 </a>
                                                             </li>
