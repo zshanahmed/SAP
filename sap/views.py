@@ -53,9 +53,6 @@ def login_success(request):
             return redirect('sap:sap-dashboard')
         else:
             return redirect('sap:ally-dashboard')
-    else:
-        messages.error(request, 'Username or password is incorrect!')
-
 
 def logout_request(request):
     logout(request)
@@ -296,8 +293,51 @@ class MentorsListView(generic.ListView):
     template_name = 'sap/dashboard_ally.html'
     context_object_name = 'allies_list'
 
-    def get_queryset(self):
-        return Ally.objects.order_by('-id')
+    def get(self, request):
+        allies_list = Ally.objects.order_by('-id')
+        for ally in allies_list:
+            if not ally.user.is_active:
+                allies_list = allies_list.exclude(id=ally.id)
+        return render(request, 'sap/dashboard_ally.html', {'allies_list': allies_list})
+
+    def post(self, request):
+        if request.POST.get("form_type") == 'filters':
+            postDict = dict(request.POST)
+            if 'stemGradCheckboxes' in postDict:
+                stemfields = postDict['stemGradCheckboxes']
+                exclude_from_aor_default = False
+            else:
+                exclude_from_aor_default = True
+                stemfields =[]
+            if 'undergradYear' in postDict:
+                exclude_from_year_default = False
+                undergradYear = postDict['undergradYear']
+            else:
+                exclude_from_year_default = True
+                undergradYear = []
+            allies_list = Ally.objects.order_by('-id')
+            if not (exclude_from_year_default and exclude_from_aor_default):
+                for ally in allies_list:
+                    exclude_from_aor = exclude_from_aor_default
+                    exclude_from_year = exclude_from_year_default
+
+                    if ally.area_of_research:
+                        aor = ally.area_of_research.split(',')
+                    else:
+                        aor = []
+                    if (stemfields) and (not bool(set(stemfields) & set(aor))):
+                        exclude_from_aor = True
+
+
+                    if (undergradYear) and (ally.year not in undergradYear):
+                        exclude_from_year = True
+
+                    if exclude_from_aor and exclude_from_year:
+                        allies_list = allies_list.exclude(id=ally.id)
+            for ally in allies_list:
+                if not ally.user.is_active:
+                    allies_list = allies_list.exclude(id=ally.id)
+            return render(request, 'sap/dashboard_ally.html', {'allies_list': allies_list})
 
 class AnalyticsView(AccessMixin, TemplateView):
     template_name = "sap/analytics.html"

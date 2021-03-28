@@ -170,61 +170,96 @@
                 </nav>
                 <!-- End of Topbar -->
 
-                <div class="container-fluid">
-                
+                <div class="container-fluid"  id="filter_container">
                     <!-- DataTales Example -->
                     <div class="card shadow mb-4">
                         <div class="card-header py-3">
                             <h6 class="m-0 font-weight-bold text-primary">Filters</h6>
                         </div>
                         <div class="card-body">
-                            <div class="table-responsive">
-                                <form class="user">
+                            <div class="table-responsive overflow-hidden">
+                                <form class="user" method="post">
+                                    {% csrf_token %}
+
                                     <div class="form-group row">
                                         <div class="col-sm-6 mb-3 mb-sm-0">
-                                            <select class="form-control">
-                                                <option hidden>User Type</option>
-                                                <option value="">Faculty</option>
-                                                <option value="">Undergraduate Student</option>
-                                                <option value="">Graduate Student/Post-doc</option>
-                                            </select>
+                                            <input type="hidden" name="form_type" value="filters">
+                                            <strong>STEM Area of Research</strong>
+                                            <div id="stemGradCheckboxes">
+                                                <input type="checkbox" value="Biochemistry" name="stemGradCheckboxes" id="biochemistry">
+                                                <label class="form-check-label" for="stemGradCheckboxes">Biochemistry</label>
+                                                <br>
+                                                <input type="checkbox" value="Bioinformatics" name="stemGradCheckboxes" id="bioinformatics">
+                                                <label class="form-check-label" for="stemGradCheckboxes">Bioinformatics</label>
+                                                <br>
+                                                <input type="checkbox" value="Biology" name="stemGradCheckboxes" id="biology">
+                                                <label class="form-check-label" for="stemGradCheckboxes">Biology</label>
+                                                <br>
+                                                <input type="checkbox" value="Biomedical Engineering" name="stemGradCheckboxes" id="biomedicalengineering">
+                                                <label class="form-check-label" for="stemGradCheckboxes">Biomedical Engineering</label>
+                                                <br>
+                                                <input type="checkbox" value="Chemical Engineering" name="stemGradCheckboxes" id="chemicalengineering">
+                                                <label class="form-check-label" for="stemGradCheckboxes">Chemical Engineering</label>
+                                                <br>
+                                                <input type="checkbox" value="Chemistry" name="stemGradCheckboxes" id="chemistry">
+                                                <label class="form-check-label" for="stemGradCheckboxes">Chemistry</label>
+                                                <br>
+                                                <input type="checkbox" value="Computer Science and Engineering" name="stemGradCheckboxes" id="computerscienceandengineering">
+                                                <label class="form-check-label" for="stemGradCheckboxes">Computer Science and Engineering</label>
+                                                <br>
+                                                <input type="checkbox" value="Environmental Science" name="stemGradCheckboxes" id="environmentalscience">
+                                                <label class="form-check-label" for="stemGradCheckboxes">Environmental Science</label>
+                                                <br>
+                                                <input type="checkbox" value="Health and Human Physiology" name="stemGradCheckboxes" id="healthandhumanphysiology">
+                                                <label class="form-check-label" for="stemGradCheckboxes">Health and Human Physiology</label>
+                                                <br>
+                                                <input type="checkbox" value="Mathematics" name="stemGradCheckboxes" id="mathematics">
+                                                <label class="form-check-label" for="stemGradCheckboxes">Mathematics</label>
+                                                <br>
+                                                <input type="checkbox" value="Microbiology" name="stemGradCheckboxes" id="microbiology">
+                                                <label class="form-check-label" for="stemGradCheckboxes">Microbiology</label>
+                                                <br>
+                                                <input type="checkbox" value="Neuroscience" name="stemGradCheckboxes" id="neuroscience">
+                                                <label class="form-check-label" for="stemGradCheckboxes">Neuroscience</label>
+                                                <br>
+                                                <input type="checkbox" value="Nursing" name="stemGradCheckboxes" id="nursing">
+                                                <label class="form-check-label" for="stemGradCheckboxes">Nursing</label>
+                                                <br>
+                                                <input type="checkbox" value="Physics" name="stemGradCheckboxes" id="physics">
+                                                <label class="form-check-label" for="stemGradCheckboxes">Physics</label>
+                                                <br>
+                                                <input type="checkbox" value="Psychology" name="stemGradCheckboxes" id="psychology">
+                                                <label class="form-check-label" for="stemGradCheckboxes">Psychology</label>
+                                                <br>
+                                            </div>
                                         </div>
                                         <div class="col-sm-6">
-                                            <select class="form-control">
-                                                <option hidden>STEM Area of Research</option>
-                                                <option value="">Physics</option>
-                                                <option value="">Biology</option>
-                                                <option value="">Computer Science</option>
-                                            </select>
+
+                                            <strong>Year:</strong>
+                                            <div id="undergradYear">
+                                                <input type="checkbox" value="Freshman" name="undergradYear" id="freshman" >
+                                                <label class="form-check-label" for="undergradYear">Freshman</label>
+                                                <br>
+
+                                                <input type="checkbox" value="Sophomore" name="undergradYear" id="sophomore" >
+                                                <label class="form-check-label" for="undergradYear">Sophomore</label>
+                                                <br>
+
+                                                <input type="checkbox" value="Junior" name="undergradYear" id="junior" >
+                                                <label class="form-check-label" for="undergradYear">Junior</label>
+                                                <br>
+
+                                                <input type="checkbox" value="Senior" name="undergradYear" id="senior" >
+                                                <label class="form-check-label" for="undergradYear">Senior</label>
+                                                <br>
+                                            </div>
                                         </div>
                                     </div>
-                                    <div class="form-group row">
-                                        <div class="col-sm-6 mb-3 mb-sm-0">
-                                            <select class="form-control">
-                                                <option hidden>Mentorship Type</option>
-                                                <option value="">Mentor</option>
-                                                <option value="">Mentee</option>
-                                            </select>
-                                        </div>
-                                        <div class="col-sm-6">
-                                            <select class="form-control">
-                                                <option hidden>Year</option>
-                                                <option value="">Freshman</option>
-                                                <option value="">Sophomore</option>
-                                                <option value="">Junior</option>
-                                                <option value="">Senior</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <a href="#" class="btn btn-primary btn-user btn-block">
-                                        Apply Filters
-                                    </a>
-                                    
+                                    <button type="submit" class="btn btn-primary btn-user btn-block">Apply Filters</button>
                                 </form>
                             </div>
                         </div>
                     </div>
-                
                 </div>
                 <!-- Begin Page Content -->
                 <div class="container-fluid">
@@ -290,7 +325,7 @@
                                                         <ul class="list-inline m-0" style="text-align: center">
                                                             <li class="list-inline-item">
                                                                 <a href="/allies/?username={{ ally.user.username }}" class="btn btn-primary btn-sm" type="button" data-toggle="tooltip" data-placement="top"
-                                                                    title="Add"><i class="fa fa-eye"></i></a>
+                                                                    title="View"><i class="fa fa-eye"></i></a>
                                                             </li>
                                                         </ul>
                                                     </td>
