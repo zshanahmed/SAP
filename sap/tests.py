@@ -1910,6 +1910,9 @@ class UploadFileTest(TestCase):
 
 
     def setUp(self):
+        """
+        Set up the test
+        """
         wack_test_db()
         self.client = Client()
         self.loginUser = User.objects.create_user(username='glib', password='macaque', email='staff@uiowa.edu',
@@ -1922,12 +1925,18 @@ class UploadFileTest(TestCase):
         self.df1 = pd.read_excel('./pytests/assets/allies2.xlsx')
 
     def test_post_notStaff(self):
+        """
+        Test the Post if the person trying to upload stuff is not an admin
+        """
         self.client.login(username='bad', password='badguy1234')
         with open('./pytests/assets/allies.csv', 'r') as f:
             response = self.client.post(reverse('sap:upload_allies'), {'attachment': f})
         self.assertEqual(response.status_code, 403)
 
     def test_add_allies_fileType1_(self):
+        """
+        Test the first filetype which has the same format as the file found in the DownloadAllies view.
+        """
         self.client.login(username='glib', password='macaque')
         name = './pytests/assets/allies.csv'
         absPath = os.path.abspath(name)
@@ -1948,6 +1957,9 @@ class UploadFileTest(TestCase):
         pd.testing.assert_frame_equal(df, self.df)
 
     def test_add_allies_fileType2(self):
+        """
+        Test the second file type, which is actually the one which the customer is using to store data.
+        """
         wack_test_db()
         self.loginUser = User.objects.create_user(username='glib', password='macaque', email='staff@uiowa.edu',
                                                   first_name='charlie', last_name='hebdo', is_staff=True)
