@@ -477,6 +477,9 @@ class CreateEventView(AccessMixin, TemplateView):
                 elif category == 'Rural':
                     student_categories_to_include_for_event.extend(StudentCategories.objects.filter(rural=True))
 
+                elif category == 'Disabled':
+                    student_categories_to_include_for_event.extend(StudentCategories.objects.filter(disabled=True))
+
             invited_allies_ids = AllyStudentCategoryRelation.objects.filter(student_category__in=student_categories_to_include_for_event).values('ally')
             allies_to_be_invited.extend(
                 Ally.objects.filter(id__in=invited_allies_ids)
@@ -514,6 +517,8 @@ class SignUpView(TemplateView):
                 categories.lgbtq = True
             elif id == 'Rural':
                 categories.rural = True
+            elif id == 'Disabled':
+                categories.disabled = True
         categories.save()
         return categories
 
@@ -551,7 +556,8 @@ class SignUpView(TemplateView):
                     categories = self.make_categories(postDict["idUnderGradCheckboxes"])
                 except KeyError:
                     categories = StudentCategories.objects.create()
-                undergradList = ['interestRadios', 'experienceRadios', 'interestedRadios', 'agreementRadios']
+                undergradList = ['interestRadios', 'experienceRadios', 'interestedRadios',
+                                 'agreementRadios', 'beingMentoredRadios']
                 selections = self.set_boolean(undergradList, postDict)
                 ally = Ally.objects.create(user=user,
                                            user_type=postDict['roleSelected'][0],
@@ -892,7 +898,7 @@ allyFields = ['user_type', 'area_of_research', 'openings_in_lab_serving_at', 'de
               'information_release', 'interested_in_being_mentored', 'interested_in_joining_lab',
               'has_lab_experience']
 categoryFields = ['under_represented_racial_ethnic', 'first_gen_college_student', 'transfer_student', 'lgbtq',
-                  'low_income', 'rural']
+                  'low_income', 'rural', 'disabled']
 class DownloadAllies(AccessMixin, HttpResponse):
 
     @staticmethod
@@ -933,7 +939,7 @@ class DownloadAllies(AccessMixin, HttpResponse):
                       DownloadAllies.cleanup(categories.filter(id=categoryId)[0].__dict__)
             else:
                 tmp = DownloadAllies.cleanup(users.filter(id=userId)[0].__dict__) + DownloadAllies.cleanup(ally.__dict__) + \
-                      [None, None, None, None, None, None]
+                      [None, None, None, None, None, None, None]
             data.append(tmp)
         return data
 
@@ -1127,7 +1133,8 @@ class UploadAllies(AccessMixin, HttpResponse):
                                                                           lgbtq=category['lgbtq'],
                                                                           low_income=category['low_income'],
                                                                           first_gen_college_student=category['first_gen_college_student'],
-                                                                          under_represented_racial_ethnic=category['under_represented_racial_ethnic'])
+                                                                          under_represented_racial_ethnic=category['under_represented_racial_ethnic'],
+                                                                          disabled=category['disabled'])
                             AllyStudentCategoryRelation.objects.create(ally_id=ally1.id,
                                                                        student_category_id=categories.id)
                     except IntegrityError:

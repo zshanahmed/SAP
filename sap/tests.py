@@ -1231,6 +1231,7 @@ class SignUpTests(TestCase):
                 'undergradRadios': ['Senior'],
                 'major': ['Computer Science'],
                 'interestRadios': ['Yes'],
+                'beingMentoredRadios': ['Yes'],
                 'experienceRadios': ['Yes'],
                 'interestedRadios': ['Yes'],
                 'agreementRadios': ['Yes'],
@@ -1751,7 +1752,8 @@ allyFields = ['user_type', 'area_of_research', 'openings_in_lab_serving_at', 'de
               'people_who_might_be_interested_in_iba', 'how_can_science_ally_serve_you', 'year', 'major',
               'information_release', 'interested_in_being_mentored', 'interested_in_joining_lab',
               'has_lab_experience']
-categoryFields = ['under_represented_racial_ethnic', 'first_gen_college_student', 'transfer_student', 'lgbtq', 'low_income', 'rural']
+categoryFields = ['under_represented_racial_ethnic', 'first_gen_college_student',
+                  'transfer_student', 'lgbtq', 'low_income', 'rural', 'disabled']
 class DownloadAlliesTest(TestCase):
 
     @staticmethod
@@ -1819,13 +1821,13 @@ class DownloadAlliesTest(TestCase):
 
         self.categories2 = StudentCategories.objects.create(rural=True, first_gen_college_student=True,
                                                             under_represented_racial_ethnic=True, transfer_student=True,
-                                                            lgbtq=True, low_income=True)
+                                                            lgbtq=True, low_income=True, disabled=True)
         self.categories3 = StudentCategories.objects.create(rural=True, first_gen_college_student=False,
                                                             under_represented_racial_ethnic=True, transfer_student=True,
-                                                            lgbtq=True, low_income=False)
+                                                            lgbtq=True, low_income=False, disabled=True)
         self.categories4 = StudentCategories.objects.create(rural=True, first_gen_college_student=False,
                                                             under_represented_racial_ethnic=True, transfer_student=False,
-                                                            lgbtq=True, low_income=False)
+                                                            lgbtq=True, low_income=False, disabled=True)
 
         AllyStudentCategoryRelation.objects.create(ally_id=self.ally2.id, student_category_id=self.categories2.id)
         AllyStudentCategoryRelation.objects.create(ally_id=self.ally3.id, student_category_id=self.categories3.id)
@@ -1838,7 +1840,7 @@ class DownloadAlliesTest(TestCase):
 
         data = []
         user1 = DownloadAlliesTest.cleanup(self.user1.__dict__) + \
-                DownloadAlliesTest.cleanup(self.ally1.__dict__) + [None, None, None, None, None, None]
+                DownloadAlliesTest.cleanup(self.ally1.__dict__) + [None, None, None, None, None, None, None]
         user2 = DownloadAlliesTest.cleanup(self.user2.__dict__) + \
                 DownloadAlliesTest.cleanup(self.ally2.__dict__) + DownloadAlliesTest.cleanup(self.categories2.__dict__)
 
@@ -1908,6 +1910,9 @@ class UploadFileTest(TestCase):
 
 
     def setUp(self):
+        """
+        Set up the test
+        """
         wack_test_db()
         self.client = Client()
         self.loginUser = User.objects.create_user(username='glib', password='macaque', email='staff@uiowa.edu',
@@ -1920,12 +1925,18 @@ class UploadFileTest(TestCase):
         self.df1 = pd.read_excel('./pytests/assets/allies2.xlsx')
 
     def test_post_notStaff(self):
+        """
+        Test the Post if the person trying to upload stuff is not an admin
+        """
         self.client.login(username='bad', password='badguy1234')
         with open('./pytests/assets/allies.csv', 'r') as f:
             response = self.client.post(reverse('sap:upload_allies'), {'attachment': f})
         self.assertEqual(response.status_code, 403)
 
     def test_add_allies_fileType1_(self):
+        """
+        Test the first filetype which has the same format as the file found in the DownloadAllies view.
+        """
         self.client.login(username='glib', password='macaque')
         name = './pytests/assets/allies.csv'
         absPath = os.path.abspath(name)
@@ -1934,8 +1945,6 @@ class UploadFileTest(TestCase):
             headers = {
                 'HTTP_CONTENT_TYPE': 'multipart/form-data',
                 'HTTP_CONTENT_DISPOSITION': 'attachment; filename=' + 'allies.csv'}
-#            request = factory.post(reverse(string, args=[args]), {'file': data},
-#                                   **headers)
             response = self.client.post(reverse('sap:upload_allies'), {'file': f}, **headers)
 
         self.assertEqual(response.status_code, 200)
@@ -1948,6 +1957,9 @@ class UploadFileTest(TestCase):
         pd.testing.assert_frame_equal(df, self.df)
 
     def test_add_allies_fileType2(self):
+        """
+        Test the second file type, which is actually the one which the customer is using to store data.
+        """
         wack_test_db()
         self.loginUser = User.objects.create_user(username='glib', password='macaque', email='staff@uiowa.edu',
                                                   first_name='charlie', last_name='hebdo', is_staff=True)
@@ -1959,8 +1971,6 @@ class UploadFileTest(TestCase):
             headers = {
                 'HTTP_CONTENT_TYPE': 'multipart/form-data',
                 'HTTP_CONTENT_DISPOSITION': 'attachment; filename=' + 'allies2.xlsx'}
-            #            request = factory.post(reverse(string, args=[args]), {'file': data},
-            #                                   **headers)
             response = self.client.post(reverse('sap:upload_allies'), {'file': f}, **headers)
         self.assertEqual(response.status_code, 200)
         allies = Ally.objects.all()
@@ -2053,7 +2063,7 @@ class CreateEventTests(TestCase):
             'event_description': ['description of the event 3'],
             'event_location': ['https://zoom.us/abc123edf2'],
             'event_date_time': ['2021-03-31T15:32'],
-            'special_category': ['First generation college-student', 'Rural', 'Low-income', 'Underrepresented racial/ethnic minority', 'Transfer Student', 'LGBTQ'],
+            'special_category': ['First generation college-student', 'Rural', 'Low-income', 'Underrepresented racial/ethnic minority', 'Disabled', 'Transfer Student', 'LGBTQ'],
         })
 
         url = response.url
