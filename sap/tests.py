@@ -351,6 +351,157 @@ class AdminAllyTableFeatureTests(TestCase):
         response = self.client.get("/delete/", {"username": "nouserfound"}, follow=True)
         self.assertEqual(response.status_code, HTTPStatus.NOT_FOUND)
 
+class AllyDashboardTests(TestCase):
+    def setUp(self):
+        self.username = 'Ally_1'
+        self.password = 'ally_password1'
+        self.email = 'email_ally@test.com'
+        self.client = Client()
+
+        self.user = User.objects.create_user(
+            self.username, self.email, self.password)
+
+        self.ally_user = User.objects.create_user(username='johndoe1',
+                                        email='johndoe1@uiowa.edu',
+                                        password='johndoe1',
+                                        first_name='John1',
+                                        last_name='Doe1')
+
+        self.ally_user1 = User.objects.create_user(username='johndoe2',
+                                                  email='johndoe2@uiowa.edu',
+                                                  password='johndoe2',
+                                                  first_name='John2',
+                                                  last_name='Doe2')
+
+        self.ally = Ally.objects.create(
+            user=self.ally_user,
+            hawk_id='johndoe1',
+            user_type='Staff',
+            works_at='College of Engineering',
+            area_of_research='Computer Science and Engineering,Health and Human Physiology,Physics',
+            description_of_research_done_at_lab='Created tools to fight fingerprinting',
+            people_who_might_be_interested_in_iba=True,
+            how_can_science_ally_serve_you='Help in connecting with like minded people',
+            year='Senior',
+            major='Electical Engineering',
+            willing_to_offer_lab_shadowing=True,
+            willing_to_volunteer_for_events=True,
+            interested_in_mentoring=True,
+            interested_in_connecting_with_other_mentors=True,
+            interested_in_mentor_training=True,
+            interested_in_joining_lab=True,
+            has_lab_experience=True,
+            information_release=True,
+            openings_in_lab_serving_at=True,
+        )
+
+        self.ally_user_2 = User.objects.create_user(username='johndoe_3',
+                                                  email='johndoe3@uiowa.edu',
+                                                  password='johndoe3',
+                                                  first_name='John3',
+                                                  last_name='Doe3',
+                                                  is_active=False)
+
+        self.ally_2 = Ally.objects.create(
+            user=self.ally_user_2,
+            hawk_id='johndoe_3',
+            user_type='Staff',
+            works_at='College of Engineering',
+            description_of_research_done_at_lab='Created tools to fight fingerprinting',
+            people_who_might_be_interested_in_iba=True,
+            how_can_science_ally_serve_you='Help in connecting with like minded people',
+            year='Senior',
+            major='Electical Engineering',
+            willing_to_offer_lab_shadowing=True,
+            willing_to_volunteer_for_events=True,
+            interested_in_mentoring=True,
+            interested_in_connecting_with_other_mentors=True,
+            interested_in_mentor_training=True,
+            interested_in_joining_lab=True,
+            has_lab_experience=True,
+            information_release=True,
+            openings_in_lab_serving_at=True,
+        )
+
+    def test_dasbhoard_access_for_nonadmin(self):
+        self.user.is_staff = False
+        self.user.is_active = True
+        self.user.save()
+        self.client.login(username=self.username, password=self.password)
+
+        response = self.client.get(reverse("sap:ally-dashboard"))
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+
+    def test_year_filter_for_nonadmin(self):
+        """
+        Show all allies conforming to year filters
+        """
+        self.user.is_staff = False
+        self.user.is_active = True
+        self.user.save()
+        self.client.login(username=self.username, password=self.password)
+
+        # Should return no allies
+        response = self.client.post(
+            '/ally-dashboard/', {
+                'csrfmiddlewaretoken': ['XdNiZpT3jpCeRzd2kq8bbRPUmc0tKFP7dsxNaQNTUhblQPK7lne9sX0mrE5khfHH'],
+                'undergradYear': ['Junior'],
+                'form_type': 'filters'
+            }, follow=True
+        )
+
+        self.assertContains(
+            response, "No allies are available.", html=True
+        )
+
+        # Should find our johndoe
+        response = self.client.post(
+            '/ally-dashboard/', {
+                'csrfmiddlewaretoken': ['XdNiZpT3jpCeRzd2kq8bbRPUmc0tKFP7dsxNaQNTUhblQPK7lne9sX0mrE5khfHH'],
+                'undergradYear': ['Senior'],
+                'form_type': 'filters'
+            }, follow=True
+        )
+
+        self.assertContains(
+            response, self.ally_user.first_name + ' ' + self.ally_user.last_name, html=True
+        )
+
+    def test_stem_aor_filter_for_nonadmin(self):
+        """
+        Show all allies conforming to stem aor filters
+        """
+        self.user.is_staff = False
+        self.user.is_active = True
+        self.user.save()
+        self.client.login(username=self.username, password=self.password)
+
+        # Should return no allies
+        response = self.client.post(
+            '/ally-dashboard/', {
+                'csrfmiddlewaretoken': ['XdNiZpT3jpCeRzd2kq8bbRPUmc0tKFP7dsxNaQNTUhblQPK7lne9sX0mrE5khfHH'],
+                'stemGradCheckboxes': ['Bioinformatics'],
+                'form_type': 'filters'
+            }, follow=True
+        )
+
+        self.assertContains(
+            response, "No allies are available.", html=True
+        )
+
+        # Should find our johndoe
+        response = self.client.post(
+            '/ally-dashboard/', {
+                'csrfmiddlewaretoken': ['XdNiZpT3jpCeRzd2kq8bbRPUmc0tKFP7dsxNaQNTUhblQPK7lne9sX0mrE5khfHH'],
+                'stemGradCheckboxes': ['Physics'],
+                'form_type': 'filters'
+            }, follow=True
+        )
+
+        self.assertContains(
+            response, self.ally_user.first_name + ' ' + self.ally_user.last_name, html=True
+        )
+
 
 class AdminUpdateProfileAndPasswordTests(TestCase):
     def setUp(self):
@@ -1178,7 +1329,7 @@ class SignUpTests(TestCase):
                 'research-des': ['Me make big variant :)'],
                 'openingRadios': ['Yes'],
                 'mentoringCheckboxes': ['First generation college-student',
-                                        'Underrepresented racial/ethnic minority', 'Transfer student'],
+                                        'Underrepresented racial/ethnic minority', 'Rural', 'Transfer student'],
                 'volunteerRadios': ['Yes'],
                 'mentoringFacultyRadios': ['Yes'],
                 'trainingRadios': ['Yes'],
