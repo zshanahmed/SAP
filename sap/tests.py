@@ -1231,6 +1231,7 @@ class SignUpTests(TestCase):
                 'undergradRadios': ['Senior'],
                 'major': ['Computer Science'],
                 'interestRadios': ['Yes'],
+                'beingMentoredRadios': ['Yes'],
                 'experienceRadios': ['Yes'],
                 'interestedRadios': ['Yes'],
                 'agreementRadios': ['Yes'],
@@ -1751,7 +1752,8 @@ allyFields = ['user_type', 'area_of_research', 'openings_in_lab_serving_at', 'de
               'people_who_might_be_interested_in_iba', 'how_can_science_ally_serve_you', 'year', 'major',
               'information_release', 'interested_in_being_mentored', 'interested_in_joining_lab',
               'has_lab_experience']
-categoryFields = ['under_represented_racial_ethnic', 'first_gen_college_student', 'transfer_student', 'lgbtq', 'low_income', 'rural']
+categoryFields = ['under_represented_racial_ethnic', 'first_gen_college_student',
+                  'transfer_student', 'lgbtq', 'low_income', 'rural', 'disabled']
 class DownloadAlliesTest(TestCase):
 
     @staticmethod
@@ -2049,7 +2051,7 @@ class CreateEventTests(TestCase):
             'event_description': ['description of the event 3'],
             'event_location': ['https://zoom.us/abc123edf2'],
             'event_date_time': ['2021-03-31T15:32'],
-            'special_category': ['First generation college-student', 'Rural', 'Low-income', 'Underrepresented racial/ethnic minority', 'Transfer Student', 'LGBTQ'],
+            'special_category': ['First generation college-student', 'Rural', 'Low-income', 'Underrepresented racial/ethnic minority', 'Disabled', 'Transfer Student', 'LGBTQ'],
         })
 
         url = response.url
