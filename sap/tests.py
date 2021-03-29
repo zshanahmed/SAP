@@ -1819,13 +1819,13 @@ class DownloadAlliesTest(TestCase):
 
         self.categories2 = StudentCategories.objects.create(rural=True, first_gen_college_student=True,
                                                             under_represented_racial_ethnic=True, transfer_student=True,
-                                                            lgbtq=True, low_income=True)
+                                                            lgbtq=True, low_income=True, disabled=True)
         self.categories3 = StudentCategories.objects.create(rural=True, first_gen_college_student=False,
                                                             under_represented_racial_ethnic=True, transfer_student=True,
-                                                            lgbtq=True, low_income=False)
+                                                            lgbtq=True, low_income=False, disabled=True)
         self.categories4 = StudentCategories.objects.create(rural=True, first_gen_college_student=False,
                                                             under_represented_racial_ethnic=True, transfer_student=False,
-                                                            lgbtq=True, low_income=False)
+                                                            lgbtq=True, low_income=False, disabled=True)
 
         AllyStudentCategoryRelation.objects.create(ally_id=self.ally2.id, student_category_id=self.categories2.id)
         AllyStudentCategoryRelation.objects.create(ally_id=self.ally3.id, student_category_id=self.categories3.id)
@@ -1838,7 +1838,7 @@ class DownloadAlliesTest(TestCase):
 
         data = []
         user1 = DownloadAlliesTest.cleanup(self.user1.__dict__) + \
-                DownloadAlliesTest.cleanup(self.ally1.__dict__) + [None, None, None, None, None, None]
+                DownloadAlliesTest.cleanup(self.ally1.__dict__) + [None, None, None, None, None, None, None]
         user2 = DownloadAlliesTest.cleanup(self.user2.__dict__) + \
                 DownloadAlliesTest.cleanup(self.ally2.__dict__) + DownloadAlliesTest.cleanup(self.categories2.__dict__)
 
@@ -1934,8 +1934,6 @@ class UploadFileTest(TestCase):
             headers = {
                 'HTTP_CONTENT_TYPE': 'multipart/form-data',
                 'HTTP_CONTENT_DISPOSITION': 'attachment; filename=' + 'allies.csv'}
-#            request = factory.post(reverse(string, args=[args]), {'file': data},
-#                                   **headers)
             response = self.client.post(reverse('sap:upload_allies'), {'file': f}, **headers)
 
         self.assertEqual(response.status_code, 200)
@@ -1959,8 +1957,6 @@ class UploadFileTest(TestCase):
             headers = {
                 'HTTP_CONTENT_TYPE': 'multipart/form-data',
                 'HTTP_CONTENT_DISPOSITION': 'attachment; filename=' + 'allies2.xlsx'}
-            #            request = factory.post(reverse(string, args=[args]), {'file': data},
-            #                                   **headers)
             response = self.client.post(reverse('sap:upload_allies'), {'file': f}, **headers)
         self.assertEqual(response.status_code, 200)
         allies = Ally.objects.all()
