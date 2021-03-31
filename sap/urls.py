@@ -18,6 +18,8 @@ urlpatterns = [
         name='change_password'),
     url(r'^update_profile/$', login_required(views.EditAdminProfile.as_view()),
         name='sap-admin_profile'),
+    url(r'^update_ally_profile/$', login_required(views.EditAllyProfile.as_view()),
+        name='sap-ally_profile'),
 
     url(r'^dashboard/$',
         login_required(views.AlliesListView.as_view()),

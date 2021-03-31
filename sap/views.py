@@ -240,6 +240,24 @@ class EditAdminProfile(View):
             'form': form
         })
 
+class EditAllyProfile(View):
+
+    def get(self, request, *args, **kwargs):
+        username = request.GET['username']
+        try:
+            user = User.objects.get(username=username)
+            ally = Ally.objects.get(user=user)
+            print(ally)
+            return render(request, 'sap/update_ally_profile.html', {
+                'ally': ally
+            })
+        except Exception as e:
+            print(e)
+            return HttpResponseNotFound()
+
+    def post(self, request, *args, **kwargs):
+        postDict = dict(request.POST)
+
 
 class AlliesListView(AccessMixin, TemplateView):
 
