@@ -2,7 +2,13 @@
 {% load static %}
 {% load filter_tags %}
 
-{% block title %}Admin - Edit Ally{% endblock title %}
+{% block title %}
+{% if req.is_staff %}
+    Admin - Edit Ally
+{% else %}
+    Ally - Update Profile
+{% endif %}
+{% endblock title %}
 
 {% block content %}
 <body class="bg-gradient-primary">
