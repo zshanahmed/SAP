@@ -10,8 +10,11 @@
     <div class="container">
         <div class="card o-hidden border-0 shadow-lg my-5">
             <div class="card-body p-5">
-                <h1 class="h3 mb-0 text-gray-800">Edit Ally Profile</h1>
-
+                {% if req.is_staff %}
+                    <h1 class="h3 mb-0 text-gray-800">Edit Ally Profile</h1>
+                {% else %}
+                    <h1 class="h3 mb-0 text-gray-800">Update Profile</h1>
+                {% endif %}
                 <hr>
                 <div class="row">
                     <div class="col-md-4">
@@ -89,15 +92,27 @@
                     </div>
                     <div id='contents'>
                     </div>
+                    {% if req.is_staff %}
                     <button type="submit" formmethod="post" class="btn btn-primary btn-user btn-block mt-2" id="submit_new_ally">
                         Update Ally
                     </button>
+                    {% else %}
+                    <button type="submit" formmethod="post" class="btn btn-primary btn-user btn-block mt-2" id="submit_new_ally">
+                        Update Profile
+                    </button>
+                    {% endif %}
                 </form>
 
                 <hr>
-                <a href="/dashboard" class="btn btn-primary btn-user">
-                    Back
-                </a>
+                {% if req.is_staff %}
+                    <a href="/dashboard" class="btn btn-primary btn-user">
+                        Back
+                    </a>
+                {% else %}
+                    <a href="/ally-dashboard" class="btn btn-primary btn-user">
+                        Back
+                    </a>
+                {% endif %}
             </div>
 
         </div>
