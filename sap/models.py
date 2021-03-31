@@ -1,6 +1,7 @@
+"""Contains all the table definitions of the project."""
 from django.conf import settings
 from django.db import models
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 
 
 # Create your models here.
@@ -8,8 +9,11 @@ from django.contrib.auth.models import User
 # Need to figure out how to include the following
 # Are you interested in serving as a mentor to students who identify as any of the following (check all that may apply)
 class Ally(models.Model):
+    """
+    Ally model contains the details of the IBA allies
+    """
     user = models.ForeignKey(
-        User,
+        get_user_model(),
         on_delete=models.CASCADE,
     )
     hawk_id = models.CharField(max_length=100)
@@ -44,6 +48,9 @@ class Ally(models.Model):
 
 
 class StudentCategories(models.Model):
+    """
+    StudentCategories table contains the different special cateories an uiowa student can belong to
+    """
     under_represented_racial_ethnic = models.BooleanField(default=False)
     first_gen_college_student = models.BooleanField(default=False)
     transfer_student = models.BooleanField(default=False)
@@ -53,6 +60,9 @@ class StudentCategories(models.Model):
     ##TODO: Add disabled
 
 class AllyStudentCategoryRelation(models.Model):
+    """
+    AllyStudentCategoryRelation table is used for mapping Many to Many relationship between allies and StudentCategories table
+    """
     ally = models.ForeignKey(
         Ally,
         on_delete=models.CASCADE,

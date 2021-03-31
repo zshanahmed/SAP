@@ -14,3 +14,4 @@ requests
 pandas
 xlsxwriter
 openpyxl
+pylint-django
