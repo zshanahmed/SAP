@@ -14,4 +14,4 @@ requests
 pandas
 xlsxwriter
 openpyxl
-pylint-django
+pylint-djangogit

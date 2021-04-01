@@ -1,5 +1,4 @@
 """Contains all the table definitions of the project."""
-from django.conf import settings
 from django.db import models
 from django.contrib.auth import get_user_model
 
@@ -74,6 +73,9 @@ class AllyStudentCategoryRelation(models.Model):
 
 
 class Event(models.Model):
+    """
+    Evert table contains information about the IBA science alliance events
+    """
     title = models.CharField(max_length=200, null=True)
     description = models.CharField(max_length=1000, null=True)
     datetime = models.DateTimeField()
@@ -81,6 +83,10 @@ class Event(models.Model):
 
 
 class EventAllyRelation(models.Model):
+    """
+    EventAllyRelation table contains information about the Event ally mappings
+    One event can have many allies invited and vice versa
+    """
     event = models.ForeignKey(Event,
                               on_delete=models.CASCADE
                               )
