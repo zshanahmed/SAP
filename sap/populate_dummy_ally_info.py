@@ -4,8 +4,9 @@ python manage.py shell
 copy paste the following commands to populate dummy data
 """
 
-from sap.models import Ally
 from django.contrib.auth import get_user_model
+from sap.models import Ally
+
 
 user_1 = get_user_model().objects.create_user(username='john',
                                  email='jlennon@beatles.com',

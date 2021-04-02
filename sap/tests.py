@@ -1,9 +1,8 @@
+"""
+contains all the unit tests for sap app
+"""
 import os
-from django.http import response
-
-from django.shortcuts import render
-# tests file
-from django.test import TestCase, Client
+from django.test import TestCase, Client  # tests file
 import pandas as pd
 import numpy as np
 import io
@@ -13,25 +12,17 @@ import sap.views as views
 
 from .models import Ally, StudentCategories, AllyStudentCategoryRelation, Event, EventAllyRelation
 from django.urls import reverse
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from http import HTTPStatus
 from .forms import UpdateAdminProfileForm, UserResetForgotPasswordForm
 from django.contrib.auth.forms import PasswordChangeForm, PasswordResetForm
 
 from django.contrib.messages import get_messages
 
-
 # Create your tests here.
 from .tokens import password_reset_token, account_activation_token
 
-
-class DummyTests(TestCase):
-
-    def test_true(self):
-        self.assertIs(True, True)
-
-    def test_false(self):
-        self.assertIs(False, False)
+User = get_user_model()
 
 
 def create_ally(username, hawk_id):
@@ -51,6 +42,9 @@ def create_ally(username, hawk_id):
 
 
 class AdminAllyTableFeatureTests(TestCase):
+    """
+    Unit tests for features on the Admin dashboard
+    """
     def setUp(self):
         self.username = 'Admin_1'
         self.password = 'admin_password1'
@@ -61,16 +55,16 @@ class AdminAllyTableFeatureTests(TestCase):
             self.username, self.email, self.password)
 
         self.ally_user = User.objects.create_user(username='johndoe',
-                                        email='johndoe@uiowa.edu',
-                                        password='johndoe',
-                                        first_name='John',
-                                        last_name='Doe')
+                                                  email='johndoe@uiowa.edu',
+                                                  password='johndoe',
+                                                  first_name='John',
+                                                  last_name='Doe')
 
         self.ally_user1 = User.objects.create_user(username='johndoe1',
-                                                  email='johndoe1@uiowa.edu',
-                                                  password='johndoe1',
-                                                  first_name='John1',
-                                                  last_name='Doe1')
+                                                   email='johndoe1@uiowa.edu',
+                                                   password='johndoe1',
+                                                   first_name='John1',
+                                                   last_name='Doe1')
 
         self.ally = Ally.objects.create(
             user=self.ally_user,
@@ -95,11 +89,11 @@ class AdminAllyTableFeatureTests(TestCase):
         )
 
         self.ally_user_2 = User.objects.create_user(username='johndoe_2',
-                                                  email='johndoe@uiowa.edu',
-                                                  password='johndoe',
-                                                  first_name='John',
-                                                  last_name='Doe',
-                                                  is_active=False)
+                                                    email='johndoe@uiowa.edu',
+                                                    password='johndoe',
+                                                    first_name='John',
+                                                    last_name='Doe',
+                                                    is_active=False)
 
         self.ally_2 = Ally.objects.create(
             user=self.ally_user_2,
@@ -224,13 +218,14 @@ class AdminAllyTableFeatureTests(TestCase):
         self.assertEqual(message.message, "Ally updated !")
 
         # Testing for Graduate Student user type
-        self.ally.user_type="Graduate Student"
+        self.ally.user_type = "Graduate Student"
         self.ally.save()
         response = self.client.post(
             '/edit_allies/', {
                 'csrfmiddlewaretoken': ['XdNiZpT3jpCeRzd2kq8bbRPUmc0tKFP7dsxNaQNTUhblQPK7lne9sX0mrE5khfHH'],
                 'username': [self.ally_user.username],
-                'stemGradCheckboxes': ['Bioinformatics','Computer Science and Engineering', 'Health and Human Physiology', 'Neuroscience', 'Physics'],
+                'stemGradCheckboxes': ['Bioinformatics', 'Computer Science and Engineering', 'Health and Human Physiology',
+                                       'Neuroscience', 'Physics'],
                 'mentoringGradRadios': ['Yes'],
                 'labShadowRadios': ['No'],
                 'connectingRadios': ['No'],
@@ -251,7 +246,8 @@ class AdminAllyTableFeatureTests(TestCase):
             '/edit_allies/', {
                 'csrfmiddlewaretoken': ['XdNiZpT3jpCeRzd2kq8bbRPUmc0tKFP7dsxNaQNTUhblQPK7lne9sX0mrE5khfHH'],
                 'username': [self.ally_user.username],
-                'undergradRadios': ['Freshman'], 'major': ['Psychology'], 'interestRadios': ['No'], 'experienceRadios': ['Yes'], 'interestedRadios': ['No'], 'agreementRadios': ['Yes']
+                'undergradRadios': ['Freshman'], 'major': ['Psychology'], 'interestRadios': ['No'], 'experienceRadios': ['Yes'],
+                'interestedRadios': ['No'], 'agreementRadios': ['Yes']
             }, follow=True
         )
         self.assertContains(
@@ -267,7 +263,8 @@ class AdminAllyTableFeatureTests(TestCase):
             '/edit_allies/', {
                 'csrfmiddlewaretoken': ['XdNiZpT3jpCeRzd2kq8bbRPUmc0tKFP7dsxNaQNTUhblQPK7lne9sX0mrE5khfHH'],
                 'username': [self.ally_user.username],
-                'stemGradCheckboxes': ['Biochemistry', 'Bioinformatics', 'Biology'], 'research-des': ['Authorship Obfuscation'], 'openingRadios': ['No'], 'mentoringFacultyRadios': ['No'], 'volunteerRadios': ['Yes'], 'trainingRadios': ['Yes']
+                'stemGradCheckboxes': ['Biochemistry', 'Bioinformatics', 'Biology'], 'research-des': ['Authorship Obfuscation'],
+                'openingRadios': ['No'], 'mentoringFacultyRadios': ['No'], 'volunteerRadios': ['Yes'], 'trainingRadios': ['Yes']
             }, follow=True
         )
         self.assertContains(
@@ -327,8 +324,11 @@ class AdminAllyTableFeatureTests(TestCase):
         response = self.client.get(
             '/allies/', {'username': 'something'})
         self.assertEqual(response.status_code, HTTPStatus.NOT_FOUND)
-    
+
     def test_delete_ally(self):
+        """
+        Unit test for delete ally feature
+        """
         self.user.is_staff = True
         self.user.save()
         self.client.login(username=self.username, password=self.password)
@@ -341,6 +341,9 @@ class AdminAllyTableFeatureTests(TestCase):
         self.assertNotContains(response, name, html=True)
 
     def test_delete_ally_fail(self):
+        """
+        Unit test for deleting non existent ally
+        """
         self.user.is_staff = True
         self.user.save()
         self.client.login(username=self.username, password=self.password)
@@ -351,7 +354,11 @@ class AdminAllyTableFeatureTests(TestCase):
         response = self.client.get("/delete/", {"username": "nouserfound"}, follow=True)
         self.assertEqual(response.status_code, HTTPStatus.NOT_FOUND)
 
+
 class AllyDashboardTests(TestCase):
+    """
+    Unit tests for features on the ally dashboard
+    """
     def setUp(self):
         self.username = 'Ally_1'
         self.password = 'ally_password1'
@@ -362,16 +369,16 @@ class AllyDashboardTests(TestCase):
             self.username, self.email, self.password)
 
         self.ally_user = User.objects.create_user(username='johndoe1',
-                                        email='johndoe1@uiowa.edu',
-                                        password='johndoe1',
-                                        first_name='John1',
-                                        last_name='Doe1')
+                                                  email='johndoe1@uiowa.edu',
+                                                  password='johndoe1',
+                                                  first_name='John1',
+                                                  last_name='Doe1')
 
         self.ally_user1 = User.objects.create_user(username='johndoe2',
-                                                  email='johndoe2@uiowa.edu',
-                                                  password='johndoe2',
-                                                  first_name='John2',
-                                                  last_name='Doe2')
+                                                   email='johndoe2@uiowa.edu',
+                                                   password='johndoe2',
+                                                   first_name='John2',
+                                                   last_name='Doe2')
 
         self.ally = Ally.objects.create(
             user=self.ally_user,
@@ -396,11 +403,11 @@ class AllyDashboardTests(TestCase):
         )
 
         self.ally_user_2 = User.objects.create_user(username='johndoe_3',
-                                                  email='johndoe3@uiowa.edu',
-                                                  password='johndoe3',
-                                                  first_name='John3',
-                                                  last_name='Doe3',
-                                                  is_active=False)
+                                                    email='johndoe3@uiowa.edu',
+                                                    password='johndoe3',
+                                                    first_name='John3',
+                                                    last_name='Doe3',
+                                                    is_active=False)
 
         self.ally_2 = Ally.objects.create(
             user=self.ally_user_2,
@@ -424,6 +431,9 @@ class AllyDashboardTests(TestCase):
         )
 
     def test_dasbhoard_access_for_nonadmin(self):
+        """
+        Display non admin dashboard page for allies
+        """
         self.user.is_staff = False
         self.user.is_active = True
         self.user.save()
@@ -504,15 +514,17 @@ class AllyDashboardTests(TestCase):
 
 
 class AdminUpdateProfileAndPasswordTests(TestCase):
+    """
+    Unit test for update profile feature for admin and to reset their passwords
+    """
     def setUp(self):
         self.username = 'Admin_1'
         self.password = 'admin_password1'
         self.email = 'email@test.com'
         self.client = Client()
-
         self.user = User.objects.create_user(
             self.username, self.email, self.password)
-    
+
     def test_change_password_page_for_admin(self):
         """
         Show Change Password page for Admin
@@ -525,7 +537,7 @@ class AdminUpdateProfileAndPasswordTests(TestCase):
         self.assertContains(
             response, "Change Password", html=True
         )
-    
+
     def test_change_password_page_for_ally(self):
         """
         Show Change Password page for Ally
@@ -535,7 +547,7 @@ class AdminUpdateProfileAndPasswordTests(TestCase):
         self.client.login(username=self.username, password=self.password)
         response = self.client.get(reverse('sap:change_password'))
         self.assertEqual(response.status_code, HTTPStatus.OK)
-        
+
     def test_update_profile_page_for_admin(self):
         """
         Show Change Password page for Admin
@@ -587,7 +599,7 @@ class AdminUpdateProfileAndPasswordTests(TestCase):
         self.assertEqual(response.status_code, HTTPStatus.OK)
         message = list(response.context['messages'])[0]
         self.assertEqual(message.message, "Could not Update Password !")
-    
+
     def test_failure_old_pass_wrong_change_password(self):
         """
         If old password is wrong, a failed message is displayed
@@ -610,7 +622,6 @@ class AdminUpdateProfileAndPasswordTests(TestCase):
             data=data
         )
         self.assertFalse(form.is_valid())
-        
         response = self.client.post(
             reverse('sap:change_password'), data=data, follow=True)
         self.assertEqual(response.status_code, HTTPStatus.OK)
@@ -646,7 +657,7 @@ class AdminUpdateProfileAndPasswordTests(TestCase):
         self.assertEqual(response.status_code, HTTPStatus.OK)
         message = list(response.context['messages'])[0]
         self.assertEqual(message.message, "Password Updated Successfully !")
-    
+
     def test_correct_update_profile(self):
         """
         If profile is updated, a success message is displayed
@@ -668,7 +679,7 @@ class AdminUpdateProfileAndPasswordTests(TestCase):
         self.assertEqual(response.status_code, HTTPStatus.OK)
         message = list(response.context['messages'])[0]
         self.assertEqual(message.message, "Profile Updated !")
-        
+
     def test_fail_update_profile(self):
         """
         If profile is not updated, a failed message is displayed
@@ -684,7 +695,7 @@ class AdminUpdateProfileAndPasswordTests(TestCase):
 
         form = UpdateAdminProfileForm(
             data={"username": "Admin_1", "email": "admin@admin.com"})
-        self.assertFalse(form.is_valid()) 
+        self.assertFalse(form.is_valid())
         response = self.client.post(
             "/update_profile/", data={"username": "Admin_1", "email": "admin@admin.com"}, follow=True)
         self.assertEqual(response.status_code, HTTPStatus.OK)
@@ -692,7 +703,11 @@ class AdminUpdateProfileAndPasswordTests(TestCase):
         self.assertEqual(
             message.message, "Could not Update Profile ! Username already exists")
 
+
 class AlliesIndexViewTests(TestCase):
+    """
+    Unit tests for the dashboard an admin views
+    """
 
     def setUp(self):
         self.username = 'admin'
@@ -712,7 +727,6 @@ class AlliesIndexViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "No allies are available.")
         self.assertQuerysetEqual(response.context['allies_list'], [])
-
 
     def test_one_ally(self):
         """
@@ -736,10 +750,14 @@ class AlliesIndexViewTests(TestCase):
         response = self.client.get(reverse('sap:sap-dashboard'))
         self.assertQuerysetEqual(
             response.context['allies_list'],
-            ['<Ally: hawk_id_2>', '<Ally: hawk_id_1>'] # Need to return in the descending order (When the ally record was created in the table)
+            ['<Ally: hawk_id_2>', '<Ally: hawk_id_1>']  # Need to return in the descending order
         )
 
+
 class CreateAdminViewTest(TestCase):
+    """
+    Unit tests for creating new IBA admins
+    """
 
     def setUp(self):
         self.username = 'admin'
@@ -758,51 +776,71 @@ class CreateAdminViewTest(TestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_post_missing_data(self):
-        response = self.c.post('/create_iba_admin/', {'csrfmiddlewaretoken': ['AAIHnJBSnR9fQdHP6yTjGRPQSE8HmiRI7oc3tPv0RyJrMoAyXpq93geUfDTH6QCk'],
-                'current_username': ['iba_admin'],
-                'current_password': ['iba_sep_1'], 'new_email': [''],
-                'new_username': ['iba_admin'], 'new_password': ['iba_sep_1'],
-                'repeat_password': ['iba_sep_1']})
+        """
+        Check if email entered for new admin is non empty
+        """
+        response = self.c.post('/create_iba_admin/', {
+            'csrfmiddlewaretoken': ['AAIHnJBSnR9fQdHP6yTjGRPQSE8HmiRI7oc3tPv0RyJrMoAyXpq93geUfDTH6QCk'],
+            'current_username': ['iba_admin'],
+            'current_password': ['iba_sep_1'], 'new_email': [''],
+            'new_username': ['iba_admin'], 'new_password': ['iba_sep_1'],
+            'repeat_password': ['iba_sep_1']})
 
         url = response.url
         assert url == '/create_iba_admin'
 
     def test_post_Invalid_credentials(self):
-        response = self.c.post('/create_iba_admin/', {'csrfmiddlewaretoken': ['AAIHnJBSnR9fQdHP6yTjGRPQSE8HmiRI7oc3tPv0RyJrMoAyXpq93geUfDTH6QCk'],
-                'current_username': ['admin'],
-                'current_password': ['admin_assword1'], 'new_email': ['emailGuy@email.com'],
-                'new_username': ['iba_admin'], 'new_password': ['iba_sep_1'],
-                'repeat_password': ['iba_sep_1']})
+        """
+        check if the current iba admin username and password are valid
+        """
+        response = self.c.post('/create_iba_admin/', {
+            'csrfmiddlewaretoken': ['AAIHnJBSnR9fQdHP6yTjGRPQSE8HmiRI7oc3tPv0RyJrMoAyXpq93geUfDTH6QCk'],
+            'current_username': ['admin'],
+            'current_password': ['admin_assword1'], 'new_email': ['emailGuy@email.com'],
+            'new_username': ['iba_admin'], 'new_password': ['iba_sep_1'],
+            'repeat_password': ['iba_sep_1']})
 
         url = response.url
         assert url == '/create_iba_admin'
 
     def test_post_new_username_that_exists(self):
-        response = self.c.post('/create_iba_admin/', {'csrfmiddlewaretoken': ['AAIHnJBSnR9fQdHP6yTjGRPQSE8HmiRI7oc3tPv0RyJrMoAyXpq93geUfDTH6QCk'],
-                'current_username': ['admin'],
-                'current_password': ['admin_password1'], 'new_email': ['emailGuy@email.com'],
-                'new_username': ['admin'], 'new_password': ['admin_password1'],
-                'repeat_password': ['iba_sep_1']})
+        """
+        check if the new admin's name is unique
+        """
+        response = self.c.post('/create_iba_admin/', {
+            'csrfmiddlewaretoken': ['AAIHnJBSnR9fQdHP6yTjGRPQSE8HmiRI7oc3tPv0RyJrMoAyXpq93geUfDTH6QCk'],
+            'current_username': ['admin'],
+            'current_password': ['admin_password1'], 'new_email': ['emailGuy@email.com'],
+            'new_username': ['admin'], 'new_password': ['admin_password1'],
+            'repeat_password': ['iba_sep_1']})
 
         url = response.url
         assert url == '/create_iba_admin'
 
     def test_post_non_matching_new_password(self):
-        response = self.c.post('/create_iba_admin/', {'csrfmiddlewaretoken': ['AAIHnJBSnR9fQdHP6yTjGRPQSE8HmiRI7oc3tPv0RyJrMoAyXpq93geUfDTH6QCk'],
-                'current_username': ['admin'],
-                'current_password': ['admin_password1'], 'new_email': ['emailGuy@email.com'],
-                'new_username': ['admin1'], 'new_password': ['admin_password1'],
-                'repeat_password': ['iba_sep_1']})
+        """
+        verify if the password and confirm password fields have the same value
+        """
+        response = self.c.post('/create_iba_admin/', {
+            'csrfmiddlewaretoken': ['AAIHnJBSnR9fQdHP6yTjGRPQSE8HmiRI7oc3tPv0RyJrMoAyXpq93geUfDTH6QCk'],
+            'current_username': ['admin'],
+            'current_password': ['admin_password1'], 'new_email': ['emailGuy@email.com'],
+            'new_username': ['admin1'], 'new_password': ['admin_password1'],
+            'repeat_password': ['iba_sep_1']})
 
         url = response.url
         assert url == '/create_iba_admin'
 
     def test_good_create_admin(self):
-        response = self.c.post('/create_iba_admin/', {'csrfmiddlewaretoken': ['AAIHnJBSnR9fQdHP6yTjGRPQSE8HmiRI7oc3tPv0RyJrMoAyXpq93geUfDTH6QCk'],
-                'current_username': ['admin'],
-                'current_password': ['admin_password1'], 'new_email': ['emailGuy@email.com'],
-                'new_username': ['admin1'], 'new_password': ['admin_password1'],
-                'repeat_password': ['admin_password1']})
+        """
+        Test if new admin is created in user table if all fields are valid
+        """
+        response = self.c.post('/create_iba_admin/', {
+            'csrfmiddlewaretoken': ['AAIHnJBSnR9fQdHP6yTjGRPQSE8HmiRI7oc3tPv0RyJrMoAyXpq93geUfDTH6QCk'],
+            'current_username': ['admin'],
+            'current_password': ['admin_password1'], 'new_email': ['emailGuy@email.com'],
+            'new_username': ['admin1'], 'new_password': ['admin_password1'],
+            'repeat_password': ['admin_password1']})
 
         url = response.url
         assert url == '/dashboard'
@@ -828,6 +866,9 @@ class CreateAdminViewTest(TestCase):
 
 
 class LoginRedirectTests(TestCase):
+    """
+    Unit tests to verify if the users are redirected to proper page after login
+    """
 
     def setUp(self):
         self.username = 'user'
@@ -869,15 +910,31 @@ class LoginRedirectTests(TestCase):
 
 
 class LogoutRedirectTests(TestCase):
+    """
+    Unit tests to verify if logout happens properly
+    """
 
     def setUp(self):
         self.username = 'admin'
         self.password = 'admin_password1'
         self.client = Client()
-
-        User.objects.create_user(self.username, 'email@test.com', self.password, is_staff=True)
+        self.user = User.objects.create_user(self.username, 'email@test.com', self.password, is_staff=True)
 
     def test_logout_for_admin(self):
+        """
+        test if admin is logged out on click of logout button
+        """
+        self.client.login(username=self.username, password=self.password)
+        response = self.client.get(reverse('sap:logout'))
+        self.assertEqual(response.status_code, HTTPStatus.FOUND)
+        self.assertEqual(response.url, '/')
+
+    def test_logout_for_ally(self):
+        """
+        test if admin is logged out on click of logout button
+        """
+        self.user.is_staff = False
+        self.user.save()
         self.client.login(username=self.username, password=self.password)
         response = self.client.get(reverse('sap:logout'))
         self.assertEqual(response.status_code, HTTPStatus.FOUND)
@@ -885,6 +942,9 @@ class LogoutRedirectTests(TestCase):
 
 
 class AdminAccessTests(TestCase):
+    """
+    Tests to ensure admin is able to access all the pages on the site
+    """
 
     def setUp(self):
         self.username = 'admin'
@@ -911,6 +971,9 @@ class AdminAccessTests(TestCase):
 
 
 class SignUpTests(TestCase):
+    """
+    Testing all different scenarios of signup for different types of users
+    """
     def setUp(self):
         self.username = 'admin'
         self.usernameActive = 'user_active'
@@ -919,7 +982,7 @@ class SignUpTests(TestCase):
         self.emailActive = 'email_active@test.com'
         self.user = User.objects.create_user(username=self.username, email=self.email, password=self.password)
         self.userActive = User.objects.create_user(username=self.usernameActive, email=self.emailActive, password=self.password,
-                                             is_active=True)
+                                                   is_active=True)
         self.c = Client()
 
         self.another_username = 'another_username'
@@ -1744,6 +1807,7 @@ def wack_test_db():
     StudentCategories.objects.all().delete()
     AllyStudentCategoryRelation.objects.all().delete()
 
+
 userFields = ['last_login', 'username', 'first_name', 'last_name', 'email', 'is_active', 'date_joined']
 allyFields = ['user_type', 'area_of_research', 'openings_in_lab_serving_at', 'description_of_research_done_at_lab',
               'interested_in_mentoring', 'interested_in_mentor_training', 'willing_to_offer_lab_shadowing',
@@ -1752,6 +1816,8 @@ allyFields = ['user_type', 'area_of_research', 'openings_in_lab_serving_at', 'de
               'information_release', 'interested_in_being_mentored', 'interested_in_joining_lab',
               'has_lab_experience']
 categoryFields = ['under_represented_racial_ethnic', 'first_gen_college_student', 'transfer_student', 'lgbtq', 'low_income', 'rural']
+
+
 class DownloadAlliesTest(TestCase):
 
     @staticmethod
@@ -1780,7 +1846,7 @@ class DownloadAlliesTest(TestCase):
         self.client = Client()
 
         self.loginuser = User.objects.create_user(username='glib', password='macaque', email='staff@uiowa.edu',
-                                              first_name='charlie', last_name='hebdo', is_staff=True)
+                                                  first_name='charlie', last_name='hebdo', is_staff=True)
 
         self.user1 = User.objects.create_user(username='staff', password='123', email='staff@uiowa.edu',
                                               first_name='charlie', last_name='hebdo')
@@ -1792,8 +1858,8 @@ class DownloadAlliesTest(TestCase):
                                               first_name='Zeeshan', last_name='Ahmed')
 
         self.ally1 = Ally.objects.create(user=self.user1, user_type='Staff', hawk_id=self.user1.username,
-                                            people_who_might_be_interested_in_iba=True,
-                                            how_can_science_ally_serve_you='help_me 0:')
+                                         people_who_might_be_interested_in_iba=True,
+                                         how_can_science_ally_serve_you='help_me 0:')
         self.ally2 = Ally.objects.create(user=self.user2, user_type='Graduate Student', hawk_id=self.user2.username,
                                          area_of_research='Bioinformatics',
                                          interested_in_mentoring=False,
@@ -1878,6 +1944,7 @@ class DownloadAlliesTest(TestCase):
         response = self.client.get(reverse('sap:download_allies'))
         self.assertEqual(response.status_code, 403)
 
+
 class UploadFileTest(TestCase):
 
     @staticmethod
@@ -1906,7 +1973,6 @@ class UploadFileTest(TestCase):
         df = df.replace('', np.nan)
         return df
 
-
     def setUp(self):
         wack_test_db()
         self.client = Client()
@@ -1934,8 +2000,8 @@ class UploadFileTest(TestCase):
             headers = {
                 'HTTP_CONTENT_TYPE': 'multipart/form-data',
                 'HTTP_CONTENT_DISPOSITION': 'attachment; filename=' + 'allies.csv'}
-#            request = factory.post(reverse(string, args=[args]), {'file': data},
-#                                   **headers)
+            #            request = factory.post(reverse(string, args=[args]), {'file': data},
+            #                                   **headers)
             response = self.client.post(reverse('sap:upload_allies'), {'file': f}, **headers)
 
         self.assertEqual(response.status_code, 200)
@@ -1973,7 +2039,6 @@ class UploadFileTest(TestCase):
             df[category][3] = False
         df = df.fillna(value='')
         pd.testing.assert_frame_equal(df, df1)
-
 
 
 class CreateEventTests(TestCase):
@@ -2053,7 +2118,8 @@ class CreateEventTests(TestCase):
             'event_description': ['description of the event 3'],
             'event_location': ['https://zoom.us/abc123edf2'],
             'event_date_time': ['2021-03-31T15:32'],
-            'special_category': ['First generation college-student', 'Rural', 'Low-income', 'Underrepresented racial/ethnic minority', 'Transfer Student', 'LGBTQ'],
+            'special_category': ['First generation college-student', 'Rural', 'Low-income',
+                                 'Underrepresented racial/ethnic minority', 'Transfer Student', 'LGBTQ'],
         })
 
         url = response.url
