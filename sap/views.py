@@ -191,7 +191,7 @@ class EditAllyProfileFromAdminDashboard(AccessMixin, View):
                 ally.interested_in_joining_lab = selections['interestRadios']
                 ally.has_lab_experience = selections['experienceRadios']
                 ally.interested_in_mentoring = selections['interestedRadios']
-                ally.information_release = selections['agreementRadios']
+                ##ally.information_release = selections['agreementRadios']
 
                 ally.save()
 
