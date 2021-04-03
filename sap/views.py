@@ -184,7 +184,7 @@ class EditAllyProfileFromAdminDashboard(AccessMixin, View):
                 ally.save()
             else:
                 selections = self.set_boolean(
-                    ['interestRadios', 'experienceRadios', 'interestedRadios',], postDict)
+                    ['interestRadios', 'experienceRadios', 'interestedRadios'], postDict)
 
                 ally.year = postDict['undergradRadios'][0]
                 ally.major = postDict['major'][0]
