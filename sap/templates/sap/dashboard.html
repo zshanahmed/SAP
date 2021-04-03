@@ -1,82 +1,13 @@
-<!DOCTYPE html>
-<html lang="en">
-
+{% extends 'sap/base.html' %}
 {% load static %}
 
-<head>
+{% block title %}IBA - Dashboard{% endblock title %}
 
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta name="description" content="">
-    <meta name="author" content="">
-
-    <title>IBA - Dashboard</title>
-
-    <!-- Custom fonts for this template -->
-    <link href="{% static '/vendor/fontawesome-free/css/all.min.css' %}" rel="stylesheet" type="text/css">
-    <link
-        href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
-        rel="stylesheet">
-
-    <!-- Custom styles for this template -->
-    <link href="{% static '/css/sb-admin-2.min.css' %}" rel="stylesheet">
-
-    <!-- Custom styles for this page -->
-    <link href="{% static '/vendor/datatables/dataTables.bootstrap4.min.css' %}" rel="stylesheet">
-
-</head>
-
-<body id="page-top">
-
+{% block content %}
     <!-- Page Wrapper -->
     <div id="wrapper">
 
-        <!-- Sidebar -->
-        <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
-            <br>
-            <!-- Sidebar - Brand -->
-            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="/dashboard">
-                
-                <div class="sidebar-brand-icon rotate-n-15">
-                    <img src="{% static '/img/Untitled-1.png' %}" alt="IBA Logo" width="151px" height="88px">
-                </div>
-            </a>
-
-            <!-- Divider -->
-            <br>
-            <hr class="sidebar-divider my-0">
-
-            <!-- Nav Item - Dashboard -->
-            <li class="nav-item">
-                <a class="nav-link" href="/dashboard">
-                    <i class="fas fa-fw fa-tachometer-alt"></i>
-                    <span>Dashboard</span></a>
-            </li>
-
-            <li class="nav-item">
-                <a class="nav-link" href="/analytics">
-                    <i class="fas fa-fw fa-chart-area"></i>
-                    <span>Analytics</span></a>
-            </li>
-
-            <li class="nav-item">
-                <a class="nav-link" href="/create_event">
-                    <i class="fas fa-fw fa-calendar"></i>
-                    <span>Create event</span></a>
-            </li>
-
-            <!-- Divider -->
-            <hr class="sidebar-divider">
-
-
-            <!-- Sidebar Toggler (Sidebar) -->
-            <div class="text-center d-none d-md-inline">
-                <button class="rounded-circle border-0" id="sidebarToggle"></button>
-            </div>
-
-        </ul>
-        <!-- End of Sidebar -->
+        {% include "./partials/_sidebar.html" with role="admin" %}
 
         <!-- Content Wrapper -->
         <div id="content-wrapper" class="d-flex flex-column">
@@ -94,177 +25,9 @@
                 </div>
                 {% endif %}
 
-                <!-- Topbar -->
-                <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
+                {% include './partials/_topbar.html' with role="admin" %}
+                {% include './partials/_filters.html' with role="admin" %}
 
-                    <h1 class="h3 mb-0 text-gray-800">Science Alliance Portal</h1>
-
-                    <!-- Topbar Navbar -->
-                    <ul class="navbar-nav ml-auto">
-
-                        <!-- Nav Item - Search Dropdown (Visible Only XS) -->
-                        <li class="nav-item dropdown no-arrow d-sm-none">
-                            <a class="nav-link dropdown-toggle" href="#" id="searchDropdown" role="button"
-                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <i class="fas fa-search fa-fw"></i>
-                            </a>
-                            <!-- Dropdown - Messages -->
-                            <div class="dropdown-menu dropdown-menu-right p-3 shadow animated--grow-in"
-                                aria-labelledby="searchDropdown">
-                                <form class="form-inline mr-auto w-100 navbar-search">
-                                    <div class="input-group">
-                                        <input type="text" class="form-control bg-light border-0 small"
-                                            placeholder="Search for..." aria-label="Search"
-                                            aria-describedby="basic-addon2">
-                                        <div class="input-group-append">
-                                            <button class="btn btn-primary" type="button">
-                                                <i class="fas fa-search fa-sm"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                </form>
-                            </div>
-                        </li>
-
-                        
-                        <div class="topbar-divider d-none d-sm-block"></div>
-
-                        <!-- Nav Item - User Information -->
-                        <li class="nav-item dropdown no-arrow">
-                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
-                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <span class="mr-2 d-none d-lg-inline text-gray-600 small">{{ user.username }}</span>
-                                <img class="img-profile rounded-circle"
-                                    src="{% static '/img/undraw_profile.svg' %}">
-                            </a>
-                            <!-- Dropdown - User Information -->
-                            <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
-                                aria-labelledby="userDropdown">
-                                <a class="dropdown-item" href="/update_profile">
-                                    <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
-                                    Update Profile
-                                </a>
-                                <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" href="/password">
-                                    <i class="fas fa-key fa-sm fa-fw mr-2 text-gray-400"></i>
-                                    Change Password
-                                </a>
-                                <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" href="/create_iba_admin">
-                                    <i class="fas fa-user-plus fa-sm fa-fw mr-2 text-gray-400"></i>
-                                    Create new Admin
-                                </a>
-                                <!-- <a class="dropdown-item" href="#">
-                                    <i class="fas fa-cogs fa-sm fa-fw mr-2 text-gray-400"></i>
-                                    Settings
-                                </a>
-                                <a class="dropdown-item" href="#">
-                                    <i class="fas fa-list fa-sm fa-fw mr-2 text-gray-400"></i>
-                                    Activity Log
-                                </a> -->
-                                <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" href="/logout" data-toggle="modal" data-target="#logoutModal">
-                                    <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
-                                    Logout
-                                </a>
-                            </div>
-                        </li>
-
-                    </ul>
-
-                </nav>
-                <!-- End of Topbar -->
-                <div class="container-fluid col-9 float-left"  id="filter_container">
-                    <!-- DataTales Example -->
-                    <div class="card shadow mb-4">
-                        <div class="card-header py-3">
-                            <h6 class="m-0 font-weight-bold text-primary">Filters</h6>
-                        </div>
-                        <div class="card-body">
-                            <div class="table-responsive overflow-hidden">
-                                <form class="user" method="post">
-                                    {% csrf_token %}
-
-                                    <div class="form-group row">
-                                        <div class="col-sm-6 mb-3 mb-sm-0">
-                                            <input type="hidden" name="form_type" value="filters">
-                                            <strong>STEM Area of Research</strong>
-                                            <div id="stemGradCheckboxes">
-                                                <input type="checkbox" value="Biochemistry" name="stemGradCheckboxes" id="biochemistry">
-                                                <label class="form-check-label" for="stemGradCheckboxes">Biochemistry</label>
-                                                <br>
-                                                <input type="checkbox" value="Bioinformatics" name="stemGradCheckboxes" id="bioinformatics">
-                                                <label class="form-check-label" for="stemGradCheckboxes">Bioinformatics</label>
-                                                <br>
-                                                <input type="checkbox" value="Biology" name="stemGradCheckboxes" id="biology">
-                                                <label class="form-check-label" for="stemGradCheckboxes">Biology</label>
-                                                <br>
-                                                <input type="checkbox" value="Biomedical Engineering" name="stemGradCheckboxes" id="biomedicalengineering">
-                                                <label class="form-check-label" for="stemGradCheckboxes">Biomedical Engineering</label>
-                                                <br>
-                                                <input type="checkbox" value="Chemical Engineering" name="stemGradCheckboxes" id="chemicalengineering">
-                                                <label class="form-check-label" for="stemGradCheckboxes">Chemical Engineering</label>
-                                                <br>
-                                                <input type="checkbox" value="Chemistry" name="stemGradCheckboxes" id="chemistry">
-                                                <label class="form-check-label" for="stemGradCheckboxes">Chemistry</label>
-                                                <br>
-                                                <input type="checkbox" value="Computer Science and Engineering" name="stemGradCheckboxes" id="computerscienceandengineering">
-                                                <label class="form-check-label" for="stemGradCheckboxes">Computer Science and Engineering</label>
-                                                <br>
-                                                <input type="checkbox" value="Environmental Science" name="stemGradCheckboxes" id="environmentalscience">
-                                                <label class="form-check-label" for="stemGradCheckboxes">Environmental Science</label>
-                                                <br>
-                                                <input type="checkbox" value="Health and Human Physiology" name="stemGradCheckboxes" id="healthandhumanphysiology">
-                                                <label class="form-check-label" for="stemGradCheckboxes">Health and Human Physiology</label>
-                                                <br>
-                                                <input type="checkbox" value="Mathematics" name="stemGradCheckboxes" id="mathematics">
-                                                <label class="form-check-label" for="stemGradCheckboxes">Mathematics</label>
-                                                <br>
-                                                <input type="checkbox" value="Microbiology" name="stemGradCheckboxes" id="microbiology">
-                                                <label class="form-check-label" for="stemGradCheckboxes">Microbiology</label>
-                                                <br>
-                                                <input type="checkbox" value="Neuroscience" name="stemGradCheckboxes" id="neuroscience">
-                                                <label class="form-check-label" for="stemGradCheckboxes">Neuroscience</label>
-                                                <br>
-                                                <input type="checkbox" value="Nursing" name="stemGradCheckboxes" id="nursing">
-                                                <label class="form-check-label" for="stemGradCheckboxes">Nursing</label>
-                                                <br>
-                                                <input type="checkbox" value="Physics" name="stemGradCheckboxes" id="physics">
-                                                <label class="form-check-label" for="stemGradCheckboxes">Physics</label>
-                                                <br>
-                                                <input type="checkbox" value="Psychology" name="stemGradCheckboxes" id="psychology">
-                                                <label class="form-check-label" for="stemGradCheckboxes">Psychology</label>
-                                                <br>
-                                            </div>
-                                        </div>
-                                        <div class="col-sm-6">
-
-                                            <strong>Year:</strong>
-                                            <div id="undergradYear">
-                                                <input type="checkbox" value="Freshman" name="undergradYear" id="freshman" >
-                                                <label class="form-check-label" for="undergradYear">Freshman</label>
-                                                <br>
-
-                                                <input type="checkbox" value="Sophomore" name="undergradYear" id="sophomore" >
-                                                <label class="form-check-label" for="undergradYear">Sophomore</label>
-                                                <br>
-
-                                                <input type="checkbox" value="Junior" name="undergradYear" id="junior" >
-                                                <label class="form-check-label" for="undergradYear">Junior</label>
-                                                <br>
-
-                                                <input type="checkbox" value="Senior" name="undergradYear" id="senior" >
-                                                <label class="form-check-label" for="undergradYear">Senior</label>
-                                                <br>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <button type="submit" class="btn btn-primary btn-user btn-block">Apply Filters</button>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                </div>
                 <div class="container-fluid col-3 float-right" id="download_container">
                     <!-- <div style="height: 27px; visibility: hidden"></div> -->
                     <div class="card shadow mb-4">
@@ -395,15 +158,7 @@
             </div>
             <!-- End of Main Content -->
 
-            <!-- Footer -->
-            <footer class="sticky-footer bg-white">
-                <div class="container my-auto">
-                    <div class="copyright text-center my-auto">
-                        <span>Copyright &copy; IBA Portal 2021</span>
-                    </div>
-                </div>
-            </footer>
-            <!-- End of Footer -->
+       {% include './partials/_footer.html' %}
 
         </div>
         <!-- End of Content Wrapper -->
@@ -416,44 +171,4 @@
         <i class="fas fa-angle-up"></i>
     </a>
 
-    <!-- Logout Modal-->
-    <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
-        aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Ready to Leave?</h5>
-                    <button class="close" type="button" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">×</span>
-                    </button>
-                </div>
-                <div class="modal-body">Select "Logout" below if you are ready to end your current session.</div>
-                <div class="modal-footer">
-                    <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
-                    <a class="btn btn-primary" href="/logout">Logout</a>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Bootstrap core JavaScript-->
-    <script src="{% static '/vendor/jquery/jquery.min.js' %}"></script>
-    <script src="{% static '/vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
-
-    <!-- Core plugin JavaScript-->
-    <script src="{% static '/vendor/jquery-easing/jquery.easing.min.js' %}"></script>
-
-    <!-- Custom scripts for all pages-->
-    <script src="{% static '/js/sb-admin-2.js' %}"></script>
-
-    <!-- Page level plugins -->
-    <script src="{% static '/vendor/datatables/jquery.dataTables.min.js' %}"></script>
-    <script src="{% static '/vendor/datatables/dataTables.bootstrap4.min.js' %}"></script>
-
-    <!-- Page level custom scripts -->
-    <script src="{% static '/js/demo/datatables-demo.js' %}"></script>
-
-
-</body>
-
-</html>
+{% endblock content %}

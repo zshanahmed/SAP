@@ -83,7 +83,7 @@ class ViewAllyProfileFromAdminDashboard(View):
             return HttpResponseNotFound()
 
 
-class EditAllyProfileFromAdminDashboard(AccessMixin, View):
+class EditAllyProfile(View):
     def set_boolean(self, list, postDict):
         dict = {}
         for selection in list:
@@ -92,20 +92,28 @@ class EditAllyProfileFromAdminDashboard(AccessMixin, View):
             else:
                 dict[selection] = False
         return dict
+
     def get(self, request, *args, **kwargs):
         username = request.GET['username']
-        try:
-            user = User.objects.get(username=username)
-            ally = Ally.objects.get(user=user)
-            return render(request, 'sap/admin_ally_table/edit_ally.html', {
-                'ally': ally
-            })
-        except Exception as e:
-            print(e)
-            return HttpResponseNotFound()
+        user_req = request.user
+        if (username != user_req.username) and not user_req.is_staff:
+            messages.warning(request, 'Access Denied!')
+            return redirect('sap:ally-dashboard')
+        else:
+            try:
+                user = User.objects.get(username=username)
+                ally = Ally.objects.get(user=user)
+                return render(request, 'sap/admin_ally_table/edit_ally.html', {
+                    'ally': ally,
+                    'req': request.user,
+                })
+            except Exception as e:
+                print(e)
+                return HttpResponseNotFound()
 
     def post(self, request):
         postDict = dict(request.POST)
+        user_req = request.user
         print(request.POST)
         if User.objects.filter(username=postDict["username"][0]).exists():
             user = User.objects.get(username=postDict["username"][0])
@@ -158,13 +166,19 @@ class EditAllyProfileFromAdminDashboard(AccessMixin, View):
                 ally.interested_in_mentor_training = selections['trainingRadios']
 
                 ally.save()
-
-            messages.add_message(request, messages.WARNING,
-                                 'Ally updated !')
+            if not user_req.is_staff:
+                messages.add_message(request, messages.SUCCESS,
+                                     'Profile updated !')
+            else:
+                messages.add_message(request, messages.SUCCESS,
+                                     'Ally updated !')
         else:
             messages.add_message(request, messages.WARNING,
                                  'Ally does not exist !')
-        return redirect('sap:sap-dashboard')
+        if user_req.is_staff:
+            return redirect('sap:sap-dashboard')
+        else:
+            return redirect('sap:ally-dashboard')
 
 
 class DeleteAllyProfileFromAdminDashboard(AccessMixin, View):
@@ -239,7 +253,6 @@ class EditAdminProfile(View):
         return render(request, 'sap/profile.html', {
             'form': form
         })
-
 
 class AlliesListView(AccessMixin, TemplateView):
 
@@ -477,6 +490,9 @@ class CreateEventView(AccessMixin, TemplateView):
                 elif category == 'Rural':
                     student_categories_to_include_for_event.extend(StudentCategories.objects.filter(rural=True))
 
+                elif category == 'Disabled':
+                    student_categories_to_include_for_event.extend(StudentCategories.objects.filter(disabled=True))
+
             invited_allies_ids = AllyStudentCategoryRelation.objects.filter(student_category__in=student_categories_to_include_for_event).values('ally')
             allies_to_be_invited.extend(
                 Ally.objects.filter(id__in=invited_allies_ids)
@@ -514,6 +530,8 @@ class SignUpView(TemplateView):
                 categories.lgbtq = True
             elif id == 'Rural':
                 categories.rural = True
+            elif id == 'Disabled':
+                categories.disabled = True
         categories.save()
         return categories
 
@@ -551,7 +569,8 @@ class SignUpView(TemplateView):
                     categories = self.make_categories(postDict["idUnderGradCheckboxes"])
                 except KeyError:
                     categories = StudentCategories.objects.create()
-                undergradList = ['interestRadios', 'experienceRadios', 'interestedRadios', 'agreementRadios']
+                undergradList = ['interestRadios', 'experienceRadios', 'interestedRadios',
+                                 'agreementRadios', 'beingMentoredRadios']
                 selections = self.set_boolean(undergradList, postDict)
                 ally = Ally.objects.create(user=user,
                                            user_type=postDict['roleSelected'][0],
@@ -892,7 +911,7 @@ allyFields = ['user_type', 'area_of_research', 'openings_in_lab_serving_at', 'de
               'information_release', 'interested_in_being_mentored', 'interested_in_joining_lab',
               'has_lab_experience']
 categoryFields = ['under_represented_racial_ethnic', 'first_gen_college_student', 'transfer_student', 'lgbtq',
-                  'low_income', 'rural']
+                  'low_income', 'rural', 'disabled']
 class DownloadAllies(AccessMixin, HttpResponse):
 
     @staticmethod
@@ -933,7 +952,7 @@ class DownloadAllies(AccessMixin, HttpResponse):
                       DownloadAllies.cleanup(categories.filter(id=categoryId)[0].__dict__)
             else:
                 tmp = DownloadAllies.cleanup(users.filter(id=userId)[0].__dict__) + DownloadAllies.cleanup(ally.__dict__) + \
-                      [None, None, None, None, None, None]
+                      [None, None, None, None, None, None, None]
             data.append(tmp)
         return data
 
@@ -1127,7 +1146,8 @@ class UploadAllies(AccessMixin, HttpResponse):
                                                                           lgbtq=category['lgbtq'],
                                                                           low_income=category['low_income'],
                                                                           first_gen_college_student=category['first_gen_college_student'],
-                                                                          under_represented_racial_ethnic=category['under_represented_racial_ethnic'])
+                                                                          under_represented_racial_ethnic=category['under_represented_racial_ethnic'],
+                                                                          disabled=category['disabled'])
                             AllyStudentCategoryRelation.objects.create(ally_id=ally1.id,
                                                                        student_category_id=categories.id)
                     except IntegrityError:

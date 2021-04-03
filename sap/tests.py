@@ -373,6 +373,28 @@ class AllyDashboardTests(TestCase):
                                                   first_name='John2',
                                                   last_name='Doe2')
 
+        self.user_ally = Ally.objects.create(
+            user=self.user,
+            hawk_id='johndoe2',
+            user_type='Staff',
+            works_at='College of Engineering',
+            area_of_research='Computer Science and Engineering,Health and Human Physiology,Physics',
+            description_of_research_done_at_lab='Created tools to fight fingerprinting',
+            people_who_might_be_interested_in_iba=True,
+            how_can_science_ally_serve_you='Help in connecting with like minded people',
+            year='Senior',
+            major='Electical Engineering',
+            willing_to_offer_lab_shadowing=True,
+            willing_to_volunteer_for_events=True,
+            interested_in_mentoring=True,
+            interested_in_connecting_with_other_mentors=True,
+            interested_in_mentor_training=True,
+            interested_in_joining_lab=True,
+            has_lab_experience=True,
+            information_release=True,
+            openings_in_lab_serving_at=True,
+        )
+
         self.ally = Ally.objects.create(
             user=self.ally_user,
             hawk_id='johndoe1',
@@ -467,6 +489,56 @@ class AllyDashboardTests(TestCase):
             response, self.ally_user.first_name + ' ' + self.ally_user.last_name, html=True
         )
 
+    def test_update_profile_for_nonadmin(self):
+        """
+        Update profile for nonadmin
+        """
+        self.user.is_staff = False
+        self.user.save()
+        self.client.login(username=self.username, password=self.password)
+        response = self.client.get(reverse('sap:ally-dashboard'), follow=True)
+        self.assertContains(
+            response, "Science Alliance Portal", html=True
+        )
+        response = self.client.get('/update_ally_profile/', {'username': self.username}, follow=True)
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        self.assertContains(
+            response, "Update Profile", html=True
+        )
+
+        response = self.client.post(
+            '/update_ally_profile/', {
+                'csrfmiddlewaretoken': ['XdNiZpT3jpCeRzd2kq8bbRPUmc0tKFP7dsxNaQNTUhblQPK7lne9sX0mrE5khfHH'],
+                'username': [self.username],
+                'studentsInterestedRadios': [str(self.user_ally.people_who_might_be_interested_in_iba)],
+                'howCanWeHelp': ['Finding Jobs and Networking']
+            }, follow=True
+        )
+        self.assertContains(
+            response, "Science Alliance Portal", html=True
+        )
+        message = list(response.context['messages'])[0]
+        self.assertEqual(message.message, "Profile updated !")
+
+    def test_update_profile_fail_for_nonadmin(self):
+        """
+        Update profile for nonadmin
+        """
+        self.user.is_staff = False
+        self.user.save()
+        self.client.login(username=self.username, password=self.password)
+        response = self.client.get(reverse('sap:ally-dashboard'), follow=True)
+        self.assertContains(
+            response, "Science Alliance Portal", html=True
+        )
+        response = self.client.get('/update_ally_profile/', {'username': self.ally_user}, follow=True)
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        self.assertContains(
+            response, "Science Alliance Portal", html=True
+        )
+        message = list(response.context['messages'])[0]
+        self.assertEqual(message.message, "Access Denied!")
+
     def test_stem_aor_filter_for_nonadmin(self):
         """
         Show all allies conforming to stem aor filters
@@ -501,7 +573,6 @@ class AllyDashboardTests(TestCase):
         self.assertContains(
             response, self.ally_user.first_name + ' ' + self.ally_user.last_name, html=True
         )
-
 
 class AdminUpdateProfileAndPasswordTests(TestCase):
     def setUp(self):
@@ -1231,6 +1302,7 @@ class SignUpTests(TestCase):
                 'undergradRadios': ['Senior'],
                 'major': ['Computer Science'],
                 'interestRadios': ['Yes'],
+                'beingMentoredRadios': ['Yes'],
                 'experienceRadios': ['Yes'],
                 'interestedRadios': ['Yes'],
                 'agreementRadios': ['Yes'],
@@ -1751,7 +1823,8 @@ allyFields = ['user_type', 'area_of_research', 'openings_in_lab_serving_at', 'de
               'people_who_might_be_interested_in_iba', 'how_can_science_ally_serve_you', 'year', 'major',
               'information_release', 'interested_in_being_mentored', 'interested_in_joining_lab',
               'has_lab_experience']
-categoryFields = ['under_represented_racial_ethnic', 'first_gen_college_student', 'transfer_student', 'lgbtq', 'low_income', 'rural']
+categoryFields = ['under_represented_racial_ethnic', 'first_gen_college_student',
+                  'transfer_student', 'lgbtq', 'low_income', 'rural', 'disabled']
 class DownloadAlliesTest(TestCase):
 
     @staticmethod
@@ -1819,13 +1892,13 @@ class DownloadAlliesTest(TestCase):
 
         self.categories2 = StudentCategories.objects.create(rural=True, first_gen_college_student=True,
                                                             under_represented_racial_ethnic=True, transfer_student=True,
-                                                            lgbtq=True, low_income=True)
+                                                            lgbtq=True, low_income=True, disabled=True)
         self.categories3 = StudentCategories.objects.create(rural=True, first_gen_college_student=False,
                                                             under_represented_racial_ethnic=True, transfer_student=True,
-                                                            lgbtq=True, low_income=False)
+                                                            lgbtq=True, low_income=False, disabled=True)
         self.categories4 = StudentCategories.objects.create(rural=True, first_gen_college_student=False,
                                                             under_represented_racial_ethnic=True, transfer_student=False,
-                                                            lgbtq=True, low_income=False)
+                                                            lgbtq=True, low_income=False, disabled=True)
 
         AllyStudentCategoryRelation.objects.create(ally_id=self.ally2.id, student_category_id=self.categories2.id)
         AllyStudentCategoryRelation.objects.create(ally_id=self.ally3.id, student_category_id=self.categories3.id)
@@ -1838,7 +1911,7 @@ class DownloadAlliesTest(TestCase):
 
         data = []
         user1 = DownloadAlliesTest.cleanup(self.user1.__dict__) + \
-                DownloadAlliesTest.cleanup(self.ally1.__dict__) + [None, None, None, None, None, None]
+                DownloadAlliesTest.cleanup(self.ally1.__dict__) + [None, None, None, None, None, None, None]
         user2 = DownloadAlliesTest.cleanup(self.user2.__dict__) + \
                 DownloadAlliesTest.cleanup(self.ally2.__dict__) + DownloadAlliesTest.cleanup(self.categories2.__dict__)
 
@@ -1908,6 +1981,9 @@ class UploadFileTest(TestCase):
 
 
     def setUp(self):
+        """
+        Set up the test
+        """
         wack_test_db()
         self.client = Client()
         self.loginUser = User.objects.create_user(username='glib', password='macaque', email='staff@uiowa.edu',
@@ -1920,12 +1996,18 @@ class UploadFileTest(TestCase):
         self.df1 = pd.read_excel('./pytests/assets/allies2.xlsx')
 
     def test_post_notStaff(self):
+        """
+        Test the Post if the person trying to upload stuff is not an admin
+        """
         self.client.login(username='bad', password='badguy1234')
         with open('./pytests/assets/allies.csv', 'r') as f:
             response = self.client.post(reverse('sap:upload_allies'), {'attachment': f})
         self.assertEqual(response.status_code, 403)
 
     def test_add_allies_fileType1_(self):
+        """
+        Test the first filetype which has the same format as the file found in the DownloadAllies view.
+        """
         self.client.login(username='glib', password='macaque')
         name = './pytests/assets/allies.csv'
         absPath = os.path.abspath(name)
@@ -1934,8 +2016,6 @@ class UploadFileTest(TestCase):
             headers = {
                 'HTTP_CONTENT_TYPE': 'multipart/form-data',
                 'HTTP_CONTENT_DISPOSITION': 'attachment; filename=' + 'allies.csv'}
-#            request = factory.post(reverse(string, args=[args]), {'file': data},
-#                                   **headers)
             response = self.client.post(reverse('sap:upload_allies'), {'file': f}, **headers)
 
         self.assertEqual(response.status_code, 200)
@@ -1948,6 +2028,9 @@ class UploadFileTest(TestCase):
         pd.testing.assert_frame_equal(df, self.df)
 
     def test_add_allies_fileType2(self):
+        """
+        Test the second file type, which is actually the one which the customer is using to store data.
+        """
         wack_test_db()
         self.loginUser = User.objects.create_user(username='glib', password='macaque', email='staff@uiowa.edu',
                                                   first_name='charlie', last_name='hebdo', is_staff=True)
@@ -1959,8 +2042,6 @@ class UploadFileTest(TestCase):
             headers = {
                 'HTTP_CONTENT_TYPE': 'multipart/form-data',
                 'HTTP_CONTENT_DISPOSITION': 'attachment; filename=' + 'allies2.xlsx'}
-            #            request = factory.post(reverse(string, args=[args]), {'file': data},
-            #                                   **headers)
             response = self.client.post(reverse('sap:upload_allies'), {'file': f}, **headers)
         self.assertEqual(response.status_code, 200)
         allies = Ally.objects.all()
@@ -2053,7 +2134,7 @@ class CreateEventTests(TestCase):
             'event_description': ['description of the event 3'],
             'event_location': ['https://zoom.us/abc123edf2'],
             'event_date_time': ['2021-03-31T15:32'],
-            'special_category': ['First generation college-student', 'Rural', 'Low-income', 'Underrepresented racial/ethnic minority', 'Transfer Student', 'LGBTQ'],
+            'special_category': ['First generation college-student', 'Rural', 'Low-income', 'Underrepresented racial/ethnic minority', 'Disabled', 'Transfer Student', 'LGBTQ'],
         })
 
         url = response.url
