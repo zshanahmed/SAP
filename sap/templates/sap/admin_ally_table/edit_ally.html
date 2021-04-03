@@ -268,6 +268,26 @@
                 {% endif %}
             </div>
          </div>
+        <div class="py-1">
+            <strong>Would you be willing to offer lab shadowing to potential students?</strong>
+            <div class="form-check" id="labShadowRadios">
+                {% if ally.willing_to_offer_lab_shadowing %}
+                    <input type="radio" value="Yes" name="labShadowRadios" id="yes" required checked>
+                    <label class="form-check-label" for="labShadowRadios">Yes</label>
+                    <br>
+                    <input type="radio" value="No" name="labShadowRadios" id="no" required>
+                    <label class="form-check-label" for="labShadowRadios">No</label>
+                    <br>
+                {% else %}
+                    <input type="radio" value="Yes" name="labShadowRadios" id="yes" required>
+                    <label class="form-check-label" for="labShadowRadios">Yes</label>
+                    <br>
+                    <input type="radio" value="No" name="labShadowRadios" id="no" required checked>
+                    <label class="form-check-label" for="labShadowRadios">No</label>
+                    <br>
+                {% endif %}
+            </div>
+        </div>
          <div class="py-1">
             <strong>Are you interested in mentoring students?</strong>
             <div class="form-check" id="mentoringFacultyRadios">
@@ -332,6 +352,26 @@
                 {% endif %}
             </div>
          </div>
+        <div class="py-1">
+            <strong>Are you interested in connecting with other mentors?</strong>
+            <div class="form-check" id="connectingRadios">
+                {% if ally.interested_in_connecting_with_other_mentors %}
+                    <input type="radio" value="Yes" name="connectingRadios" id="yes" required checked>
+                    <label class="form-check-label" for="connectingRadios">Yes</label>
+                    <br>
+                    <input type="radio" value="No" name="connectingRadios" id="no" required>
+                    <label class="form-check-label" for="connectingRadios">No</label>
+                    <br>
+                {% else %}
+                    <input type="radio" value="Yes" name="connectingRadios" id="yes" required>
+                    <label class="form-check-label" for="connectingRadios">Yes</label>
+                    <br>
+                    <input type="radio" value="No" name="connectingRadios" id="no" required checked>
+                    <label class="form-check-label" for="connectingRadios">No</label>
+                    <br>
+                {% endif %}
+            </div>
+        </div>
         <strong>Do you know students who would be interested in the Science Alliance?</strong>
         <div class="py-1">
             <div class="form-check" id="studentsInterestedRadios"></div>
@@ -1074,17 +1114,11 @@
             //dom not only ready, but everything is loaded
             var username = "{{ ally.user_type }}";
             console.log(username);
-            if (username == "Staff"){
+            if (username == "Staff" || username == "Graduate Student" || username == "Faculty"){
                 yesnoCheck('staffContent');
             }
-            else if (username == "Graduate Student") {
-                yesnoCheck('gradContent');
-            }
-            else if (username == "Undergraduate Student") {
+            else{
                 yesnoCheck('undergradContent');
-            }
-            else if (username == "Faculty") {
-                yesnoCheck('facultyContent');
             }
         })
     </script>
