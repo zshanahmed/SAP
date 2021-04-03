@@ -15,6 +15,19 @@
 	<script src="{% static '/js/fullcalendar.js' %}" type="text/javascript"></script>
 
 	<style>
+		body {
+		margin-top: 40px;
+		text-align: center;
+		font-size: 14px;
+		font-family: "Helvetica Nueue",Arial,Verdana,sans-serif;
+		background-color: #DDDDDD;
+		}
+
+		#wrap {
+			width: 1100px;
+			margin: 0 auto;
+			}
+
 		#external-events {
 			float: left;
 			width: 150px;
@@ -31,7 +44,7 @@
 		.external-event { /* try to mimick the look of a real event */
 			margin: 10px 0;
 			padding: 2px 4px;
-			background: #3366CC;
+			background: ##ebcf34;
 			color: #fff;
 			font-size: .85em;
 			cursor: pointer;
@@ -49,11 +62,13 @@
 			}
 
 		#calendar {
-	/* 		float: right; */
+	 		/*float: right;*/
+			margin: 0 auto;
+			width: 900px;
 			width: 900px;
 			background-color: #FFFFFF;
-			  border-radius: 6px;
-			box-shadow: 0 1px 2px #C3C3C3;
+			border-radius: 6px;
+			box-shadow: 2px 2px 4px lightgray;
 			}
 
 	</style>
@@ -61,7 +76,6 @@
 <body>
 {% block content %}
 <div id='wrap'>
-{% include './partials/_sidebar.html' with role="ally" %}
 
 <div id='calendar'>
 
