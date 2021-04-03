@@ -156,7 +156,11 @@ class EditAllyProfileFromAdminDashboard(AccessMixin, View):
                     ['studentsInterestedRadios', 'labShadowRadios', 'connectingRadios',
                      'openingRadios', 'mentoringFacultyRadios',
                      'trainingRadios', 'volunteerRadios'], postDict)
-
+                try:
+                    aor = ','.join(postDict['stemGradCheckboxes'])
+                    ally.area_of_research = aor
+                except KeyError:
+                    ally.area_of_research = ""
                 try:
                     how_can_we_help = postDict["howCanWeHelp"][0]
                     ally.how_can_science_ally_serve_you = how_can_we_help
