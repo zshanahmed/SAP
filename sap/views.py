@@ -116,7 +116,7 @@ class EditAllyProfileFromAdminDashboard(AccessMixin, View):
                     if not User.objects.filter(username=newUsername):
                         user.username = newUsername
                     else:
-                        message +="Username already exists!\n"
+                        message +="Username not updated - Username already exists!\n"
             except KeyError:
                 message += 'Username could not be updated!\n'
             try:
@@ -142,7 +142,7 @@ class EditAllyProfileFromAdminDashboard(AccessMixin, View):
                     else:
                         message += "Email already exists!\n"
             except KeyError:
-                        message += 'Email could not be updated!\n'
+                        message += 'Email could not be updated - Email could not be updated!\n'
             user.save()
 
             ally = Ally.objects.get(user=user)
