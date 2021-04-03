@@ -273,13 +273,21 @@ class AlliesListView(AccessMixin, TemplateView):
             else:
                 exclude_from_sc_default = True
                 studentCategories = []
+            
+            if 'roleSelected' in postDict:
+                userTypes = postDict['roleSelected']
+                exclude_from_ut_default = False
+            else:
+                exclude_from_ut_default = True
+                userTypes = []
 
             allies_list = Ally.objects.order_by('-id')
-            if not (exclude_from_year_default and exclude_from_aor_default and exclude_from_sc_default):
+            if not (exclude_from_year_default and exclude_from_aor_default and exclude_from_sc_default and exclude_from_ut_default):
                 for ally in allies_list:
                     exclude_from_aor = exclude_from_aor_default
                     exclude_from_year = exclude_from_year_default
                     exclude_from_sc = exclude_from_sc_default
+                    exclude_from_ut = exclude_from_ut_default
 
                     if ally.area_of_research:
                         aor = ally.area_of_research.split(',')
@@ -291,7 +299,7 @@ class AlliesListView(AccessMixin, TemplateView):
                         ally_id=ally.id).values()[0]
                     categories = StudentCategories.objects.filter(
                         id=categories['student_category_id'])[0]
-                    
+
                     if (studentCategories):
                         for cat in studentCategories:
                             if (cat == 'First generation college-student') and (categories.first_gen_college_student == False):
@@ -315,8 +323,12 @@ class AlliesListView(AccessMixin, TemplateView):
 
                     if (undergradYear) and (ally.year not in undergradYear):
                         exclude_from_year = True
+                    
+                    if (userTypes) and (ally.user_type not in userTypes):
+                        print('User Type:', ally.user_type)
+                        exclude_from_ut = True
 
-                    if exclude_from_aor and exclude_from_year and exclude_from_sc:
+                    if exclude_from_aor and exclude_from_year and exclude_from_sc and exclude_from_ut:
                         allies_list = allies_list.exclude(id=ally.id)
             for ally in allies_list:
                 if not ally.user.is_active:
