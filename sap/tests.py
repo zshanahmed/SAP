@@ -45,6 +45,7 @@ class AdminAllyTableFeatureTests(TestCase):
     """
     Unit tests for features on the Admin dashboard
     """
+
     def setUp(self):
         self.username = 'Admin_1'
         self.password = 'admin_password1'
@@ -359,6 +360,7 @@ class AllyDashboardTests(TestCase):
     """
     Unit tests for features on the ally dashboard
     """
+
     def setUp(self):
         self.username = 'Ally_1'
         self.password = 'ally_password1'
@@ -517,6 +519,7 @@ class AdminUpdateProfileAndPasswordTests(TestCase):
     """
     Unit test for update profile feature for admin and to reset their passwords
     """
+
     def setUp(self):
         self.username = 'Admin_1'
         self.password = 'admin_password1'
@@ -762,9 +765,9 @@ class CreateAdminViewTest(TestCase):
     def setUp(self):
         self.username = 'admin'
         self.password = 'admin_password1'
-        self.c = Client()
+        self.client = Client()
         self.user = User.objects.create_user(self.username, 'email@test.com', self.password)
-        self.c.login(username=self.username, password=self.password)
+        self.client.login(username=self.username, password=self.password)
         self.user.is_staff = True
         self.user.save()
 
@@ -772,14 +775,14 @@ class CreateAdminViewTest(TestCase):
         """
         test get create admin page
         """
-        response = self.c.get('/create_iba_admin/')
+        response = self.client.get('/create_iba_admin/')
         self.assertEqual(response.status_code, 200)
 
     def test_post_missing_data(self):
         """
         Check if email entered for new admin is non empty
         """
-        response = self.c.post('/create_iba_admin/', {
+        response = self.client.post('/create_iba_admin/', {
             'csrfmiddlewaretoken': ['AAIHnJBSnR9fQdHP6yTjGRPQSE8HmiRI7oc3tPv0RyJrMoAyXpq93geUfDTH6QCk'],
             'current_username': ['iba_admin'],
             'current_password': ['iba_sep_1'], 'new_email': [''],
@@ -789,11 +792,11 @@ class CreateAdminViewTest(TestCase):
         url = response.url
         assert url == '/create_iba_admin'
 
-    def test_post_Invalid_credentials(self):
+    def test_post_invalid_credentials(self):
         """
         check if the current iba admin username and password are valid
         """
-        response = self.c.post('/create_iba_admin/', {
+        response = self.client.post('/create_iba_admin/', {
             'csrfmiddlewaretoken': ['AAIHnJBSnR9fQdHP6yTjGRPQSE8HmiRI7oc3tPv0RyJrMoAyXpq93geUfDTH6QCk'],
             'current_username': ['admin'],
             'current_password': ['admin_assword1'], 'new_email': ['emailGuy@email.com'],
@@ -807,7 +810,7 @@ class CreateAdminViewTest(TestCase):
         """
         check if the new admin's name is unique
         """
-        response = self.c.post('/create_iba_admin/', {
+        response = self.client.post('/create_iba_admin/', {
             'csrfmiddlewaretoken': ['AAIHnJBSnR9fQdHP6yTjGRPQSE8HmiRI7oc3tPv0RyJrMoAyXpq93geUfDTH6QCk'],
             'current_username': ['admin'],
             'current_password': ['admin_password1'], 'new_email': ['emailGuy@email.com'],
@@ -821,7 +824,7 @@ class CreateAdminViewTest(TestCase):
         """
         verify if the password and confirm password fields have the same value
         """
-        response = self.c.post('/create_iba_admin/', {
+        response = self.client.post('/create_iba_admin/', {
             'csrfmiddlewaretoken': ['AAIHnJBSnR9fQdHP6yTjGRPQSE8HmiRI7oc3tPv0RyJrMoAyXpq93geUfDTH6QCk'],
             'current_username': ['admin'],
             'current_password': ['admin_password1'], 'new_email': ['emailGuy@email.com'],
@@ -835,7 +838,7 @@ class CreateAdminViewTest(TestCase):
         """
         Test if new admin is created in user table if all fields are valid
         """
-        response = self.c.post('/create_iba_admin/', {
+        response = self.client.post('/create_iba_admin/', {
             'csrfmiddlewaretoken': ['AAIHnJBSnR9fQdHP6yTjGRPQSE8HmiRI7oc3tPv0RyJrMoAyXpq93geUfDTH6QCk'],
             'current_username': ['admin'],
             'current_password': ['admin_password1'], 'new_email': ['emailGuy@email.com'],
@@ -974,16 +977,17 @@ class SignUpTests(TestCase):
     """
     Testing all different scenarios of signup for different types of users
     """
+
     def setUp(self):
         self.username = 'admin'
-        self.usernameActive = 'user_active'
+        self.username_active = 'user_active'
         self.password = 'admin_password1'
         self.email = 'email@test.com'
-        self.emailActive = 'email_active@test.com'
+        self.email_active = 'email_active@test.com'
         self.user = User.objects.create_user(username=self.username, email=self.email, password=self.password)
-        self.userActive = User.objects.create_user(username=self.usernameActive, email=self.emailActive, password=self.password,
-                                                   is_active=True)
-        self.c = Client()
+        self.user_active = User.objects.create_user(username=self.username_active, email=self.email_active, password=self.password,
+                                                    is_active=True)
+        self.client = Client()
 
         self.another_username = 'another_username'
         self.another_email = 'another_email@uiowa.edu'
@@ -992,7 +996,7 @@ class SignUpTests(TestCase):
         """
         Sign-up page exists.
         """
-        response = self.c.get('/sign-up/')
+        response = self.client.get('/sign-up/')
         self.assertEqual(response.status_code, HTTPStatus.OK)
 
     def test_entered_existing_active_emailaddress(self):
@@ -1001,7 +1005,7 @@ class SignUpTests(TestCase):
         """
         self.user.is_active = True
         self.user.save()
-        response = self.c.post(
+        response = self.client.post(
             '/sign-up/',
             {
                 'csrfmiddlewaretoken': ['MIyNUVJILbLGKrHXjz4m4fWt4d13TUOkkvRtCpStSmxkW8PKomuz3ESTYF8VVQil'],
@@ -1024,25 +1028,25 @@ class SignUpTests(TestCase):
         self.assertEqual(response.url, '/sign-up')
         self.assertEqual(response.status_code, HTTPStatus.FOUND)
 
-    def test_entered_existing_inactive_emailAddress(self):
+    def test_entered_existing_inactive_email_address(self):
         """
         If user enters inactive email address.
         All other requirement satisfies.
         A new account for that inactive email address can be created.
         """
         self.user.is_active = False
-        self.ally = Ally.objects.create(user=self.user,
-                                        user_type=['Graduate Student'],
-                                        hawk_id=self.user.username,
-                                        area_of_research=['Biochemistry'],
-                                        interested_in_mentoring=False,
-                                        willing_to_offer_lab_shadowing=False,
-                                        interested_in_connecting_with_other_mentors=False,
-                                        willing_to_volunteer_for_events=False,
-                                        interested_in_mentor_training=True)
+        Ally.objects.create(user=self.user,
+                            user_type=['Graduate Student'],
+                            hawk_id=self.user.username,
+                            area_of_research=['Biochemistry'],
+                            interested_in_mentoring=False,
+                            willing_to_offer_lab_shadowing=False,
+                            interested_in_connecting_with_other_mentors=False,
+                            willing_to_volunteer_for_events=False,
+                            interested_in_mentor_training=True)
         self.user.save()
         self.client.logout()
-        response = self.c.post(
+        response = self.client.post(
             '/sign-up/',
             {
                 # 'csrfmiddlewaretoken': ['MIyNUVJILbLGKrHXjz4m4fWt4d13TUOkkvRtCpStSmxkW8PKomuz3ESTYF8VVQil'],
@@ -1067,31 +1071,31 @@ class SignUpTests(TestCase):
         self.assertEqual(self.user.is_active, False)
         self.assertEqual(response.status_code, HTTPStatus.FOUND)
 
-    def test_entered_existing_inactive_emailAddress_existing_username(self):
+    def test_entered_existing_inactive_email_address_existing_username(self):
         """
         If user enters inactive email address.
         However existing username is entered.
         A new account for that inactive email address cannot be created.
         """
         self.user.is_active = False
-        self.ally = Ally.objects.create(user=self.user,
-                                        user_type=['Graduate Student'],
-                                        hawk_id=self.user.username,
-                                        area_of_research=['Biochemistry'],
-                                        interested_in_mentoring=False,
-                                        willing_to_offer_lab_shadowing=False,
-                                        interested_in_connecting_with_other_mentors=False,
-                                        willing_to_volunteer_for_events=False,
-                                        interested_in_mentor_training=True)
+        Ally.objects.create(user=self.user,
+                            user_type=['Graduate Student'],
+                            hawk_id=self.user.username,
+                            area_of_research=['Biochemistry'],
+                            interested_in_mentoring=False,
+                            willing_to_offer_lab_shadowing=False,
+                            interested_in_connecting_with_other_mentors=False,
+                            willing_to_volunteer_for_events=False,
+                            interested_in_mentor_training=True)
         self.user.save()
         self.client.logout()
-        response = self.c.post(
+        response = self.client.post(
             '/sign-up/',
             {
                 # 'csrfmiddlewaretoken': ['MIyNUVJILbLGKrHXjz4m4fWt4d13TUOkkvRtCpStSmxkW8PKomuz3ESTYF8VVQil'],
                 'firstName': ['Elias'],
                 'lastName': ['Shaeffer'],
-                'new_username': self.userActive.username,
+                'new_username': self.user_active.username,
                 'new_email': self.user.email,
                 'new_password': self.password,
                 'repeat_password': self.password,
@@ -1110,25 +1114,25 @@ class SignUpTests(TestCase):
         self.assertEqual(self.user.is_active, False)
         self.assertEqual(response.status_code, HTTPStatus.FOUND)
 
-    def test_entered_existing_inactive_emailAddress_mismatched_password(self):
+    def test_entered_existing_inactive_email_address_mismatched_password(self):
         """
         If user enters inactive email address.
         However mismatched passwords are entered.
         A new account for that inactive email address cannot be created.
         """
         self.user.is_active = False
-        self.ally = Ally.objects.create(user=self.user,
-                                        user_type=['Graduate Student'],
-                                        hawk_id=self.user.username,
-                                        area_of_research=['Biochemistry'],
-                                        interested_in_mentoring=False,
-                                        willing_to_offer_lab_shadowing=False,
-                                        interested_in_connecting_with_other_mentors=False,
-                                        willing_to_volunteer_for_events=False,
-                                        interested_in_mentor_training=True)
+        Ally.objects.create(user=self.user,
+                            user_type=['Graduate Student'],
+                            hawk_id=self.user.username,
+                            area_of_research=['Biochemistry'],
+                            interested_in_mentoring=False,
+                            willing_to_offer_lab_shadowing=False,
+                            interested_in_connecting_with_other_mentors=False,
+                            willing_to_volunteer_for_events=False,
+                            interested_in_mentor_training=True)
         self.user.save()
         self.client.logout()
-        response = self.c.post(
+        response = self.client.post(
             '/sign-up/',
             {
                 # 'csrfmiddlewaretoken': ['MIyNUVJILbLGKrHXjz4m4fWt4d13TUOkkvRtCpStSmxkW8PKomuz3ESTYF8VVQil'],
@@ -1153,25 +1157,25 @@ class SignUpTests(TestCase):
         self.assertEqual(self.user.is_active, False)
         self.assertEqual(response.status_code, HTTPStatus.FOUND)
 
-    def test_entered_existing_inactive_emailAddress_bad_password(self):
+    def test_entered_existing_inactive_email_address_bad_password(self):
         """
         If user enters inactive email address.
         However new pass < 8 chars.
         A new account for that inactive email address cannot be created.
         """
         self.user.is_active = False
-        self.ally = Ally.objects.create(user=self.user,
-                                        user_type=['Graduate Student'],
-                                        hawk_id=self.user.username,
-                                        area_of_research=['Biochemistry'],
-                                        interested_in_mentoring=False,
-                                        willing_to_offer_lab_shadowing=False,
-                                        interested_in_connecting_with_other_mentors=False,
-                                        willing_to_volunteer_for_events=False,
-                                        interested_in_mentor_training=True)
+        Ally.objects.create(user=self.user,
+                            user_type=['Graduate Student'],
+                            hawk_id=self.user.username,
+                            area_of_research=['Biochemistry'],
+                            interested_in_mentoring=False,
+                            willing_to_offer_lab_shadowing=False,
+                            interested_in_connecting_with_other_mentors=False,
+                            willing_to_volunteer_for_events=False,
+                            interested_in_mentor_training=True)
         self.user.save()
         self.client.logout()
-        response = self.c.post(
+        response = self.client.post(
             '/sign-up/',
             {
                 # 'csrfmiddlewaretoken': ['MIyNUVJILbLGKrHXjz4m4fWt4d13TUOkkvRtCpStSmxkW8PKomuz3ESTYF8VVQil'],
@@ -1196,8 +1200,11 @@ class SignUpTests(TestCase):
         self.assertEqual(self.user.is_active, False)
         self.assertEqual(response.status_code, HTTPStatus.FOUND)
 
-    def test_entered_unknown_emailAddress_existing_username(self):
-        response = self.c.post(
+    def test_entered_unknown_email_address_existing_username(self):
+        """
+        test with a valid username but with an invalid email address
+        """
+        response = self.client.post(
             '/sign-up/',
             {
                 'csrfmiddlewaretoken': ['MIyNUVJILbLGKrHXjz4m4fWt4d13TUOkkvRtCpStSmxkW8PKomuz3ESTYF8VVQil'],
@@ -1222,7 +1229,10 @@ class SignUpTests(TestCase):
         self.assertEqual(response.status_code, 302)
 
     def test_password_not_same(self):
-        response = self.c.post(
+        """
+        test if password and confirm password fields have the same value
+        """
+        response = self.client.post(
             '/sign-up/',
             {
                 'csrfmiddlewaretoken': ['MIyNUVJILbLGKrHXjz4m4fWt4d13TUOkkvRtCpStSmxkW8PKomuz3ESTYF8VVQil'],
@@ -1247,7 +1257,7 @@ class SignUpTests(TestCase):
         self.assertEqual(response.status_code, 302)
 
     # def test_create_Undergrad(self):
-    #     response = self.c.post(
+    #     response = self.client.post(
     #         '/sign-up/',
     #         {
     #             'csrfmiddlewaretoken': ['At4HFZNsApVRWNye2Jcj4RVcWYf1fviv1kFbSZevLnNmJrWz4OyZhcAPn0JeaknZ'],
@@ -1279,8 +1289,11 @@ class SignUpTests(TestCase):
     #     self.assertTrue(categoryRelation.exists())
     #     self.assertTrue(categories.exists())
 
-    def test_create_Undergrad(self):
-        response = self.c.post(
+    def test_create_undergrad(self):
+        """
+        Test signup feature using undergrad user
+        """
+        response = self.client.post(
             '/sign-up/',
             {
                 'csrfmiddlewaretoken': ['At4HFZNsApVRWNye2Jcj4RVcWYf1fviv1kFbSZevLnNmJrWz4OyZhcAPn0JeaknZ'],
@@ -1304,15 +1317,18 @@ class SignUpTests(TestCase):
         self.assertEqual(response.status_code, 302)
         user = User.objects.filter(username="zeeahmed1")
         ally = Ally.objects.filter(user_id=user[0].id)
-        categoryRelation = AllyStudentCategoryRelation.objects.filter(ally_id=ally[0].id)
-        categories = StudentCategories.objects.filter(id=categoryRelation[0].student_category_id)
+        category_relation = AllyStudentCategoryRelation.objects.filter(ally_id=ally[0].id)
+        categories = StudentCategories.objects.filter(id=category_relation[0].student_category_id)
         self.assertTrue(user.exists())
         self.assertTrue(ally.exists())
-        self.assertTrue(categoryRelation.exists())
+        self.assertTrue(category_relation.exists())
         self.assertTrue(categories.exists())
 
-    def test_create_Grad(self):
-        response = self.c.post(
+    def test_create_grad(self):
+        """
+        Test signup feature using a grad user
+        """
+        response = self.client.post(
             '/sign-up/',
             {
                 'csrfmiddlewaretoken': ['TFosu1rFWp6S4SsYIV5Rb9FtBzoTavgrCsu31o9hTp975IuRpZeNgPJeBQiU6Cy5'],
@@ -1339,15 +1355,18 @@ class SignUpTests(TestCase):
         self.assertEqual(response.status_code, 302)
         user = User.objects.filter(username="big_guy1")
         ally = Ally.objects.filter(user_id=user[0].id)
-        categoryRelation = AllyStudentCategoryRelation.objects.filter(ally_id=ally[0].id)
-        categories = StudentCategories.objects.filter(id=categoryRelation[0].student_category_id)
+        category_relation = AllyStudentCategoryRelation.objects.filter(ally_id=ally[0].id)
+        categories = StudentCategories.objects.filter(id=category_relation[0].student_category_id)
         self.assertTrue(user.exists())
         self.assertTrue(ally.exists())
-        self.assertTrue(categoryRelation.exists())
+        self.assertTrue(category_relation.exists())
         self.assertTrue(categories.exists())
 
-    def test_create_Grad_noBoxes(self):
-        response = self.c.post(
+    def test_create_grad_no_boxes(self):
+        """
+        Test grad signup with a specific configuration
+        """
+        response = self.client.post(
             '/sign-up/',
             {
                 'csrfmiddlewaretoken': ['TFosu1rFWp6S4SsYIV5Rb9FtBzoTavgrCsu31o9hTp975IuRpZeNgPJeBQiU6Cy5'],
@@ -1370,15 +1389,18 @@ class SignUpTests(TestCase):
         self.assertEqual(response.status_code, 302)
         user = User.objects.filter(username="big_guy12")
         ally = Ally.objects.filter(user_id=user[0].id)
-        categoryRelation = AllyStudentCategoryRelation.objects.filter(ally_id=ally[0].id)
-        categories = StudentCategories.objects.filter(id=categoryRelation[0].student_category_id)
+        category_relation = AllyStudentCategoryRelation.objects.filter(ally_id=ally[0].id)
+        categories = StudentCategories.objects.filter(id=category_relation[0].student_category_id)
         self.assertTrue(user.exists())
         self.assertTrue(ally.exists())
-        self.assertTrue(categoryRelation.exists())
+        self.assertTrue(category_relation.exists())
         self.assertTrue(categories.exists())
 
-    def test_Faculty(self):
-        response = self.c.post(
+    def test_faculty(self):
+        """
+        Test faculty user signup
+        """
+        response = self.client.post(
             '/sign-up/',
             {
                 'csrfmiddlewaretoken': ['gr9bKWMJLFrJZfcdKkdRhlyKLI0JeTh2ZefMhjulIFuY05e6romNm1CvLZUKa0zG'],
@@ -1403,15 +1425,18 @@ class SignUpTests(TestCase):
         self.assertEqual(response.status_code, 302)
         user = User.objects.filter(username="tbraun")
         ally = Ally.objects.filter(user_id=user[0].id)
-        categoryRelation = AllyStudentCategoryRelation.objects.filter(ally_id=ally[0].id)
-        categories = StudentCategories.objects.filter(id=categoryRelation[0].student_category_id)
+        category_relation = AllyStudentCategoryRelation.objects.filter(ally_id=ally[0].id)
+        categories = StudentCategories.objects.filter(id=category_relation[0].student_category_id)
         self.assertTrue(user.exists())
         self.assertTrue(ally.exists())
-        self.assertTrue(categoryRelation.exists())
+        self.assertTrue(category_relation.exists())
         self.assertTrue(categories.exists())
 
-    def test_Faculty_noSelect(self):
-        response = self.c.post(
+    def test_faculty_no_select(self):
+        """
+        test faculty signup with a specific configuration
+        """
+        response = self.client.post(
             '/sign-up/',
             {
                 'csrfmiddlewaretoken': ['gr9bKWMJLFrJZfcdKkdRhlyKLI0JeTh2ZefMhjulIFuY05e6romNm1CvLZUKa0zG'],
@@ -1434,15 +1459,18 @@ class SignUpTests(TestCase):
         self.assertEqual(response.status_code, 302)
         user = User.objects.filter(username="tbraun2")
         ally = Ally.objects.filter(user_id=user[0].id)
-        categoryRelation = AllyStudentCategoryRelation.objects.filter(ally_id=ally[0].id)
-        categories = StudentCategories.objects.filter(id=categoryRelation[0].student_category_id)
+        category_relation = AllyStudentCategoryRelation.objects.filter(ally_id=ally[0].id)
+        categories = StudentCategories.objects.filter(id=category_relation[0].student_category_id)
         self.assertTrue(user.exists())
         self.assertTrue(ally.exists())
-        self.assertTrue(categoryRelation.exists())
+        self.assertTrue(category_relation.exists())
         self.assertTrue(categories.exists())
 
-    def test_Staff(self):
-        response = self.c.post(
+    def test_staff(self):
+        """
+        test staff user signup feature
+        """
+        response = self.client.post(
             '/sign-up/',
             {
                 'csrfmiddlewaretoken': ['K5dFCUih0K6ZYklAemhvIWSpCebK86zdx4ric6ucIPLUQhAdtdT7hhp4r5etxoJY'],
@@ -1466,7 +1494,10 @@ class SignUpTests(TestCase):
         self.assertTrue(ally.exists())
 
     def test_password_less_than_minimum(self):
-        response = self.c.post(
+        """
+        unit test for minimum password requirement
+        """
+        response = self.client.post(
             "/sign-up/",
             {
                 "csrfmiddlewaretoken": ["K5dFCUih0K6ZYklAemhvIWSpCebK86zdx4ric6ucIPLUQhAdtdT7hhp4r5etxoJY"],
@@ -1486,7 +1517,7 @@ class SignUpTests(TestCase):
         self.assertEqual(response.status_code, 302)
 
     # def test_Staff(self):
-    #     response = self.c.post('/sign-up/', {'csrfmiddlewaretoken': ['PoY77CUhmZ70AsUF3C1nISUsVErkhMjLyb4IEZCTjZafBiWyKGajNyYdVVlldTBp'],
+    #     response = self.client.post('/sign-up/', {'csrfmiddlewaretoken': ['PoY77CUhmZ70AsUF3C1nISUsVErkhMjLyb4IEZCTjZafBiWyKGajNyYdVVlldTBp'],
     #     'firstName': ['chongu'], 'lastName': ['gumpy'], 'new_username': ['chonguG'],
     #     'new_email': ['chongu@uiowa.edu'], 'new_password': ['123'], 'repeat_password': ['123'],
     #     'roleSelected': ['Staff'], 'studentsInterestedRadios': ['Yes'], 'howCanWeHelp': ['give me $10000000']})
@@ -1495,11 +1526,11 @@ class SignUpTests(TestCase):
     #     self.assertEqual(response.status_code, 302)
     #     user = User.objects.filter(username="chonguG")
     #     ally = Ally.objects.filter(user_id=user[0].id)
-    #     categoryRelation = AllyStudentCategoryRelation.objects.filter(ally_id=ally[0].id)
-    #     categories = StudentCategories.objects.filter(id=categoryRelation[0].student_category_id)
+    #     category_relation = AllyStudentCategoryRelation.objects.filter(ally_id=ally[0].id)
+    #     categories = StudentCategories.objects.filter(id=category_relation[0].student_category_id)
     #     self.assertTrue(user.exists())
     #     self.assertTrue(ally.exists())
-    #     self.assertTrue(categoryRelation.exists())
+    #     self.assertTrue(category_relation.exists())
     #     self.assertTrue(categories.exists())
 
     def test_signup_confirm_success(self):
@@ -1507,15 +1538,15 @@ class SignUpTests(TestCase):
         The unique link to activate password exists and works
         """
         self.user.is_active = False
-        self.ally = Ally.objects.create(user=self.user,
-                                        user_type=['Graduate Student'],
-                                        hawk_id=self.user.username,
-                                        area_of_research=['Biochemistry'],
-                                        interested_in_mentoring=False,
-                                        willing_to_offer_lab_shadowing=False,
-                                        interested_in_connecting_with_other_mentors=False,
-                                        willing_to_volunteer_for_events=False,
-                                        interested_in_mentor_training=True)
+        Ally.objects.create(user=self.user,
+                            user_type=['Graduate Student'],
+                            hawk_id=self.user.username,
+                            area_of_research=['Biochemistry'],
+                            interested_in_mentoring=False,
+                            willing_to_offer_lab_shadowing=False,
+                            interested_in_connecting_with_other_mentors=False,
+                            willing_to_volunteer_for_events=False,
+                            interested_in_mentor_training=True)
         self.user.save()
         self.client.logout()
 
@@ -1531,15 +1562,15 @@ class SignUpTests(TestCase):
         User is already active.
         """
         self.user.is_active = False
-        self.ally = Ally.objects.create(user=self.user,
-                                        user_type=['Graduate Student'],
-                                        hawk_id=self.user.username,
-                                        area_of_research=['Biochemistry'],
-                                        interested_in_mentoring=False,
-                                        willing_to_offer_lab_shadowing=False,
-                                        interested_in_connecting_with_other_mentors=False,
-                                        willing_to_volunteer_for_events=False,
-                                        interested_in_mentor_training=True)
+        Ally.objects.create(user=self.user,
+                            user_type=['Graduate Student'],
+                            hawk_id=self.user.username,
+                            area_of_research=['Biochemistry'],
+                            interested_in_mentoring=False,
+                            willing_to_offer_lab_shadowing=False,
+                            interested_in_connecting_with_other_mentors=False,
+                            willing_to_volunteer_for_events=False,
+                            interested_in_mentor_training=True)
         self.user.save()
         self.client.logout()
 
@@ -1558,15 +1589,15 @@ class SignUpTests(TestCase):
         Invalid activation link.
         """
         self.user.is_active = False
-        self.ally = Ally.objects.create(user=self.user,
-                                        user_type=['Graduate Student'],
-                                        hawk_id=self.user.username,
-                                        area_of_research=['Biochemistry'],
-                                        interested_in_mentoring=False,
-                                        willing_to_offer_lab_shadowing=False,
-                                        interested_in_connecting_with_other_mentors=False,
-                                        willing_to_volunteer_for_events=False,
-                                        interested_in_mentor_training=True)
+        Ally.objects.create(user=self.user,
+                            user_type=['Graduate Student'],
+                            hawk_id=self.user.username,
+                            area_of_research=['Biochemistry'],
+                            interested_in_mentoring=False,
+                            willing_to_offer_lab_shadowing=False,
+                            interested_in_connecting_with_other_mentors=False,
+                            willing_to_volunteer_for_events=False,
+                            interested_in_mentor_training=True)
         self.user.save()
         self.client.logout()
 
@@ -1584,6 +1615,9 @@ class SignUpTests(TestCase):
 
 
 class NonAdminAccessTests(TestCase):
+    """
+    Unit tests for non admin (ally) members app access
+    """
 
     def setUp(self):
         self.username = 'admin'
@@ -1610,6 +1644,10 @@ class NonAdminAccessTests(TestCase):
 
 
 class ForgotPasswordTest(TestCase):
+    """
+    Unit tests for forgot password feature
+    """
+
     def setUp(self):
         self.username = 'user1'
         self.password = 'user_password1'
@@ -1759,7 +1797,7 @@ class ForgotPasswordTest(TestCase):
         # self.assertEqual(response.url, link)
         self.assertEqual(response.status_code, HTTPStatus.OK)
 
-    def test_confirmation_link_fail_for_getMethod(self):
+    def test_confirmation_link_fail_for_get_method(self):
         """
         Cannot open invalid confirmation link.
         """
@@ -1772,7 +1810,7 @@ class ForgotPasswordTest(TestCase):
         request = self.client.get(link)
         self.assertEqual(request.status_code, HTTPStatus.FOUND)
 
-    def test_confirmation_link_fail_for_postMethod(self):
+    def test_confirmation_link_fail_for_post_method(self):
         """
         Fail to create new password.
         """
@@ -1819,9 +1857,15 @@ categoryFields = ['under_represented_racial_ethnic', 'first_gen_college_student'
 
 
 class DownloadAlliesTest(TestCase):
+    """
+    Unit tests for download csv feature
+    """
 
     @staticmethod
     def fields_helper(model, columns):
+        """
+        helper function for the download csv feature test
+        """
         for field in model._meta.get_fields():
             fields = str(field).split(".")[-1]
             if fields in userFields or fields in allyFields or fields in categoryFields:
@@ -1830,9 +1874,12 @@ class DownloadAlliesTest(TestCase):
         return columns
 
     @staticmethod
-    def cleanup(dict):
+    def cleanup(dictionary):
+        """
+        function to facilitate cleanup of data
+        """
         ar = []
-        for item in dict.items():
+        for item in dictionary.items():
             if item[0] in userFields or item[0] in allyFields or item[0] in categoryFields:
                 if item[0] == 'date_joined':
                     ar.append(item[1].strftime("%b-%d-%Y"))
@@ -1918,12 +1965,12 @@ class DownloadAlliesTest(TestCase):
         data.append(user3)
         data.append(user4)
 
-        df = pd.DataFrame(data=data, columns=columns)
-        df = df.replace(0, False)
-        df = df.replace(1, True)
-        df.fillna(value=np.nan, inplace=True)
-        df = df.replace('', np.nan)
-        self.df = df
+        data_frame = pd.DataFrame(data=data, columns=columns)
+        data_frame = data_frame.replace(0, False)
+        data_frame = data_frame.replace(1, True)
+        data_frame.fillna(value=np.nan, inplace=True)
+        data_frame = data_frame.replace('', np.nan)
+        self.data_frame = data_frame
 
     def test_download_data(self):
         """
@@ -1934,7 +1981,7 @@ class DownloadAlliesTest(TestCase):
         response = self.client.get(reverse('sap:download_allies'))
         f = io.BytesIO(response.content)
         df = pd.read_csv(f)
-        pd.testing.assert_frame_equal(df, self.df)
+        pd.testing.assert_frame_equal(df, self.data_frame)
 
     def test_try_download_as_ally(self):
         """
@@ -1946,6 +1993,9 @@ class DownloadAlliesTest(TestCase):
 
 
 class UploadFileTest(TestCase):
+    """
+    Unit tests for upload feature
+    """
 
     @staticmethod
     def makeFrame():
@@ -1982,8 +2032,8 @@ class UploadFileTest(TestCase):
         self.badGuy = User.objects.create_user(username='bad', password='badguy1234', email='badguy@uiowa.edu',
                                                first_name='reallyBadGuy', last_name='I\'m bad')
 
-        self.df = pd.read_csv('./pytests/assets/allies.csv')
-        self.df1 = pd.read_excel('./pytests/assets/allies2.xlsx')
+        self.data_frame = pd.read_csv('./pytests/assets/allies.csv')
+        self.data_frame_1 = pd.read_excel('./pytests/assets/allies2.xlsx')
 
     def test_post_notStaff(self):
         self.client.login(username='bad', password='badguy1234')
@@ -2011,7 +2061,7 @@ class UploadFileTest(TestCase):
 
         df = UploadFileTest.makeFrame()
 
-        pd.testing.assert_frame_equal(df, self.df)
+        pd.testing.assert_frame_equal(df, self.data_frame)
 
     def test_add_allies_fileType2(self):
         wack_test_db()
@@ -2032,7 +2082,7 @@ class UploadFileTest(TestCase):
         allies = Ally.objects.all()
 
         df = UploadFileTest.makeFrame()
-        df1, errorLog = views.UploadAllies.cleanupFrame(self.df1)
+        df1, errorLog = views.UploadAllies.cleanupFrame(self.data_frame_1)
         df1 = df1[userFields + allyFields + categoryFields]
         df['last_login'] = ''
         for category in categoryFields:
@@ -2042,6 +2092,10 @@ class UploadFileTest(TestCase):
 
 
 class CreateEventTests(TestCase):
+    """
+    Unit tests for create events feature
+    """
+
     def setUp(self):
         self.username = 'admin'
         self.password = 'admin_password1'
@@ -2074,10 +2128,16 @@ class CreateEventTests(TestCase):
         )
 
     def test_get(self):
+        """
+        test to check if the create event page is rendered properly
+        """
         response = self.client.get('/create_event/')
         self.assertEqual(response.status_code, 200)
 
     def test_invite_all(self):
+        """
+        test to check if every ally is invited if the admin decides to invite all
+        """
         response = self.client.post('/create_event/', {
             'csrfmiddlewaretoken': ['gr9bKWMJLFrJZfcdKkdRhlyKLI0JeTh2ZefMhjulIFuY05e6romNm1CvLZUKa0zG'],
             'event_title': ['title of the event'],
@@ -2094,6 +2154,9 @@ class CreateEventTests(TestCase):
         assert EventAllyRelation.objects.filter(event=event[0], ally=self.ally).exists()
 
     def test_invite_biochem_student(self):
+        """
+        test to check invited if the admin decides to only biochem students
+        """
         response = self.client.post('/create_event/', {
             'csrfmiddlewaretoken': ['gr9bKWMJLFrJZfcdKkdRhlyKLI0JeTh2ZefMhjulIFuY05e6romNm1CvLZUKa0zG'],
             'event_title': ['title of the event 2'],
@@ -2112,6 +2175,9 @@ class CreateEventTests(TestCase):
         assert EventAllyRelation.objects.filter(event=event[0], ally=self.ally).exists()
 
     def test_invite_special_category_student(self):
+        """
+        test to check if only allies belonging to special categories are invited for an event
+        """
         response = self.client.post('/create_event/', {
             'csrfmiddlewaretoken': ['gr9bKWMJLFrJZfcdKkdRhlyKLI0JeTh2ZefMhjulIFuY05e6romNm1CvLZUKa0zG'],
             'event_title': ['title of the event 3'],
