@@ -107,12 +107,16 @@ class EditAllyProfileFromAdminDashboard(AccessMixin, View):
     def post(self, request):
         postDict = dict(request.POST)
         print(request.POST)
-        if User.objects.filter(username=postDict["username"][0]).exists():
+        users = User.objects.all()
+        if users.filter(username=postDict["username"][0]).exists():
             user = User.objects.get(username=postDict["username"][0])
             try:
                 newUsername = postDict['newUsername'][0]
                 if newUsername != '' and newUsername != user.username:
-                    user.username = newUsername
+                    if not users.filter(username=newUsername).exists():
+                        user.username = newUsername
+                    else:
+                        messages.add_message(request, messages.WARNING, "Username already exists!")
             except KeyError:
                 messages.add_message(request, messages.WARNING,
                                      'Username could not be updated!')
@@ -136,7 +140,10 @@ class EditAllyProfileFromAdminDashboard(AccessMixin, View):
             try:
                 email = postDict['email'][0]
                 if email != '' and email != user.email:
-                    user.email = email
+                    if not users.filter(email=email):
+                        user.email = email
+                    else:
+                        messages.add_message(request, messages.WARNING, "Email already exists!")
             except KeyError:
                 messages.add_message(request, messages.WARNING,
                                      'Email could not be updated!')
