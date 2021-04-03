@@ -140,7 +140,7 @@ class EditAllyProfileFromAdminDashboard(AccessMixin, View):
             try:
                 email = postDict['email'][0]
                 if email != '' and email != user.email:
-                    if not users.filter(email=email):
+                    if not users.filter(email=email).exists():
                         user.email = email
                     else:
                         messages.add_message(request, messages.WARNING, "Email already exists!")
