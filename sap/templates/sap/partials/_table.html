@@ -1,2 +1,97 @@
 {% load static %}
 
+<div class="container-fluid float-left">
+    <!-- DataTables Content -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">IBA Science Ally Profiles</h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                {% if allies_list %}
+                    <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>User Type</th>
+                                <th>STEM AOR</th>
+                                <th>Interested in Mentoring</th>
+                                <th>Year</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tfoot>
+                            <tr>
+                                <th>Name</th>
+                                <th>User Type</th>
+                                <th>STEM AOR</th>
+                                <th>Interested in Mentoring</th>
+                                <th>Year</th>
+                                <th></th>
+                            </tr>
+                        </tfoot>
+                        <tbody>
+                            {% for ally in allies_list %}
+                                <!-- Logout Modal-->
+                                <div class="modal fade" id="delAllyModal" tabindex="-1" role="dialog" aria-labelledby="delAllyModalLabel" aria-hidden="true">
+                                    <div class="modal-dialog" role="document">
+                                      <div class="modal-content">
+                                        <div class="modal-header">
+                                          <h5 class="modal-title" id="delAllyModalLabel">Are you sure you want to delete this user?</h5>
+                                          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                          </button>
+                                        </div>
+                                        <div class="modal-body">
+                                            Select "Confirm" below if you want to delete this user
+                                        </div>
+                                        <div class="modal-footer">
+                                          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                          <a class="btn btn-danger" href="">Confirm</a>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                <tr>
+                                    <td>{{ ally.user.first_name }} {{ally.user.last_name}}</td>
+                                    <td>{{ ally.user_type }}</td>
+                                    <td>{{ ally.area_of_research }}</td>
+                                    <td>{{ ally.interested_in_mentoring }}</td>
+                                    <td>{{ ally.year }}</td>
+                                    <td>
+                                        <ul class="list-inline m-0" style="text-align: center">
+                                            <li class="list-inline-item">
+                                                <a href="/allies/?username={{ ally.user.username }}" class="btn btn-primary btn-sm" type="button" data-toggle="tooltip" data-placement="top"
+                                                    title="View"><i class="fa fa-eye"></i></a>
+                                            </li>
+                                            {% if role == "admin" %}
+                                                <li class="list-inline-item">
+                                                    <a href="/edit_allies/?username={{ ally.user.username }}" class="btn btn-success btn-sm" type="button" data-toggle="tooltip" data-placement="top"
+                                                        title="Edit"><i class="fa fa-edit"></i></a>
+                                                </li>
+                                                <li class="list-inline-item">
+                                                    <!-- <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#exampleModal" data-whatever="/delete/?username={{ ally.user.username }}"><i class="fa fa-trash"></i></button> -->
+
+                                                    <a class="btn btn-danger btn-sm" href="/delete/?username={{ ally.user.username }}" data-toggle="modal"
+                                                       title="Delete" data-url="{{ ally.user.username }}" data-target="#delAllyModal"  title="View">
+                                                        <i class="fa fa-trash"></i>
+                                                    </a>
+                                                </li>
+                                            {% endif %}
+                                        </ul>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+
+                        </tbody>
+                    </table>
+                {% else %}
+                    <h6 class="m-0 font-weight-bold text-primary">No allies are available.</h6>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+</div>
+<!-- /.container-fluid -->
