@@ -29,7 +29,8 @@
                         <h5 class="m-0 font-weight-bold text-primary">Username: </h5>
                     </div>
                     <div class="col-md-6">
-                        <input name="username" type="text" class="form-control-user form-control" style="width: 405px" id="username" value='{{ ally.user.username }}' required>
+                        <input name="newUsername" type="text" class="form-control-user form-control" style="width: 405px" id="newUsername" value='{{ ally.user.username }}' required>
+                        <input name="username" type="text" class="form-control-user form-control" style="width: 405px; display: none" id="username" value='{{ ally.user.username }}' required>
                     </div>
                 </div>
                 <div class="row">
