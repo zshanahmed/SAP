@@ -134,7 +134,7 @@ class EditAllyProfileFromAdminDashboard(AccessMixin, View):
                 messages.add_message(request, messages.WARNING,
                                      'First name or last name could not be updated!')
             try:
-                email = postDict['email']
+                email = postDict['email'][0]
                 if email != '' and email != user.email:
                     user.email = email
             except KeyError:
@@ -144,7 +144,7 @@ class EditAllyProfileFromAdminDashboard(AccessMixin, View):
 
             ally = Ally.objects.get(user=user)
             try:
-                userType = postDict['roleSelected']
+                userType = postDict['roleSelected'][0]
                 if userType != ally.user_type:
                     ally.user_type = userType
             except KeyError:
