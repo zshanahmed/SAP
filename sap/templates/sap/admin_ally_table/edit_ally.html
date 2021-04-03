@@ -7,40 +7,56 @@
 {% block content %}
 
 <body class="bg-gradient-primary">
-
+   <form method="post" class="user">{% csrf_token %}
     <div class="container">
         <div class="card o-hidden border-0 shadow-lg my-5">
             <div class="card-body p-5">
                 <h1 class="h3 mb-0 text-gray-800">Edit Ally Profile</h1>
-
                 <hr>
                 <div class="row">
                     <div class="col-md-4">
                         <h5 class="m-0 font-weight-bold text-primary">Name: </h5>
                     </div>
-                    <div class="col-md-6">{{ ally.user.first_name }} {{ally.user.last_name}}</div>
+                    <div class="col-md-6">
+                        <div style="display: inline">
+                            <input name="firstName" type="text" class="form-control-user form-control" style="width: 200px; display: inline" id="fistName" value='{{ ally.user.first_name }}' required>
+                            <input name="lastName" type="text" id="lastName" class="form-control-user form-control" style="width: 200px; display: inline" value='{{ ally.user.last_name }}' required>
+                        </div>
+                    </div>
                 </div>
                 <div class="row">
                     <div class="col-md-4">
                         <h5 class="m-0 font-weight-bold text-primary">Username: </h5>
                     </div>
-                    <div class="col-md-6">{{ ally.user.username }}</div>
+                    <div class="col-md-6">
+                        <input name="username" type="text" class="form-control-user form-control" style="width: 405px" id="username" value='{{ ally.user.username }}' required>
+                    </div>
                 </div>
                 <div class="row">
                     <div class="col-md-4">
                         <h5 class="m-0 font-weight-bold text-primary">Email: </h5>
                     </div>
-                    <div class="col-md-6">{{ ally.user.email }}</div>
+                    <div class="col-md-6">
+                        <input name="email" type="text" class="form-control-user form-control" style="width: 405px" id="email" value='{{ ally.user.email }}' required>
+                    </div>
                 </div>
                 <div class="row">
                     <div class="col-md-4">
                         <h5 class="m-0 font-weight-bold text-primary">Hawk ID: </h5>
                     </div>
-                    <div class="col-md-6">{{ ally.hawk_id }}</div>
+                    <div class="col-md-6">
+                        <input name="hawkID" type="text" class="form-control-user form-control" style="width: 405px" id="hawkID" value='{{ ally.hawk_id }}' required>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4">
+                        <h5 class="m-0 font-weight-bold text-primary">Password: </h5>
+                    </div>
+                    <div class="col-md-6">
+                        <input name="password" type="text" class="form-control-user form-control" style="width: 405px" id="password" value=''>
+                    </div>
                 </div>
 
-
-                <form method="post" class="user">{% csrf_token %}
                     <input type="text" value="{{ ally.user.username }}" name="username" style="display: none;">
                     <hr>
                     <div class="py-2">
@@ -49,40 +65,40 @@
                             <div class="px-2">
                                 {% if ally.user_type == 'Staff' %}
                                     <input type="radio" name="roleSelected" id="staffCheck" value="Staff" onclick="javascript:yesnoCheck('staffContent');"
-                                        disabled checked>
+                                        checked>
                                 {% else %}
                                     <input type="radio" name="roleSelected" id="staffCheck" value="Staff" onclick="javascript:yesnoCheck('staffContent');"
-                                        disabled>
+                                        >
                                 {% endif %}
                                 <label class="form-check-label" for="staffCheck">Staff</label>
                             </div>
                             <div class="px-2">
                                 {% if ally.user_type == 'Graduate Student' %}
                                     <input type="radio" name="roleSelected" id="gradCheck" value="Graduate Student"
-                                        onclick="javascript:yesnoCheck('gradContent');" disabled checked>
+                                        onclick="javascript:yesnoCheck('gradContent');" checked>
                                 {% else %}
                                     <input type="radio" name="roleSelected" id="gradCheck" value="Graduate Student"
-                                        onclick="javascript:yesnoCheck('gradContent');" disabled>
+                                        onclick="javascript:yesnoCheck('gradContent');">
                                 {% endif %}
                                 <label class="form-check-label" for="gradCheck">Grad</label>
                             </div>
                             <div class="px-2">
                                 {% if ally.user_type == 'Undergraduate Student' %}
                                     <input type="radio" name="roleSelected" id="undergradCheck" value="Undergraduate Student"
-                                        onclick="javascript:yesnoCheck('undergradContent');" disabled checked>
+                                        onclick="javascript:yesnoCheck('undergradContent');" checked>
                                 {% else %}
                                     <input type="radio" name="roleSelected" id="undergradCheck" value="Undergraduate Student"
-                                        onclick="javascript:yesnoCheck('undergradContent');" disabled>
+                                        onclick="javascript:yesnoCheck('undergradContent');" >
                                 {% endif %}
                                 <label class="form-check-label" for="undergradCheck">Undergrad</label>
                             </div>
                             <div class="px-2">
                                 {% if ally.user_type == 'Faculty' %}
                                     <input type="radio" name="roleSelected" id="facultyCheck" value="Faculty"
-                                        onclick="javascript:yesnoCheck('facultyContent');" disabled checked>
+                                        onclick="javascript:yesnoCheck('facultyContent');" checked>
                                 {% else %}
                                     <input type="radio" name="roleSelected" id="facultyCheck" value="Faculty"
-                                        onclick="javascript:yesnoCheck('facultyContent');" disabled>
+                                        onclick="javascript:yesnoCheck('facultyContent');">
                                 {% endif %}
                                 <label class="form-check-label" for="facultyCheck">Faculty</label>
                             </div>
@@ -517,6 +533,25 @@
                     <br>
                     <input type="radio" value="No" name="interestedRadios" id="no" required checked>
                     <label class="form-check-label" for="interestedRadios">No</label>
+                    <br>
+                {% endif %}
+            </div>
+            <div class="py-1">
+            <strong>Are you interested in being mentored?</strong>
+            <div class="form-check" id="beingMentored">
+                {% if ally.interested_in_being_mentored %}
+                    <input type="radio" value="Yes" name="beingMentoredRadios" id="yes" required checked>
+                    <label class="form-check-label" for="yes">Yes</label>
+                    <br>
+                    <input type="radio" value="No" name="beingMentoredRadios" id="no" required>
+                    <label class="form-check-label" for="beingMentored">No</label>
+                    <br>
+                {% else %}
+                    <input type="radio" value="Yes" name="beingMentoredRadios" id="yes" required>
+                    <label class="form-check-label" for="beingMentored">Yes</label>
+                    <br>
+                    <input type="radio" value="No" name="beingMentoredRadios" id="no" required checked>
+                    <label class="form-check-label" for="beingMentored">No</label>
                     <br>
                 {% endif %}
             </div>
