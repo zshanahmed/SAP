@@ -107,26 +107,24 @@ class EditAllyProfileFromAdminDashboard(AccessMixin, View):
     def post(self, request):
         postDict = dict(request.POST)
         print(request.POST)
-        users = User.objects.all()
-        if users.filter(username=postDict["username"][0]).exists():
+        if User.objects.filter(username=postDict["username"][0]).exists():
+            message = ''
             user = User.objects.get(username=postDict["username"][0])
             try:
                 newUsername = postDict['newUsername'][0]
                 if newUsername != '' and newUsername != user.username:
-                    if not users.filter(username=newUsername).exists():
+                    if not User.objects.filter(username=newUsername):
                         user.username = newUsername
                     else:
-                        messages.add_message(request, messages.WARNING, "Username already exists!")
+                        message +="Username already exists!\n"
             except KeyError:
-                messages.add_message(request, messages.WARNING,
-                                     'Username could not be updated!')
+                message += 'Username could not be updated!\n'
             try:
                 newPassword = postDict['password'][0]
                 if newPassword != '' and not len(newPassword) < 8:
                     user.password = newPassword
             except KeyError:
-                messages.add_message(request, messages.WARNING,
-                                     'Password could not be updated!')
+                message += 'Password could not be updated!\n'
             try:
                 firstName = postDict['firstName'][0]
                 lastName = postDict['lastName'][0]
@@ -135,18 +133,16 @@ class EditAllyProfileFromAdminDashboard(AccessMixin, View):
                 if lastName != '' and lastName != user.last_name:
                     user.last_name = lastName
             except KeyError:
-                messages.add_message(request, messages.WARNING,
-                                     'First name or last name could not be updated!')
+                message += 'First name or last name could not be updated!\n'
             try:
                 email = postDict['email'][0]
                 if email != '' and email != user.email:
-                    if not users.filter(email=email).exists():
+                    if not User.objects.filter(email=email).exists():
                         user.email = email
                     else:
-                        messages.add_message(request, messages.WARNING, "Email already exists!")
+                        message += "Email already exists!\n"
             except KeyError:
-                messages.add_message(request, messages.WARNING,
-                                     'Email could not be updated!')
+                        message += 'Email could not be updated!\n'
             user.save()
 
             ally = Ally.objects.get(user=user)
@@ -155,8 +151,7 @@ class EditAllyProfileFromAdminDashboard(AccessMixin, View):
                 if userType != ally.user_type:
                     ally.user_type = userType
             except KeyError:
-                messages.add_message(request, messages.WARNING,
-                                     'User type could not be updated!')
+                message += 'User type could not be updated!\n'
 
             if ally.user_type != "Undergraduate Student":
                 selections = self.set_boolean(
@@ -201,7 +196,7 @@ class EditAllyProfileFromAdminDashboard(AccessMixin, View):
                 ally.save()
 
             messages.add_message(request, messages.WARNING,
-                                 'Ally updated!')
+                                 'Ally updated!\n' + message)
         else:
             messages.add_message(request, messages.WARNING,
                                  'Ally does not exist!')
