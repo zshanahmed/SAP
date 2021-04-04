@@ -152,6 +152,12 @@ class EditAllyProfileFromAdminDashboard(AccessMixin, View):
                     ally.user_type = userType
             except KeyError:
                 message += 'User type could not be updated!\n'
+            try:
+                hawkId = postDict['hawkID'][0]
+                if hawkId != ally.hawk_id and hawkId != '':
+                    ally.hawk_id = hawkId
+            except KeyError:
+                message += "HawkID could not be updated!\n"
 
             if ally.user_type != "Undergraduate Student":
                 selections = self.set_boolean(
