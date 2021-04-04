@@ -538,23 +538,34 @@ class AllyDashboardTests(TestCase):
         )
         response = self.client.get('/update_ally_profile/', {'username': self.username}, follow=True)
         self.assertEqual(response.status_code, HTTPStatus.OK)
-        self.assertContains(
-            response, "Update Profile", html=True
-        )
 
-        response = self.client.post(
-            '/update_ally_profile/', {
-                'csrfmiddlewaretoken': ['XdNiZpT3jpCeRzd2kq8bbRPUmc0tKFP7dsxNaQNTUhblQPK7lne9sX0mrE5khfHH'],
-                'username': [self.username],
-                'studentsInterestedRadios': [str(self.user_ally.people_who_might_be_interested_in_iba)],
-                'howCanWeHelp': ['Finding Jobs and Networking']
-            }, follow=True
-        )
+        dict = {'csrfmiddlewaretoken': ['YXW4Ib9TNmwod6ZETztHgp3ouwbg09sbAYibaXHc5RMKbAECHTZKHIsdJrvzvvP5'],
+         'firstName': 'firstName', 'lastName': 'lastName',
+         'newUsername': ['bigUsername'], 'username': [self.username],
+         'email': 'bigEmail', 'hawkID': 'bigHawk',
+         'password': [''], 'roleSelected': 'Staff',
+         'stemGradCheckboxes': "",
+         'research-des': [''], 'openingRadios': ['Yes'], 'labShadowRadios': ['Yes'], 'mentoringFacultyRadios': ['Yes'],
+         'volunteerRadios': ['Yes'], 'trainingRadios': ['Yes'], 'connectingRadios': ['Yes'],
+         'studentsInterestedRadios': ['Yes'], 'howCanWeHelp': ['']}
+
+        response = self.client.post('/update_ally_profile/', dict, follow=True)
         self.assertContains(
             response, "Science Alliance Portal", html=True
         )
         message = list(response.context['messages'])[0]
-        self.assertEqual(message.message, "Profile updated !")
+        self.assertIn("Profile updated!", message.message)
+
+        dict = {'csrfmiddlewaretoken': ['1bX0e878XH7kUZ5WlWHKw9rpyxiSRK2rFFWPI94oIKoonkArrQk2PTMLbI8eXZPW'],
+                'firstName': ['bigName'], 'lastName': ['bigLastName'], 'newUsername': ['biggerUsername'],
+                'username': ['bigUsername'], 'hawkID': ['bigHawkID'], 'password': ['123456789'],
+                'roleSelected': ['Undergraduate Student'], 'undergradRadios': ['Senior'],
+                'major': ['Neuroscience'], 'interestRadios': ['Yes'], 'experienceRadios': ['Yes'],
+                'interestedRadios': ['Yes'], 'beingMentoredRadios': ['No'], 'agreementRadios': ['No']}
+
+        response = self.client.post('/update_ally_profile/', dict, follow=True)
+        message = list(response.context['messages'])[0]
+        self.assertIn("Profile updated!", message.message)
 
     def test_update_profile_fail_for_nonadmin(self):
         """

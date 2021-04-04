@@ -114,7 +114,6 @@ class EditAllyProfile(View):
     def post(self, request):
         postDict = dict(request.POST)
         user_req = request.user
-        print(request.POST)
         if User.objects.filter(username=postDict["username"][0]).exists():
             message = ''
             user = User.objects.get(username=postDict["username"][0])
@@ -198,6 +197,7 @@ class EditAllyProfile(View):
 
                 ally.save()
             else:
+
                 if user_req.is_staff:
                     selections = self.set_boolean(
                         ['interestRadios', 'experienceRadios', 'interestedRadios'], postDict)
@@ -221,7 +221,7 @@ class EditAllyProfile(View):
                                      'Ally updated!\n' + message)
         else:
             messages.add_message(request, messages.WARNING,
-                                 'Ally does not exist !')
+                                 'Ally does not exist!')
         if user_req.is_staff:
             return redirect('sap:sap-dashboard')
         else:
