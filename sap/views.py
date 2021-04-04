@@ -513,12 +513,13 @@ class CreateEventView(AccessMixin, TemplateView):
         return redirect('/dashboard')
 
 
-class EventSignUpView(AccessMixin, TemplateView):
+class EventSignUpView(TemplateView):
     pass
 
 
-class EventSignUpDoneView(AccessMixin, TemplateView):
+class EventSignUpDoneView(TemplateView):
     pass
+
 
 
 class SignUpView(TemplateView):
