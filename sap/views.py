@@ -301,12 +301,11 @@ class AlliesListView(AccessMixin, TemplateView):
                 exclude_from_ms_default = True
                 mentorshipStatus = []
             
-            if 'major' in postDict:
-                major = postDict['major'][0]
+            major = postDict['major'][0]
+            if major != '':
                 exclude_from_major_default = False
             else:
                 exclude_from_major_default = True
-                major = ''
 
             allies_list = Ally.objects.order_by('-id')
             if not (exclude_from_year_default and exclude_from_aor_default and exclude_from_sc_default and exclude_from_ut_default and exclude_from_ms_default and exclude_from_major_default):
@@ -343,22 +342,16 @@ class AlliesListView(AccessMixin, TemplateView):
                         for cat in studentCategories:
                             if (cat == 'First generation college-student') and (categories.first_gen_college_student == False):
                                 exclude_from_sc = True
-                                break
                             elif (cat == 'Low-income') and (categories.low_income == False):
                                 exclude_from_sc = True
-                                break
                             elif (cat == 'Underrepresented racial/ethnic minority') and (categories.under_represented_racial_ethnic == False):
                                 exclude_from_sc = True
-                                break
                             elif (cat == 'LGBTQ') and (categories.lgbtq == False):
                                 exclude_from_sc = True
-                                break
                             elif (cat == 'Rural') and (categories.rural == False):
                                 exclude_from_sc = True
-                                break
                             elif (cat == 'Disabled') and (categories.disabled == False):
                                 exclude_from_sc = True
-                                break
 
                     if (undergradYear) and (ally.year not in undergradYear):
                         exclude_from_year = True
