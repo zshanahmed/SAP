@@ -5,7 +5,7 @@
  */
 
 :root {
-	--primary: #ebcf34;
+	--primary: #f6c500;
 }
 
 
@@ -19,12 +19,12 @@
 	border-spacing: 0;
 	}
 	
-html .fc,
-.fc table {
-	font-size: 1em;
-	font-family: "Helvetica Neue",Helvetica;
+/*html .fc,*/
+/*.fc table {*/
+/*	font-size: 1em;*/
+/*	font-family: sans-serif;*/
 
-	}
+/*	}*/
 	
 .fc td,
 .fc th {
