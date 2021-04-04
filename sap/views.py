@@ -513,6 +513,14 @@ class CreateEventView(AccessMixin, TemplateView):
         return redirect('/dashboard')
 
 
+class EventSignUpView(AccessMixin, TemplateView):
+    pass
+
+
+class EventSignUpDoneView(AccessMixin, TemplateView):
+    pass
+
+
 class SignUpView(TemplateView):
     template_name = "sap/sign-up.html"
 
