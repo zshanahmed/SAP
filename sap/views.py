@@ -142,15 +142,16 @@ class EditAllyProfile(View):
                     user.last_name = lastName
             except KeyError:
                 message += 'First name or last name could not be updated!\n'
-            try:
-                email = postDict['email'][0]
-                if email != '' and email != user.email:
-                    if not User.objects.filter(email=email).exists():
-                        user.email = email
-                    else:
-                        message += "Email already exists!\n"
-            except KeyError:
-                        message += 'Email could not be updated - Email could not be updated!\n'
+            if user_req.is_staff:
+                try:
+                    email = postDict['email'][0]
+                    if email != '' and email != user.email:
+                        if not User.objects.filter(email=email).exists():
+                            user.email = email
+                        else:
+                            message += "Email could not be updated - Email already exists!\n"
+                except KeyError:
+                            message += 'Email could not be updated!\n'
             user.save()
 
             ally = Ally.objects.get(user=user)
@@ -197,16 +198,20 @@ class EditAllyProfile(View):
 
                 ally.save()
             else:
-                selections = self.set_boolean(
-                    ['interestRadios', 'experienceRadios', 'interestedRadios'], postDict)
+                if user_req.is_staff:
+                    selections = self.set_boolean(
+                        ['interestRadios', 'experienceRadios', 'interestedRadios'], postDict)
+                else:
+                    selections = self.set_boolean(
+                        ['interestRadios', 'experienceRadios', 'interestedRadios', 'agreementRadios'], postDict)
 
                 ally.year = postDict['undergradRadios'][0]
                 ally.major = postDict['major'][0]
                 ally.interested_in_joining_lab = selections['interestRadios']
                 ally.has_lab_experience = selections['experienceRadios']
                 ally.interested_in_mentoring = selections['interestedRadios']
-                ##ally.information_release = selections['agreementRadios']
-
+                if not user_req.is_staff:
+                    ally.information_release = selections['agreementRadios']
                 ally.save()
             if not user_req.is_staff:
                 messages.add_message(request, messages.SUCCESS,
