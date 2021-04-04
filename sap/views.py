@@ -333,10 +333,13 @@ class AlliesListView(AccessMixin, TemplateView):
                         elif (mentorshipStatus == 'Mentee') and (ally.interested_in_being_mentored == False):
                             exclude_from_ms = True
                     
-                    categories = AllyStudentCategoryRelation.objects.filter(
-                        ally_id=ally.id).values()[0]
-                    categories = StudentCategories.objects.filter(
-                        id=categories['student_category_id'])[0]
+                    try:
+                        categories = AllyStudentCategoryRelation.objects.filter(
+                            ally_id=ally.id).values()[0]
+                        categories = StudentCategories.objects.filter(
+                            id=categories['student_category_id'])[0]
+                    except:
+                        studentCategories = []
 
                     if (studentCategories):
                         for cat in studentCategories:
