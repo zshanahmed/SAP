@@ -83,7 +83,7 @@ class ViewAllyProfileFromAdminDashboard(View):
             return HttpResponseNotFound()
 
 
-class EditAllyProfileFromAdminDashboard(AccessMixin, View):
+class EditAllyProfile(View):
     def set_boolean(self, list, postDict):
         dict = {}
         for selection in list:
@@ -92,20 +92,28 @@ class EditAllyProfileFromAdminDashboard(AccessMixin, View):
             else:
                 dict[selection] = False
         return dict
+
     def get(self, request, *args, **kwargs):
         username = request.GET['username']
-        try:
-            user = User.objects.get(username=username)
-            ally = Ally.objects.get(user=user)
-            return render(request, 'sap/admin_ally_table/edit_ally.html', {
-                'ally': ally
-            })
-        except Exception as e:
-            print(e)
-            return HttpResponseNotFound()
+        user_req = request.user
+        if (username != user_req.username) and not user_req.is_staff:
+            messages.warning(request, 'Access Denied!')
+            return redirect('sap:ally-dashboard')
+        else:
+            try:
+                user = User.objects.get(username=username)
+                ally = Ally.objects.get(user=user)
+                return render(request, 'sap/admin_ally_table/edit_ally.html', {
+                    'ally': ally,
+                    'req': request.user,
+                })
+            except Exception as e:
+                print(e)
+                return HttpResponseNotFound()
 
     def post(self, request):
         postDict = dict(request.POST)
+        user_req = request.user
         print(request.POST)
         if User.objects.filter(username=postDict["username"][0]).exists():
             message = ''
@@ -200,13 +208,19 @@ class EditAllyProfileFromAdminDashboard(AccessMixin, View):
                 ##ally.information_release = selections['agreementRadios']
 
                 ally.save()
-
-            messages.add_message(request, messages.WARNING,
-                                 'Ally updated!\n' + message)
+            if not user_req.is_staff:
+                messages.add_message(request, messages.SUCCESS,
+                                     'Profile updated!\n' + message)
+            else:
+                messages.add_message(request, messages.SUCCESS,
+                                     'Ally updated!\n' + message)
         else:
             messages.add_message(request, messages.WARNING,
-                                 'Ally does not exist!')
-        return redirect('sap:sap-dashboard')
+                                 'Ally does not exist !')
+        if user_req.is_staff:
+            return redirect('sap:sap-dashboard')
+        else:
+            return redirect('sap:ally-dashboard')
 
 
 class DeleteAllyProfileFromAdminDashboard(AccessMixin, View):
@@ -281,7 +295,6 @@ class EditAdminProfile(View):
         return render(request, 'sap/profile.html', {
             'form': form
         })
-
 
 class AlliesListView(AccessMixin, TemplateView):
 
