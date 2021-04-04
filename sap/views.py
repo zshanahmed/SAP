@@ -10,7 +10,7 @@ from django.core.exceptions import ValidationError
 from django.db import IntegrityError
 import xlsxwriter
 from .models import Ally, StudentCategories, AllyStudentCategoryRelation
-
+from fuzzywuzzy import fuzz
 
 from .models import Ally, StudentCategories, AllyStudentCategoryRelation, Event, EventAllyRelation
 from django.views import generic
@@ -287,15 +287,26 @@ class AlliesListView(AccessMixin, TemplateView):
             else:
                 exclude_from_ms_default = True
                 mentorshipStatus = []
+            
+            if 'major' in postDict:
+                major = postDict['major'][0]
+                exclude_from_major_default = False
+            else:
+                exclude_from_major_default = True
+                major = ''
 
             allies_list = Ally.objects.order_by('-id')
-            if not (exclude_from_year_default and exclude_from_aor_default and exclude_from_sc_default and exclude_from_ut_default and exclude_from_ms_default):
+            if not (exclude_from_year_default and exclude_from_aor_default and exclude_from_sc_default and exclude_from_ut_default and exclude_from_ms_default and exclude_from_major_default):
                 for ally in allies_list:
                     exclude_from_aor = exclude_from_aor_default
                     exclude_from_year = exclude_from_year_default
                     exclude_from_sc = exclude_from_sc_default
                     exclude_from_ut = exclude_from_ut_default
                     exclude_from_ms = exclude_from_ms_default
+                    exclude_from_major = exclude_from_major_default
+
+                    if (major != '') and (fuzz.ratio(ally.major, major) < 90):
+                        exclude_from_major = True
 
                     if ally.area_of_research:
                         aor = ally.area_of_research.split(',')
@@ -343,7 +354,7 @@ class AlliesListView(AccessMixin, TemplateView):
                         print('User Type:', ally.user_type)
                         exclude_from_ut = True
 
-                    if exclude_from_aor and exclude_from_year and exclude_from_sc and exclude_from_ut and exclude_from_ms:
+                    if exclude_from_aor and exclude_from_year and exclude_from_sc and exclude_from_ut and exclude_from_ms and exclude_from_major:
                         allies_list = allies_list.exclude(id=ally.id)
             for ally in allies_list:
                 if not ally.user.is_active:
