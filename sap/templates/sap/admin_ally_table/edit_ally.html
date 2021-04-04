@@ -48,7 +48,11 @@
                         <h5 class="m-0 font-weight-bold text-primary">Email: </h5>
                     </div>
                     <div class="col-md-6">
-                        <input name="email" type="text" class="form-control-user form-control" style="width: 405px" id="email" value='{{ ally.user.email }}' required>
+                        {% if req.is_staff %}
+                            <input name="email" type="text" class="form-control-user form-control" style="width: 405px" id="email" value='{{ ally.user.email }}' required>
+                        {% else %}
+                            <input name="email" type="text" class="form-control-user form-control" style="width: 405px" id="email" value='{{ ally.user.email }}' disabled>
+                        {% endif %}
                     </div>
                 </div>
                 <div class="row">
@@ -1162,29 +1166,31 @@
                 {% endif %}
             </div>
         </div>
-<!--        <div class="py-1">-->
-<!--            <strong>My academic standing is a factor for IBA internships; therefore, I give IBA staff permission to obtain-->
-<!--                my transcripts. If I completed coursework at another college or university, I am responsible for submitting-->
-<!--                transcripts from that school to the University of Iowa Office of Admissions, and IBA may obtain a copy of-->
-<!--                those transcripts from Admissions.</strong>-->
-<!--            <div class="form-check" id="agreementRadios">-->
-<!--                {% if ally.information_release %}-->
-<!--                    <input type="radio" value="Yes" name="agreementRadios" id="yes" required checked>-->
-<!--                    <label class="form-check-label" for="agreementRadios">Yes</label>-->
-<!--                    <br>-->
-<!--                    <input type="radio" value="No" name="agreementRadios" id="no" required>-->
-<!--                    <label class="form-check-label" for="agreementRadios">No</label>-->
-<!--                    <br>-->
-<!--                {% else %}-->
-<!--                    <input type="radio" value="Yes" name="agreementRadios" id="yes" required>-->
-<!--                    <label class="form-check-label" for="agreementRadios">Yes</label>-->
-<!--                    <br>-->
-<!--                    <input type="radio" value="No" name="agreementRadios" id="no" required checked>-->
-<!--                    <label class="form-check-label" for="agreementRadios">No</label>-->
-<!--                    <br>-->
-<!--                {% endif %}-->
-<!--            </div>-->
-<!--        </div>-->
+        {% if not req.is_staff %}
+            <div class="py-1">
+            <strong>My academic standing is a factor for IBA internships; therefore, I give IBA staff permission to obtain
+                my transcripts. If I completed coursework at another college or university, I am responsible for submitting
+                transcripts from that school to the University of Iowa Office of Admissions, and IBA may obtain a copy of
+                those transcripts from Admissions.</strong>
+            <div class="form-check" id="agreementRadios">
+                {% if ally.information_release %}
+                    <input type="radio" value="Yes" name="agreementRadios" id="yes" required checked>
+                    <label class="form-check-label" for="agreementRadios">Yes</label>
+                    <br>
+                    <input type="radio" value="No" name="agreementRadios" id="no" required>
+                    <label class="form-check-label" for="agreementRadios">No</label>
+                    <br>
+                {% else %}
+                    <input type="radio" value="Yes" name="agreementRadios" id="yes" required>
+                    <label class="form-check-label" for="agreementRadios">Yes</label>
+                    <br>
+                    <input type="radio" value="No" name="agreementRadios" id="no" required checked>
+                    <label class="form-check-label" for="agreementRadios">No</label>
+                    <br>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
 
     </div>
 
