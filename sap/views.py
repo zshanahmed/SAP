@@ -130,7 +130,7 @@ class EditAllyProfile(View):
             try:
                 newPassword = postDict['password'][0]
                 if newPassword != '' and not len(newPassword) < 8:
-                    user.password = newPassword
+                    user.set_password(newPassword)
             except KeyError:
                 message += 'Password could not be updated!\n'
             try:
