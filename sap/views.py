@@ -1,3 +1,5 @@
+# pylint: skip-file
+
 import io, os, os.path, csv, uuid, datetime
 from django.http import HttpResponseForbidden, HttpResponse
 from django.contrib.auth import logout, login

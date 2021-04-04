@@ -1,2 +1,5 @@
 [FORMAT]
 max-line-length=140
+
+[DESIGN]
+max-attributes=20

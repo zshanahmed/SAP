@@ -2,22 +2,19 @@
 contains all the unit tests for sap app
 """
 import os
+import io
+from http import HTTPStatus
+from django.urls import reverse
+from django.contrib.auth import get_user_model
 from django.test import TestCase, Client  # tests file
 import pandas as pd
 import numpy as np
-import io
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
-import sap.views as views
-
-from .models import Ally, StudentCategories, AllyStudentCategoryRelation, Event, EventAllyRelation
-from django.urls import reverse
-from django.contrib.auth import get_user_model
-from http import HTTPStatus
-from .forms import UpdateAdminProfileForm, UserResetForgotPasswordForm
 from django.contrib.auth.forms import PasswordChangeForm, PasswordResetForm
-
-from django.contrib.messages import get_messages
+import sap.views as views
+from .forms import UpdateAdminProfileForm, UserResetForgotPasswordForm
+from .models import Ally, StudentCategories, AllyStudentCategoryRelation, Event, EventAllyRelation
 
 # Create your tests here.
 from .tokens import password_reset_token, account_activation_token
@@ -1517,7 +1514,8 @@ class SignUpTests(TestCase):
         self.assertEqual(response.status_code, 302)
 
     # def test_Staff(self):
-    #     response = self.client.post('/sign-up/', {'csrfmiddlewaretoken': ['PoY77CUhmZ70AsUF3C1nISUsVErkhMjLyb4IEZCTjZafBiWyKGajNyYdVVlldTBp'],
+    #     response = self.client.post('/sign-up/', {'csrfmiddlewaretoken':
+    #     ['PoY77CUhmZ70AsUF3C1nISUsVErkhMjLyb4IEZCTjZafBiWyKGajNyYdVVlldTBp'],
     #     'firstName': ['chongu'], 'lastName': ['gumpy'], 'new_username': ['chonguG'],
     #     'new_email': ['chongu@uiowa.edu'], 'new_password': ['123'], 'repeat_password': ['123'],
     #     'roleSelected': ['Staff'], 'studentsInterestedRadios': ['Yes'], 'howCanWeHelp': ['give me $10000000']})
@@ -1840,6 +1838,9 @@ class ForgotPasswordTest(TestCase):
 
 
 def wack_test_db():
+    """
+    Delete everything from the database
+    """
     User.objects.all().delete()
     Ally.objects.all().delete()
     StudentCategories.objects.all().delete()
@@ -1878,14 +1879,14 @@ class DownloadAlliesTest(TestCase):
         """
         function to facilitate cleanup of data
         """
-        ar = []
+        ar_list = []
         for item in dictionary.items():
             if item[0] in userFields or item[0] in allyFields or item[0] in categoryFields:
                 if item[0] == 'date_joined':
-                    ar.append(item[1].strftime("%b-%d-%Y"))
+                    ar_list.append(item[1].strftime("%b-%d-%Y"))
                 else:
-                    ar.append(item[1])
-        return ar
+                    ar_list.append(item[1])
+        return ar_list
 
     def setUp(self):
         wack_test_db()
@@ -1979,9 +1980,9 @@ class DownloadAlliesTest(TestCase):
         """
         self.client.login(username='glib', password='macaque')
         response = self.client.get(reverse('sap:download_allies'))
-        f = io.BytesIO(response.content)
-        df = pd.read_csv(f)
-        pd.testing.assert_frame_equal(df, self.data_frame)
+        file_content = io.BytesIO(response.content)
+        retrieved_data_frame = pd.read_csv(file_content)
+        pd.testing.assert_frame_equal(retrieved_data_frame, self.data_frame)
 
     def test_try_download_as_ally(self):
         """
@@ -1998,7 +1999,10 @@ class UploadFileTest(TestCase):
     """
 
     @staticmethod
-    def makeFrame():
+    def make_frame():
+        """
+        helper function for upload file test
+        """
         columns = []
         columns = DownloadAlliesTest.fields_helper(User, columns)
         columns = DownloadAlliesTest.fields_helper(Ally, columns)
@@ -2016,79 +2020,87 @@ class UploadFileTest(TestCase):
                 data.append(DownloadAlliesTest.cleanup(User.objects.filter(id=user.user_id)[0].__dict__) +
                             DownloadAlliesTest.cleanup(user.__dict__) + [None, None, None, None, None, None])
 
-        df = pd.DataFrame(columns=columns, data=data)
-        df = df.replace(0, False)
-        df = df.replace(1, True)
-        df.fillna(value=np.nan, inplace=True)
-        df = df.replace('', np.nan)
-        return df
+        data_frame = pd.DataFrame(columns=columns, data=data)
+        data_frame = data_frame.replace(0, False)
+        data_frame = data_frame.replace(1, True)
+        data_frame.fillna(value=np.nan, inplace=True)
+        data_frame = data_frame.replace('', np.nan)
+        return data_frame
 
     def setUp(self):
         wack_test_db()
         self.client = Client()
-        self.loginUser = User.objects.create_user(username='glib', password='macaque', email='staff@uiowa.edu',
-                                                  first_name='charlie', last_name='hebdo', is_staff=True)
+        self.login_user = User.objects.create_user(username='glib', password='macaque', email='staff@uiowa.edu',
+                                                   first_name='charlie', last_name='hebdo', is_staff=True)
 
-        self.badGuy = User.objects.create_user(username='bad', password='badguy1234', email='badguy@uiowa.edu',
-                                               first_name='reallyBadGuy', last_name='I\'m bad')
+        self.bad_guy = User.objects.create_user(username='bad', password='badguy1234', email='badguy@uiowa.edu',
+                                                first_name='reallyBadGuy', last_name='I\'m bad')
 
         self.data_frame = pd.read_csv('./pytests/assets/allies.csv')
         self.data_frame_1 = pd.read_excel('./pytests/assets/allies2.xlsx')
 
-    def test_post_notStaff(self):
+    def test_post_not_staff(self):
+        """
+        upload file: testing files that has inappropriate input
+        """
         self.client.login(username='bad', password='badguy1234')
-        with open('./pytests/assets/allies.csv', 'r') as f:
-            response = self.client.post(reverse('sap:upload_allies'), {'attachment': f})
+        with open('./pytests/assets/allies.csv', 'r') as input_file:
+            response = self.client.post(reverse('sap:upload_allies'), {'attachment': input_file})
         self.assertEqual(response.status_code, 403)
 
-    def test_add_allies_fileType1_(self):
+    def test_add_allies_file_type_one(self):
+        """
+        upload test for file that has correct inputs
+        """
         self.client.login(username='glib', password='macaque')
         name = './pytests/assets/allies.csv'
-        absPath = os.path.abspath(name)
+        abs_path = os.path.abspath(name)
 
-        with open(absPath, 'rb') as f:
+        with open(abs_path, 'rb') as file_name:
             headers = {
                 'HTTP_CONTENT_TYPE': 'multipart/form-data',
                 'HTTP_CONTENT_DISPOSITION': 'attachment; filename=' + 'allies.csv'}
             #            request = factory.post(reverse(string, args=[args]), {'file': data},
             #                                   **headers)
-            response = self.client.post(reverse('sap:upload_allies'), {'file': f}, **headers)
+            response = self.client.post(reverse('sap:upload_allies'), {'file': file_name}, **headers)
 
         self.assertEqual(response.status_code, 200)
 
         allies = Ally.objects.all()
         self.assertEqual(len(allies), 5)
 
-        df = UploadFileTest.makeFrame()
+        local_df = UploadFileTest.make_frame()
 
-        pd.testing.assert_frame_equal(df, self.data_frame)
+        pd.testing.assert_frame_equal(local_df, self.data_frame)
 
-    def test_add_allies_fileType2(self):
+    def test_add_allies_file_type_two(self):
+        """
+        upload test for file that has correct inputs
+        """
         wack_test_db()
-        self.loginUser = User.objects.create_user(username='glib', password='macaque', email='staff@uiowa.edu',
-                                                  first_name='charlie', last_name='hebdo', is_staff=True)
+        self.login_user = User.objects.create_user(username='glib', password='macaque', email='staff@uiowa.edu',
+                                                   first_name='charlie', last_name='hebdo', is_staff=True)
         self.client.login(username='glib', password='macaque')
 
         name = './pytests/assets/allies2.xlsx'
-        absPath = os.path.abspath(name)
-        with open(absPath, 'rb') as f:
+        abs_path = os.path.abspath(name)
+        with open(abs_path, 'rb') as file_name:
             headers = {
                 'HTTP_CONTENT_TYPE': 'multipart/form-data',
                 'HTTP_CONTENT_DISPOSITION': 'attachment; filename=' + 'allies2.xlsx'}
             #            request = factory.post(reverse(string, args=[args]), {'file': data},
             #                                   **headers)
-            response = self.client.post(reverse('sap:upload_allies'), {'file': f}, **headers)
+            response = self.client.post(reverse('sap:upload_allies'), {'file': file_name}, **headers)
         self.assertEqual(response.status_code, 200)
-        allies = Ally.objects.all()
 
-        df = UploadFileTest.makeFrame()
-        df1, errorLog = views.UploadAllies.cleanupFrame(self.data_frame_1)
-        df1 = df1[userFields + allyFields + categoryFields]
-        df['last_login'] = ''
+        local_df = UploadFileTest.make_frame()
+        local_df1, _ = views.UploadAllies.cleanupFrame(self.data_frame_1)
+        local_df1 = local_df1[userFields + allyFields + categoryFields]
+        local_df['last_login'] = ''
         for category in categoryFields:
-            df[category][3] = False
-        df = df.fillna(value='')
-        pd.testing.assert_frame_equal(df, df1)
+            local_df[category][3] = False
+        local_df = local_df.fillna(value='')
+        pd.testing.assert_frame_equal(local_df, local_df1)
 
 
 class CreateEventTests(TestCase):
