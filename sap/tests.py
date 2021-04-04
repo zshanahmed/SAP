@@ -280,9 +280,9 @@ class AdminAllyTableFeatureTests(TestCase):
         dict = {'csrfmiddlewaretoken': ['YXW4Ib9TNmwod6ZETztHgp3ouwbg09sbAYibaXHc5RMKbAECHTZKHIsdJrvzvvP5'],
          'firstName': 'firstName', 'lastName': 'lastName',
          'newUsername': 'bigUsername', 'username': self.ally_user.username,
-         'email': 'bigEmail', 'hawkID': self.ally.hawk_id,
-         'password': [''], 'roleSelected': self.ally.user_type,
-         'stemGradCheckboxes': ['Biochemistry', 'Bioinformatics', 'Chemical Engineering', 'Chemistry'],
+         'email': 'bigEmail', 'hawkID': 'bigHawk',
+         'password': [''], 'roleSelected': 'Faculty',
+         'stemGradCheckboxes': "",
          'research-des': [''], 'openingRadios': ['Yes'], 'labShadowRadios': ['Yes'], 'mentoringFacultyRadios': ['Yes'],
          'volunteerRadios': ['Yes'], 'trainingRadios': ['Yes'], 'connectingRadios': ['Yes'],
          'studentsInterestedRadios': ['Yes'], 'howCanWeHelp': ['']}
@@ -294,6 +294,23 @@ class AdminAllyTableFeatureTests(TestCase):
         )
         message = list(response.context['messages'])[0]
         assert "Ally updated!" in str(message)
+
+        dict = {'csrfmiddlewaretoken': ['YXW4Ib9TNmwod6ZETztHgp3ouwbg09sbAYibaXHc5RMKbAECHTZKHIsdJrvzvvP5'],
+         'firstName': 'firstName',
+         'newUsername': self.user.username, 'username': 'bigUsername',
+         'email': self.user.email, 'hawkID': 'bigHawk',
+         'password': ['thebiggestPassword'], 'roleSelected': 'Faculty',
+         'openingRadios': ['Yes'], 'labShadowRadios': ['Yes'], 'mentoringFacultyRadios': ['Yes'],
+         'volunteerRadios': ['Yes'], 'trainingRadios': ['Yes'], 'connectingRadios': ['Yes'],
+         'studentsInterestedRadios': ['Yes'], }
+
+        response = self.client.post('/edit_allies/', dict, follow=True)
+
+        self.assertContains(
+            response, "Science Alliance Portal", html=True
+        )
+        message = list(response.context['messages'])[0]
+        self.assertIn("Ally updated!", str(message))
 
     def test_edit_non_ally_page_for_admin(self):
         """
