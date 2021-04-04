@@ -373,6 +373,28 @@ class AllyDashboardTests(TestCase):
                                                   first_name='John2',
                                                   last_name='Doe2')
 
+        self.user_ally = Ally.objects.create(
+            user=self.user,
+            hawk_id='johndoe2',
+            user_type='Staff',
+            works_at='College of Engineering',
+            area_of_research='Computer Science and Engineering,Health and Human Physiology,Physics',
+            description_of_research_done_at_lab='Created tools to fight fingerprinting',
+            people_who_might_be_interested_in_iba=True,
+            how_can_science_ally_serve_you='Help in connecting with like minded people',
+            year='Senior',
+            major='Electical Engineering',
+            willing_to_offer_lab_shadowing=True,
+            willing_to_volunteer_for_events=True,
+            interested_in_mentoring=True,
+            interested_in_connecting_with_other_mentors=True,
+            interested_in_mentor_training=True,
+            interested_in_joining_lab=True,
+            has_lab_experience=True,
+            information_release=True,
+            openings_in_lab_serving_at=True,
+        )
+
         self.ally = Ally.objects.create(
             user=self.ally_user,
             hawk_id='johndoe1',
@@ -467,6 +489,56 @@ class AllyDashboardTests(TestCase):
             response, self.ally_user.first_name + ' ' + self.ally_user.last_name, html=True
         )
 
+    def test_update_profile_for_nonadmin(self):
+        """
+        Update profile for nonadmin
+        """
+        self.user.is_staff = False
+        self.user.save()
+        self.client.login(username=self.username, password=self.password)
+        response = self.client.get(reverse('sap:ally-dashboard'), follow=True)
+        self.assertContains(
+            response, "Science Alliance Portal", html=True
+        )
+        response = self.client.get('/update_ally_profile/', {'username': self.username}, follow=True)
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        self.assertContains(
+            response, "Update Profile", html=True
+        )
+
+        response = self.client.post(
+            '/update_ally_profile/', {
+                'csrfmiddlewaretoken': ['XdNiZpT3jpCeRzd2kq8bbRPUmc0tKFP7dsxNaQNTUhblQPK7lne9sX0mrE5khfHH'],
+                'username': [self.username],
+                'studentsInterestedRadios': [str(self.user_ally.people_who_might_be_interested_in_iba)],
+                'howCanWeHelp': ['Finding Jobs and Networking']
+            }, follow=True
+        )
+        self.assertContains(
+            response, "Science Alliance Portal", html=True
+        )
+        message = list(response.context['messages'])[0]
+        self.assertEqual(message.message, "Profile updated !")
+
+    def test_update_profile_fail_for_nonadmin(self):
+        """
+        Update profile for nonadmin
+        """
+        self.user.is_staff = False
+        self.user.save()
+        self.client.login(username=self.username, password=self.password)
+        response = self.client.get(reverse('sap:ally-dashboard'), follow=True)
+        self.assertContains(
+            response, "Science Alliance Portal", html=True
+        )
+        response = self.client.get('/update_ally_profile/', {'username': self.ally_user}, follow=True)
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        self.assertContains(
+            response, "Science Alliance Portal", html=True
+        )
+        message = list(response.context['messages'])[0]
+        self.assertEqual(message.message, "Access Denied!")
+
     def test_stem_aor_filter_for_nonadmin(self):
         """
         Show all allies conforming to stem aor filters
@@ -501,7 +573,6 @@ class AllyDashboardTests(TestCase):
         self.assertContains(
             response, self.ally_user.first_name + ' ' + self.ally_user.last_name, html=True
         )
-
 
 class AdminUpdateProfileAndPasswordTests(TestCase):
     def setUp(self):
