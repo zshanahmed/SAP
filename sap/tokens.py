@@ -13,7 +13,7 @@ class AccountActivationTokenGenerator(PasswordResetTokenGenerator):
         )
 
 
-class PasswordResetTokenGenerator(PasswordResetTokenGenerator):
+class PasswordResetToken(PasswordResetTokenGenerator):
     """
     A unique token for a user to reset forgot password
     """
@@ -24,4 +24,4 @@ class PasswordResetTokenGenerator(PasswordResetTokenGenerator):
 
 
 account_activation_token = AccountActivationTokenGenerator()
-password_reset_token = PasswordResetTokenGenerator()
+password_reset_token = PasswordResetToken()
