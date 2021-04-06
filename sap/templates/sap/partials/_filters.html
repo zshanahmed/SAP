@@ -1,0 +1,347 @@
+{% load static %}
+
+{% if role == "admin" %}
+    <div class="container-fluid col-9 float-left"  id="filter_container">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Filters</h6>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <form class="user" method="post">
+                        {% csrf_token %}
+
+                        <div class="form-group row">
+                            <div class="col-sm-6 mb-3 mb-sm-0">
+                                <input type="hidden" name="form_type" value="filters">
+                                <button class="btn btn-secondary btn-user btn-block dropdown-toggle" type="button" data-toggle="dropdown"
+                                aria-haspopup="true" aria-expanded="false">STEM Area of Research</button>
+                                <div class="dropdown-menu" id="stemGradCheckboxes">
+                                    <a class="dropdown-item">
+                                    <div class="custom-control custom-checkbox">
+                                        <input type="checkbox" value="Biochemistry" name="stemGradCheckboxes" id="biochemistry">
+                                        <label class="form-check-label" for="stemGradCheckboxes">Biochemistry</label>
+                                    </div>
+                                    </a>
+                                    <a class="dropdown-item" href="#">
+                                    <div class="custom-control custom-checkbox">
+                                        <input type="checkbox" value="Bioinformatics" name="stemGradCheckboxes" id="bioinformatics">
+                                        <label class="form-check-label" for="stemGradCheckboxes">Bioinformatics</label>
+                                    </div>
+                                    </a>
+                                    <a class="dropdown-item" href="#">
+                                    <div class="custom-control custom-checkbox">
+                                        <input type="checkbox" value="Biology" name="stemGradCheckboxes" id="biology">
+                                        <label class="form-check-label" for="stemGradCheckboxes">Biology</label>
+                                    </div>
+                                    </a>
+                                    <a class="dropdown-item" href="#">
+                                    <div class="custom-control custom-checkbox">
+                                        <input type="checkbox" value="Biomedical Engineering" name="stemGradCheckboxes" id="biomedicalengineering">
+                                        <label class="form-check-label" for="stemGradCheckboxes">Biomedical Engineering</label>
+                                    </div>
+                                    </a>
+                                    <a class="dropdown-item" href="#">
+                                    <div class="custom-control custom-checkbox">
+                                        <input type="checkbox" value="Chemical Engineering" name="stemGradCheckboxes" id="chemicalengineering">
+                                        <label class="form-check-label" for="stemGradCheckboxes">Chemical Engineering</label>
+                                    </div>
+                                    </a>
+                                    <a class="dropdown-item" href="#">
+                                    <div class="custom-control custom-checkbox">
+                                        <input type="checkbox" value="Chemistry" name="stemGradCheckboxes" id="chemistry">
+                                        <label class="form-check-label" for="stemGradCheckboxes">Chemistry</label>
+                                    </div>
+                                    </a>
+                                    <a class="dropdown-item" href="#">
+                                    <div class="custom-control custom-checkbox">
+                                        <input type="checkbox" value="Computer Science and Engineering" name="stemGradCheckboxes" id="computerscienceandengineering">
+                                        <label class="form-check-label" for="stemGradCheckboxes">Computer Science and Engineering</label>
+                                    </div>
+                                    </a>
+                                    <a class="dropdown-item" href="#">
+                                    <div class="custom-control custom-checkbox">
+                                        <input type="checkbox" value="Environmental Science" name="stemGradCheckboxes" id="environmentalscience">
+                                        <label class="form-check-label" for="stemGradCheckboxes">Environmental Science</label>
+                                    </div>
+                                    </a>
+                                    <a class="dropdown-item" href="#">
+                                    <div class="custom-control custom-checkbox">
+                                        <input type="checkbox" value="Health and Human Physiology" name="stemGradCheckboxes" id="healthandhumanphysiology">
+                                        <label class="form-check-label" for="stemGradCheckboxes">Health and Human Physiology</label>
+                                    </div>
+                                    </a>
+                                    <a class="dropdown-item" href="#">
+                                    <div class="custom-control custom-checkbox">
+                                        <input type="checkbox" value="Mathematics" name="stemGradCheckboxes" id="mathematics">
+                                        <label class="form-check-label" for="stemGradCheckboxes">Mathematics</label>
+                                    </div>
+                                    </a>
+                                    <a class="dropdown-item" href="#">
+                                    <div class="custom-control custom-checkbox">
+                                        <input type="checkbox" value="Microbiology" name="stemGradCheckboxes" id="microbiology">
+                                        <label class="form-check-label" for="stemGradCheckboxes">Microbiology</label>
+                                    </div>
+                                    </a>
+                                    <a class="dropdown-item" href="#">
+                                    <div class="custom-control custom-checkbox">
+                                        <input type="checkbox" value="Neuroscience" name="stemGradCheckboxes" id="neuroscience">
+                                        <label class="form-check-label" for="stemGradCheckboxes">Neuroscience</label>
+                                    </div>
+                                    </a>
+                                    <a class="dropdown-item" href="#">
+                                    <div class="custom-control custom-checkbox">
+                                        <input type="checkbox" value="Nursing" name="stemGradCheckboxes" id="nursing">
+                                        <label class="form-check-label" for="stemGradCheckboxes">Nursing</label>
+                                    </div>
+                                    </a>
+                                    <a class="dropdown-item" href="#">
+                                    <div class="custom-control custom-checkbox">
+                                        <input type="checkbox" value="Physics" name="stemGradCheckboxes" id="physics">
+                                        <label class="form-check-label" for="stemGradCheckboxes">Physics</label>
+                                    </div>
+                                    </a>
+                                    <a class="dropdown-item" href="#">
+                                    <div class="custom-control custom-checkbox">
+                                        <input type="checkbox" value="Psychology" name="stemGradCheckboxes" id="psychology">
+                                        <label class="form-check-label" for="stemGradCheckboxes">Psychology</label>
+                                    </div>
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="col-sm-6">
+                                <button class="btn btn-secondary btn-user btn-block dropdown-toggle" type="button" data-toggle="dropdown"
+                                aria-haspopup="true" aria-expanded="false">Undergraduate Year</button>
+                                <div class="dropdown-menu" id="undergradYear">
+                                    <a class="dropdown-item">
+                                    <div class="custom-control custom-checkbox">
+                                        <input type="checkbox" value="Freshman" name="undergradYear" id="freshman" >
+                                        <label class="form-check-label" for="undergradYear">Freshman</label>
+                                    </div>
+                                    </a>
+                                    <a class="dropdown-item" href="#">
+                                    <div class="custom-control custom-checkbox">
+                                        <input type="checkbox" value="Sophomore" name="undergradYear" id="sophomore" >
+                                        <label class="form-check-label" for="undergradYear">Sophomore</label>
+                                    </div>
+                                    </a>
+                                    <a class="dropdown-item" href="#">
+                                    <div class="custom-control custom-checkbox">
+                                        <input type="checkbox" value="Junior" name="undergradYear" id="junior" >
+                                        <label class="form-check-label" for="undergradYear">Junior</label>
+                                    </div>
+                                    </a>
+                                    <a class="dropdown-item" href="#">
+                                    <div class="custom-control custom-checkbox">
+                                        <input type="checkbox" value="Senior" name="undergradYear" id="senior" >
+                                        <label class="form-check-label" for="undergradYear">Senior</label>
+                                    </div>
+                                    </a>
+                                </div>
+                            
+                            
+                            
+                            
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <div class="col-sm-6 mb-3 mb-sm-0">
+                                <input type="hidden" name="form_type" value="filters">
+                                <button class="btn btn-secondary btn-user btn-block dropdown-toggle" type="button" data-toggle="dropdown"
+                                aria-haspopup="true" aria-expanded="false">Student Categories</button>
+                                <div class="dropdown-menu" id="idUnderGradCheckboxes">
+                                    <a class="dropdown-item">
+                                    <div class="custom-control custom-checkbox">
+                                        <input type="checkbox" value="First generation college-student" name="idUnderGradCheckboxes" id="firstgenerationcollege-student">
+                                    <label class="form-check-label" for="idUnderGradCheckboxes">First generation college-student</label>
+                                    </div>
+                                    </a>
+                                    <a class="dropdown-item" href="#">
+                                    <div class="custom-control custom-checkbox">
+                                        <input type="checkbox" value="Rural" name="idUnderGradCheckboxes" id="rural">
+                                        <label class="form-check-label" for="idUnderGradCheckboxes">Rural</label>
+                                    </div>
+                                    </a>
+                                    <a class="dropdown-item" href="#">
+                                    <div class="custom-control custom-checkbox">
+                                        <input type="checkbox" value="Low-income" name="idUnderGradCheckboxes" id="low-income">
+                                        <label class="form-check-label" for="idUnderGradCheckboxes">Low-income</label>
+                                    </div>
+                                    </a>
+                                    <a class="dropdown-item" href="#">
+                                    <div class="custom-control custom-checkbox">
+                                        <input type="checkbox" value="Underrepresented racial/ethnic minority" name="idUnderGradCheckboxes" id="underrepresentedracial/ethnicminority">
+                                        <label class="form-check-label" for="idUnderGradCheckboxes">Underrepresented racial/ethnic minority</label>
+                                    </div>
+                                    </a>
+                                    <a class="dropdown-item" href="#">
+                                    <div class="custom-control custom-checkbox">
+                                        <input type="checkbox" value="Disabled" name="idUnderGradCheckboxes" id="disabled">
+                                        <label class="form-check-label" for="idUnderGradCheckboxes">Disabled</label>
+                                    </div>
+                                    </a>
+                                    <a class="dropdown-item" href="#">
+                                    <div class="custom-control custom-checkbox">
+                                        <input type="checkbox" value="Transfer student" name="idUnderGradCheckboxes" id="transferstudent">
+                                        <label class="form-check-label" for="idUnderGradCheckboxes">Transfer student</label>
+                                    </div>
+                                    </a>
+                                    <a class="dropdown-item" href="#">
+                                    <div class="custom-control custom-checkbox">
+                                        <input type="checkbox" value="LGBTQ" name="idUnderGradCheckboxes" id="lgbtq">
+                                        <label class="form-check-label" for="idUnderGradCheckboxes">LGBTQ</label>
+                                    </div>
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="col-sm-6">
+                                <button class="btn btn-secondary btn-user btn-block dropdown-toggle" type="button" data-toggle="dropdown"
+                                aria-haspopup="true" aria-expanded="false">University User Type</button>
+                                <div class="dropdown-menu" id="roleSelected">
+                                    <a class="dropdown-item">
+                                    <div class="custom-control custom-checkbox">
+                                        <input type="checkbox" value="Staff" name="roleSelected" id="staff" >
+                                        <label class="form-check-label" for="roleSelected">Staff</label>
+                                    </div>
+                                    </a>
+                                    <a class="dropdown-item" href="#">
+                                    <div class="custom-control custom-checkbox">
+                                        <input type="checkbox" value="Undergraduate Student" name="roleSelected" id="undergrad" >
+                                        <label class="form-check-label" for="roleSelected">Undergrad</label>
+                                    </div>
+                                    </a>
+                                    <a class="dropdown-item" href="#">
+                                    <div class="custom-control custom-checkbox">
+                                        <input type="checkbox" value="Graduate Student" name="roleSelected" id="grad" >
+                                        <label class="form-check-label" for="roleSelected">Grad</label>
+                                    </div>
+                                    </a>
+                                    <a class="dropdown-item" href="#">
+                                    <div class="custom-control custom-checkbox">
+                                        <input type="checkbox" value="Faculty" name="roleSelected" id="faculty" >
+                                        <label class="form-check-label" for="roleSelected">Faculty</label>
+                                    </div>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <div class="col-sm-6 mb-3 mb-sm-0">
+                                <div class="py-2" style="margin-left: 20px;">                               
+                                    <strong>Mentorship Status:</strong>
+                                    <br>
+                                    <div class="form-check form-check-inline">
+                                        <div class="px-2">
+                                            <input type="radio" name="mentorshipStatus" id="Mentor" value="Mentor"> 
+                                            <label class="form-check-label" for="Mentor">Mentor</label>
+                                        </div>
+                                        <div class="px-2">
+                                            <input type="radio" name="mentorshipStatus" id="Mentee" value="Mentee"> 
+                                            <label class="form-check-label" for="Mentee">Mentee</label>  
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-6">
+                                <input type="text" name="major" autofocus="" autocapitalize="none" class="form-control form-control-user" placeholder="Enter Major..." autocomplete="major" maxlength="150" id="id_major">
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-user btn-block">Apply Filters</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+{% else %}
+    <div class="container-fluid"  id="filter_container_ally">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Filters</h6>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive overflow-hidden">
+                    <form class="user" method="post">
+                        {% csrf_token %}
+
+                        <div class="form-group row">
+                            <div class="col-sm-6 mb-3 mb-sm-0">
+                                <input type="hidden" name="form_type" value="filters">
+                                <strong>STEM Area of Research</strong>
+                                <div id="stemGradCheckboxes">
+                                    <input type="checkbox" value="Biochemistry" name="stemGradCheckboxes" id="biochemistry">
+                                    <label class="form-check-label" for="stemGradCheckboxes">Biochemistry</label>
+                                    <br>
+                                    <input type="checkbox" value="Bioinformatics" name="stemGradCheckboxes" id="bioinformatics">
+                                    <label class="form-check-label" for="stemGradCheckboxes">Bioinformatics</label>
+                                    <br>
+                                    <input type="checkbox" value="Biology" name="stemGradCheckboxes" id="biology">
+                                    <label class="form-check-label" for="stemGradCheckboxes">Biology</label>
+                                    <br>
+                                    <input type="checkbox" value="Biomedical Engineering" name="stemGradCheckboxes" id="biomedicalengineering">
+                                    <label class="form-check-label" for="stemGradCheckboxes">Biomedical Engineering</label>
+                                    <br>
+                                    <input type="checkbox" value="Chemical Engineering" name="stemGradCheckboxes" id="chemicalengineering">
+                                    <label class="form-check-label" for="stemGradCheckboxes">Chemical Engineering</label>
+                                    <br>
+                                    <input type="checkbox" value="Chemistry" name="stemGradCheckboxes" id="chemistry">
+                                    <label class="form-check-label" for="stemGradCheckboxes">Chemistry</label>
+                                    <br>
+                                    <input type="checkbox" value="Computer Science and Engineering" name="stemGradCheckboxes" id="computerscienceandengineering">
+                                    <label class="form-check-label" for="stemGradCheckboxes">Computer Science and Engineering</label>
+                                    <br>
+                                    <input type="checkbox" value="Environmental Science" name="stemGradCheckboxes" id="environmentalscience">
+                                    <label class="form-check-label" for="stemGradCheckboxes">Environmental Science</label>
+                                    <br>
+                                    <input type="checkbox" value="Health and Human Physiology" name="stemGradCheckboxes" id="healthandhumanphysiology">
+                                    <label class="form-check-label" for="stemGradCheckboxes">Health and Human Physiology</label>
+                                    <br>
+                                    <input type="checkbox" value="Mathematics" name="stemGradCheckboxes" id="mathematics">
+                                    <label class="form-check-label" for="stemGradCheckboxes">Mathematics</label>
+                                    <br>
+                                    <input type="checkbox" value="Microbiology" name="stemGradCheckboxes" id="microbiology">
+                                    <label class="form-check-label" for="stemGradCheckboxes">Microbiology</label>
+                                    <br>
+                                    <input type="checkbox" value="Neuroscience" name="stemGradCheckboxes" id="neuroscience">
+                                    <label class="form-check-label" for="stemGradCheckboxes">Neuroscience</label>
+                                    <br>
+                                    <input type="checkbox" value="Nursing" name="stemGradCheckboxes" id="nursing">
+                                    <label class="form-check-label" for="stemGradCheckboxes">Nursing</label>
+                                    <br>
+                                    <input type="checkbox" value="Physics" name="stemGradCheckboxes" id="physics">
+                                    <label class="form-check-label" for="stemGradCheckboxes">Physics</label>
+                                    <br>
+                                    <input type="checkbox" value="Psychology" name="stemGradCheckboxes" id="psychology">
+                                    <label class="form-check-label" for="stemGradCheckboxes">Psychology</label>
+                                    <br>
+                                </div>
+                            </div>
+                            <div class="col-sm-6">
+
+                                <strong>Year:</strong>
+                                <div id="undergradYear">
+                                    <input type="checkbox" value="Freshman" name="undergradYear" id="freshman" >
+                                    <label class="form-check-label" for="undergradYear">Freshman</label>
+                                    <br>
+
+                                    <input type="checkbox" value="Sophomore" name="undergradYear" id="sophomore" >
+                                    <label class="form-check-label" for="undergradYear">Sophomore</label>
+                                    <br>
+
+                                    <input type="checkbox" value="Junior" name="undergradYear" id="junior" >
+                                    <label class="form-check-label" for="undergradYear">Junior</label>
+                                    <br>
+
+                                    <input type="checkbox" value="Senior" name="undergradYear" id="senior" >
+                                    <label class="form-check-label" for="undergradYear">Senior</label>
+                                    <br>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-user btn-block">Apply Filters</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endif %}
+                    

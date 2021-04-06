@@ -7,7 +7,7 @@ from django.contrib.auth import get_user_model
 from django.test import TestCase, Client  # tests file
 from django.contrib.auth.forms import PasswordChangeForm
 from .forms import UpdateAdminProfileForm
-from .models import Ally
+from .models import Ally, AllyStudentCategoryRelation, StudentCategories
 
 User = get_user_model()
 
@@ -48,12 +48,6 @@ class AdminAllyTableFeatureTests(TestCase):
                                                   first_name='John',
                                                   last_name='Doe')
 
-        self.ally_user1 = User.objects.create_user(username='johndoe1',
-                                                   email='johndoe1@uiowa.edu',
-                                                   password='johndoe1',
-                                                   first_name='John1',
-                                                   last_name='Doe1')
-
         self.ally = Ally.objects.create(
             user=self.ally_user,
             hawk_id='johndoe',
@@ -67,13 +61,28 @@ class AdminAllyTableFeatureTests(TestCase):
             major='Electical Engineering',
             willing_to_offer_lab_shadowing=True,
             willing_to_volunteer_for_events=True,
-            interested_in_mentoring=True,
+            interested_in_mentoring=False,
             interested_in_connecting_with_other_mentors=True,
             interested_in_mentor_training=True,
             interested_in_joining_lab=True,
             has_lab_experience=True,
             information_release=True,
             openings_in_lab_serving_at=True,
+        )
+
+        self.ally_student_category = StudentCategories.objects.create(
+            under_represented_racial_ethnic = False,
+            first_gen_college_student = False,
+            transfer_student = False,
+            lgbtq = False,
+            low_income = False,
+            rural = True,
+            disabled = False
+        )
+
+        self.ally_student_category_relation = AllyStudentCategoryRelation.objects.create(
+            ally=self.ally,
+            student_category = self.ally_student_category
         )
 
         self.ally_user_2 = User.objects.create_user(username='johndoe_2',
@@ -95,13 +104,185 @@ class AdminAllyTableFeatureTests(TestCase):
             major='Electical Engineering',
             willing_to_offer_lab_shadowing=True,
             willing_to_volunteer_for_events=True,
-            interested_in_mentoring=True,
+            interested_in_mentoring=False,
+            interested_in_being_mentored=True,
             interested_in_connecting_with_other_mentors=True,
             interested_in_mentor_training=True,
             interested_in_joining_lab=True,
             has_lab_experience=True,
             information_release=True,
             openings_in_lab_serving_at=True,
+        )
+
+        self.ally_2_student_category = StudentCategories.objects.create(
+            under_represented_racial_ethnic = True,
+            first_gen_college_student = True,
+            transfer_student = True,
+            lgbtq = True,
+            low_income = True,
+            rural = False,
+            disabled = True
+        )
+
+        self.ally_2_student_category_relation = AllyStudentCategoryRelation.objects.create(
+            ally=self.ally_2,
+            student_category = self.ally_2_student_category
+        )
+
+    def test_major_filter_for_admin(self):
+        """
+        Show all allies conforming to major filter
+        """
+        self.user.is_staff = True
+        self.user.is_active = True
+        self.user.save()
+        self.ally_user_2.is_active = True
+        self.ally_user_2.save()
+        self.client.login(username=self.username, password=self.password)
+
+        # Should return no allies
+        response = self.client.post(
+            '/dashboard/', {
+                'csrfmiddlewaretoken': ['XdNiZpT3jpCeRzd2kq8bbRPUmc0tKFP7dsxNaQNTUhblQPK7lne9sX0mrE5khfHH'],
+                'major': 'Random',
+                'form_type': 'filters'
+            }, follow=True
+        )
+
+        self.assertContains(
+            response, "No allies are available.", html=True
+        )
+
+        # Should find our johndoe
+        response = self.client.post(
+            '/dashboard/', {
+                'csrfmiddlewaretoken': ['XdNiZpT3jpCeRzd2kq8bbRPUmc0tKFP7dsxNaQNTUhblQPK7lne9sX0mrE5khfHH'],
+                'major': 'Electical Engineering',
+                'form_type': 'filters'
+            }, follow=True
+        )
+
+        self.assertContains(
+            response, self.ally_user.first_name + ' ' + self.ally_user.last_name, html=True
+        )
+
+
+    def test_mentorship_status_filter_for_admin(self):
+        """
+        Show all allies conforming to mentorship status filter
+        """
+        self.user.is_staff = True
+        self.user.is_active = True
+        self.user.save()
+        self.ally_user_2.is_active = True
+        self.ally_user_2.save()
+        self.client.login(username=self.username, password=self.password)
+
+        # Should return no allies
+        response = self.client.post(
+            '/dashboard/', {
+                'csrfmiddlewaretoken': ['XdNiZpT3jpCeRzd2kq8bbRPUmc0tKFP7dsxNaQNTUhblQPK7lne9sX0mrE5khfHH'],
+                'mentorshipStatus': ['Mentor'],
+                'major': '',
+                'form_type': 'filters'
+            }, follow=True
+        )
+
+        self.assertContains(
+            response, "No allies are available.", html=True
+        )
+
+        # Should find our johndoe
+        response = self.client.post(
+            '/dashboard/', {
+                'csrfmiddlewaretoken': ['XdNiZpT3jpCeRzd2kq8bbRPUmc0tKFP7dsxNaQNTUhblQPK7lne9sX0mrE5khfHH'],
+                'mentorshipStatus': ['Mentee'],
+                'major': '',
+                'form_type': 'filters'
+            }, follow=True
+        )
+
+        self.assertContains(
+            response, self.ally_user.first_name + ' ' + self.ally_user.last_name, html=True
+        )
+
+    def test_user_type_filter_for_admin(self):
+        """
+        Show all allies conforming to user type filter
+        """
+        self.user.is_staff = True
+        self.user.is_active = True
+        self.user.save()
+        self.ally_user_2.is_active = True
+        self.ally_user_2.save()
+        self.client.login(username=self.username, password=self.password)
+
+        # Should return no allies
+        response = self.client.post(
+            '/dashboard/', {
+                'csrfmiddlewaretoken': ['XdNiZpT3jpCeRzd2kq8bbRPUmc0tKFP7dsxNaQNTUhblQPK7lne9sX0mrE5khfHH'],
+                'roleSelected': ['Faculty'],
+                'major': '',
+                'form_type': 'filters'
+            }, follow=True
+        )
+
+        self.assertContains(
+            response, "No allies are available.", html=True
+        )
+
+        # Should find our johndoe
+        response = self.client.post(
+            '/dashboard/', {
+                'csrfmiddlewaretoken': ['XdNiZpT3jpCeRzd2kq8bbRPUmc0tKFP7dsxNaQNTUhblQPK7lne9sX0mrE5khfHH'],
+                'roleSelected': ['Staff'],
+                'major': '',
+                'form_type': 'filters'
+            }, follow=True
+        )
+
+        self.assertContains(
+            response, self.ally_user.first_name + ' ' + self.ally_user.last_name, html=True
+        )
+
+    def test_student_category_filter_for_admin(self):
+        """
+        Show all allies conforming to student category filter
+        """
+        self.user.is_staff = True
+        self.user.is_active = True
+        self.user.save()
+        self.ally_user_2.is_active = True
+        self.ally_user_2.save()
+        self.client.login(username=self.username, password=self.password)
+
+        # Should return no allies
+        response = self.client.post(
+            '/dashboard/', {
+                'csrfmiddlewaretoken': ['XdNiZpT3jpCeRzd2kq8bbRPUmc0tKFP7dsxNaQNTUhblQPK7lne9sX0mrE5khfHH'],
+                'idUnderGradCheckboxes': ['First generation college-student', 'Low-income', 'Underrepresented racial/ethnic minority',
+                                          'LGBTQ', 'Rural', 'Disabled'],
+                'major': '',
+                'form_type': 'filters'
+            }, follow=True
+        )
+
+        self.assertContains(
+            response, "No allies are available.", html=True
+        )
+
+        # Should find our johndoe
+        response = self.client.post(
+            '/dashboard/', {
+                'csrfmiddlewaretoken': ['XdNiZpT3jpCeRzd2kq8bbRPUmc0tKFP7dsxNaQNTUhblQPK7lne9sX0mrE5khfHH'],
+                'idUnderGradCheckboxes': ['Rural'],
+                'major': '',
+                'form_type': 'filters'
+            }, follow=True
+        )
+
+        self.assertContains(
+            response, self.ally_user.first_name + ' ' + self.ally_user.last_name, html=True
         )
 
     def test_year_filter_for_admin(self):
@@ -118,6 +299,7 @@ class AdminAllyTableFeatureTests(TestCase):
             '/dashboard/', {
                 'csrfmiddlewaretoken': ['XdNiZpT3jpCeRzd2kq8bbRPUmc0tKFP7dsxNaQNTUhblQPK7lne9sX0mrE5khfHH'],
                 'undergradYear': ['Junior'],
+                'major': '',
                 'form_type': 'filters'
             }, follow=True
         )
@@ -131,6 +313,7 @@ class AdminAllyTableFeatureTests(TestCase):
             '/dashboard/', {
                 'csrfmiddlewaretoken': ['XdNiZpT3jpCeRzd2kq8bbRPUmc0tKFP7dsxNaQNTUhblQPK7lne9sX0mrE5khfHH'],
                 'undergradYear': ['Senior'],
+                'major': '',
                 'form_type': 'filters'
             }, follow=True
         )
@@ -153,6 +336,7 @@ class AdminAllyTableFeatureTests(TestCase):
             '/dashboard/', {
                 'csrfmiddlewaretoken': ['XdNiZpT3jpCeRzd2kq8bbRPUmc0tKFP7dsxNaQNTUhblQPK7lne9sX0mrE5khfHH'],
                 'stemGradCheckboxes': ['Bioinformatics'],
+                'major': '',
                 'form_type': 'filters'
             }, follow=True
         )
@@ -166,6 +350,7 @@ class AdminAllyTableFeatureTests(TestCase):
             '/dashboard/', {
                 'csrfmiddlewaretoken': ['XdNiZpT3jpCeRzd2kq8bbRPUmc0tKFP7dsxNaQNTUhblQPK7lne9sX0mrE5khfHH'],
                 'stemGradCheckboxes': ['Physics'],
+                'major': '',
                 'form_type': 'filters'
             }, follow=True
         )
@@ -184,48 +369,48 @@ class AdminAllyTableFeatureTests(TestCase):
         self.client.login(username=self.username, password=self.password)
 
         # Testing for Staff user type
-        response = self.client.get(
-            '/edit_allies/', {'username': self.ally_user.username})
+        response = self.client.get('/edit_allies/', {'username': self.ally_user.username})
         self.assertEqual(response.status_code, HTTPStatus.OK)
-        self.assertContains(
-            response, "Edit Ally Profile", html=True
-        )
 
-        response = self.client.post(
-            '/edit_allies/', {
-                'csrfmiddlewaretoken': ['XdNiZpT3jpCeRzd2kq8bbRPUmc0tKFP7dsxNaQNTUhblQPK7lne9sX0mrE5khfHH'],
-                'username': [self.ally_user.username],
-                'studentsInterestedRadios': [str(self.ally.people_who_might_be_interested_in_iba)],
-                'howCanWeHelp': ['Finding Jobs']
-            }, follow=True
-        )
+        dictionary = {'csrfmiddlewaretoken': ['YXW4Ib9TNmwod6ZETztHgp3ouwbg09sbAYibaXHc5RMKbAECHTZKHIsdJrvzvvP5'],
+         'firstName': self.ally_user.first_name, 'lastName': self.ally_user.last_name,
+         'newUsername': self.ally_user.username,'username': self.ally_user.username,
+         'email': self.ally_user.email, 'hawkID': self.ally.hawk_id,
+         'password': [''], 'roleSelected': self.ally.user_type,
+         'stemGradCheckboxes': ['Biochemistry', 'Bioinformatics', 'Chemical Engineering', 'Chemistry'],
+         'research-des': [''], 'openingRadios': ['Yes'], 'labShadowRadios': ['Yes'], 'mentoringFacultyRadios': ['Yes'],
+         'volunteerRadios': ['Yes'], 'trainingRadios': ['Yes'], 'connectingRadios': ['Yes'],
+         'studentsInterestedRadios': ['Yes'], 'howCanWeHelp': ['']}
+
+        response = self.client.post('/edit_allies/', dictionary, follow=True)
+
         self.assertContains(
             response, "Science Alliance Portal", html=True
         )
         message = list(response.context['messages'])[0]
-        self.assertEqual(message.message, "Ally updated !")
+        assert "Ally updated!" in str(message)
 
-        # Testing for Graduate Student user type
-        self.ally.user_type = "Graduate Student"
-        self.ally.save()
-        response = self.client.post(
-            '/edit_allies/', {
-                'csrfmiddlewaretoken': ['XdNiZpT3jpCeRzd2kq8bbRPUmc0tKFP7dsxNaQNTUhblQPK7lne9sX0mrE5khfHH'],
-                'username': [self.ally_user.username],
-                'stemGradCheckboxes': ['Bioinformatics', 'Computer Science and Engineering', 'Health and Human Physiology',
-                                       'Neuroscience', 'Physics'],
-                'mentoringGradRadios': ['Yes'],
-                'labShadowRadios': ['No'],
-                'connectingRadios': ['No'],
-                'volunteerGradRadios': ['No'],
-                'gradTrainingRadios': ['Yes']
-            }, follow=True
-        )
-        self.assertContains(
-            response, "Science Alliance Portal", html=True
-        )
-        message = list(response.context['messages'])[0]
-        self.assertEqual(message.message, "Ally updated !")
+        # # Testing for Graduate Student user type
+        # self.ally.user_type="Graduate Student"
+        # self.ally.save()
+        # response = self.client.post(
+        #     '/edit_allies/', {
+        #         'csrfmiddlewaretoken': ['XdNiZpT3jpCeRzd2kq8bbRPUmc0tKFP7dsxNaQNTUhblQPK7lne9sX0mrE5khfHH'],
+        #         'username': [self.ally_user.username],
+        #         'stemGradCheckboxes': ['Bioinformatics','Computer Science and Engineering', 'Health and Human Physiology',
+        #         'Neuroscience', 'Physics'],
+        #         'mentoringGradRadios': ['Yes'],
+        #         'labShadowRadios': ['No'],
+        #         'connectingRadios': ['No'],
+        #         'volunteerGradRadios': ['No'],
+        #         'gradTrainingRadios': ['Yes']
+        #     }, follow=True
+        # )
+        # self.assertContains(
+        #     response, "Science Alliance Portal", html=True
+        # )
+        # message = list(response.context['messages'])[0]
+        # self.assertEqual(message.message, "Ally updated !")
 
         # Testing for UnderGrad Student user type
         self.ally.user_type = "Undergraduate Student"
@@ -242,24 +427,60 @@ class AdminAllyTableFeatureTests(TestCase):
             response, "Science Alliance Portal", html=True
         )
         message = list(response.context['messages'])[0]
-        self.assertEqual(message.message, "Ally updated !")
+        assert "Ally updated!" in str(message)
 
-        # Testing for Faculty user type
-        self.ally.user_type = "Faculty"
-        self.ally.save()
-        response = self.client.post(
-            '/edit_allies/', {
-                'csrfmiddlewaretoken': ['XdNiZpT3jpCeRzd2kq8bbRPUmc0tKFP7dsxNaQNTUhblQPK7lne9sX0mrE5khfHH'],
-                'username': [self.ally_user.username],
-                'stemGradCheckboxes': ['Biochemistry', 'Bioinformatics', 'Biology'], 'research-des': ['Authorship Obfuscation'],
-                'openingRadios': ['No'], 'mentoringFacultyRadios': ['No'], 'volunteerRadios': ['Yes'], 'trainingRadios': ['Yes']
-            }, follow=True
-        )
+        #
+        # # Testing for Faculty user type
+        # self.ally.user_type = "Faculty"
+        # self.ally.save()
+        # response = self.client.post(
+        #     '/edit_allies/', {
+        #         'csrfmiddlewaretoken': ['XdNiZpT3jpCeRzd2kq8bbRPUmc0tKFP7dsxNaQNTUhblQPK7lne9sX0mrE5khfHH'],
+        #         'username': [self.ally_user.username],
+        #         'stemGradCheckboxes': ['Biochemistry', 'Bioinformatics', 'Biology'], 'research-des': ['Authorship Obfuscation'],
+        #         'openingRadios': ['No'], 'mentoringFacultyRadios': ['No'], 'volunteerRadios': ['Yes'], 'trainingRadios': ['Yes']
+        #     }, follow=True
+        # )
+        # self.assertContains(
+        #     response, "Science Alliance Portal", html=True
+        # )
+        # message = list(response.context['messages'])[0]
+        # self.assertEqual(message.message, "Ally updated !")
+
+        dictionary = {'csrfmiddlewaretoken': ['YXW4Ib9TNmwod6ZETztHgp3ouwbg09sbAYibaXHc5RMKbAECHTZKHIsdJrvzvvP5'],
+         'firstName': 'firstName', 'lastName': 'lastName',
+         'newUsername': 'bigUsername', 'username': self.ally_user.username,
+         'email': 'bigEmail', 'hawkID': 'bigHawk',
+         'password': [''], 'roleSelected': 'Faculty',
+         'stemGradCheckboxes': "",
+         'research-des': [''], 'openingRadios': ['Yes'], 'labShadowRadios': ['Yes'], 'mentoringFacultyRadios': ['Yes'],
+         'volunteerRadios': ['Yes'], 'trainingRadios': ['Yes'], 'connectingRadios': ['Yes'],
+         'studentsInterestedRadios': ['Yes'], 'howCanWeHelp': ['']}
+
+        response = self.client.post('/edit_allies/', dictionary, follow=True)
+
         self.assertContains(
             response, "Science Alliance Portal", html=True
         )
         message = list(response.context['messages'])[0]
-        self.assertEqual(message.message, "Ally updated !")
+        assert "Ally updated!" in str(message)
+
+        dictionary = {'csrfmiddlewaretoken': ['YXW4Ib9TNmwod6ZETztHgp3ouwbg09sbAYibaXHc5RMKbAECHTZKHIsdJrvzvvP5'],
+         'firstName': 'firstName',
+         'newUsername': self.user.username, 'username': 'bigUsername',
+         'email': self.user.email, 'hawkID': 'bigHawk',
+         'password': ['thebiggestPassword'], 'roleSelected': 'Faculty',
+         'openingRadios': ['Yes'], 'labShadowRadios': ['Yes'], 'mentoringFacultyRadios': ['Yes'],
+         'volunteerRadios': ['Yes'], 'trainingRadios': ['Yes'], 'connectingRadios': ['Yes'],
+         'studentsInterestedRadios': ['Yes'], }
+
+        response = self.client.post('/edit_allies/', dictionary, follow=True)
+
+        self.assertContains(
+            response, "Science Alliance Portal", html=True
+        )
+        message = list(response.context['messages'])[0]
+        self.assertIn("Ally updated!", str(message))
 
     def test_edit_non_ally_page_for_admin(self):
         """
@@ -284,8 +505,8 @@ class AdminAllyTableFeatureTests(TestCase):
         self.assertContains(
             response, "Science Alliance Portal", html=True
         )
-        message = list(response.context['messages'])[0]
-        self.assertEqual(message.message, "Ally does not exist !")
+        message = str(list(response.context['messages'])[0])
+        assert "Ally does not exist!" in message
 
     def test_view_ally_page_for_admin(self):
         """
@@ -368,6 +589,28 @@ class AllyDashboardTests(TestCase):
                                                    password='johndoe2',
                                                    first_name='John2',
                                                    last_name='Doe2')
+
+        self.user_ally = Ally.objects.create(
+            user=self.user,
+            hawk_id='johndoe2',
+            user_type='Staff',
+            works_at='College of Engineering',
+            area_of_research='Computer Science and Engineering,Health and Human Physiology,Physics',
+            description_of_research_done_at_lab='Created tools to fight fingerprinting',
+            people_who_might_be_interested_in_iba=True,
+            how_can_science_ally_serve_you='Help in connecting with like minded people',
+            year='Senior',
+            major='Electical Engineering',
+            willing_to_offer_lab_shadowing=True,
+            willing_to_volunteer_for_events=True,
+            interested_in_mentoring=True,
+            interested_in_connecting_with_other_mentors=True,
+            interested_in_mentor_training=True,
+            interested_in_joining_lab=True,
+            has_lab_experience=True,
+            information_release=True,
+            openings_in_lab_serving_at=True,
+        )
 
         self.ally = Ally.objects.create(
             user=self.ally_user,
@@ -465,6 +708,67 @@ class AllyDashboardTests(TestCase):
         self.assertContains(
             response, self.ally_user.first_name + ' ' + self.ally_user.last_name, html=True
         )
+
+    def test_update_profile_for_nonadmin(self):
+        """
+        Update profile for nonadmin
+        """
+        self.user.is_staff = False
+        self.user.save()
+        self.client.login(username=self.username, password=self.password)
+        response = self.client.get(reverse('sap:ally-dashboard'), follow=True)
+        self.assertContains(
+            response, "Science Alliance Portal", html=True
+        )
+        response = self.client.get('/update_ally_profile/', {'username': self.username}, follow=True)
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+
+        dictionary = {'csrfmiddlewaretoken': ['YXW4Ib9TNmwod6ZETztHgp3ouwbg09sbAYibaXHc5RMKbAECHTZKHIsdJrvzvvP5'],
+         'firstName': 'firstName', 'lastName': 'lastName',
+         'newUsername': ['bigUsername'], 'username': [self.username],
+         'email': 'bigEmail', 'hawkID': 'bigHawk',
+         'password': [''], 'roleSelected': 'Staff',
+         'stemGradCheckboxes': "",
+         'research-des': [''], 'openingRadios': ['Yes'], 'labShadowRadios': ['Yes'], 'mentoringFacultyRadios': ['Yes'],
+         'volunteerRadios': ['Yes'], 'trainingRadios': ['Yes'], 'connectingRadios': ['Yes'],
+         'studentsInterestedRadios': ['Yes'], 'howCanWeHelp': ['']}
+
+        response = self.client.post('/update_ally_profile/', dictionary, follow=True)
+        self.assertContains(
+            response, "Science Alliance Portal", html=True
+        )
+        message = list(response.context['messages'])[0]
+        self.assertIn("Profile updated!", message.message)
+
+        dictionary = {'csrfmiddlewaretoken': ['1bX0e878XH7kUZ5WlWHKw9rpyxiSRK2rFFWPI94oIKoonkArrQk2PTMLbI8eXZPW'],
+                'firstName': ['bigName'], 'lastName': ['bigLastName'], 'newUsername': ['biggerUsername'],
+                'username': ['bigUsername'], 'hawkID': ['bigHawkID'], 'password': ['123456789'],
+                'roleSelected': ['Undergraduate Student'], 'undergradRadios': ['Senior'],
+                'major': ['Neuroscience'], 'interestRadios': ['Yes'], 'experienceRadios': ['Yes'],
+                'interestedRadios': ['Yes'], 'beingMentoredRadios': ['No'], 'agreementRadios': ['No']}
+
+        response = self.client.post('/update_ally_profile/', dictionary, follow=True)
+        message = list(response.context['messages'])[0]
+        self.assertIn("Profile updated!", message.message)
+
+    def test_update_profile_fail_for_nonadmin(self):
+        """
+        Update profile for nonadmin
+        """
+        self.user.is_staff = False
+        self.user.save()
+        self.client.login(username=self.username, password=self.password)
+        response = self.client.get(reverse('sap:ally-dashboard'), follow=True)
+        self.assertContains(
+            response, "Science Alliance Portal", html=True
+        )
+        response = self.client.get('/update_ally_profile/', {'username': self.ally_user}, follow=True)
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        self.assertContains(
+            response, "Science Alliance Portal", html=True
+        )
+        message = list(response.context['messages'])[0]
+        self.assertEqual(message.message, "Access Denied!")
 
     def test_stem_aor_filter_for_nonadmin(self):
         """
@@ -692,269 +996,3 @@ class AdminUpdateProfileAndPasswordTests(TestCase):
         message = list(response.context['messages'])[0]
         self.assertEqual(
             message.message, "Could not Update Profile ! Username already exists")
-
-
-class AlliesIndexViewTests(TestCase):
-    """
-    Unit tests for the dashboard an admin views
-    """
-
-    def setUp(self):
-        self.username = 'admin'
-        self.password = 'admin_password1'
-        self.client = Client()
-
-        user = User.objects.create_user(self.username, 'email@test.com', self.password)
-        user.is_staff = True
-        user.save()
-
-    def test_no_ally(self):
-        """
-        If no allies exist, an appropriate message is displayed.
-        """
-        self.client.login(username=self.username, password=self.password)
-        response = self.client.get(reverse('sap:sap-dashboard'))
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "No allies are available.")
-        self.assertQuerysetEqual(response.context['allies_list'], [])
-
-    def test_one_ally(self):
-        """
-        Only one ally should be displayed on the home page
-        """
-        self.client.login(username=self.username, password=self.password)
-        create_ally('username_1', 'hawk_id_1')
-        response = self.client.get(reverse('sap:sap-dashboard'))
-        self.assertQuerysetEqual(
-            response.context['allies_list'],
-            ['<Ally: hawk_id_1>']
-        )
-
-    def test_two_allies(self):
-        """
-        Only two allies should be displayed on the home page
-        """
-        self.client.login(username=self.username, password=self.password)
-        create_ally('username_1', 'hawk_id_1')
-        create_ally('username_2', 'hawk_id_2')
-        response = self.client.get(reverse('sap:sap-dashboard'))
-        self.assertQuerysetEqual(
-            response.context['allies_list'],
-            ['<Ally: hawk_id_2>', '<Ally: hawk_id_1>']  # Need to return in the descending order
-        )
-
-
-class CreateAdminViewTest(TestCase):
-    """
-    Unit tests for creating new IBA admins
-    """
-
-    def setUp(self):
-        self.username = 'admin'
-        self.password = 'admin_password1'
-        self.client = Client()
-        self.user = User.objects.create_user(self.username, 'email@test.com', self.password)
-        self.client.login(username=self.username, password=self.password)
-        self.user.is_staff = True
-        self.user.save()
-
-    def test_get(self):
-        """
-        test get create admin page
-        """
-        response = self.client.get('/create_iba_admin/')
-        self.assertEqual(response.status_code, 200)
-
-    def test_post_missing_data(self):
-        """
-        Check if email entered for new admin is non empty
-        """
-        response = self.client.post('/create_iba_admin/', {
-            'csrfmiddlewaretoken': ['AAIHnJBSnR9fQdHP6yTjGRPQSE8HmiRI7oc3tPv0RyJrMoAyXpq93geUfDTH6QCk'],
-            'current_username': ['iba_admin'],
-            'current_password': ['iba_sep_1'], 'new_email': [''],
-            'new_username': ['iba_admin'], 'new_password': ['iba_sep_1'],
-            'repeat_password': ['iba_sep_1']})
-
-        url = response.url
-        assert url == '/create_iba_admin'
-
-    def test_post_invalid_credentials(self):
-        """
-        check if the current iba admin username and password are valid
-        """
-        response = self.client.post('/create_iba_admin/', {
-            'csrfmiddlewaretoken': ['AAIHnJBSnR9fQdHP6yTjGRPQSE8HmiRI7oc3tPv0RyJrMoAyXpq93geUfDTH6QCk'],
-            'current_username': ['admin'],
-            'current_password': ['admin_assword1'], 'new_email': ['emailGuy@email.com'],
-            'new_username': ['iba_admin'], 'new_password': ['iba_sep_1'],
-            'repeat_password': ['iba_sep_1']})
-
-        url = response.url
-        assert url == '/create_iba_admin'
-
-    def test_post_new_username_that_exists(self):
-        """
-        check if the new admin's name is unique
-        """
-        response = self.client.post('/create_iba_admin/', {
-            'csrfmiddlewaretoken': ['AAIHnJBSnR9fQdHP6yTjGRPQSE8HmiRI7oc3tPv0RyJrMoAyXpq93geUfDTH6QCk'],
-            'current_username': ['admin'],
-            'current_password': ['admin_password1'], 'new_email': ['emailGuy@email.com'],
-            'new_username': ['admin'], 'new_password': ['admin_password1'],
-            'repeat_password': ['iba_sep_1']})
-
-        url = response.url
-        assert url == '/create_iba_admin'
-
-    def test_post_non_matching_new_password(self):
-        """
-        verify if the password and confirm password fields have the same value
-        """
-        response = self.client.post('/create_iba_admin/', {
-            'csrfmiddlewaretoken': ['AAIHnJBSnR9fQdHP6yTjGRPQSE8HmiRI7oc3tPv0RyJrMoAyXpq93geUfDTH6QCk'],
-            'current_username': ['admin'],
-            'current_password': ['admin_password1'], 'new_email': ['emailGuy@email.com'],
-            'new_username': ['admin1'], 'new_password': ['admin_password1'],
-            'repeat_password': ['iba_sep_1']})
-
-        url = response.url
-        assert url == '/create_iba_admin'
-
-    def test_good_create_admin(self):
-        """
-        Test if new admin is created in user table if all fields are valid
-        """
-        response = self.client.post('/create_iba_admin/', {
-            'csrfmiddlewaretoken': ['AAIHnJBSnR9fQdHP6yTjGRPQSE8HmiRI7oc3tPv0RyJrMoAyXpq93geUfDTH6QCk'],
-            'current_username': ['admin'],
-            'current_password': ['admin_password1'], 'new_email': ['emailGuy@email.com'],
-            'new_username': ['admin1'], 'new_password': ['admin_password1'],
-            'repeat_password': ['admin_password1']})
-
-        url = response.url
-        assert url == '/dashboard'
-        assert User.objects.filter(username='admin1').exists()
-
-    '''
-    TODO: Once we do performance enhancement - pagination, this test will be useful
-    def test_51_allies(self):
-        """
-        Only 50 allies should be displayed on the home page even if there are more than 50 allies in the database
-        """
-        self.client.login(username=self.username, password=self.password)
-
-        for i in range(52):
-            create_ally('username_{}'.format(str(i)), 'hawk_id_{}'.format(str(i)))
-
-        response = self.client.get(reverse('sap:sap-dashboard'))
-        self.assertQuerysetEqual(
-            len(response.context['allies_list'].count()),
-            50
-        )
-        '''
-
-
-class LoginRedirectTests(TestCase):
-    """
-    Unit tests to verify if the users are redirected to proper page after login
-    """
-
-    def setUp(self):
-        self.username = 'user'
-        self.password = 'user_password1'
-        self.email = 'email@test.com'
-        self.client = Client()
-
-        self.user = User.objects.create_user(self.username, self.email, self.password)
-
-    def test_login_for_admin(self):
-        """
-        Admin users are redirected to Dashboard after logging in
-        """
-        self.user.is_staff = True
-        self.user.save()
-        self.client.login(username=self.username, password=self.password)
-
-        response = self.client.get(reverse("sap:login_success"))
-        self.assertEqual(response.status_code, HTTPStatus.FOUND)
-
-    def test_login_for_admin_fail(self):
-        """
-        Invalid password error for admin
-        """
-        self.client.post("/", {"username": "adm", "password": "admin"})
-        response = self.client.get(reverse("sap:home"))
-        self.assertEqual(response.status_code, HTTPStatus.OK)
-
-    def test_login_for_nonadmin(self):
-        """
-        Non-admin users are redirected to About page
-        """
-        self.user.is_staff = False
-        self.user.save()
-        self.client.login(username=self.username, password=self.password)
-
-        response = self.client.get(reverse("sap:login_success"))
-        self.assertEqual(response.status_code, HTTPStatus.FOUND)
-
-
-class LogoutRedirectTests(TestCase):
-    """
-    Unit tests to verify if logout happens properly
-    """
-
-    def setUp(self):
-        self.username = 'admin'
-        self.password = 'admin_password1'
-        self.client = Client()
-        self.user = User.objects.create_user(self.username, 'email@test.com', self.password, is_staff=True)
-
-    def test_logout_for_admin(self):
-        """
-        test if admin is logged out on click of logout button
-        """
-        self.client.login(username=self.username, password=self.password)
-        response = self.client.get(reverse('sap:logout'))
-        self.assertEqual(response.status_code, HTTPStatus.FOUND)
-        self.assertEqual(response.url, '/')
-
-    def test_logout_for_ally(self):
-        """
-        test if admin is logged out on click of logout button
-        """
-        self.user.is_staff = False
-        self.user.save()
-        self.client.login(username=self.username, password=self.password)
-        response = self.client.get(reverse('sap:logout'))
-        self.assertEqual(response.status_code, HTTPStatus.FOUND)
-        self.assertEqual(response.url, '/')
-
-
-class AdminAccessTests(TestCase):
-    """
-    Tests to ensure admin is able to access all the pages on the site
-    """
-
-    def setUp(self):
-        self.username = 'admin'
-        self.password = 'admin_password1'
-        self.client = Client()
-
-        User.objects.create_user(self.username, 'email@test.com', self.password, is_staff=True)
-
-    def test_dashboard_access_for_admin(self):
-        """
-        Admin users can access Dashboard
-        """
-        self.client.login(username=self.username, password=self.password)
-        response = self.client.get(reverse('sap:sap-dashboard'))
-        self.assertEqual(response.status_code, HTTPStatus.OK)
-
-    def test_analytics_access_for_admin(self):
-        """
-        Admin users can access Analytics
-        """
-        self.client.login(username=self.username, password=self.password)
-        response = self.client.get(reverse('sap:sap-analytics'))
-        self.assertEqual(response.status_code, HTTPStatus.OK)

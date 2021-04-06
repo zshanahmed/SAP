@@ -160,7 +160,7 @@ a {
 }
 
 a:hover {
-  color: #FFCD00;
+  color: #ffcd00;
 }
 a:not([href]):not([class]) {
   color: inherit;
@@ -2239,7 +2239,7 @@ fieldset:disabled a.btn {
   color: #fff;
   background-color: #f1da08;
   border-color: #f1da08;
-  box-shadow: 0 0 0 0.2rem #f1da08
+  box-shadow: 0 0 0 0.2rem #f1da08;
 }
 .btn-primary.disabled,
 .btn-primary:disabled {
@@ -2257,7 +2257,7 @@ fieldset:disabled a.btn {
 .btn-primary:not(:disabled):not(.disabled).active:focus,
 .btn-primary:not(:disabled):not(.disabled):active:focus,
 .show > .btn-primary.dropdown-toggle:focus {
-  box-shadow: 0 0 0 0.2rem #f1da08
+  box-shadow: 0 0 0 0.2rem #f1da08;
 }
 .btn-secondary {
   color: #fff;
@@ -2838,7 +2838,7 @@ input[type='submit'].btn-block {
   margin-left: 0;
 }
 .dropdown-menu {
-  position: absolute;
+  position: relative;
   top: 100%;
   left: 0;
   z-index: 1000;
@@ -3022,6 +3022,8 @@ input[type='submit'].btn-block {
 }
 .dropdown-menu.show {
   display: block;
+  position: relative !important;
+  top: -50px !important;
 }
 .dropdown-header {
   display: block;
@@ -9886,7 +9888,13 @@ a:focus {
   background-size: cover;
 }
 .bg-register-image {
-  background: url("../img/iba_logo.png");
+  background: url('../img/iba_logo.png');
+  background-position: center;
+  background-size: auto;
+  background-repeat: no-repeat;
+}
+.bg-scienceAlliance-image {
+  background: url("../img/Science Alliance Final.png");
   background-position: center;
   background-size: auto;
   background-repeat: no-repeat;
@@ -10297,11 +10305,11 @@ body.sidebar-toggled footer.sticky-footer {
 }
 
 #logo-text {
-  border-bottom: 3px solid #FFCD00;
+  border-bottom: 3px solid #ffcd00;
   padding-bottom: 0.01em;
 }
 
-input #file-upload-button{
-  border:none;
-  color:
+input #file-upload-button {
+  border: none;
+  color: ;
 }

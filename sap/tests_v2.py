@@ -17,7 +17,6 @@ from .tokens import password_reset_token, account_activation_token
 
 User = get_user_model()
 
-
 class SignUpTests(TestCase):
     """
     Testing all different scenarios of signup for different types of users
@@ -354,6 +353,7 @@ class SignUpTests(TestCase):
                 'interestRadios': ['Yes'],
                 'experienceRadios': ['Yes'],
                 'interestedRadios': ['Yes'],
+                'beingMentoredRadios': ['Yes'],
                 'agreementRadios': ['Yes'],
             }
         )
@@ -658,35 +658,6 @@ class SignUpTests(TestCase):
 
         request = self.client.get(link)
         self.assertEqual(request.status_code, HTTPStatus.FOUND)
-
-
-class NonAdminAccessTests(TestCase):
-    """
-    Unit tests for non admin (ally) members app access
-    """
-
-    def setUp(self):
-        self.username = 'admin'
-        self.password = 'admin_password1'
-        self.client = Client()
-
-        User.objects.create_user(self.username, 'email@test.com', self.password, is_staff=False)
-
-    def test_dashboard_access_for_nonadmin(self):
-        """
-        Admin users can access Dashboard
-        """
-        self.client.login(username=self.username, password=self.password)
-        response = self.client.get(reverse('sap:sap-dashboard'))
-        self.assertEqual(response.status_code, HTTPStatus.FORBIDDEN)
-
-    def test_analytics_access_for_nonadmin(self):
-        """
-        Admin users can access Dashboard
-        """
-        self.client.login(username=self.username, password=self.password)
-        response = self.client.get(reverse('sap:sap-analytics'))
-        self.assertEqual(response.status_code, HTTPStatus.FORBIDDEN)
 
 
 class ForgotPasswordTest(TestCase):

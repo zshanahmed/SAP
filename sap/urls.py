@@ -21,6 +21,8 @@ urlpatterns = [
         name='change_password'),
     url(r'^update_profile/$', login_required(views.EditAdminProfile.as_view()),
         name='sap-admin_profile'),
+    url(r'^update_ally_profile/$', login_required(views.EditAllyProfile.as_view()),
+        name='sap-ally_profile'),
 
     url(r'^dashboard/$',
         login_required(views.AlliesListView.as_view()),
@@ -57,7 +59,7 @@ urlpatterns = [
     url(r'^allies/$', login_required(views.ViewAllyProfileFromAdminDashboard.as_view()),
         name='admin_view_ally'),
 
-    url(r'^edit_allies/$', login_required(views.EditAllyProfileFromAdminDashboard.as_view()),
+    url(r'^edit_allies/$', login_required(views.EditAllyProfile.as_view()),
         name='admin_edit_ally'),
 
     url(r'^delete/$', login_required(views.DeleteAllyProfileFromAdminDashboard.as_view()),
