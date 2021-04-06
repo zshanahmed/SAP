@@ -114,45 +114,10 @@ class EditAllyProfile(View):
     def post(self, request):
         postDict = dict(request.POST)
         user_req = request.user
-        if User.objects.filter(username=postDict["username"][0]).exists():
-            message = ''
-            user = User.objects.get(username=postDict["username"][0])
-            try:
-                newUsername = postDict['newUsername'][0]
-                if newUsername != '' and newUsername != user.username:
-                    if not User.objects.filter(username=newUsername):
-                        user.username = newUsername
-                    else:
-                        message +="Username not updated - Username already exists!\n"
-            except KeyError:
-                message += 'Username could not be updated!\n'
-            try:
-                newPassword = postDict['password'][0]
-                if newPassword != '' and not len(newPassword) < 8:
-                    user.set_password(newPassword)
-            except KeyError:
-                message += 'Password could not be updated!\n'
-            try:
-                firstName = postDict['firstName'][0]
-                lastName = postDict['lastName'][0]
-                if firstName != '' and firstName != user.first_name:
-                    user.first_name = firstName
-                if lastName != '' and lastName != user.last_name:
-                    user.last_name = lastName
-            except KeyError:
-                message += 'First name or last name could not be updated!\n'
-            if user_req.is_staff:
-                try:
-                    email = postDict['email'][0]
-                    if email != '' and email != user.email:
-                        if not User.objects.filter(email=email).exists():
-                            user.email = email
-                        else:
-                            message += "Email could not be updated - Email already exists!\n"
-                except KeyError:
-                            message += 'Email could not be updated!\n'
-            user.save()
 
+        message = ''
+        if User.objects.filter(username=postDict["username"][0]).exists():
+            user = User.objects.get(username=postDict["username"][0])
             ally = Ally.objects.get(user=user)
             try:
                 userType = postDict['roleSelected'][0]
@@ -213,6 +178,44 @@ class EditAllyProfile(View):
                 if not user_req.is_staff:
                     ally.information_release = selections['agreementRadios']
                 ally.save()
+
+            try:
+                newUsername = postDict['newUsername'][0]
+                if newUsername != '' and newUsername != user.username:
+                    if not User.objects.filter(username=newUsername):
+                        user.username = newUsername
+                    else:
+                        message +="Username not updated - Username already exists!\n"
+            except KeyError:
+                message += 'Username could not be updated!\n'
+            try:
+                newPassword = postDict['password'][0]
+                if newPassword != '' and not len(newPassword) < 8:
+                    user.set_password(newPassword)
+            except KeyError:
+                message += 'Password could not be updated!\n'
+            try:
+                firstName = postDict['firstName'][0]
+                lastName = postDict['lastName'][0]
+                if firstName != '' and firstName != user.first_name:
+                    user.first_name = firstName
+                if lastName != '' and lastName != user.last_name:
+                    user.last_name = lastName
+            except KeyError:
+                message += 'First name or last name could not be updated!\n'
+            if user_req.is_staff:
+                try:
+                    email = postDict['email'][0]
+                    if email != '' and email != user.email:
+                        if not User.objects.filter(email=email).exists():
+                            user.email = email
+                        else:
+                            message += "Email could not be updated - Email already exists!\n"
+                except KeyError:
+                            message += 'Email could not be updated!\n'
+            user.save()
+
+
             if not user_req.is_staff:
                 messages.add_message(request, messages.SUCCESS,
                                      'Profile updated!\n' + message)
