@@ -249,21 +249,20 @@ class EditAllyProfile(View):
                             message += 'Email could not be updated!\n'
             user.save()
 
-            return redirect(reverse('sap:admin_edit_ally', args=[postDict['username'][0]]))
-
-
-            # if (not same) or badEmail or badUser:
-            #     messages.add_message(request, messages.WARNING, message)
-            #     return redirect(reverse('/edit_allies', user))
+            if same:
+                if badUser or badEmail:
+                    messages.add_message(request, messages.WARNING, message)
+                else:
+                    messages.add_message(request, messages.WARNING,
+                                         'No Changes Detected!' + message)
+                return redirect(reverse('sap:admin_edit_ally', args=[postDict['username'][0]]))
 
             if not user_req.is_staff:
-                if not same:
-                    messages.add_message(request, messages.SUCCESS,
+                messages.add_message(request, messages.SUCCESS,
                                         'Profile updated!\n' + message)
             else:
-                if not same:
-                    messages.add_message(request, messages.SUCCESS,
-                                        'Ally updated!\n' + message)
+                messages.add_message(request, messages.SUCCESS,
+                                    'Ally updated!\n' + message)
         else:
             messages.add_message(request, messages.WARNING,
                                  'Ally does not exist!')
