@@ -143,14 +143,14 @@ class EditAllyProfile(View):
                     ally.user_type = userType
                     same = False
             except KeyError:
-                message += 'User type could not be updated!\n'
+                message += ' User type could not be updated!\n'
             try:
                 hawkId = postDict['hawkID'][0]
                 if hawkId != ally.hawk_id and hawkId != '':
                     ally.hawk_id = hawkId
                     same = False
             except KeyError:
-                message += "HawkID could not be updated!\n"
+                message += " HawkID could not be updated!\n"
 
             if ally.user_type != "Undergraduate Student":
                 selections, same = self.set_boolean(
@@ -221,16 +221,19 @@ class EditAllyProfile(View):
                         same = False
                     else:
                         badUser = True
-                        message +="Username not updated - Username already exists!\n"
+                        message +=" Username not updated - Username already exists!\n"
             except KeyError:
-                message += 'Username could not be updated!\n'
+                message += ' Username could not be updated!\n'
             try:
                 newPassword = postDict['password'][0]
-                if newPassword != '' and not len(newPassword) < 8:
-                    user.set_password(newPassword)
-                    same = False
+                if newPassword != '':
+                    if not len(newPassword) < 8:
+                        user.set_password(newPassword)
+                        same = False
+                    else:
+                        message += " Password could not be set because it is less than 8 characters long!"
             except KeyError:
-                message += 'Password could not be updated!\n'
+                message += ' Password could not be updated!\n'
             try:
                 firstName = postDict['firstName'][0]
                 lastName = postDict['lastName'][0]
@@ -241,7 +244,7 @@ class EditAllyProfile(View):
                     user.last_name = lastName
                     same = False
             except KeyError:
-                message += 'First name or last name could not be updated!\n'
+                message += ' First name or last name could not be updated!\n'
             if user_req.is_staff:
                 try:
                     email = postDict['email'][0]
@@ -250,10 +253,10 @@ class EditAllyProfile(View):
                             user.email = email
                             same = False
                         else:
-                            message += "Email could not be updated - Email already exists!\n"
+                            message += " Email could not be updated - Email already exists!\n"
                             badEmail = True
                 except KeyError:
-                    message += 'Email could not be updated!\n'
+                    message += ' Email could not be updated!\n'
             user.save()
 
 
