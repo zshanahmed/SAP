@@ -149,6 +149,7 @@ class EditAllyProfile(View):
                 hawkId = postDict['hawkID'][0]
                 if hawkId != ally.hawk_id and hawkId != '':
                     ally.hawk_id = hawkId
+                    same = False
             except KeyError:
                 message += "HawkID could not be updated!\n"
 
