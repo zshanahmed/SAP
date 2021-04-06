@@ -114,67 +114,114 @@ class EditAllyProfile(View):
     def post(self, request):
         postDict = dict(request.POST)
         user_req = request.user
-        print(request.POST)
         if User.objects.filter(username=postDict["username"][0]).exists():
+            message = ''
             user = User.objects.get(username=postDict["username"][0])
-            ally = Ally.objects.get(user=user)
-            if ally.user_type == 'Staff':
-                selections = self.set_boolean(
-                    ['studentsInterestedRadios'], postDict)
+            try:
+                newUsername = postDict['newUsername'][0]
+                if newUsername != '' and newUsername != user.username:
+                    if not User.objects.filter(username=newUsername):
+                        user.username = newUsername
+                    else:
+                        message +="Username not updated - Username already exists!\n"
+            except KeyError:
+                message += 'Username could not be updated!\n'
+            try:
+                newPassword = postDict['password'][0]
+                if newPassword != '' and not len(newPassword) < 8:
+                    user.set_password(newPassword)
+            except KeyError:
+                message += 'Password could not be updated!\n'
+            try:
+                firstName = postDict['firstName'][0]
+                lastName = postDict['lastName'][0]
+                if firstName != '' and firstName != user.first_name:
+                    user.first_name = firstName
+                if lastName != '' and lastName != user.last_name:
+                    user.last_name = lastName
+            except KeyError:
+                message += 'First name or last name could not be updated!\n'
+            if user_req.is_staff:
+                try:
+                    email = postDict['email'][0]
+                    if email != '' and email != user.email:
+                        if not User.objects.filter(email=email).exists():
+                            user.email = email
+                        else:
+                            message += "Email could not be updated - Email already exists!\n"
+                except KeyError:
+                            message += 'Email could not be updated!\n'
+            user.save()
 
-                how_can_we_help = postDict["howCanWeHelp"][0]
+            ally = Ally.objects.get(user=user)
+            try:
+                userType = postDict['roleSelected'][0]
+                if userType != ally.user_type:
+                    ally.user_type = userType
+            except KeyError:
+                message += 'User type could not be updated!\n'
+            try:
+                hawkId = postDict['hawkID'][0]
+                if hawkId != ally.hawk_id and hawkId != '':
+                    ally.hawk_id = hawkId
+            except KeyError:
+                message += "HawkID could not be updated!\n"
+
+            if ally.user_type != "Undergraduate Student":
+                selections = self.set_boolean(
+                    ['studentsInterestedRadios', 'labShadowRadios', 'connectingRadios',
+                     'openingRadios', 'mentoringFacultyRadios',
+                     'trainingRadios', 'volunteerRadios'], postDict)
+                try:
+                    aor = ','.join(postDict['stemGradCheckboxes'])
+                    ally.area_of_research = aor
+                except KeyError:
+                    ally.area_of_research = ""
+                try:
+                    how_can_we_help = postDict["howCanWeHelp"][0]
+                    ally.how_can_science_ally_serve_you = how_can_we_help
+                except KeyError:
+                    pass
+                try:
+                    ally.description_of_research_done_at_lab = postDict['research-des'][0]
+                except KeyError:
+                    pass
 
                 ally.people_who_might_be_interested_in_iba = selections['studentsInterestedRadios']
-                ally.how_can_science_ally_serve_you = how_can_we_help
-
-                ally.save()
-            elif ally.user_type == 'Graduate Student':
-                selections = self.set_boolean(
-                    ['mentoringGradRadios', 'labShadowRadios', 'connectingRadios', 'volunteerGradRadios', 'gradTrainingRadios'], postDict)
-                stem_fields = ','.join(postDict['stemGradCheckboxes'])
-
-                ally.area_of_research = stem_fields
-                ally.interested_in_mentoring = selections['mentoringGradRadios']
-                ally.willing_to_offer_lab_shadowing = selections['labShadowRadios']
-                ally.interested_in_connecting_with_other_mentors = selections['connectingRadios']
-                ally.willing_to_volunteer_for_events = selections['volunteerGradRadios']
-                ally.interested_in_mentor_training = selections['gradTrainingRadios']
-
-                ally.save()
-            elif ally.user_type == 'Undergraduate Student':
-                selections = self.set_boolean(
-                    ['interestRadios', 'experienceRadios', 'interestedRadios', 'agreementRadios'], postDict)
-
-                ally.year = postDict['undergradRadios'][0]
-                ally.major = postDict['major'][0]
-                ally.interested_in_joining_lab = selections['interestRadios']
-                ally.has_lab_experience=selections['experienceRadios']
-                ally.interested_in_mentoring=selections['interestedRadios']
-                ally.information_release = selections['agreementRadios']
-
-                ally.save()
-            elif ally.user_type == 'Faculty':
-                selections = self.set_boolean(
-                    ['openingRadios', 'mentoringFacultyRadios', 'volunteerRadios', 'trainingRadios'], postDict)
-                stem_fields = ','.join(postDict['stemGradCheckboxes'])
-
-                ally.area_of_research = stem_fields
-                ally.description_of_research_done_at_lab = postDict['research-des'][0]
-                ally.openings_in_lab_serving_at=selections['openingRadios']
                 ally.interested_in_mentoring = selections['mentoringFacultyRadios']
+                ally.willing_to_offer_lab_shadowing = selections['labShadowRadios']
+                ally.openings_in_lab_serving_at = selections['openingRadios']
+                ally.interested_in_connecting_with_other_mentors = selections['connectingRadios']
                 ally.willing_to_volunteer_for_events = selections['volunteerRadios']
                 ally.interested_in_mentor_training = selections['trainingRadios']
 
                 ally.save()
+            else:
+
+                if user_req.is_staff:
+                    selections = self.set_boolean(
+                        ['interestRadios', 'experienceRadios', 'interestedRadios'], postDict)
+                else:
+                    selections = self.set_boolean(
+                        ['interestRadios', 'experienceRadios', 'interestedRadios', 'agreementRadios'], postDict)
+
+                ally.year = postDict['undergradRadios'][0]
+                ally.major = postDict['major'][0]
+                ally.interested_in_joining_lab = selections['interestRadios']
+                ally.has_lab_experience = selections['experienceRadios']
+                ally.interested_in_mentoring = selections['interestedRadios']
+                if not user_req.is_staff:
+                    ally.information_release = selections['agreementRadios']
+                ally.save()
             if not user_req.is_staff:
                 messages.add_message(request, messages.SUCCESS,
-                                     'Profile updated !')
+                                     'Profile updated!\n' + message)
             else:
                 messages.add_message(request, messages.SUCCESS,
-                                     'Ally updated !')
+                                     'Ally updated!\n' + message)
         else:
             messages.add_message(request, messages.WARNING,
-                                 'Ally does not exist !')
+                                 'Ally does not exist!')
         if user_req.is_staff:
             return redirect('sap:sap-dashboard')
         else:
