@@ -1048,8 +1048,8 @@ class UploadAllies(AccessMixin, HttpResponse):
             return df, errorlog
         try:
             df = df.fillna(value='')
-            df['STEM Area of Research'] = df['STEM Area of Research'].replace(regex=[r'\([^)]*\)', '\n'],value='')
-            df['STEM Area of Research'] = df['STEM Area of Research'].replace(regex=r'\s', value=',')
+            df['STEM Area of Research'] = df['STEM Area of Research'].replace(regex=[r'\n'], value=',')
+            df['STEM Area of Research'] = df['STEM Area of Research'].replace(regex=[r'\s\([^)]*\)'], value='')
             df['University Type'] = df['University Type'].replace(regex=[r'\s\([^)]*\)', '/Post-doc'], value='')
             df['Year'] = df['Year'].replace(regex=r'\s\([^)]*\)', value='')
             df = df.rename({'STEM Area of Research': 'area_of_research',
