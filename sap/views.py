@@ -523,6 +523,7 @@ class EventSignUpView(TemplateView):
 
 class EventSignUpDoneView(TemplateView):
     def get(self, request, *args, **kwargs):
+        # template =
         pass
 
     def post(self, request, *args, **kwargs):
