@@ -109,7 +109,10 @@ class EditAllyProfile(View):
         return dict, same
 
     def get(self, request, *args, **kwargs):
-        username = request.GET['username']
+        try:
+            username = request.GET['username']
+        except KeyError:
+            username = request.path.split('/')[-2]
         user_req = request.user
         if (username != user_req.username) and not user_req.is_staff:
             messages.warning(request, 'Access Denied!')
@@ -126,12 +129,13 @@ class EditAllyProfile(View):
                 print(e)
                 return HttpResponseNotFound()
 
-    def post(self, request):
+    def post(self, request, username=''):
         postDict = dict(request.POST)
         user_req = request.user
 
         message = ''
         if User.objects.filter(username=postDict["username"][0]).exists():
+            same = True
             user = User.objects.get(username=postDict["username"][0])
             ally = Ally.objects.get(user=user)
             try:
@@ -185,10 +189,10 @@ class EditAllyProfile(View):
 
                 if user_req.is_staff:
                     selections, same = self.set_boolean(
-                        ['interestRadios', 'experienceRadios', 'interestedRadios'], postDict)
+                        ['interestRadios', 'experienceRadios', 'interestedRadios'], postDict, ally)
                 else:
                     selections, same = self.set_boolean(
-                        ['interestRadios', 'experienceRadios', 'interestedRadios', 'agreementRadios'], postDict)
+                        ['interestRadios', 'experienceRadios', 'interestedRadios', 'agreementRadios'], postDict, ally)
 
                 year = postDict['undergradRadios'][0]
                 major = postDict['major'][0]
@@ -204,12 +208,16 @@ class EditAllyProfile(View):
                     ally.information_release = selections['agreementRadios']
                 ally.save()
 
+            badUser = False
+            badEmail = False
+
             try:
                 newUsername = postDict['newUsername'][0]
                 if newUsername != '' and newUsername != user.username:
                     if not User.objects.filter(username=newUsername):
                         user.username = newUsername
                     else:
+                        badUser = True
                         message +="Username not updated - Username already exists!\n"
             except KeyError:
                 message += 'Username could not be updated!\n'
@@ -236,17 +244,26 @@ class EditAllyProfile(View):
                             user.email = email
                         else:
                             message += "Email could not be updated - Email already exists!\n"
+                            badEmail = True
                 except KeyError:
                             message += 'Email could not be updated!\n'
             user.save()
 
+            return redirect(reverse('sap:admin_edit_ally', args=[postDict['username'][0]]))
+
+
+            # if (not same) or badEmail or badUser:
+            #     messages.add_message(request, messages.WARNING, message)
+            #     return redirect(reverse('/edit_allies', user))
 
             if not user_req.is_staff:
-                messages.add_message(request, messages.SUCCESS,
-                                     'Profile updated!\n' + message)
+                if not same:
+                    messages.add_message(request, messages.SUCCESS,
+                                        'Profile updated!\n' + message)
             else:
-                messages.add_message(request, messages.SUCCESS,
-                                     'Ally updated!\n' + message)
+                if not same:
+                    messages.add_message(request, messages.SUCCESS,
+                                        'Ally updated!\n' + message)
         else:
             messages.add_message(request, messages.WARNING,
                                  'Ally does not exist!')
