@@ -85,7 +85,7 @@ class ViewAllyProfileFromAdminDashboard(View):
 
 class EditAllyProfile(View):
 
-    def set_boolean(self, list, postDict, ally):
+    def set_boolean(self, list, postDict, ally, same):
         selectionDict = {'studentsInterestedRadios': ally.people_who_might_be_interested_in_iba,
                          'labShadowRadios': ally.willing_to_offer_lab_shadowing,
                          'connectingRadios': ally.interested_in_connecting_with_other_mentors,
@@ -96,9 +96,8 @@ class EditAllyProfile(View):
                          'interestRadios': ally.interested_in_joining_lab,
                         'experienceRadios': ally.has_lab_experience,
                          'interestedRadios': ally.interested_in_mentoring,
-                         'agreementRadios': ally.information_release }
+                         'agreementRadios': ally.information_release}
         dict = {}
-        same = True
         for selection in list:
             if postDict[selection][0] == 'Yes':
                 dict[selection] = True
@@ -157,7 +156,7 @@ class EditAllyProfile(View):
                 selections, same = self.set_boolean(
                     ['studentsInterestedRadios', 'labShadowRadios', 'connectingRadios',
                      'openingRadios', 'mentoringFacultyRadios',
-                     'trainingRadios', 'volunteerRadios'], postDict, ally)
+                     'trainingRadios', 'volunteerRadios'], postDict, ally, same)
                 try:
                     aor = ','.join(postDict['stemGradCheckboxes'])
                 except KeyError:
@@ -191,10 +190,11 @@ class EditAllyProfile(View):
 
                 if user_req.is_staff:
                     selections, same = self.set_boolean(
-                        ['interestRadios', 'experienceRadios', 'interestedRadios'], postDict, ally)
+                        ['interestRadios', 'experienceRadios', 'interestedRadios'], postDict, ally, same)
                 else:
                     selections, same = self.set_boolean(
-                        ['interestRadios', 'experienceRadios', 'interestedRadios', 'agreementRadios'], postDict, ally)
+                        ['interestRadios', 'experienceRadios', 'interestedRadios', 'agreementRadios'],
+                        postDict, ally, same)
 
                 year = postDict['undergradRadios'][0]
                 major = postDict['major'][0]
