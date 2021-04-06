@@ -154,19 +154,23 @@ class EditAllyProfile(View):
                      'trainingRadios', 'volunteerRadios'], postDict, ally)
                 try:
                     aor = ','.join(postDict['stemGradCheckboxes'])
-                    ally.area_of_research = aor
                 except KeyError:
                     aor = ""
-                ally.area_of_research = aor
                 try:
                     how_can_we_help = postDict["howCanWeHelp"][0]
-                    ally.how_can_science_ally_serve_you = how_can_we_help
                 except KeyError:
-                    pass
+                    how_can_we_help = ""
                 try:
-                    ally.description_of_research_done_at_lab = postDict['research-des'][0]
+                    description = postDict['research-des'][0]
                 except KeyError:
-                    pass
+                    description = ""
+                if not (description == ally.description_of_research_done_at_lab and
+                        how_can_we_help == ally.how_can_science_ally_serve_you and
+                        aor == ally.area_of_research):
+                    same = False
+                ally.description_of_research_done_at_lab = description
+                ally.how_can_science_ally_serve_you = how_can_we_help
+                ally.area_of_research = aor
 
                 ally.people_who_might_be_interested_in_iba = selections['studentsInterestedRadios']
                 ally.interested_in_mentoring = selections['mentoringFacultyRadios']
@@ -180,14 +184,19 @@ class EditAllyProfile(View):
             else:
 
                 if user_req.is_staff:
-                    selections = self.set_boolean(
+                    selections, same = self.set_boolean(
                         ['interestRadios', 'experienceRadios', 'interestedRadios'], postDict)
                 else:
-                    selections = self.set_boolean(
+                    selections, same = self.set_boolean(
                         ['interestRadios', 'experienceRadios', 'interestedRadios', 'agreementRadios'], postDict)
 
-                ally.year = postDict['undergradRadios'][0]
-                ally.major = postDict['major'][0]
+                year = postDict['undergradRadios'][0]
+                major = postDict['major'][0]
+                if not (year == ally.year and major == ally.major):
+                    same = False
+                ally.year = year
+                ally.major = major
+
                 ally.interested_in_joining_lab = selections['interestRadios']
                 ally.has_lab_experience = selections['experienceRadios']
                 ally.interested_in_mentoring = selections['interestedRadios']
