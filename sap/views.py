@@ -142,6 +142,7 @@ class EditAllyProfile(View):
                 userType = postDict['roleSelected'][0]
                 if userType != ally.user_type:
                     ally.user_type = userType
+                    same = False
             except KeyError:
                 message += 'User type could not be updated!\n'
             try:
@@ -216,6 +217,7 @@ class EditAllyProfile(View):
                 if newUsername != '' and newUsername != user.username:
                     if not User.objects.filter(username=newUsername):
                         user.username = newUsername
+                        same = False
                     else:
                         badUser = True
                         message +="Username not updated - Username already exists!\n"
@@ -225,6 +227,7 @@ class EditAllyProfile(View):
                 newPassword = postDict['password'][0]
                 if newPassword != '' and not len(newPassword) < 8:
                     user.set_password(newPassword)
+                    same = False
             except KeyError:
                 message += 'Password could not be updated!\n'
             try:
@@ -232,8 +235,10 @@ class EditAllyProfile(View):
                 lastName = postDict['lastName'][0]
                 if firstName != '' and firstName != user.first_name:
                     user.first_name = firstName
+                    same = False
                 if lastName != '' and lastName != user.last_name:
                     user.last_name = lastName
+                    same = False
             except KeyError:
                 message += 'First name or last name could not be updated!\n'
             if user_req.is_staff:
@@ -242,12 +247,14 @@ class EditAllyProfile(View):
                     if email != '' and email != user.email:
                         if not User.objects.filter(email=email).exists():
                             user.email = email
+                            same = False
                         else:
                             message += "Email could not be updated - Email already exists!\n"
                             badEmail = True
                 except KeyError:
-                            message += 'Email could not be updated!\n'
+                    message += 'Email could not be updated!\n'
             user.save()
+
 
             if same:
                 if badUser or badEmail:
