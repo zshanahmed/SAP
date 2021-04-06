@@ -10,7 +10,7 @@ from django.core.exceptions import ValidationError
 from django.db import IntegrityError
 import xlsxwriter
 from .models import Ally, StudentCategories, AllyStudentCategoryRelation
-
+from fuzzywuzzy import fuzz
 
 from .models import Ally, StudentCategories, AllyStudentCategoryRelation, Event, EventAllyRelation
 from django.views import generic
@@ -319,17 +319,53 @@ class AlliesListView(AccessMixin, TemplateView):
             else:
                 exclude_from_aor_default = True
                 stemfields =[]
+            
             if 'undergradYear' in postDict:
                 exclude_from_year_default = False
                 undergradYear = postDict['undergradYear']
             else:
                 exclude_from_year_default = True
                 undergradYear = []
+            
+            if 'idUnderGradCheckboxes' in postDict:
+                studentCategories = postDict['idUnderGradCheckboxes']
+                exclude_from_sc_default = False
+            else:
+                exclude_from_sc_default = True
+                studentCategories = []
+            
+            if 'roleSelected' in postDict:
+                userTypes = postDict['roleSelected']
+                exclude_from_ut_default = False
+            else:
+                exclude_from_ut_default = True
+                userTypes = []
+            
+            if 'mentorshipStatus' in postDict:
+                mentorshipStatus = postDict['mentorshipStatus'][0]
+                exclude_from_ms_default = False
+            else:
+                exclude_from_ms_default = True
+                mentorshipStatus = []
+            
+            major = postDict['major'][0]
+            if major != '':
+                exclude_from_major_default = False
+            else:
+                exclude_from_major_default = True
+
             allies_list = Ally.objects.order_by('-id')
-            if not (exclude_from_year_default and exclude_from_aor_default):
+            if not (exclude_from_year_default and exclude_from_aor_default and exclude_from_sc_default and exclude_from_ut_default and exclude_from_ms_default and exclude_from_major_default):
                 for ally in allies_list:
                     exclude_from_aor = exclude_from_aor_default
                     exclude_from_year = exclude_from_year_default
+                    exclude_from_sc = exclude_from_sc_default
+                    exclude_from_ut = exclude_from_ut_default
+                    exclude_from_ms = exclude_from_ms_default
+                    exclude_from_major = exclude_from_major_default
+
+                    if (major != '') and (fuzz.ratio(ally.major, major) < 90):
+                        exclude_from_major = True
 
                     if ally.area_of_research:
                         aor = ally.area_of_research.split(',')
@@ -337,12 +373,44 @@ class AlliesListView(AccessMixin, TemplateView):
                         aor = []
                     if (stemfields) and (not bool(set(stemfields) & set(aor))):
                         exclude_from_aor = True
+                    
+                    if (mentorshipStatus != []):
+                        if (mentorshipStatus == 'Mentor') and (ally.interested_in_mentoring == False):
+                            exclude_from_ms = True
+                        elif (mentorshipStatus == 'Mentee') and (ally.interested_in_being_mentored == False):
+                            exclude_from_ms = True
+                    
+                    try:
+                        categories = AllyStudentCategoryRelation.objects.filter(
+                            ally_id=ally.id).values()[0]
+                        categories = StudentCategories.objects.filter(
+                            id=categories['student_category_id'])[0]
+                    except:
+                        studentCategories = []
 
+                    if (studentCategories):
+                        for cat in studentCategories:
+                            if (cat == 'First generation college-student') and (categories.first_gen_college_student == False):
+                                exclude_from_sc = True
+                            elif (cat == 'Low-income') and (categories.low_income == False):
+                                exclude_from_sc = True
+                            elif (cat == 'Underrepresented racial/ethnic minority') and (categories.under_represented_racial_ethnic == False):
+                                exclude_from_sc = True
+                            elif (cat == 'LGBTQ') and (categories.lgbtq == False):
+                                exclude_from_sc = True
+                            elif (cat == 'Rural') and (categories.rural == False):
+                                exclude_from_sc = True
+                            elif (cat == 'Disabled') and (categories.disabled == False):
+                                exclude_from_sc = True
 
                     if (undergradYear) and (ally.year not in undergradYear):
                         exclude_from_year = True
+                    
+                    if (userTypes) and (ally.user_type not in userTypes):
+                        print('User Type:', ally.user_type)
+                        exclude_from_ut = True
 
-                    if exclude_from_aor and exclude_from_year:
+                    if exclude_from_aor and exclude_from_year and exclude_from_sc and exclude_from_ut and exclude_from_ms and exclude_from_major:
                         allies_list = allies_list.exclude(id=ally.id)
             for ally in allies_list:
                 if not ally.user.is_active:

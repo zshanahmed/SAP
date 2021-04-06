@@ -66,12 +66,6 @@ class AdminAllyTableFeatureTests(TestCase):
                                         first_name='John',
                                         last_name='Doe')
 
-        self.ally_user1 = User.objects.create_user(username='johndoe1',
-                                                  email='johndoe1@uiowa.edu',
-                                                  password='johndoe1',
-                                                  first_name='John1',
-                                                  last_name='Doe1')
-
         self.ally = Ally.objects.create(
             user=self.ally_user,
             hawk_id='johndoe',
@@ -85,13 +79,28 @@ class AdminAllyTableFeatureTests(TestCase):
             major='Electical Engineering',
             willing_to_offer_lab_shadowing=True,
             willing_to_volunteer_for_events=True,
-            interested_in_mentoring=True,
+            interested_in_mentoring=False,
             interested_in_connecting_with_other_mentors=True,
             interested_in_mentor_training=True,
             interested_in_joining_lab=True,
             has_lab_experience=True,
             information_release=True,
             openings_in_lab_serving_at=True,
+        )
+
+        self.ally_student_category = StudentCategories.objects.create(
+            under_represented_racial_ethnic = False,
+            first_gen_college_student = False,
+            transfer_student = False,
+            lgbtq = False,
+            low_income = False,
+            rural = True,
+            disabled = False
+        )
+
+        self.ally_student_category_relation = AllyStudentCategoryRelation.objects.create(
+            ally=self.ally,
+            student_category = self.ally_student_category
         )
 
         self.ally_user_2 = User.objects.create_user(username='johndoe_2',
@@ -113,7 +122,8 @@ class AdminAllyTableFeatureTests(TestCase):
             major='Electical Engineering',
             willing_to_offer_lab_shadowing=True,
             willing_to_volunteer_for_events=True,
-            interested_in_mentoring=True,
+            interested_in_mentoring=False,
+            interested_in_being_mentored=True,
             interested_in_connecting_with_other_mentors=True,
             interested_in_mentor_training=True,
             interested_in_joining_lab=True,
@@ -122,6 +132,176 @@ class AdminAllyTableFeatureTests(TestCase):
             openings_in_lab_serving_at=True,
         )
 
+        self.ally_2_student_category = StudentCategories.objects.create(
+            under_represented_racial_ethnic = True,
+            first_gen_college_student = True,
+            transfer_student = True,
+            lgbtq = True,
+            low_income = True,
+            rural = False,
+            disabled = True
+        )
+
+        self.ally_2_student_category_relation = AllyStudentCategoryRelation.objects.create(
+            ally=self.ally_2,
+            student_category = self.ally_2_student_category
+        )
+
+    def test_major_filter_for_admin(self):
+        """
+        Show all allies conforming to major filter
+        """
+        self.user.is_staff = True
+        self.user.is_active = True
+        self.user.save()
+        self.ally_user_2.is_active = True
+        self.ally_user_2.save()
+        self.client.login(username=self.username, password=self.password)
+
+        # Should return no allies
+        response = self.client.post(
+            '/dashboard/', {
+                'csrfmiddlewaretoken': ['XdNiZpT3jpCeRzd2kq8bbRPUmc0tKFP7dsxNaQNTUhblQPK7lne9sX0mrE5khfHH'],
+                'major': 'Random',
+                'form_type': 'filters'
+            }, follow=True
+        )
+
+        self.assertContains(
+            response, "No allies are available.", html=True
+        )
+
+        # Should find our johndoe
+        response = self.client.post(
+            '/dashboard/', {
+                'csrfmiddlewaretoken': ['XdNiZpT3jpCeRzd2kq8bbRPUmc0tKFP7dsxNaQNTUhblQPK7lne9sX0mrE5khfHH'],
+                'major': 'Electical Engineering',
+                'form_type': 'filters'
+            }, follow=True
+        )
+
+        self.assertContains(
+            response, self.ally_user.first_name + ' ' + self.ally_user.last_name, html=True
+        )
+
+    
+    def test_mentorship_status_filter_for_admin(self):
+        """
+        Show all allies conforming to mentorship status filter
+        """
+        self.user.is_staff = True
+        self.user.is_active = True
+        self.user.save()
+        self.ally_user_2.is_active = True
+        self.ally_user_2.save()
+        self.client.login(username=self.username, password=self.password)
+
+        # Should return no allies
+        response = self.client.post(
+            '/dashboard/', {
+                'csrfmiddlewaretoken': ['XdNiZpT3jpCeRzd2kq8bbRPUmc0tKFP7dsxNaQNTUhblQPK7lne9sX0mrE5khfHH'],
+                'mentorshipStatus': ['Mentor'],
+                'major': '',
+                'form_type': 'filters'
+            }, follow=True
+        )
+
+        self.assertContains(
+            response, "No allies are available.", html=True
+        )
+
+        # Should find our johndoe
+        response = self.client.post(
+            '/dashboard/', {
+                'csrfmiddlewaretoken': ['XdNiZpT3jpCeRzd2kq8bbRPUmc0tKFP7dsxNaQNTUhblQPK7lne9sX0mrE5khfHH'],
+                'mentorshipStatus': ['Mentee'],
+                'major': '',
+                'form_type': 'filters'
+            }, follow=True
+        )
+
+        self.assertContains(
+            response, self.ally_user.first_name + ' ' + self.ally_user.last_name, html=True
+        )
+    
+    def test_user_type_filter_for_admin(self):
+        """
+        Show all allies conforming to user type filter
+        """
+        self.user.is_staff = True
+        self.user.is_active = True
+        self.user.save()
+        self.ally_user_2.is_active = True
+        self.ally_user_2.save()
+        self.client.login(username=self.username, password=self.password)
+
+        # Should return no allies
+        response = self.client.post(
+            '/dashboard/', {
+                'csrfmiddlewaretoken': ['XdNiZpT3jpCeRzd2kq8bbRPUmc0tKFP7dsxNaQNTUhblQPK7lne9sX0mrE5khfHH'],
+                'roleSelected': ['Faculty'],
+                'major': '',
+                'form_type': 'filters'
+            }, follow=True
+        )
+
+        self.assertContains(
+            response, "No allies are available.", html=True
+        )
+
+        # Should find our johndoe
+        response = self.client.post(
+            '/dashboard/', {
+                'csrfmiddlewaretoken': ['XdNiZpT3jpCeRzd2kq8bbRPUmc0tKFP7dsxNaQNTUhblQPK7lne9sX0mrE5khfHH'],
+                'roleSelected': ['Staff'],
+                'major': '',
+                'form_type': 'filters'
+            }, follow=True
+        )
+
+        self.assertContains(
+            response, self.ally_user.first_name + ' ' + self.ally_user.last_name, html=True
+        )
+    
+    def test_student_category_filter_for_admin(self):
+        """
+        Show all allies conforming to student category filter
+        """
+        self.user.is_staff = True
+        self.user.is_active = True
+        self.user.save()
+        self.ally_user_2.is_active = True
+        self.ally_user_2.save()
+        self.client.login(username=self.username, password=self.password)
+
+        # Should return no allies
+        response = self.client.post(
+            '/dashboard/', {
+                'csrfmiddlewaretoken': ['XdNiZpT3jpCeRzd2kq8bbRPUmc0tKFP7dsxNaQNTUhblQPK7lne9sX0mrE5khfHH'],
+                'idUnderGradCheckboxes': ['First generation college-student', 'Low-income', 'Underrepresented racial/ethnic minority', 'LGBTQ', 'Rural', 'Disabled'],
+                'major': '',
+                'form_type': 'filters'
+            }, follow=True
+        )
+
+        self.assertContains(
+            response, "No allies are available.", html=True
+        )
+
+        # Should find our johndoe
+        response = self.client.post(
+            '/dashboard/', {
+                'csrfmiddlewaretoken': ['XdNiZpT3jpCeRzd2kq8bbRPUmc0tKFP7dsxNaQNTUhblQPK7lne9sX0mrE5khfHH'],
+                'idUnderGradCheckboxes': ['Rural'],
+                'major': '',
+                'form_type': 'filters'
+            }, follow=True
+        )
+
+        self.assertContains(
+            response, self.ally_user.first_name + ' ' + self.ally_user.last_name, html=True
+        )
+    
     def test_year_filter_for_admin(self):
         """
         Show all allies conforming to year filters
@@ -136,6 +316,7 @@ class AdminAllyTableFeatureTests(TestCase):
             '/dashboard/', {
                 'csrfmiddlewaretoken': ['XdNiZpT3jpCeRzd2kq8bbRPUmc0tKFP7dsxNaQNTUhblQPK7lne9sX0mrE5khfHH'],
                 'undergradYear': ['Junior'],
+                'major': '',
                 'form_type': 'filters'
             }, follow=True
         )
@@ -149,6 +330,7 @@ class AdminAllyTableFeatureTests(TestCase):
             '/dashboard/', {
                 'csrfmiddlewaretoken': ['XdNiZpT3jpCeRzd2kq8bbRPUmc0tKFP7dsxNaQNTUhblQPK7lne9sX0mrE5khfHH'],
                 'undergradYear': ['Senior'],
+                'major': '',
                 'form_type': 'filters'
             }, follow=True
         )
@@ -171,6 +353,7 @@ class AdminAllyTableFeatureTests(TestCase):
             '/dashboard/', {
                 'csrfmiddlewaretoken': ['XdNiZpT3jpCeRzd2kq8bbRPUmc0tKFP7dsxNaQNTUhblQPK7lne9sX0mrE5khfHH'],
                 'stemGradCheckboxes': ['Bioinformatics'],
+                'major': '',
                 'form_type': 'filters'
             }, follow=True
         )
@@ -184,6 +367,7 @@ class AdminAllyTableFeatureTests(TestCase):
             '/dashboard/', {
                 'csrfmiddlewaretoken': ['XdNiZpT3jpCeRzd2kq8bbRPUmc0tKFP7dsxNaQNTUhblQPK7lne9sX0mrE5khfHH'],
                 'stemGradCheckboxes': ['Physics'],
+                'major': '',
                 'form_type': 'filters'
             }, follow=True
         )
