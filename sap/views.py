@@ -514,12 +514,20 @@ class CreateEventView(AccessMixin, TemplateView):
 
 
 class EventSignUpView(TemplateView):
-    pass
+    def get(self, request, *args, **kwargs):
+        return render(request, self.template_name)
+
+    def get(self, request, *args, **kwargs):
+        pass
 
 
 class EventSignUpDoneView(TemplateView):
-    pass
+    def get(self, request, *args, **kwargs):
+        pass
 
+    def post(self, request, *args, **kwargs):
+    # TODO: a function to withdraw from meeting
+        pass
 
 
 class SignUpView(TemplateView):
