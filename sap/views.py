@@ -84,14 +84,29 @@ class ViewAllyProfileFromAdminDashboard(View):
 
 
 class EditAllyProfile(View):
-    def set_boolean(self, list, postDict):
+
+    def set_boolean(self, list, postDict, ally):
+        selectionDict = {'studentsInterestedRadios': ally.people_who_might_be_interested_in_iba,
+                         'labShadowRadios': ally.willing_to_offer_lab_shadowing,
+                         'connectingRadios': ally.interested_in_connecting_with_other_mentors,
+                        'openingRadios': ally.openings_in_lab_serving_at,
+                         'mentoringFacultyRadios': ally.interested_in_mentoring,
+                        'trainingRadios': ally.interested_in_mentor_training,
+                         'volunteerRadios': ally.willing_to_volunteer_for_events,
+                         'interestRadios': ally.interested_in_joining_lab,
+                        'experienceRadios': ally.has_lab_experience,
+                         'interestedRadios': ally.interested_in_mentoring,
+                         'agreementRadios': ally.information_release }
         dict = {}
+        same = True
         for selection in list:
             if postDict[selection][0] == 'Yes':
                 dict[selection] = True
+                same = same and (dict[selection] == selectionDict[selection])
             else:
                 dict[selection] = False
-        return dict
+                same = same and (dict[selection] == selectionDict[selection])
+        return dict, same
 
     def get(self, request, *args, **kwargs):
         username = request.GET['username']
@@ -133,15 +148,16 @@ class EditAllyProfile(View):
                 message += "HawkID could not be updated!\n"
 
             if ally.user_type != "Undergraduate Student":
-                selections = self.set_boolean(
+                selections, same = self.set_boolean(
                     ['studentsInterestedRadios', 'labShadowRadios', 'connectingRadios',
                      'openingRadios', 'mentoringFacultyRadios',
-                     'trainingRadios', 'volunteerRadios'], postDict)
+                     'trainingRadios', 'volunteerRadios'], postDict, ally)
                 try:
                     aor = ','.join(postDict['stemGradCheckboxes'])
                     ally.area_of_research = aor
                 except KeyError:
-                    ally.area_of_research = ""
+                    aor = ""
+                ally.area_of_research = aor
                 try:
                     how_can_we_help = postDict["howCanWeHelp"][0]
                     ally.how_can_science_ally_serve_you = how_can_we_help
