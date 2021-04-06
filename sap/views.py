@@ -224,6 +224,11 @@ class ChangeAdminPassword(View):
 
 class CalendarView(TemplateView):
     template_name = "sap/calendar.html"
+    def get(self, request):
+        events = Event.objects.all()
+        return render(request, 'sap/calendar.html', {
+            'events': events
+        })
 
 class EditAdminProfile(View):
     """
