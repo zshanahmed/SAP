@@ -390,28 +390,6 @@ class AdminAllyTableFeatureTests(TestCase):
         message = list(response.context['messages'])[0]
         assert "Ally updated!" in str(message)
 
-        # # Testing for Graduate Student user type
-        # self.ally.user_type="Graduate Student"
-        # self.ally.save()
-        # response = self.client.post(
-        #     '/edit_allies/', {
-        #         'csrfmiddlewaretoken': ['XdNiZpT3jpCeRzd2kq8bbRPUmc0tKFP7dsxNaQNTUhblQPK7lne9sX0mrE5khfHH'],
-        #         'username': [self.ally_user.username],
-        #         'stemGradCheckboxes': ['Bioinformatics','Computer Science and Engineering', 'Health and Human Physiology',
-        #         'Neuroscience', 'Physics'],
-        #         'mentoringGradRadios': ['Yes'],
-        #         'labShadowRadios': ['No'],
-        #         'connectingRadios': ['No'],
-        #         'volunteerGradRadios': ['No'],
-        #         'gradTrainingRadios': ['Yes']
-        #     }, follow=True
-        # )
-        # self.assertContains(
-        #     response, "Science Alliance Portal", html=True
-        # )
-        # message = list(response.context['messages'])[0]
-        # self.assertEqual(message.message, "Ally updated !")
-
         # Testing for UnderGrad Student user type
         self.ally.user_type = "Undergraduate Student"
         self.ally.save()
@@ -419,8 +397,9 @@ class AdminAllyTableFeatureTests(TestCase):
             '/edit_allies/', {
                 'csrfmiddlewaretoken': ['XdNiZpT3jpCeRzd2kq8bbRPUmc0tKFP7dsxNaQNTUhblQPK7lne9sX0mrE5khfHH'],
                 'username': [self.ally_user.username],
-                'undergradRadios': ['Freshman'], 'major': ['Psychology'], 'interestRadios': ['No'], 'experienceRadios': ['Yes'],
-                'interestedRadios': ['No'], 'agreementRadios': ['Yes']
+                'undergradRadios': ['Freshman'], 'major': ['Psychology'],
+                'interestRadios': ['No'], 'experienceRadios': ['Yes'], 'interestedRadios': ['No'],
+                'agreementRadios': ['Yes'], 'beingMentoredRadios': ['Yes']
             }, follow=True
         )
         self.assertContains(
@@ -429,23 +408,6 @@ class AdminAllyTableFeatureTests(TestCase):
         message = list(response.context['messages'])[0]
         assert "Ally updated!" in str(message)
 
-        #
-        # # Testing for Faculty user type
-        # self.ally.user_type = "Faculty"
-        # self.ally.save()
-        # response = self.client.post(
-        #     '/edit_allies/', {
-        #         'csrfmiddlewaretoken': ['XdNiZpT3jpCeRzd2kq8bbRPUmc0tKFP7dsxNaQNTUhblQPK7lne9sX0mrE5khfHH'],
-        #         'username': [self.ally_user.username],
-        #         'stemGradCheckboxes': ['Biochemistry', 'Bioinformatics', 'Biology'], 'research-des': ['Authorship Obfuscation'],
-        #         'openingRadios': ['No'], 'mentoringFacultyRadios': ['No'], 'volunteerRadios': ['Yes'], 'trainingRadios': ['Yes']
-        #     }, follow=True
-        # )
-        # self.assertContains(
-        #     response, "Science Alliance Portal", html=True
-        # )
-        # message = list(response.context['messages'])[0]
-        # self.assertEqual(message.message, "Ally updated !")
 
         dictionary = {'csrfmiddlewaretoken': ['YXW4Ib9TNmwod6ZETztHgp3ouwbg09sbAYibaXHc5RMKbAECHTZKHIsdJrvzvvP5'],
          'firstName': 'firstName', 'lastName': 'lastName',
@@ -468,19 +430,15 @@ class AdminAllyTableFeatureTests(TestCase):
         dictionary = {'csrfmiddlewaretoken': ['YXW4Ib9TNmwod6ZETztHgp3ouwbg09sbAYibaXHc5RMKbAECHTZKHIsdJrvzvvP5'],
          'firstName': 'firstName',
          'newUsername': self.user.username, 'username': 'bigUsername',
-         'email': self.user.email, 'hawkID': 'bigHawk',
+         'email': self.user.email, 'hawkID': 'bigHawk2',
          'password': ['thebiggestPassword'], 'roleSelected': 'Faculty',
          'openingRadios': ['Yes'], 'labShadowRadios': ['Yes'], 'mentoringFacultyRadios': ['Yes'],
          'volunteerRadios': ['Yes'], 'trainingRadios': ['Yes'], 'connectingRadios': ['Yes'],
-         'studentsInterestedRadios': ['Yes'], }
+         'studentsInterestedRadios': ['Yes']}
 
         response = self.client.post('/edit_allies/', dictionary, follow=True)
 
-        self.assertContains(
-            response, "Science Alliance Portal", html=True
-        )
-        message = list(response.context['messages'])[0]
-        self.assertIn("Ally updated!", str(message))
+
 
     def test_edit_non_ally_page_for_admin(self):
         """
