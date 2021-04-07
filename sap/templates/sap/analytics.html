@@ -5,6 +5,7 @@
 
 {% block content %}
 
+
     <!-- Page Wrapper -->
     <div id="wrapper">
 
@@ -29,8 +30,17 @@
                 {% include './partials/_topbar.html' %}
 
                 <div class="container-fluid">
+                    <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                        Example
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-area">
+                            <div class="chart-bar">
+                                <canvas id="myBarChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
 
-                    This will be the Analytics Page
 
                 </div>
 
@@ -50,4 +60,6 @@
         <i class="fas fa-angle-up"></i>
     </a>
 
+<script src="{% static 'vendor/chart.js/Chart.min.js' %}"></script>
+<script src="{% static 'js/demo/chart-bar-demo.js' %}"></script>
 {% endblock content %}
