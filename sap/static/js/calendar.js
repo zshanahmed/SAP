@@ -1,5 +1,5 @@
 $(document).ready(function() {
-    console.log(myJavaScriptVariable);
+    console.log(myData[0]['fields']);
     var date = new Date();
     var d = date.getDate();
     var m = date.getMonth();

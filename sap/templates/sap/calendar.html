@@ -53,6 +53,7 @@
         <!-- End of Content Wrapper -->
 
     </div>
+
     <!-- End of Page Wrapper -->
 
     <!-- Scroll to Top Button-->
@@ -64,6 +65,14 @@
 
 </div>
 <script type="text/javascript">
-   var myJavaScriptVariable = "{{events}}";
+    var myJSONList = (("{{events}}").replace(/&(l|g|quo)t;/g, function(a,b){
+                return {
+                    l   : '<',
+                    g   : '>',
+                    quo : '"'
+                }[b];
+            }));
+
+    myData = JSON.parse( myJSONList );
 </script>
 {% endblock content %}

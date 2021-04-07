@@ -1,4 +1,6 @@
 import io, os, os.path, csv, uuid, datetime
+
+from django.core import serializers
 from django.http import HttpResponseForbidden, HttpResponse
 from django.contrib.auth import logout, login
 from django.contrib.auth import authenticate
@@ -227,10 +229,8 @@ class CalendarView(View):
     Show calendar to allies so that they can signup for events
     """
     def get(self, request):
-        events = Event.objects.all()
-        return render(request, 'sap/calendar.html', {
-            'events': events
-        })
+        events = serializers.serialize('json', list(Event.objects.all()))
+        return render(request, 'sap/calendar.html', context={"events": events})
 
 class EditAdminProfile(View):
     """
