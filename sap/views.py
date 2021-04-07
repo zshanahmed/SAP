@@ -132,7 +132,6 @@ class EditAllyProfile(View):
     def post(self, request, username=''):
         postDict = dict(request.POST)
         user_req = request.user
-
         message = ''
         if User.objects.filter(username=postDict["username"][0]).exists():
             same = True
@@ -152,7 +151,6 @@ class EditAllyProfile(View):
                     same = False
             except KeyError:
                 message += " HawkID could not be updated!\n"
-
             if ally.user_type != "Undergraduate Student":
                 selections, same = self.set_boolean(
                     ['studentsInterestedRadios', 'labShadowRadios', 'connectingRadios',
@@ -185,10 +183,8 @@ class EditAllyProfile(View):
                 ally.interested_in_connecting_with_other_mentors = selections['connectingRadios']
                 ally.willing_to_volunteer_for_events = selections['volunteerRadios']
                 ally.interested_in_mentor_training = selections['trainingRadios']
-
                 ally.save()
             else:
-
                 if user_req.is_staff:
                     selections, same = self.set_boolean(
                         ['interestRadios', 'experienceRadios', 'interestedRadios', 'beingMentoredRadios'],
@@ -264,15 +260,13 @@ class EditAllyProfile(View):
                 except KeyError:
                     message += ' Email could not be updated!\n'
             user.save()
-
-            if badPassword or badEmail or badPassword:
+            if badPassword or badEmail or badPassword or badUser:
                 if same:
                     messages.add_message(request, messages.WARNING, message)
                 else:
                     messages.add_message(request, messages.WARNING,
                                          'No Changes Detected!' + message)
                 return redirect(reverse('sap:admin_edit_ally', args=[postDict['username'][0]]))
-
             if same:
                 messages.add_message(request, messages.WARNING,
                                      'No Changes Detected!' + message)
