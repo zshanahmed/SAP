@@ -914,7 +914,13 @@ class SignUpDoneView(TemplateView):
     A view which is presented if the user successfully fill out the form presented in Sign-Up view
     """
     template_name = "sap/sign-up-done.html"
-
+    def get(self, request, *args, **kwargs):
+        origin = request.headers['Referer']
+        # if
+        #     return redirect('sap:home')
+        # else:
+        #     return render(request, self.template_name)
+        return render(request, self.template_name)
 
 class SignUpConfirmView(TemplateView):
     """
