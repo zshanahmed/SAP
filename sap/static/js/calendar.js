@@ -1,4 +1,5 @@
 $(document).ready(function() {
+    console.log(myJavaScriptVariable);
     var date = new Date();
     var d = date.getDate();
     var m = date.getMonth();
@@ -44,7 +45,7 @@ $(document).ready(function() {
             center: 'agendaDay,agendaWeek,month',
             right: 'prev,next today'
         },
-        editable: false,
+        editable: false, // set to false to disable the drag drop on frontend
         firstDay: 1, //  1(Monday) this can be changed to 0(Sunday) for the USA system
         selectable: true,
         defaultView: 'month',

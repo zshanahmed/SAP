@@ -222,8 +222,10 @@ class ChangeAdminPassword(View):
         })
 
 
-class CalendarView(TemplateView):
-    template_name = "sap/calendar.html"
+class CalendarView(View):
+    """
+    Show calendar to allies so that they can signup for events
+    """
     def get(self, request):
         events = Event.objects.all()
         return render(request, 'sap/calendar.html', {
