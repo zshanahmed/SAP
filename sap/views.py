@@ -96,7 +96,8 @@ class EditAllyProfile(View):
                          'interestRadios': ally.interested_in_joining_lab,
                         'experienceRadios': ally.has_lab_experience,
                          'interestedRadios': ally.interested_in_mentoring,
-                         'agreementRadios': ally.information_release}
+                         'agreementRadios': ally.information_release,
+                         'beingMentoredRadios': ally.interested_in_being_mentored}
         dict = {}
         for selection in list:
             if postDict[selection][0] == 'Yes':
@@ -190,10 +191,12 @@ class EditAllyProfile(View):
 
                 if user_req.is_staff:
                     selections, same = self.set_boolean(
-                        ['interestRadios', 'experienceRadios', 'interestedRadios'], postDict, ally, same)
+                        ['interestRadios', 'experienceRadios', 'interestedRadios', 'beingMentoredRadios'],
+                        postDict, ally, same)
                 else:
                     selections, same = self.set_boolean(
-                        ['interestRadios', 'experienceRadios', 'interestedRadios', 'agreementRadios'],
+                        ['interestRadios', 'experienceRadios', 'beingMentoredRadios',
+                         'interestedRadios', 'agreementRadios'],
                         postDict, ally, same)
 
                 year = postDict['undergradRadios'][0]
@@ -205,6 +208,7 @@ class EditAllyProfile(View):
 
                 ally.interested_in_joining_lab = selections['interestRadios']
                 ally.has_lab_experience = selections['experienceRadios']
+                ally.interested_in_being_mentored = selections['beingMentoredRadios']
                 ally.interested_in_mentoring = selections['interestedRadios']
                 if not user_req.is_staff:
                     ally.information_release = selections['agreementRadios']
@@ -212,6 +216,7 @@ class EditAllyProfile(View):
 
             badUser = False
             badEmail = False
+            badPassword = False
 
             try:
                 newUsername = postDict['newUsername'][0]
@@ -231,6 +236,7 @@ class EditAllyProfile(View):
                         user.set_password(newPassword)
                         same = False
                     else:
+                        badPassword = True
                         message += " Password could not be set because it is less than 8 characters long!"
             except KeyError:
                 message += ' Password could not be updated!\n'
@@ -259,13 +265,17 @@ class EditAllyProfile(View):
                     message += ' Email could not be updated!\n'
             user.save()
 
-
-            if same:
-                if badUser or badEmail:
+            if badPassword or badEmail or badPassword:
+                if same:
                     messages.add_message(request, messages.WARNING, message)
                 else:
                     messages.add_message(request, messages.WARNING,
                                          'No Changes Detected!' + message)
+                return redirect(reverse('sap:admin_edit_ally', args=[postDict['username'][0]]))
+
+            if same:
+                messages.add_message(request, messages.WARNING,
+                                     'No Changes Detected!' + message)
                 return redirect(reverse('sap:admin_edit_ally', args=[postDict['username'][0]]))
 
             if not user_req.is_staff:
