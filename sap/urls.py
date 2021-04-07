@@ -1,8 +1,11 @@
+"""
+Url mappings with appropriate functions to handle them
+"""
 from django.urls import path
 from django.contrib.auth import views as auth_views
-from . import views
 from django.conf.urls import url
 from django.contrib.auth.decorators import login_required
+from . import views
 
 app_name = 'sap'
 urlpatterns = [
@@ -56,6 +59,8 @@ urlpatterns = [
     url(r'^allies/$', login_required(views.ViewAllyProfileFromAdminDashboard.as_view()),
         name='admin_view_ally'),
 
+    url(r'^edit_allies/(?P<username>[\w-]+)/$', login_required(views.EditAllyProfile.as_view()),
+        name='admin_edit_ally'),
     url(r'^edit_allies/$', login_required(views.EditAllyProfile.as_view()),
         name='admin_edit_ally'),
 

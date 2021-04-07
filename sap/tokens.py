@@ -1,3 +1,6 @@
+"""
+Password reset token generator module
+"""
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.contrib.auth.models import User
 import six
