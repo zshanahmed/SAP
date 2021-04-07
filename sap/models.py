@@ -94,3 +94,12 @@ class EventAllyRelation(models.Model):
     ally = models.ForeignKey(Ally,
                              on_delete=models.CASCADE
                              )
+
+
+class Announcement(models.Model):
+    """
+    Announcement table contains information about the announcemernts made by admin
+    """
+    title = models.CharField(max_length=200, null=True)
+    description = models.CharField(max_length=1000, null=True)
+    created_at = models.DateTimeField()
