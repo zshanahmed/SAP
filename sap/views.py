@@ -333,6 +333,7 @@ class ChangeAdminPassword(View):
 class CalendarView(TemplateView):
     template_name = "sap/calendar.html"
 
+
 class EditAdminProfile(View):
     """
     Change the profile for admin
@@ -361,6 +362,7 @@ class EditAdminProfile(View):
         return render(request, 'sap/profile.html', {
             'form': form
         })
+
 
 class AlliesListView(AccessMixin, TemplateView):
 
@@ -915,12 +917,24 @@ class SignUpDoneView(TemplateView):
     """
     template_name = "sap/sign-up-done.html"
     def get(self, request, *args, **kwargs):
-        origin = request.headers['Referer']
-        # if
-        #     return redirect('sap:home')
-        # else:
-        #     return render(request, self.template_name)
-        return render(request, self.template_name)
+        site = get_current_site(request)
+        accepted_origin = 'http:' + '//' + site.domain + reverse('sap:sign-up')
+
+        try:
+            origin = request.headers['Referer']
+
+            if request.headers['Referer'] and origin == accepted_origin:
+                return render(request, self.template_name)
+            else:
+                return redirect('sap:home')
+
+        except KeyError:
+            if request.user.is_authenticated:
+                return redirect('sap:resources')
+
+            else:
+                return redirect('sap:home')
+
 
 class SignUpConfirmView(TemplateView):
     """
