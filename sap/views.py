@@ -925,13 +925,14 @@ class SignUpDoneView(TemplateView):
 
             if request.headers['Referer'] and origin == accepted_origin:
                 return render(request, self.template_name)
+            elif request.user.is_authenticated:
+                return redirect('sap:resources')
             else:
                 return redirect('sap:home')
 
         except KeyError:
             if request.user.is_authenticated:
                 return redirect('sap:resources')
-
             else:
                 return redirect('sap:home')
 
