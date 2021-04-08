@@ -600,7 +600,7 @@ class CreateEventView(AccessMixin, TemplateView):
         event_description = new_event_dict['event_description'][0]
         event_start_time = new_event_dict['event_start_time'][0]
         event_end_time = new_event_dict['event_end_time'][0]
-        event_end_time = new_event_dict['event_allday'][0]
+        event_allday = new_event_dict['event_allday'][0]
         event_location = new_event_dict['event_location'][0]
 
         if 'role_selected' in new_event_dict:
