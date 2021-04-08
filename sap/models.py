@@ -1,6 +1,6 @@
-from django.conf import settings
+"""Contains all the table definitions of the project."""
 from django.db import models
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 
 
 # Create your models here.
@@ -8,8 +8,11 @@ from django.contrib.auth.models import User
 # Need to figure out how to include the following
 # Are you interested in serving as a mentor to students who identify as any of the following (check all that may apply)
 class Ally(models.Model):
+    """
+    Ally model contains the details of the IBA allies
+    """
     user = models.ForeignKey(
-        User,
+        get_user_model(),
         on_delete=models.CASCADE,
     )
     hawk_id = models.CharField(max_length=100)
@@ -44,6 +47,9 @@ class Ally(models.Model):
 
 
 class StudentCategories(models.Model):
+    """
+    StudentCategories table contains the different special cateories an uiowa student can belong to
+    """
     under_represented_racial_ethnic = models.BooleanField(default=False)
     first_gen_college_student = models.BooleanField(default=False)
     transfer_student = models.BooleanField(default=False)
@@ -52,7 +58,11 @@ class StudentCategories(models.Model):
     rural = models.BooleanField(default=False)
     disabled = models.BooleanField(default=False)
 
+
 class AllyStudentCategoryRelation(models.Model):
+    """
+    AllyStudentCategoryRelation table is used for mapping Many to Many relationship between allies and StudentCategories table
+    """
     ally = models.ForeignKey(
         Ally,
         on_delete=models.CASCADE,
@@ -64,6 +74,9 @@ class AllyStudentCategoryRelation(models.Model):
 
 
 class Event(models.Model):
+    """
+    Evert table contains information about the IBA science alliance events
+    """
     title = models.CharField(max_length=200, null=True)
     description = models.CharField(max_length=1000, null=True)
     datetime = models.DateTimeField()
@@ -71,6 +84,10 @@ class Event(models.Model):
 
 
 class EventAllyRelation(models.Model):
+    """
+    EventAllyRelation table contains information about the Event ally mappings
+    One event can have many allies invited and vice versa
+    """
     event = models.ForeignKey(Event,
                               on_delete=models.CASCADE
                               )
