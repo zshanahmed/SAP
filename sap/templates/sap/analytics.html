@@ -33,6 +33,7 @@
                     <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
                         Example
                     </div>
+                    <div id="studentCategories" style="display: none">{{ categoriesCount }}</div>
                     <div class="card-body">
                         <div class="chart-area">
                             <div class="chart-bar">
@@ -40,10 +41,7 @@
                             </div>
                         </div>
                     </div>
-
-
                 </div>
-
             </div>
             <!-- End of Main Content -->
 
@@ -59,9 +57,7 @@
     <a class="scroll-to-top rounded" href="#page-top">
         <i class="fas fa-angle-up"></i>
     </a>
-<script type="text/javascript">
-   var studentCategories = "{{ categoriesCount }}";
-</script>
+
 <script src="{% static 'vendor/chart.js/Chart.min.js' %}"></script>
 <script src="{% static 'js/StudentCategories.js' %}"></script>
 {% endblock content %}
