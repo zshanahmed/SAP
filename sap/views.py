@@ -598,7 +598,8 @@ class CreateEventView(AccessMixin, TemplateView):
         new_event_dict = dict(request.POST)
         event_title = new_event_dict['event_title'][0]
         event_description = new_event_dict['event_description'][0]
-        event_date_time = new_event_dict['event_date_time'][0]
+        event_start_time = new_event_dict['event_start_time'][0]
+        event_end_time = new_event_dict['event_end_time'][0]
         event_location = new_event_dict['event_location'][0]
 
         if 'role_selected' in new_event_dict:
@@ -629,7 +630,7 @@ class CreateEventView(AccessMixin, TemplateView):
 
         event = Event.objects.create(title=event_title,
                                      description=event_description,
-                                     datetime=parse_datetime(event_date_time + '-0500'), # converting time to central time before storing in db
+                                     start_time=parse_datetime(event_start_time + '-0500'), # converting time to central time before storing in db
                                      location=event_location
                                      )
 
