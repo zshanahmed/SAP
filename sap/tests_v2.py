@@ -872,16 +872,46 @@ class SignUpDoneViewTests(TestCase):
                                                     is_active=True)
         self.client = Client()
 
-    # def test_if_user_come_from_signup(self):
-    #     url = response.url
-    #     self.assertEqual(url, '/sign-up-done/')
-    #     self.assertEqual(response.status_code, 302)
-    #
-    # def test_signup_if_user_is_authenticated(self):
-    #     pass
+    def test_if_user_come_from_signup(self):
+        response = self.client.post(
+            '/sign-up/',
+            {
+                'csrfmiddlewaretoken': ['K5dFCUih0K6ZYklAemhvIWSpCebK86zdx4ric6ucIPLUQhAdtdT7hhp4r5etxoJY'],
+                'firstName': ['hawk'],
+                'lastName': ['herky'],
+                'new_username': ['hawkherky'],
+                'new_email': ['hawkherky@uiowa.edu'],
+                'new_password': self.password,
+                'repeat_password': self.password,
+                'roleSelected': ['Staff'],
+                'studentsInterestedRadios': ['Yes'],
+                'howCanWeHelp': ['sasdasdasd'],
+            }
+        )
+        url = response.url
+        self.assertEqual(url, '/sign-up-done/')
+        self.assertEqual(response.status_code, 302)
+        user = User.objects.filter(username="hawkherky")
+        ally = Ally.objects.filter(user_id=user[0].id)
+        self.assertTrue(user.exists())
+        self.assertTrue(ally.exists())
+
+        url = response.url
+        self.assertEqual(url, '/sign-up-done/')
+        self.assertEqual(response.status_code, 302)
+
+    def test_signup_if_user_is_authenticated(self):
+        self.client.login(username=self.username, password=self.password)
+        response = self.client.get(reverse('sap:sign-up-done'))
+        self.assertEqual(response.status_code, 302)
 
     def test_signup_if_user_come_from_somewhereelse(self):
         self.client.logout()
+        response = self.client.get(reverse('sap:sign-up-done'))
+        self.assertEqual(response.status_code, 302)
+
+    def test_signup_if_user_come_from_somewhereelse_and_is_authenticated(self):
+        self.client.login(username=self.username, password=self.password)
         response = self.client.get(reverse('sap:sign-up-done'))
         self.assertEqual(response.status_code, 302)
 
