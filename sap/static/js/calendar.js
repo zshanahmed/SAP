@@ -1,5 +1,16 @@
 $(document).ready(function() {
-    console.log(myData[0]['fields']);
+    var events = [];
+    for (let i = 0; i < myData.length; i ++) {
+        var event_date = new Date(myData[i]['fields']['datetime'])
+        var entry = {
+            title: myData[i]['fields']['title'],
+            start: event_date,
+            allDay: false,
+            className: 'success'
+        }
+        events.push(entry);
+    }
+    console.log(events)
     var date = new Date();
     var d = date.getDate();
     var m = date.getMonth();
@@ -63,6 +74,7 @@ $(document).ready(function() {
             day: 'MMMM yyyy'                  // Tuesday, Sep 8, 2009
         },
         allDaySlot: false,
+        events: events,
         // selectHelper: true,
         // select: function(start, end, allDay) {
         //     var title = prompt('Event Title:');
@@ -104,52 +116,52 @@ $(document).ready(function() {
         //
         //     },
 
-        events: [
-            {
-                title: 'All Day Event',
-                start: new Date(y, m, 1),
-
-            },
-            {
-                id: 999,
-                title: 'Repeating Event',
-                start: new Date(y, m, d-3, 16, 0),
-                allDay: false,
-                className: 'info'
-            },
-            {
-                id: 999,
-                title: 'Repeating Event',
-                start: new Date(y, m, d+4, 16, 0),
-                allDay: false,
-                className: 'info'
-            },
-            {
-                title: 'Meeting',
-                start: new Date(y, m, d, 10, 30),
-                allDay: false,
-                className: 'important'
-            },
-            {
-                title: 'Lunch',
-                start: new Date(y, m, d, 12, 0),
-                end: new Date(y, m, d, 14, 0),
-                allDay: false,
-                className: 'important'
-            },
-            {
-                title: 'Birthday Party',
-                start: new Date(y, m, d+1, 19, 0),
-                end: new Date(y, m, d+1, 22, 30),
-                allDay: false,
-            },
-            {
-                title: 'Click for Google',
-                start: new Date(y, m, 28),
-                end: new Date(y, m, 29),
-                url: 'http://google.com/',
-                className: 'success'
-            }
-        ],
+        // events: [
+        //     {
+        //         title: 'All Day Event',
+        //         start: new Date(y, m, 1),
+        //
+        //     },
+        //     {
+        //         id: 999,
+        //         title: 'Repeating Event',
+        //         start: new Date(y, m, d-3, 16, 0),
+        //         allDay: false,
+        //         className: 'info'
+        //     },
+        //     {
+        //         id: 999,
+        //         title: 'Repeating Event',
+        //         start: new Date(y, m, d+4, 16, 0),
+        //         allDay: false,
+        //         className: 'info'
+        //     },
+        //     {
+        //         title: 'Meeting',
+        //         start: new Date(y, m, d, 10, 30),
+        //         allDay: false,
+        //         className: 'important'
+        //     },
+        //     {
+        //         title: 'Lunch',
+        //         start: new Date(y, m, d, 12, 0),
+        //         end: new Date(y, m, d, 14, 0),
+        //         allDay: false,
+        //         className: 'important'
+        //     },
+        //     {
+        //         title: 'Birthday Party',
+        //         start: new Date(y, m, d+1, 19, 0),
+        //         end: new Date(y, m, d+1, 22, 30),
+        //         allDay: false,
+        //     },
+        //     {
+        //         title: 'Click for Google',
+        //         start: new Date(y, m, 28),
+        //         end: new Date(y, m, 29),
+        //         url: 'http://google.com/',
+        //         className: 'success'
+        //     }
+        // ],
     });
 });
