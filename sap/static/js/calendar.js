@@ -1,6 +1,6 @@
 $(document).ready(function() {
     var events = [];
-    var colors = ['success', 'info', 'important', 'chill', 'orange']
+    var colors = ['success', 'info', 'important', 'chill', 'orange', 'teal']
     for (let i = 0; i < myData.length; i ++) {
         var event_date = new Date(myData[i]['fields']['datetime'])
         var entry = {
@@ -11,7 +11,7 @@ $(document).ready(function() {
         }
         events.push(entry);
     }
-    console.log(events)
+    console.log(events);
     var date = new Date();
     var d = date.getDate();
     var m = date.getMonth();

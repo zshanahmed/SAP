@@ -285,16 +285,19 @@
     background-color: #f3dcf8;
 }
 .fc-event.info{
-    background-color: #c6ebfe;
+    background-color: #cdefff;
 }
 .fc-event.important{
-    background-color: #FFBEBE;
+    background-color: #ffbebe;
 }
 .fc-event.success{
     background-color: #BEFFBF;
 }
 .fc-event.orange{
-    background-color: #ffd5be;
+    background-color: #fdd4bf;
+}
+.fc-event.teal{
+    background-color: #c4ffff;
 }
 .fc-event:hover{
     opacity: 0.7;

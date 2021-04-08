@@ -338,7 +338,7 @@ class CalendarView(View):
     """
     def get(self, request):
         events = serializers.serialize('json', list(Event.objects.all()))
-        return render(request, 'sap/calendar.html', context={"events": events})
+        return render(request, 'sap/calendar.html', context={"events": events, "user": request.user})
 
 class EditAdminProfile(View):
     """
@@ -693,7 +693,8 @@ class CreateEventView(AccessMixin, TemplateView):
 
         EventAllyRelation.objects.bulk_create(all_event_ally_objs)
 
-        return redirect('/dashboard')
+        messages.success(request, "Event successfully created!")
+        return redirect('/calendar')
 
 
 class SignUpView(TemplateView):
