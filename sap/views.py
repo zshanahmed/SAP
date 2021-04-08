@@ -1036,7 +1036,7 @@ class ForgotPasswordDoneView(TemplateView):
 
     def get(self, request, *args, **kwargs):
         site = get_current_site(request)
-        accepted_origin = 'http:' + '//' + site.domain + reverse('sap:password-forgot-done')
+        accepted_origin = 'http:' + '//' + site.domain + reverse('sap:password-forgot')
 
         try:
             origin = request.headers['Referer']
