@@ -105,7 +105,7 @@
                         <span aria-hidden="true">×</span>
                     </button>
                 </div>
-                <form method="POST" class="user" action="/create_announcement">
+                <form method="post" action="{% url 'sap:create_announcement'  %}">
                 {% csrf_token %}
                     <div class="modal-body">
                         
