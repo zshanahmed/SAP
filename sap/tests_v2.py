@@ -888,14 +888,8 @@ class SignUpDoneViewTests(TestCase):
                 'howCanWeHelp': ['sasdasdasd'],
             }
         )
-        url = response.url
-        self.assertEqual(url, '/sign-up-done/')
-        self.assertEqual(response.status_code, 302)
-        user = User.objects.filter(username="hawkherky")
-        ally = Ally.objects.filter(user_id=user[0].id)
-        self.assertTrue(user.exists())
-        self.assertTrue(ally.exists())
 
+        response2 = response
         url = response.url
         self.assertEqual(url, '/sign-up-done/')
         self.assertEqual(response.status_code, 302)
@@ -905,15 +899,16 @@ class SignUpDoneViewTests(TestCase):
         response = self.client.get(reverse('sap:sign-up-done'))
         self.assertEqual(response.status_code, 302)
 
-    def test_signup_if_user_come_from_somewhereelse(self):
+    def test_signup_if_keyerror(self):
         self.client.logout()
         response = self.client.get(reverse('sap:sign-up-done'))
         self.assertEqual(response.status_code, 302)
 
-    def test_signup_if_user_come_from_somewhereelse_and_is_authenticated(self):
+    def test_signup_if_keyerror_and_is_authenticated(self):
         self.client.login(username=self.username, password=self.password)
         response = self.client.get(reverse('sap:sign-up-done'))
         self.assertEqual(response.status_code, 302)
+
 
 class ForgotPasswordDoneView(TestCase):
     """
@@ -931,11 +926,12 @@ class ForgotPasswordDoneView(TestCase):
                                                     is_active=True)
         self.client = Client()
 
-    def test_if_user_come_from_forgotpassword(self):
-        pass
+    def test_forgotpassword_if_keyerror(self):
+        self.client.logout()
+        response = self.client.get(reverse('sap:password-forgot-done'))
+        self.assertEqual(response.status_code, 302)
 
-    def test_forgotpassword_if_user_is_authenticated(self):
-        pass
-
-    def test_forgotpassword_if_user_come_from_somewhereelse(self):
-        pass
+    def test_forgotpassword_if_keyerror_and_is_authenticated(self):
+        self.client.login(username=self.username, password=self.password)
+        response = self.client.get(reverse('sap:password-forgot-done'))
+        self.assertEqual(response.status_code, 302)
