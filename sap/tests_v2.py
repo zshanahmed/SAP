@@ -854,3 +854,34 @@ class ForgotPasswordTest(TestCase):
             link, data=data, follow=True)
         # self.assertEqual(response.url, link)
         self.assertEqual(response.status_code, HTTPStatus.OK)
+
+class SignUpDoneViewTests(TestCase):
+    """
+    Unit tests for SignUpDoneView
+    """
+    def setUp(self):
+        self.username = 'user1'
+        self.password = 'user_password1'
+        self.email = 'email1@test.com'
+        self.client = Client()
+        self.user = User.objects.create_user(self.username, self.email, self.password)
+
+    def test_if_user_come_from_signup(self):
+        pass
+
+    def test_if_user_come_from_signup(self):
+        pass
+
+
+class ForgotPasswordDoneView(TestCase):
+    """
+    Unit tests for SignUpDoneView
+    """
+    def setUp(self):
+        self.username = 'user1'
+        self.password = 'user_password1'
+        self.email = 'email1@test.com'
+        self.client = Client()
+        self.user = User.objects.create_user(self.username, self.email, self.password)
+
+
