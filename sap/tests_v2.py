@@ -869,7 +869,10 @@ class SignUpDoneViewTests(TestCase):
     def test_if_user_come_from_signup(self):
         pass
 
-    def test_if_user_come_from_signup(self):
+    def test_signup_if_user_is_authenticated(self):
+        pass
+
+    def test_signup_if_user_come_from_somewhereelse(self):
         pass
 
 
@@ -884,4 +887,11 @@ class ForgotPasswordDoneView(TestCase):
         self.client = Client()
         self.user = User.objects.create_user(self.username, self.email, self.password)
 
+    def test_if_user_come_from_forgotpassword(self):
+        pass
 
+    def test_forgotpassword_if_user_is_authenticated(self):
+        pass
+
+    def test_forgotpassword_if_user_come_from_somewhereelse(self):
+        pass
