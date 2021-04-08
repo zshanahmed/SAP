@@ -1037,20 +1037,20 @@ class ForgotPasswordDoneView(TemplateView):
         site = get_current_site(request)
         accepted_origin = 'http:' + '//' + site.domain + reverse('sap:sign-up')
 
-        # try:
-        #     origin = request.headers['Referer']
-        #
-        #     if request.headers['Referer'] and origin == accepted_origin:
-        #         return render(request, self.template_name)
-        #     else:
-        #         return redirect('sap:home')
-        #
-        # except KeyError:
-        #     if request.user.is_authenticated:
-        #         return redirect('sap:resources')
-        #
-        #     else:
-        #         return redirect('sap:home')
+        try:
+            origin = request.headers['Referer']
+
+            if request.headers['Referer'] and origin == accepted_origin:
+                return render(request, self.template_name)
+            else:
+                return redirect('sap:home')
+
+        except KeyError:
+            if request.user.is_authenticated:
+                return redirect('sap:resources')
+
+            else:
+                return redirect('sap:home')
 
 
 class ForgotPasswordConfirmView(TemplateView):
