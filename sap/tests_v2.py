@@ -855,6 +855,7 @@ class ForgotPasswordTest(TestCase):
         # self.assertEqual(response.url, link)
         self.assertEqual(response.status_code, HTTPStatus.OK)
 
+
 class SignUpDoneViewTests(TestCase):
     """
     Unit tests for SignUpDoneView
@@ -871,15 +872,18 @@ class SignUpDoneViewTests(TestCase):
                                                     is_active=True)
         self.client = Client()
 
-    def test_if_user_come_from_signup(self):
-        pass
-
-    def test_signup_if_user_is_authenticated(self):
-        pass
+    # def test_if_user_come_from_signup(self):
+    #     url = response.url
+    #     self.assertEqual(url, '/sign-up-done/')
+    #     self.assertEqual(response.status_code, 302)
+    #
+    # def test_signup_if_user_is_authenticated(self):
+    #     pass
 
     def test_signup_if_user_come_from_somewhereelse(self):
-        pass
-
+        self.client.logout()
+        response = self.client.get(reverse('sap:sign-up-done'))
+        self.assertEqual(response.status_code, 302)
 
 class ForgotPasswordDoneView(TestCase):
     """
