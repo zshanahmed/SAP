@@ -293,6 +293,9 @@
 .fc-event.success{
     background-color: #BEFFBF;
 }
+.fc-event.orange{
+    background-color: #ffd5be;
+}
 .fc-event:hover{
     opacity: 0.7;
 }

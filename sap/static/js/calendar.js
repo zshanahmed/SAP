@@ -1,12 +1,13 @@
 $(document).ready(function() {
     var events = [];
+    var colors = ['success', 'info', 'important', 'chill', 'orange']
     for (let i = 0; i < myData.length; i ++) {
         var event_date = new Date(myData[i]['fields']['datetime'])
         var entry = {
             title: myData[i]['fields']['title'],
             start: event_date,
             allDay: false,
-            className: 'success'
+            className: colors[i% colors.length],
         }
         events.push(entry);
     }
