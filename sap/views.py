@@ -533,8 +533,19 @@ class AnalyticsView(AccessMixin, TemplateView):
 
     def get(self, request):
         allies = Ally.objects.all()
-        return render(request, 'sap/analytics.html',
-                      {'allies': Ally.objects.all(), 'categories': StudentCategories.objects.all()})
+        categories = StudentCategories.objects.all()
+
+        minorities = len(categories.filter(under_represented_racial_ethnic=True))
+        transfers = len(categories.filter(transfer_student=True))
+        firstGen = len(categories.filter(first_gen_college_student=True))
+        disabled = len(categories.filter(disabled=True))
+        lgbtq = len(categories.filter(lgbtq=True))
+        rural = len(categories.filter(rural=True))
+        lowIncome = len(categories.filter(low_income=True))
+
+        categoriesCount = [lgbtq, minorities, rural, disabled, firstGen, transfers, lowIncome]
+
+        return render(request, 'sap/analytics.html', {"categoriesCount": categoriesCount})
 
 
 
