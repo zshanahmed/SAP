@@ -856,8 +856,10 @@ class SignUpView(TemplateView):
                 return redirect('/sign-up')
 
             else:   # If user is not active, delete user_temp and create new user on db with is_active=False
-                ally_temp = Ally.objects.get(user=user_temp)
-                ally_temp.delete()
+
+                ally_temp = Ally.objects.filter(user=user_temp)
+                if ally_temp.exists():
+                    ally_temp[0].delete()
                 user_temp.delete()
 
                 # print(request.POST)
