@@ -531,6 +531,12 @@ class MentorsListView(generic.ListView):
 class AnalyticsView(AccessMixin, TemplateView):
     template_name = "sap/analytics.html"
 
+    def get(self, request):
+        allies = Ally.objects.all()
+        return render(request, 'sap/analytics.html',
+                      {'allies': Ally.objects.all(), 'categories': StudentCategories.objects.all()})
+
+
 
 class AdminProfileView(TemplateView):
     template_name = "sap/profile.html"
