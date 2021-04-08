@@ -860,11 +860,16 @@ class SignUpDoneViewTests(TestCase):
     Unit tests for SignUpDoneView
     """
     def setUp(self):
-        self.username = 'user1'
-        self.password = 'user_password1'
-        self.email = 'email1@test.com'
+        self.username = 'admin'
+        self.username_active = 'user_active'
+        self.password = 'admin_password1'
+        self.email = 'email@test.com'
+        self.email_active = 'email_active@test.com'
+        self.user = User.objects.create_user(username=self.username, email=self.email, password=self.password)
+        self.user_active = User.objects.create_user(username=self.username_active, email=self.email_active,
+                                                    password=self.password,
+                                                    is_active=True)
         self.client = Client()
-        self.user = User.objects.create_user(self.username, self.email, self.password)
 
     def test_if_user_come_from_signup(self):
         pass
@@ -881,11 +886,16 @@ class ForgotPasswordDoneView(TestCase):
     Unit tests for SignUpDoneView
     """
     def setUp(self):
-        self.username = 'user1'
-        self.password = 'user_password1'
-        self.email = 'email1@test.com'
+        self.username = 'admin'
+        self.username_active = 'user_active'
+        self.password = 'admin_password1'
+        self.email = 'email@test.com'
+        self.email_active = 'email_active@test.com'
+        self.user = User.objects.create_user(username=self.username, email=self.email, password=self.password)
+        self.user_active = User.objects.create_user(username=self.username_active, email=self.email_active,
+                                                    password=self.password,
+                                                    is_active=True)
         self.client = Client()
-        self.user = User.objects.create_user(self.username, self.email, self.password)
 
     def test_if_user_come_from_forgotpassword(self):
         pass
