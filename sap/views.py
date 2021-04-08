@@ -1,3 +1,5 @@
+# pylint: skip-file
+
 import io, os, os.path, csv, uuid, datetime
 
 from django.core import serializers
@@ -12,7 +14,7 @@ from django.core.exceptions import ValidationError
 from django.db import IntegrityError
 import xlsxwriter
 from .models import Ally, StudentCategories, AllyStudentCategoryRelation
-
+from fuzzywuzzy import fuzz
 
 from .models import Ally, StudentCategories, AllyStudentCategoryRelation, Event, EventAllyRelation
 from django.views import generic
@@ -86,17 +88,35 @@ class ViewAllyProfileFromAdminDashboard(View):
 
 
 class EditAllyProfile(View):
-    def set_boolean(self, list, postDict):
+
+    def set_boolean(self, list, postDict, ally, same):
+        selectionDict = {'studentsInterestedRadios': ally.people_who_might_be_interested_in_iba,
+                         'labShadowRadios': ally.willing_to_offer_lab_shadowing,
+                         'connectingRadios': ally.interested_in_connecting_with_other_mentors,
+                        'openingRadios': ally.openings_in_lab_serving_at,
+                         'mentoringFacultyRadios': ally.interested_in_mentoring,
+                        'trainingRadios': ally.interested_in_mentor_training,
+                         'volunteerRadios': ally.willing_to_volunteer_for_events,
+                         'interestRadios': ally.interested_in_joining_lab,
+                        'experienceRadios': ally.has_lab_experience,
+                         'interestedRadios': ally.interested_in_mentoring,
+                         'agreementRadios': ally.information_release,
+                         'beingMentoredRadios': ally.interested_in_being_mentored}
         dict = {}
         for selection in list:
             if postDict[selection][0] == 'Yes':
                 dict[selection] = True
+                same = same and (dict[selection] == selectionDict[selection])
             else:
                 dict[selection] = False
-        return dict
+                same = same and (dict[selection] == selectionDict[selection])
+        return dict, same
 
     def get(self, request, *args, **kwargs):
-        username = request.GET['username']
+        try:
+            username = request.GET['username']
+        except KeyError:
+            username = request.path.split('/')[-2]
         user_req = request.user
         if (username != user_req.username) and not user_req.is_staff:
             messages.warning(request, 'Access Denied!')
@@ -113,70 +133,158 @@ class EditAllyProfile(View):
                 print(e)
                 return HttpResponseNotFound()
 
-    def post(self, request):
+    def post(self, request, username=''):
         postDict = dict(request.POST)
         user_req = request.user
-        print(request.POST)
+        message = ''
         if User.objects.filter(username=postDict["username"][0]).exists():
+            same = True
             user = User.objects.get(username=postDict["username"][0])
             ally = Ally.objects.get(user=user)
-            if ally.user_type == 'Staff':
-                selections = self.set_boolean(
-                    ['studentsInterestedRadios'], postDict)
-
-                how_can_we_help = postDict["howCanWeHelp"][0]
+            try:
+                userType = postDict['roleSelected'][0]
+                if userType != ally.user_type:
+                    ally.user_type = userType
+                    same = False
+            except KeyError:
+                message += ' User type could not be updated!\n'
+            try:
+                hawkId = postDict['hawkID'][0]
+                if hawkId != ally.hawk_id and hawkId != '':
+                    ally.hawk_id = hawkId
+                    same = False
+            except KeyError:
+                message += " HawkID could not be updated!\n"
+            if ally.user_type != "Undergraduate Student":
+                selections, same = self.set_boolean(
+                    ['studentsInterestedRadios', 'labShadowRadios', 'connectingRadios',
+                     'openingRadios', 'mentoringFacultyRadios',
+                     'trainingRadios', 'volunteerRadios'], postDict, ally, same)
+                try:
+                    aor = ','.join(postDict['stemGradCheckboxes'])
+                except KeyError:
+                    aor = ""
+                try:
+                    how_can_we_help = postDict["howCanWeHelp"][0]
+                except KeyError:
+                    how_can_we_help = ""
+                try:
+                    description = postDict['research-des'][0]
+                except KeyError:
+                    description = ""
+                if not (description == ally.description_of_research_done_at_lab and
+                        how_can_we_help == ally.how_can_science_ally_serve_you and
+                        aor == ally.area_of_research):
+                    same = False
+                ally.description_of_research_done_at_lab = description
+                ally.how_can_science_ally_serve_you = how_can_we_help
+                ally.area_of_research = aor
 
                 ally.people_who_might_be_interested_in_iba = selections['studentsInterestedRadios']
-                ally.how_can_science_ally_serve_you = how_can_we_help
-
-                ally.save()
-            elif ally.user_type == 'Graduate Student':
-                selections = self.set_boolean(
-                    ['mentoringGradRadios', 'labShadowRadios', 'connectingRadios', 'volunteerGradRadios', 'gradTrainingRadios'], postDict)
-                stem_fields = ','.join(postDict['stemGradCheckboxes'])
-
-                ally.area_of_research = stem_fields
-                ally.interested_in_mentoring = selections['mentoringGradRadios']
-                ally.willing_to_offer_lab_shadowing = selections['labShadowRadios']
-                ally.interested_in_connecting_with_other_mentors = selections['connectingRadios']
-                ally.willing_to_volunteer_for_events = selections['volunteerGradRadios']
-                ally.interested_in_mentor_training = selections['gradTrainingRadios']
-
-                ally.save()
-            elif ally.user_type == 'Undergraduate Student':
-                selections = self.set_boolean(
-                    ['interestRadios', 'experienceRadios', 'interestedRadios', 'agreementRadios'], postDict)
-
-                ally.year = postDict['undergradRadios'][0]
-                ally.major = postDict['major'][0]
-                ally.interested_in_joining_lab = selections['interestRadios']
-                ally.has_lab_experience=selections['experienceRadios']
-                ally.interested_in_mentoring=selections['interestedRadios']
-                ally.information_release = selections['agreementRadios']
-
-                ally.save()
-            elif ally.user_type == 'Faculty':
-                selections = self.set_boolean(
-                    ['openingRadios', 'mentoringFacultyRadios', 'volunteerRadios', 'trainingRadios'], postDict)
-                stem_fields = ','.join(postDict['stemGradCheckboxes'])
-
-                ally.area_of_research = stem_fields
-                ally.description_of_research_done_at_lab = postDict['research-des'][0]
-                ally.openings_in_lab_serving_at=selections['openingRadios']
                 ally.interested_in_mentoring = selections['mentoringFacultyRadios']
+                ally.willing_to_offer_lab_shadowing = selections['labShadowRadios']
+                ally.openings_in_lab_serving_at = selections['openingRadios']
+                ally.interested_in_connecting_with_other_mentors = selections['connectingRadios']
                 ally.willing_to_volunteer_for_events = selections['volunteerRadios']
                 ally.interested_in_mentor_training = selections['trainingRadios']
-
                 ally.save()
+            else:
+                if user_req.is_staff:
+                    selections, same = self.set_boolean(
+                        ['interestRadios', 'experienceRadios', 'interestedRadios', 'beingMentoredRadios'],
+                        postDict, ally, same)
+                else:
+                    selections, same = self.set_boolean(
+                        ['interestRadios', 'experienceRadios', 'beingMentoredRadios',
+                         'interestedRadios', 'agreementRadios'],
+                        postDict, ally, same)
+
+                year = postDict['undergradRadios'][0]
+                major = postDict['major'][0]
+                if not (year == ally.year and major == ally.major):
+                    same = False
+                ally.year = year
+                ally.major = major
+
+                ally.interested_in_joining_lab = selections['interestRadios']
+                ally.has_lab_experience = selections['experienceRadios']
+                ally.interested_in_being_mentored = selections['beingMentoredRadios']
+                ally.interested_in_mentoring = selections['interestedRadios']
+                if not user_req.is_staff:
+                    ally.information_release = selections['agreementRadios']
+                ally.save()
+
+            badUser = False
+            badEmail = False
+            badPassword = False
+
+            try:
+                newUsername = postDict['newUsername'][0]
+                if newUsername != '' and newUsername != user.username:
+                    if not User.objects.filter(username=newUsername):
+                        user.username = newUsername
+                        same = False
+                    else:
+                        badUser = True
+                        message +=" Username not updated - Username already exists!\n"
+            except KeyError:
+                message += ' Username could not be updated!\n'
+            try:
+                newPassword = postDict['password'][0]
+                if newPassword != '':
+                    if not len(newPassword) < 8:
+                        user.set_password(newPassword)
+                        same = False
+                    else:
+                        badPassword = True
+                        message += " Password could not be set because it is less than 8 characters long!"
+            except KeyError:
+                message += ' Password could not be updated!\n'
+            try:
+                firstName = postDict['firstName'][0]
+                lastName = postDict['lastName'][0]
+                if firstName != '' and firstName != user.first_name:
+                    user.first_name = firstName
+                    same = False
+                if lastName != '' and lastName != user.last_name:
+                    user.last_name = lastName
+                    same = False
+            except KeyError:
+                message += ' First name or last name could not be updated!\n'
+            if user_req.is_staff:
+                try:
+                    email = postDict['email'][0]
+                    if email != '' and email != user.email:
+                        if not User.objects.filter(email=email).exists():
+                            user.email = email
+                            same = False
+                        else:
+                            message += " Email could not be updated - Email already exists!\n"
+                            badEmail = True
+                except KeyError:
+                    message += ' Email could not be updated!\n'
+            user.save()
+            if badPassword or badEmail or badPassword or badUser:
+                if same:
+                    messages.add_message(request, messages.WARNING, message)
+                else:
+                    messages.add_message(request, messages.WARNING,
+                                         'No Changes Detected!' + message)
+                return redirect(reverse('sap:admin_edit_ally', args=[postDict['username'][0]]))
+            if same:
+                messages.add_message(request, messages.WARNING,
+                                     'No Changes Detected!' + message)
+                return redirect(reverse('sap:admin_edit_ally', args=[postDict['username'][0]]))
+
             if not user_req.is_staff:
                 messages.add_message(request, messages.SUCCESS,
-                                     'Profile updated !')
+                                        'Profile updated!\n' + message)
             else:
                 messages.add_message(request, messages.SUCCESS,
-                                     'Ally updated !')
+                                    'Ally updated!\n' + message)
         else:
             messages.add_message(request, messages.WARNING,
-                                 'Ally does not exist !')
+                                 'Ally does not exist!')
         if user_req.is_staff:
             return redirect('sap:sap-dashboard')
         else:
@@ -279,17 +387,53 @@ class AlliesListView(AccessMixin, TemplateView):
             else:
                 exclude_from_aor_default = True
                 stemfields =[]
+            
             if 'undergradYear' in postDict:
                 exclude_from_year_default = False
                 undergradYear = postDict['undergradYear']
             else:
                 exclude_from_year_default = True
                 undergradYear = []
+            
+            if 'idUnderGradCheckboxes' in postDict:
+                studentCategories = postDict['idUnderGradCheckboxes']
+                exclude_from_sc_default = False
+            else:
+                exclude_from_sc_default = True
+                studentCategories = []
+            
+            if 'roleSelected' in postDict:
+                userTypes = postDict['roleSelected']
+                exclude_from_ut_default = False
+            else:
+                exclude_from_ut_default = True
+                userTypes = []
+            
+            if 'mentorshipStatus' in postDict:
+                mentorshipStatus = postDict['mentorshipStatus'][0]
+                exclude_from_ms_default = False
+            else:
+                exclude_from_ms_default = True
+                mentorshipStatus = []
+            
+            major = postDict['major'][0]
+            if major != '':
+                exclude_from_major_default = False
+            else:
+                exclude_from_major_default = True
+
             allies_list = Ally.objects.order_by('-id')
-            if not (exclude_from_year_default and exclude_from_aor_default):
+            if not (exclude_from_year_default and exclude_from_aor_default and exclude_from_sc_default and exclude_from_ut_default and exclude_from_ms_default and exclude_from_major_default):
                 for ally in allies_list:
                     exclude_from_aor = exclude_from_aor_default
                     exclude_from_year = exclude_from_year_default
+                    exclude_from_sc = exclude_from_sc_default
+                    exclude_from_ut = exclude_from_ut_default
+                    exclude_from_ms = exclude_from_ms_default
+                    exclude_from_major = exclude_from_major_default
+
+                    if (major != '') and (fuzz.ratio(ally.major, major) < 90):
+                        exclude_from_major = True
 
                     if ally.area_of_research:
                         aor = ally.area_of_research.split(',')
@@ -297,12 +441,44 @@ class AlliesListView(AccessMixin, TemplateView):
                         aor = []
                     if (stemfields) and (not bool(set(stemfields) & set(aor))):
                         exclude_from_aor = True
+                    
+                    if (mentorshipStatus != []):
+                        if (mentorshipStatus == 'Mentor') and (ally.interested_in_mentoring == False):
+                            exclude_from_ms = True
+                        elif (mentorshipStatus == 'Mentee') and (ally.interested_in_being_mentored == False):
+                            exclude_from_ms = True
+                    
+                    try:
+                        categories = AllyStudentCategoryRelation.objects.filter(
+                            ally_id=ally.id).values()[0]
+                        categories = StudentCategories.objects.filter(
+                            id=categories['student_category_id'])[0]
+                    except:
+                        studentCategories = []
 
+                    if (studentCategories):
+                        for cat in studentCategories:
+                            if (cat == 'First generation college-student') and (categories.first_gen_college_student == False):
+                                exclude_from_sc = True
+                            elif (cat == 'Low-income') and (categories.low_income == False):
+                                exclude_from_sc = True
+                            elif (cat == 'Underrepresented racial/ethnic minority') and (categories.under_represented_racial_ethnic == False):
+                                exclude_from_sc = True
+                            elif (cat == 'LGBTQ') and (categories.lgbtq == False):
+                                exclude_from_sc = True
+                            elif (cat == 'Rural') and (categories.rural == False):
+                                exclude_from_sc = True
+                            elif (cat == 'Disabled') and (categories.disabled == False):
+                                exclude_from_sc = True
 
                     if (undergradYear) and (ally.year not in undergradYear):
                         exclude_from_year = True
+                    
+                    if (userTypes) and (ally.user_type not in userTypes):
+                        print('User Type:', ally.user_type)
+                        exclude_from_ut = True
 
-                    if exclude_from_aor and exclude_from_year:
+                    if exclude_from_aor and exclude_from_year and exclude_from_sc and exclude_from_ut and exclude_from_ms and exclude_from_major:
                         allies_list = allies_list.exclude(id=ally.id)
             for ally in allies_list:
                 if not ally.user.is_active:
@@ -1046,8 +1222,8 @@ class UploadAllies(AccessMixin, HttpResponse):
             return df, errorlog
         try:
             df = df.fillna(value='')
-            df['STEM Area of Research'] = df['STEM Area of Research'].replace(regex=[r'\([^)]*\)', '\n'],value='')
-            df['STEM Area of Research'] = df['STEM Area of Research'].replace(regex=r'\s', value=',')
+            df['STEM Area of Research'] = df['STEM Area of Research'].replace(regex=[r'\n'], value=',')
+            df['STEM Area of Research'] = df['STEM Area of Research'].replace(regex=[r'\s\([^)]*\)'], value='')
             df['University Type'] = df['University Type'].replace(regex=[r'\s\([^)]*\)', '/Post-doc'], value='')
             df['Year'] = df['Year'].replace(regex=r'\s\([^)]*\)', value='')
             df = df.rename({'STEM Area of Research': 'area_of_research',
