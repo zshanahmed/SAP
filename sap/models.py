@@ -81,6 +81,7 @@ class Event(models.Model):
     description = models.CharField(max_length=1000, null=True)
     start_time = models.DateTimeField()
     end_time = models.DateTimeField(default=start_time)
+    allday = models.BooleanField(default=False)
     location = models.CharField(max_length=500, null=True)
 
 
