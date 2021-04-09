@@ -384,6 +384,18 @@ class EditAdminProfile(View):
             'form': form
         })
 
+
+class Announcements(TemplateView):
+    def get(self, request):
+        announcments_list = Announcement.objects.order_by('-created_at')
+        if request.user.is_staff:
+            role="admin"
+        else:
+            role="ally"
+        for announcment in announcments_list:
+            pass
+        return render(request, 'sap/announcements.html', {'announcments_list': announcments_list, 'role': role})
+
 class AlliesListView(AccessMixin, TemplateView):
 
     def get(self, request):
