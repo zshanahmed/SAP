@@ -333,6 +333,7 @@ class ChangeAdminPassword(View):
 class CalendarView(TemplateView):
     template_name = "sap/calendar.html"
 
+
 class EditAdminProfile(View):
     """
     Change the profile for admin
@@ -528,6 +529,7 @@ class MentorsListView(generic.ListView):
                     allies_list = allies_list.exclude(id=ally.id)
             return render(request, 'sap/dashboard_ally.html', {'allies_list': allies_list})
 
+
 class AnalyticsView(AccessMixin, TemplateView):
     template_name = "sap/analytics.html"
 
@@ -706,7 +708,7 @@ class CreateEventView(AccessMixin, TemplateView):
 
         EventInviteeRelation.objects.bulk_create(all_event_ally_objs)
 
-        return redirect('/dashboard')
+        return redirect('/calendar')
 
 
 class CalendarListView(TemplateView):
