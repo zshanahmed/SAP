@@ -546,7 +546,7 @@ class AnalyticsView(AccessMixin, TemplateView):
         years = []
         numbers = [[], [], []]
         if otherDic != {}:
-            for key in sorted(otherDic):
+            for key in sorted(otherDic, reverse=True):
                 years.append(int(key))
                 for i in range(0, 3):
                     numbers[i].append(otherDic[key][i])
@@ -652,9 +652,6 @@ class AnalyticsView(AccessMixin, TemplateView):
             numMentorCategories = AnalyticsView.determineNumPerCategory(mentorCategories)
 
             numUndergradPerYear = AnalyticsView.undergradPerYear(students)
-
-            print(otherYears)
-            print(otherNumbers)
 
             return render(request, 'sap/analytics.html', {"numStudentCategories": numStudentCategories,
                                                           "numMentorCategories": numMentorCategories,
