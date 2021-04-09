@@ -10,7 +10,7 @@ from django.test import TestCase, Client  # tests file
 import pandas as pd
 import numpy as np
 import sap.views as views
-from .models import Ally, StudentCategories, AllyStudentCategoryRelation, Event, EventInviteeRelation, EventAttendeeRelation
+from .models import Ally, StudentCategories, AllyStudentCategoryRelation, Event, EventInviteeRelation
 from .tests import create_ally
 
 User = get_user_model()
@@ -321,12 +321,21 @@ class CreateEventTests(TestCase):
             student_category=self.category,
         )
 
-    def test_get(self):
+    def test_get_is_staff(self):
         """
-        test to check if the create event page is rendered properly
+        test to check if the create event page is rendered properly, staff permission
         """
         response = self.client.get('/create_event/')
         self.assertEqual(response.status_code, 200)
+
+    def test_get_not_is_staff(self):
+        """
+        test to check if the create event page is rendered properly
+        """
+        self.user.is_staff = False
+        self.user.save()
+        response = self.client.get('/create_event/')
+        self.assertEqual(response.status_code, 403)
 
     def test_invite_all(self):
         """
@@ -360,6 +369,7 @@ class CreateEventTests(TestCase):
             'event_start_time': ['2021-03-31T15:32'],
             'event_end_time': ['2021-04-30T15:32'],
             'role_selected': ['Graduate Student'],
+            'school_year_selected': ['Sophomore'],
             'mentor_status': ['Mentors', 'Mentees'],
             'research_area': ['Biochemistry']
         })
