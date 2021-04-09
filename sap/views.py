@@ -480,6 +480,7 @@ class AlliesListView(AccessMixin, TemplateView):
                     allies_list = allies_list.exclude(id=ally.id)
             return render(request, 'sap/dashboard.html', {'allies_list': allies_list})
 
+
 class MentorsListView(generic.ListView):
     template_name = 'sap/dashboard_ally.html'
     context_object_name = 'allies_list'
@@ -595,7 +596,11 @@ class CreateEventView(AccessMixin, TemplateView):
     template_name = "sap/create_event.html"
 
     def get(self, request):
-        return render(request, self.template_name)
+        if request.user.is_staff:
+            return render(request, self.template_name)
+        else:
+            return redirect('sap:resources')
+
 
     def post(self, request):
         new_event_dict = dict(request.POST)
