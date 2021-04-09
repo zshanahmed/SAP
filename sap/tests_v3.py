@@ -794,3 +794,11 @@ class TestAnalyticsPage(TestCase):
         yearDict1 = {datetime.strftime(datetime.now(), "%Y"): 4}
         self.assertEqual(years, yearDict)
         self.assertEqual(undergradYears, yearDict1)
+
+    def test_cleanUndergradDic(self):
+        yearDict = {datetime.strftime(datetime.now(), "%Y"): [0, 0, 0]}
+        yearDict1 = {datetime.strftime(datetime.now(), "%Y"): 0}
+        years, undergradYears = views.AnalyticsView.userTypePerYear(self.undergrads, yearDict, yearDict1)
+        years, numbers = views.AnalyticsView.cleanUndergradDic(undergradYears)
+        self.assertEqual(years, [int(datetime.strftime(datetime.now(), "%Y"))])
+        self.assertEqual(numbers, [4])

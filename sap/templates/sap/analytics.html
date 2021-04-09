@@ -55,6 +55,20 @@
                     </div>
                 </div>
             </div>
+            <div class="container-fluid col-md-6 float-left">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                        Undergraduates Joined per Year
+                </div>
+                    <div class="card-body">
+                        <div id="undergradYears" style="display: none">{{ undergradYears }}</div>
+                        <div id="undergradNumbers" style="display: none">{{ undergradNumbers }}</div>
+                        <div class="chart-area">
+                            <div class="chart-bar">
+                                <canvas id="myAreaChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+            </div>
             <!-- End of Main Content -->
 
             {% include './partials/_footer.html' %}
@@ -73,4 +87,5 @@
 <script src="{% static 'vendor/chart.js/Chart.min.js' %}"></script>
 <script src="{% static 'js/StudentCategories.js' %}"></script>
 <script type="module" src="{% static 'js/UndergradPerYear.js' %}"></script>
+<script type="module" src="{% static 'js/UndergradJoinPerYear.js' %}"></script>
 {% endblock content %}

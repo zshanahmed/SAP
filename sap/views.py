@@ -532,6 +532,18 @@ class AnalyticsView(AccessMixin, TemplateView):
     template_name = "sap/analytics.html"
 
     @staticmethod
+    def cleanUndergradDic(undergradDic):
+        print(undergradDic)
+        years = []
+        numbers = []
+        if undergradDic != {}:
+            for key in sorted(undergradDic):
+                years.append(int(key))
+                numbers.append(undergradDic[key])
+        return years, numbers
+
+
+    @staticmethod
     def yearHelper(ally):
         user = ally.user
         joined = user.date_joined
@@ -615,7 +627,9 @@ class AnalyticsView(AccessMixin, TemplateView):
         categories = StudentCategories.objects.all()
         relation = AllyStudentCategoryRelation.objects.all()
 
-
+        otherYear, undergradYear = AnalyticsView.findYears(allies)
+        otherJoinedPerYear, undergradJoinedPerYear = AnalyticsView.userTypePerYear(allies,otherYear,undergradYear)
+        undergradYears, undergradNumbers = AnalyticsView.cleanUndergradDic(undergradJoinedPerYear)
 
         students = allies.filter(user_type="Undergraduate Student")
         mentors = allies.filter(~Q(user_type="Undergraduate Student"))
@@ -630,9 +644,10 @@ class AnalyticsView(AccessMixin, TemplateView):
 
         return render(request, 'sap/analytics.html', {"numStudentCategories": numStudentCategories,
                                                       "numMentorCategories": numMentorCategories,
-                                                      "numUndergradPerYear": numUndergradPerYear, })
-
-
+                                                      "numUndergradPerYear": numUndergradPerYear,
+                                                      "undergradYears": undergradYears,
+                                                      "undergradNumbers": undergradNumbers,
+                                                      "otherJoinedPerYear": otherJoinedPerYear, })
 
 class AdminProfileView(TemplateView):
     template_name = "sap/profile.html"
