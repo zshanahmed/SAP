@@ -33,8 +33,8 @@ var myPieChart = new Chart(ctx, {
       caretPadding: 10,
     },
     legend: {
-      display: false
+      display: true,
     },
-    cutoutPercentage: 80,
+    cutoutPercentage: 50,
   },
 });
