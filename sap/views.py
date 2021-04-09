@@ -363,6 +363,7 @@ class EditAdminProfile(View):
             'form': form
         })
 
+
 class AlliesListView(AccessMixin, TemplateView):
 
     def get(self, request):
@@ -958,6 +959,25 @@ class SignUpDoneView(TemplateView):
     A view which is presented if the user successfully fill out the form presented in Sign-Up view
     """
     template_name = "sap/sign-up-done.html"
+    def get(self, request, *args, **kwargs):
+        site = get_current_site(request)
+        accepted_origin = 'http:' + '//' + site.domain + reverse('sap:sign-up')
+
+        try:
+            origin = request.headers['Referer']
+
+            if request.headers['Referer'] and origin == accepted_origin:
+                return render(request, self.template_name)
+            elif request.user.is_authenticated:
+                return redirect('sap:resources')
+            else:
+                return redirect('sap:home')
+
+        except KeyError:
+            if request.user.is_authenticated:
+                return redirect('sap:resources')
+            else:
+                return redirect('sap:home')
 
 
 class SignUpConfirmView(TemplateView):
@@ -1056,6 +1076,26 @@ class ForgotPasswordDoneView(TemplateView):
     A view which is presented if the user entered valid email in Forget Password view
     """
     template_name = "sap/password-forgot-done.html"
+
+    def get(self, request, *args, **kwargs):
+        site = get_current_site(request)
+        accepted_origin = 'http:' + '//' + site.domain + reverse('sap:password-forgot')
+
+        try:
+            origin = request.headers['Referer']
+
+            if request.headers['Referer'] and origin == accepted_origin:
+                return render(request, self.template_name)
+            elif request.user.is_authenticated:
+                return redirect('sap:resources')
+            else:
+                return redirect('sap:home')
+
+        except KeyError:
+            if request.user.is_authenticated:
+                return redirect('sap:resources')
+            else:
+                return redirect('sap:home')
 
 
 class ForgotPasswordConfirmView(TemplateView):
