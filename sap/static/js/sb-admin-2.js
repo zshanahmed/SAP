@@ -88,7 +88,7 @@
     var modal = $(this);
     modal
       .find(".modal-title")
-      .text("Event title: " + title);
+      .html("<strong>"+title+"</strong>");
     modal
       .find(".modal-body")
       .html(
