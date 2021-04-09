@@ -19,7 +19,7 @@ User = get_user_model()
 
 def wack_test_db():
     """
-    Delete everything from the database
+    Delete users/allies/categories from the database
     """
     User.objects.all().delete()
     Ally.objects.all().delete()
@@ -39,6 +39,7 @@ categoryFields = ['under_represented_racial_ethnic', 'first_gen_college_student'
 
 
 def make_big_user():
+
     bigUser = User.objects.create_user(username="bigUser", password="bigPassword", email="bigEmail@uiowa.edu")
     bigAlly = Ally.objects.create(user=bigUser, user_id=bigUser.id, user_type='Undergraduate Student',
                                   hawk_id=bigUser.username, major='biomedical engineering', year='Freshman',
@@ -78,6 +79,36 @@ def make_big_user():
                                                    under_represented_racial_ethnic=True, transfer_student=False,
                                                    lgbtq=True, low_income=False, disabled=True)
     AllyStudentCategoryRelation.objects.create(ally_id=bigAlly3.id, student_category_id=bigCategory3.id)
+
+    bigUser4 = User.objects.create_user(username="bigUser4", password="bigPassword", email="bigEmail4@uiowa.edu")
+    bigAlly4 = Ally.objects.create(user=bigUser4, user_id=bigUser4.id, user_type='Staff',
+                                  hawk_id=bigUser4.username, major='biomedical engineering', year='Senior',
+                                  interested_in_joining_lab=True, has_lab_experience=False,
+                                  interested_in_mentoring=False, information_release=True)
+    bigCategory4 = StudentCategories.objects.create(rural=True, first_gen_college_student=True,
+                                                   under_represented_racial_ethnic=True, transfer_student=False,
+                                                   lgbtq=True, low_income=False, disabled=True)
+    AllyStudentCategoryRelation.objects.create(ally_id=bigAlly4.id, student_category_id=bigCategory4.id)
+
+    bigUser5 = User.objects.create_user(username="bigUser5", password="bigPassword", email="bigEmail5@uiowa.edu")
+    bigAlly5 = Ally.objects.create(user=bigUser5, user_id=bigUser5.id, user_type='Faculty',
+                                  hawk_id=bigUser5.username, major='biomedical engineering', year='Senior',
+                                  interested_in_joining_lab=True, has_lab_experience=False,
+                                  interested_in_mentoring=False, information_release=True)
+    bigCategory5 = StudentCategories.objects.create(rural=True, first_gen_college_student=True,
+                                                   under_represented_racial_ethnic=True, transfer_student=False,
+                                                   lgbtq=True, low_income=False, disabled=True)
+    AllyStudentCategoryRelation.objects.create(ally_id=bigAlly5.id, student_category_id=bigCategory5.id)
+
+    bigUser6 = User.objects.create_user(username="bigUser6", password="bigPassword", email="bigEmail6@uiowa.edu")
+    bigAlly6 = Ally.objects.create(user=bigUser6, user_id=bigUser6.id, user_type='Graduate Student',
+                                  hawk_id=bigUser6.username, major='biomedical engineering', year='Senior',
+                                  interested_in_joining_lab=True, has_lab_experience=False,
+                                  interested_in_mentoring=False, information_release=True)
+    bigCategory6 = StudentCategories.objects.create(rural=True, first_gen_college_student=True,
+                                                   under_represented_racial_ethnic=True, transfer_student=False,
+                                                   lgbtq=True, low_income=False, disabled=True)
+    AllyStudentCategoryRelation.objects.create(ally_id=bigAlly6.id, student_category_id=bigCategory6.id)
 
 class DownloadAlliesTest(TestCase):
     """
@@ -750,3 +781,12 @@ class TestAnalyticsPage(TestCase):
         yearDict = {datetime.strftime(datetime.now(), "%Y"): [0, 0, 0, 0]}
         self.assertEqual(years, yearDict)
 
+    def test_userTypePerYear(self):
+        allies = Ally.objects.all()
+        new_allies = self.undergrads
+        new_allies += allies.filter(username="bigUser4")[0]
+        new_allies += allies.filter(username="bigUser5")[0]
+        new_allies += allies.filter(username="bigUser6")[0]
+        years = views.AnalyticsView.userTypePerYear(self.undergrads)
+        yearDict = {datetime.strftime(datetime.now(), "%Y"): [1, 1, 4, 1]}
+        self.assertEqual(years, yearDict)
