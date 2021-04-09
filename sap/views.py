@@ -713,7 +713,7 @@ class CalendarListView(TemplateView):
     template_name = "sap/calendar_list.html"
 
 
-class EventSignUpView(TemplateView):
+class RegisterEventView(TemplateView):
     def get(self, request, *args, **kwargs):
         return render(request, self.template_name)
 

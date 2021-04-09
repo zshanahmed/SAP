@@ -10,7 +10,7 @@ from django.test import TestCase, Client  # tests file
 import pandas as pd
 import numpy as np
 import sap.views as views
-from .models import Ally, StudentCategories, AllyStudentCategoryRelation, Event, EventAllyRelation
+from .models import Ally, StudentCategories, AllyStudentCategoryRelation, Event, EventInviteeRelation, EventAttendeeRelation
 from .tests import create_ally
 
 User = get_user_model()
@@ -342,7 +342,7 @@ class CreateEventTests(TestCase):
         event = Event.objects.filter(title='title of the event')
         assert url == '/dashboard'
         assert event.exists()
-        assert EventAllyRelation.objects.filter(event=event[0], ally=self.ally).exists()
+        assert EventInviteeRelation.objects.filter(event=event[0], ally=self.ally).exists()
 
     def test_invite_biochem_student(self):
         """
@@ -363,7 +363,7 @@ class CreateEventTests(TestCase):
         event = Event.objects.filter(title='title of the event 2')
         assert url == '/dashboard'
         assert event.exists()
-        assert EventAllyRelation.objects.filter(event=event[0], ally=self.ally).exists()
+        assert EventInviteeRelation.objects.filter(event=event[0], ally=self.ally).exists()
 
     def test_invite_special_category_student(self):
         """
@@ -383,7 +383,7 @@ class CreateEventTests(TestCase):
         event = Event.objects.filter(title='title of the event 3')
         assert url == '/dashboard'
         assert event.exists()
-        assert EventAllyRelation.objects.filter(event=event[0], ally=self.ally).exists()
+        assert EventInviteeRelation.objects.filter(event=event[0], ally=self.ally).exists()
 
 
 class CreateAdminViewTest(TestCase):
