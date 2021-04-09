@@ -79,15 +79,15 @@ class Event(models.Model):
     """
     title = models.CharField(max_length=200, null=True)
     description = models.CharField(max_length=1000, null=True)
-    start_time = models.DateTimeField()
-    end_time = models.DateTimeField(default=start_time)
+    start_time = models.DateTimeField(default=None, null=True)
+    end_time = models.DateTimeField(default=None, null=True)
     allday = models.BooleanField(default=False)
     location = models.CharField(max_length=500, null=True)
 
 
 class EventInviteeRelation(models.Model):
     """
-    EventInviteeRelation table contains information about the Event Invitee mappings
+    EventAllyRelation table contains information about the Event ally mappings
     One event can have many allies invited and vice versa
     """
     event = models.ForeignKey(Event,
