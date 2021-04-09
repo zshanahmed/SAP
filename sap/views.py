@@ -698,9 +698,10 @@ class CreateEventView(AccessMixin, TemplateView):
         allies_to_be_invited = set(allies_to_be_invited)
 
         for ally in allies_to_be_invited:
-            event_ally_rel_obj = EventInviteeRelation(event=event, ally=ally)
-            all_event_ally_objs.append(event_ally_rel_obj)
-            invited_allies.add(event_ally_rel_obj.ally)
+            if ally.user.is_active:
+                event_ally_rel_obj = EventInviteeRelation(event=event, ally=ally)
+                all_event_ally_objs.append(event_ally_rel_obj)
+                invited_allies.add(event_ally_rel_obj.ally)
 
 
         EventInviteeRelation.objects.bulk_create(all_event_ally_objs)
