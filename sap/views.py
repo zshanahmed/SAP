@@ -723,7 +723,7 @@ class RegisterEventView(TemplateView):
         pass
 
 
-class EventSignUpDoneView(TemplateView):
+class DeregisterEventView(TemplateView):
     def get(self, request, *args, **kwargs):
         # template =
         pass
