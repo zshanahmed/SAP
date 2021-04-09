@@ -13,7 +13,7 @@ from django.utils.encoding import force_bytes, force_text
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError
 import xlsxwriter
-from .models import Ally, StudentCategories, AllyStudentCategoryRelation
+from .models import Ally, StudentCategories, AllyStudentCategoryRelation, Announcement
 from fuzzywuzzy import fuzz
 
 from .models import Ally, StudentCategories, AllyStudentCategoryRelation, Event, EventAttendeeRelation, EventInviteeRelation
@@ -291,6 +291,28 @@ class EditAllyProfile(View):
             return redirect('sap:ally-dashboard')
 
 
+class CreateAnnouncement(AccessMixin, HttpResponse):
+    """
+    Create annoucnemnnts
+    """
+    def create_announcement(request):
+        if request.user.is_staff:
+            postDict = dict(request.POST)
+            curr_user = request.user
+            title = postDict['title'][0]
+            description = postDict['desc'][0]
+            announcement = Announcement.objects.create(
+                username=curr_user.username,
+                title = title,
+                description = description,
+                created_at=datetime.datetime.now()
+            )
+            
+            messages.success(request, 'Annoucement created successfully !!')
+            return redirect('sap:sap-dashboard')
+        else:
+            return HttpResponseForbidden()
+
 class DeleteAllyProfileFromAdminDashboard(AccessMixin, View):
     def get(self, request, *args, **kwargs):
         username = request.GET['username']
@@ -377,6 +399,18 @@ class EditAdminProfile(View):
         return render(request, 'sap/profile.html', {
             'form': form
         })
+
+
+class Announcements(TemplateView):
+    def get(self, request):
+        announcments_list = Announcement.objects.order_by('-created_at')
+        if request.user.is_staff:
+            role="admin"
+        else:
+            role="ally"
+        for announcment in announcments_list:
+            pass
+        return render(request, 'sap/announcements.html', {'announcments_list': announcments_list, 'role': role})
 
 class AlliesListView(AccessMixin, TemplateView):
 
