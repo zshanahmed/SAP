@@ -873,6 +873,9 @@ class SignUpDoneViewTests(TestCase):
         self.client = Client()
 
     def test_if_user_come_from_signup(self):
+        """
+        If user comes from sign-up, redirect to the page
+        """
         response = self.client.post(
             '/sign-up/',
             {
@@ -889,22 +892,31 @@ class SignUpDoneViewTests(TestCase):
             }
         )
 
-        response2 = response
+        # response2 = response
         url = response.url
         self.assertEqual(url, '/sign-up-done/')
         self.assertEqual(response.status_code, 302)
 
     def test_signup_if_user_is_authenticated(self):
+        """
+        If user is authenticated
+        """
         self.client.login(username=self.username, password=self.password)
         response = self.client.get(reverse('sap:sign-up-done'))
         self.assertEqual(response.status_code, 302)
 
     def test_signup_if_keyerror(self):
+        """
+        If keyerror
+        """
         self.client.logout()
         response = self.client.get(reverse('sap:sign-up-done'))
         self.assertEqual(response.status_code, 302)
 
     def test_signup_if_keyerror_and_is_authenticated(self):
+        """
+        If keyerror and is_authenticated
+        """
         self.client.login(username=self.username, password=self.password)
         response = self.client.get(reverse('sap:sign-up-done'))
         self.assertEqual(response.status_code, 302)
@@ -927,11 +939,17 @@ class ForgotPasswordDoneView(TestCase):
         self.client = Client()
 
     def test_forgotpassword_if_keyerror(self):
+        """
+        If keyerror
+        """
         self.client.logout()
         response = self.client.get(reverse('sap:password-forgot-done'))
         self.assertEqual(response.status_code, 302)
 
     def test_forgotpassword_if_keyerror_and_is_authenticated(self):
+        """
+        If keyerror and is_authenticated
+        """
         self.client.login(username=self.username, password=self.password)
         response = self.client.get(reverse('sap:password-forgot-done'))
         self.assertEqual(response.status_code, 302)
