@@ -321,12 +321,21 @@ class CreateEventTests(TestCase):
             student_category=self.category,
         )
 
-    def test_get(self):
+    def test_get_is_staff(self):
         """
-        test to check if the create event page is rendered properly
+        test to check if the create event page is rendered properly, staff permission
         """
         response = self.client.get('/create_event/')
         self.assertEqual(response.status_code, 200)
+
+    def test_get_not_is_staff(self):
+        """
+        test to check if the create event page is rendered properly
+        """
+        self.user.is_staff = False
+        self.user.save()
+        response = self.client.get('/create_event/')
+        self.assertEqual(response.status_code, 403)
 
     def test_invite_all(self):
         """
