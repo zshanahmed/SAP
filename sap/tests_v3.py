@@ -292,6 +292,7 @@ class CreateEventTests(TestCase):
         self.password = 'admin_password1'
         self.user = User.objects.create_user(self.username, 'email@test.com', self.password)
         self.user.is_staff = True
+        self.user.is_active = True
         self.user.save()
         self.client = Client()
         self.client.login(username=self.username, password=self.password)
