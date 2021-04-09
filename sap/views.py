@@ -712,25 +712,32 @@ class CreateEventView(AccessMixin, TemplateView):
         return redirect('/calendar')
 
 
-class CalendarListView(TemplateView):
-    template_name = "sap/calendar_list.html"
-
-
 class RegisterEventView(TemplateView):
+    """
+    Register for event.
+    """
     def get(self, request, *args, **kwargs):
-        return render(request, self.template_name)
+        user_current = request.user
+        ally_current = Ally.objects.get(user=user_current)
+        event = Event.objects.get()
 
-    def get(self, request, *args, **kwargs):
-        pass
+        if ally_current is not None and user_current.is_active:
+            ally_current
+
+            AllyStudentCategoryRelation.objects.create(event_id=event.id,
+                                                       ally_id=categories.id)
+            messages.success(request,
+                             'You have successfully register for this event!')
+
+        else:
+            messages.warning(request,
+                             'You cannot register for this event.')
+
 
 
 class DeregisterEventView(TemplateView):
     def get(self, request, *args, **kwargs):
         # template =
-        pass
-
-    def post(self, request, *args, **kwargs):
-    # TODO: a function to withdraw from meeting
         pass
 
 
