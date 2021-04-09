@@ -93,7 +93,7 @@ class EventInviteeRelation(models.Model):
     event = models.ForeignKey(Event,
                               on_delete=models.CASCADE
                               )
-    invitee = models.ForeignKey(Ally,
+    ally = models.ForeignKey(Ally,
                              on_delete=models.CASCADE
                              )
 
@@ -106,6 +106,6 @@ class EventAttendeeRelation(models.Model):
     event = models.ForeignKey(Event,
                               on_delete=models.CASCADE
                               )
-    attendee = models.ForeignKey(Ally,
+    ally = models.ForeignKey(Ally,
                              on_delete=models.CASCADE
                              )
