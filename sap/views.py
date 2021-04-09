@@ -728,20 +728,21 @@ class RegisterEventView(TemplateView):
     Register for event.
     """
     def get(self, request, *args, **kwargs):
-        # TODO: Update this function once frontend gets done
-        user_current = request.user
-        ally_current = Ally.objects.get(user=user_current)
-        event_id = 1
-
-        if ally_current is not None and user_current.is_active:
-            AllyStudentCategoryRelation.objects.create(event_id=event.id,
-                                                       ally_id=ally_current.id)
-            messages.success(request,
-                             'You have successfully register for this event!')
-
-        else:
-            messages.warning(request,
-                             'You cannot register for this event.')
+        # # TODO: Update this function once frontend gets done
+        # user_current = request.user
+        # ally_current = Ally.objects.get(user=user_current)
+        # event_id = 1
+        #
+        # if ally_current is not None and user_current.is_active:
+        #     AllyStudentCategoryRelation.objects.create(event_id=event.id,
+        #                                                ally_id=ally_current.id)
+        #     messages.success(request,
+        #                      'You have successfully register for this event!')
+        #
+        # else:
+        #     messages.warning(request,
+        #                      'You cannot register for this event.')
+        pass
 
 
 
