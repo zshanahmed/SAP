@@ -678,7 +678,7 @@ class CalendarViewTests(TestCase):
         self.client = Client()
 
         self.user = User.objects.create_user(self.username, 'email@test.com', self.password)
-        self.event = Event.objects.create(title='Internship', description='Internship', datetime='2021-03-26 21:05:00', location='MacLean')
+        self.event = Event.objects.create(title='Internship', description='Internship', start_time='2021-04-20 21:05:00', end_time='2021-04-26 21:05:00', location='MacLean')
 
         self.ally_user = User.objects.create_user('allytesting', 'allyemail@test.com', 'ally_password1')
         self.ally_user.is_staff = False
@@ -702,7 +702,7 @@ class CalendarViewTests(TestCase):
         self.user.is_staff = True
         self.user.save()
 
-        self.event_ally_rel = EventAllyRelation.objects.create(ally_id=self.ally.id, event_id=self.event.id)
+        self.event_ally_rel = EventInviteeRelation.objects.create(ally_id=self.ally.id, event_id=self.event.id)
 
     def test_calendar_access_admin(self):
         """
