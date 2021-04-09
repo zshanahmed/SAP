@@ -749,6 +749,8 @@ class TestAnalyticsPage(TestCase):
                            Ally.objects.filter(hawk_id="bigUser2")[0],
                            Ally.objects.filter(hawk_id="bigUser3")[0],]
 
+        self.bigUsers = Ally.objects.filter(Q(hawk_id__startswith='bigUser'))
+
     def test_get_analytics(self):
         """
         Test good respone from the Analytics page.
@@ -778,13 +780,17 @@ class TestAnalyticsPage(TestCase):
         self.assertEqual(numPerYear, [1, 1, 1, 1])
 
     def test_getYear(self):
-        years = views.AnalyticsView.findYears(self.undergrads)
-        yearDict = {datetime.strftime(datetime.now(), "%Y"): [0, 0, 0, 0]}
+        years, yearsUndergrad = views.AnalyticsView.findYears(self.bigUsers)
+        yearDict = {datetime.strftime(datetime.now(), "%Y"): [0, 0, 0]}
+        yearDict1 = {datetime.strftime(datetime.now(), "%Y"): 0}
         self.assertEqual(years, yearDict)
+        self.assertEqual(yearsUndergrad, yearDict1)
 
     def test_userTypePerYear(self):
-        new_allies = Ally.objects.filter(Q(hawk_id__startswith='bigUser'))
-        yearDict = {datetime.strftime(datetime.now(), "%Y"): [0, 0, 0, 0]}
-        years = views.AnalyticsView.userTypePerYear(new_allies, yearDict)
-        yearDict = {datetime.strftime(datetime.now(), "%Y"): [1, 1, 4, 1]}
+        yearDict = {datetime.strftime(datetime.now(), "%Y"): [0, 0, 0]}
+        yearDict1 = {datetime.strftime(datetime.now(), "%Y"): 0}
+        years, undergradYears = views.AnalyticsView.userTypePerYear(self.bigUsers, yearDict, yearDict1)
+        yearDict = {datetime.strftime(datetime.now(), "%Y"): [1, 1, 1]}
+        yearDict1 = {datetime.strftime(datetime.now(), "%Y"): 4}
         self.assertEqual(years, yearDict)
+        self.assertEqual(undergradYears, yearDict1)

@@ -541,24 +541,28 @@ class AnalyticsView(AccessMixin, TemplateView):
     @staticmethod
     def findYears(allies):
         yearAndNumber = {}
+        undergradNumber = {}
         for ally in allies:
             joined = AnalyticsView.yearHelper(ally)
-            yearAndNumber[joined] = [0, 0, 0, 0] ##Staff,Grad,Undergrad,Faculty
-        return yearAndNumber
+            if ally.user_type != 'Undergraduate Student':
+                yearAndNumber[joined] = [0, 0, 0] ##Staff,Grad,Faculty
+            else:
+                undergradNumber[joined] = 0 ##num undergrad in a particular year
+        return yearAndNumber, undergradNumber
 
     @staticmethod
-    def userTypePerYear(allies, yearAndNumber):
+    def userTypePerYear(allies, yearAndNumber, undergradNumber):
         for ally in allies:
             joined = AnalyticsView.yearHelper(ally)
             if ally.user_type == 'Staff':
                 yearAndNumber[joined][0] += 1
-            if ally.user_type == 'Graduate Student':
+            elif ally.user_type == 'Graduate Student':
                 yearAndNumber[joined][1] += 1
-            if ally.user_type == 'Undergraduate Student':
+            elif ally.user_type == 'Undergraduate Student':
+                undergradNumber[joined] += 1
+            elif ally.user_type == 'Faculty':
                 yearAndNumber[joined][2] += 1
-            if ally.user_type == 'Faculty':
-                yearAndNumber[joined][3] += 1
-        return yearAndNumber
+        return yearAndNumber, undergradNumber
 
     @staticmethod
     def findTheCategories(allies, relation, categories):
@@ -610,6 +614,8 @@ class AnalyticsView(AccessMixin, TemplateView):
         allies = Ally.objects.all()
         categories = StudentCategories.objects.all()
         relation = AllyStudentCategoryRelation.objects.all()
+
+
 
         students = allies.filter(user_type="Undergraduate Student")
         mentors = allies.filter(~Q(user_type="Undergraduate Student"))
