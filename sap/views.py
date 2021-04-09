@@ -546,7 +546,7 @@ class AnalyticsView(AccessMixin, TemplateView):
         years = []
         numbers = [[], [], []]
         if otherDic != {}:
-            for key in sorted(otherDic, reverse=True):
+            for key in sorted(otherDic):
                 years.append(int(key))
                 for i in range(0, 3):
                     numbers[i].append(otherDic[key][i])
@@ -633,34 +633,41 @@ class AnalyticsView(AccessMixin, TemplateView):
 
     def get(self, request):
         allies = Ally.objects.all()
-        categories = StudentCategories.objects.all()
-        relation = AllyStudentCategoryRelation.objects.all()
+        if len(allies) != 0:
+            categories = StudentCategories.objects.all()
+            relation = AllyStudentCategoryRelation.objects.all()
 
-        otherYear, undergradYear = AnalyticsView.findYears(allies)
-        otherJoinedPerYear, undergradJoinedPerYear = AnalyticsView.userTypePerYear(allies, otherYear, undergradYear)
-        undergradYears, undergradNumbers = AnalyticsView.cleanUndergradDic(undergradJoinedPerYear)
-        otherYears, otherNumbers = AnalyticsView.cleanOtherDic(otherJoinedPerYear)
+            otherYear, undergradYear = AnalyticsView.findYears(allies)
+            otherJoinedPerYear, undergradJoinedPerYear = AnalyticsView.userTypePerYear(allies, otherYear, undergradYear)
+            undergradYears, undergradNumbers = AnalyticsView.cleanUndergradDic(undergradJoinedPerYear)
+            otherYears, otherNumbers = AnalyticsView.cleanOtherDic(otherJoinedPerYear)
 
-        students = allies.filter(user_type="Undergraduate Student")
-        mentors = allies.filter(~Q(user_type="Undergraduate Student"))
+            students = allies.filter(user_type="Undergraduate Student")
+            mentors = allies.filter(~Q(user_type="Undergraduate Student"))
 
-        studentCategories = AnalyticsView.findTheCategories(students, relation, categories)
-        mentorCategories = AnalyticsView.findTheCategories(mentors, relation, categories)
+            studentCategories = AnalyticsView.findTheCategories(students, relation, categories)
+            mentorCategories = AnalyticsView.findTheCategories(mentors, relation, categories)
 
-        numStudentCategories = AnalyticsView.determineNumPerCategory(studentCategories)
-        numMentorCategories = AnalyticsView.determineNumPerCategory(mentorCategories)
+            numStudentCategories = AnalyticsView.determineNumPerCategory(studentCategories)
+            numMentorCategories = AnalyticsView.determineNumPerCategory(mentorCategories)
 
-        numUndergradPerYear = AnalyticsView.undergradPerYear(students)
+            numUndergradPerYear = AnalyticsView.undergradPerYear(students)
 
-        return render(request, 'sap/analytics.html', {"numStudentCategories": numStudentCategories,
-                                                      "numMentorCategories": numMentorCategories,
-                                                      "numUndergradPerYear": numUndergradPerYear,
-                                                      "undergradYears": undergradYears,
-                                                      "undergradNumbers": undergradNumbers,
-                                                      "otherYears": otherYears,
-                                                      "staffNumbers": otherNumbers[0],
-                                                      "gradNumbers": otherNumbers[1],
-                                                      "facultyNumbers": otherNumbers[2], })
+            print(otherYears)
+            print(otherNumbers)
+
+            return render(request, 'sap/analytics.html', {"numStudentCategories": numStudentCategories,
+                                                          "numMentorCategories": numMentorCategories,
+                                                          "numUndergradPerYear": numUndergradPerYear,
+                                                          "undergradYears": undergradYears,
+                                                          "undergradNumbers": undergradNumbers,
+                                                          "otherYears": otherYears,
+                                                          "staffNumbers": otherNumbers[0],
+                                                          "gradNumbers": otherNumbers[1],
+                                                          "facultyNumbers": otherNumbers[2], })
+        else:
+            messages.error(request, "No allies to display!")
+            return redirect('sap:dashboard')
 
 class AdminProfileView(TemplateView):
     template_name = "sap/profile.html"

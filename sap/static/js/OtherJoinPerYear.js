@@ -2,7 +2,8 @@
 Chart.defaults.global.defaultFontFamily = 'Nunito', '-apple-system,system-ui,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif';
 Chart.defaults.global.defaultFontColor = '#858796';
 
-import {findMax, listify} from './StudentCategories.js';
+import { listify, findMax} from "./StudentCategories.js";
+import { limitToTen } from "./UndergradJoinPerYear.js";
 
 function number_format(number, decimals, dec_point, thousands_sep) {
   // *     example: number_format(1234.56, 2, ',', ' ');
@@ -29,36 +30,36 @@ function number_format(number, decimals, dec_point, thousands_sep) {
   return s.join(dec);
 }
 
-
-function limitToTen(array){
-  var limitedArray = []
-  for (let i=array.length-1; i > array.length-11; i--){
-    if (i>=0){
-      limitedArray.push(array[i]);
-    }
-  }
-  return limitedArray;
-}
-
-
 // Area Chart Example
-var ctx = document.getElementById("myAreaChart");
-var undergradYears = document.getElementById("undergradYears").innerText;
-var undergradNumbers = document.getElementById("undergradNumbers").innerText;
-undergradYears = listify(undergradYears);
-undergradNumbers = listify(undergradNumbers);
-undergradYears = limitToTen(undergradYears);
-undergradNumbers = limitToTen(undergradNumbers);
+var ctx = document.getElementById("myAreaChart1");
 
-var maximum = findMax(undergradNumbers)
+var otherYear = document.getElementById("otherYears").innerText;
+var staffNumbers = document.getElementById("staffNumbers").innerText;
+var gradNumbers = document.getElementById("gradNumbers").innerText;
+var facultyNumbers = document.getElementById("facultyNumbers").innerText;
+
+otherYear = listify(otherYear);
+staffNumbers = listify(staffNumbers);
+gradNumbers = listify(gradNumbers);
+facultyNumbers = listify(facultyNumbers);
+
+otherYear = limitToTen(otherYear);
+staffNumbers = limitToTen(staffNumbers);
+gradNumbers = limitToTen(gradNumbers);
+facultyNumbers = limitToTen(facultyNumbers);
+
+console.log(otherYear);
+console.log(staffNumbers);
+console.log(gradNumbers);
+console.log(facultyNumbers);
 
 var myLineChart = new Chart(ctx, {
   type: 'line',
   data: {
-    labels: undergradYears,
+    labels: otherYear,
     datasets: [{
-      label: "Undergraduates this Year",
-      lineTension: .01,
+      label: "Staff/PostDoc",
+      lineTension: 0.01,
       backgroundColor: "rgba(78, 115, 223, 0.05)",
       borderColor: "rgba(78, 115, 223, 1)",
       pointRadius: 3,
@@ -69,7 +70,37 @@ var myLineChart = new Chart(ctx, {
       pointHoverBorderColor: "rgba(78, 115, 223, 1)",
       pointHitRadius: 10,
       pointBorderWidth: 2,
-      data: undergradNumbers,
+      data: staffNumbers,
+    },
+    {
+      label: "Graduate Student",
+      lineTension: 0.01,
+      backgroundColor: "rgba(78, 115, 223, 0.05)",
+      borderColor: "rgba(78, 115, 223, 1)",
+      pointRadius: 3,
+      pointBackgroundColor: "rgba(78, 115, 223, 1)",
+      pointBorderColor: "rgba(78, 115, 223, 1)",
+      pointHoverRadius: 3,
+      pointHoverBackgroundColor: "rgba(78, 115, 223, 1)",
+      pointHoverBorderColor: "rgba(78, 115, 223, 1)",
+      pointHitRadius: 10,
+      pointBorderWidth: 2,
+      data: gradNumbers,
+    },
+    {
+      label: "Faculty",
+      lineTension: 0.01,
+      backgroundColor: "rgba(78, 115, 223, 0.05)",
+      borderColor: "rgba(78, 115, 223, 1)",
+      pointRadius: 3,
+      pointBackgroundColor: "rgba(78, 115, 223, 1)",
+      pointBorderColor: "rgba(78, 115, 223, 1)",
+      pointHoverRadius: 3,
+      pointHoverBackgroundColor: "rgba(78, 115, 223, 1)",
+      pointHoverBorderColor: "rgba(78, 115, 223, 1)",
+      pointHitRadius: 10,
+      pointBorderWidth: 2,
+      data: facultyNumbers,
     }],
   },
   options: {
@@ -92,7 +123,7 @@ var myLineChart = new Chart(ctx, {
           drawBorder: false
         },
         ticks: {
-          maxTicksLimit: 10
+          maxTicksLimit: 7
         }
       }],
       yAxes: [{
@@ -101,7 +132,7 @@ var myLineChart = new Chart(ctx, {
           padding: 10,
           // Include a dollar sign in the ticks
           callback: function(value, index, values) {
-            return  number_format(value);
+            return number_format(value);
           }
         },
         gridLines: {
@@ -114,7 +145,7 @@ var myLineChart = new Chart(ctx, {
       }],
     },
     legend: {
-      display: false
+      display: true
     },
     tooltips: {
       backgroundColor: "rgb(255,255,255)",
@@ -139,6 +170,3 @@ var myLineChart = new Chart(ctx, {
     }
   }
 });
-
-
-export { limitToTen };
