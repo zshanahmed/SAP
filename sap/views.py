@@ -1,6 +1,8 @@
 # pylint: skip-file
 
 import io, os, os.path, csv, uuid, datetime
+
+from django.core import serializers
 from django.http import HttpResponseForbidden, HttpResponse
 from django.contrib.auth import logout, login
 from django.contrib.auth import authenticate
@@ -14,7 +16,7 @@ import xlsxwriter
 from .models import Ally, StudentCategories, AllyStudentCategoryRelation
 from fuzzywuzzy import fuzz
 
-from .models import Ally, StudentCategories, AllyStudentCategoryRelation, Event, EventAllyRelation
+from .models import Ally, StudentCategories, AllyStudentCategoryRelation, Event, EventAttendeeRelation, EventInviteeRelation
 from django.views import generic
 from django.views.generic import TemplateView, View
 from django.contrib import messages
@@ -331,7 +333,21 @@ class ChangeAdminPassword(View):
 
 
 class CalendarView(TemplateView):
-    template_name = "sap/calendar.html"
+    """
+     Show calendar to allies so that they can signup for events
+    """
+    def get(self, request):
+        events_list = []
+        curr_user = request.user
+        if not curr_user.is_staff:
+            curr_ally = Ally.objects.get(user_id=curr_user.id)
+            curr_events = EventInviteeRelation.objects.filter(ally_id=curr_ally.id)
+            for event in curr_events:
+                events_list.append(Event.objects.get(id=event.event_id))
+        else:
+            events_list = Event.objects.all()
+        events = serializers.serialize('json', events_list)
+        return render(request, 'sap/calendar.html', context={"events": events, "user": curr_user})
 
 class EditAdminProfile(View):
     """
@@ -528,6 +544,7 @@ class MentorsListView(generic.ListView):
                     allies_list = allies_list.exclude(id=ally.id)
             return render(request, 'sap/dashboard_ally.html', {'allies_list': allies_list})
 
+
 class AnalyticsView(AccessMixin, TemplateView):
     template_name = "sap/analytics.html"
 
@@ -598,8 +615,16 @@ class CreateEventView(AccessMixin, TemplateView):
         new_event_dict = dict(request.POST)
         event_title = new_event_dict['event_title'][0]
         event_description = new_event_dict['event_description'][0]
-        event_date_time = new_event_dict['event_date_time'][0]
+        event_start_time = new_event_dict['event_start_time'][0]
+        event_end_time = new_event_dict['event_end_time'][0]
         event_location = new_event_dict['event_location'][0]
+
+        allies_list = Ally.objects.order_by('-id')
+        for ally in allies_list:
+            if not ally.user.is_active:
+                allies_list = allies_list.exclude(id=ally.id)
+
+        allies_list = list(allies_list)
 
         if 'role_selected' in new_event_dict:
             invite_ally_user_types = new_event_dict['role_selected']
@@ -627,66 +652,107 @@ class CreateEventView(AccessMixin, TemplateView):
         else:
             invite_all_selected = []
 
-        event = Event.objects.create(title=event_title,
-                                     description=event_description,
-                                     datetime=parse_datetime(event_date_time + '-0500'), # converting time to central time before storing in db
-                                     location=event_location
-                                     )
+        if 'event_allday' in new_event_dict:
+            allday = True
 
-        if invite_all_selected:
-            allies_to_be_invited = list(Ally.objects.all())
         else:
-            allies_to_be_invited = []
+            allday = False
 
-            allies_to_be_invited.extend(Ally.objects.filter(user_type__in=invite_ally_user_types))
+        if (event_end_time < event_start_time):
+            messages.warning(request, 'End time cannot be less than start time!')
+            return redirect('/create_event')
 
-            if 'Mentors' in invite_mentor_mentee:
-                allies_to_be_invited.extend(Ally.objects.filter(interested_in_mentoring=True))
+        else:
+            event = Event.objects.create(title=event_title,
+                                         description=event_description,
+                                         start_time=parse_datetime(event_start_time + '-0500'), # converting time to central time before storing in db
+                                         end_time=parse_datetime(event_end_time + '-0500'),
+                                         location=event_location,
+                                         allday=allday,
+                                         )
 
-            if 'Mentees' in invite_mentor_mentee:
-                allies_to_be_invited.extend(Ally.objects.filter(interested_in_mentor_training=True))
+            if invite_all_selected:
+                # If all allies are invited
+                # TODO: only invite active allies
+                allies_to_be_invited = allies_list
 
+            else:
+                allies_to_be_invited = []
 
-            allies_to_be_invited.extend(Ally.objects.filter(area_of_research__in=invite_ally_belonging_to_research_area))
-            student_categories_to_include_for_event = []
+                allies_to_be_invited.extend(Ally.objects.filter(user_type__in=invite_ally_user_types))
 
-            for category in invite_ally_belonging_to_special_categories:
-                if  category == 'First generation college-student':
-                    student_categories_to_include_for_event.extend(StudentCategories.objects.filter(first_gen_college_student=True))
+                if 'Mentors' in invite_mentor_mentee:
+                    allies_to_be_invited.extend(Ally.objects.filter(interested_in_mentoring=True))
 
-                elif category == 'Low-income':
-                    student_categories_to_include_for_event.extend(StudentCategories.objects.filter(low_income=True))
-
-                elif category == 'Underrepresented racial/ethnic minority':
-                    student_categories_to_include_for_event.extend(StudentCategories.objects.filter(under_represented_racial_ethnic=True))
-
-                elif category == 'LGBTQ':
-                    student_categories_to_include_for_event.extend(StudentCategories.objects.filter(lgbtq=True))
-
-                elif category == 'Rural':
-                    student_categories_to_include_for_event.extend(StudentCategories.objects.filter(rural=True))
-
-                elif category == 'Disabled':
-                    student_categories_to_include_for_event.extend(StudentCategories.objects.filter(disabled=True))
-
-            invited_allies_ids = AllyStudentCategoryRelation.objects.filter(student_category__in=student_categories_to_include_for_event).values('ally')
-            allies_to_be_invited.extend(
-                Ally.objects.filter(id__in=invited_allies_ids)
-                )
-
-        all_event_ally_objs = []
-        invited_allies = set()
-        allies_to_be_invited = set(allies_to_be_invited)
-
-        for ally in allies_to_be_invited:
-            event_ally_rel_obj = EventAllyRelation(event=event, ally=ally)
-            all_event_ally_objs.append(event_ally_rel_obj)
-            invited_allies.add(event_ally_rel_obj.ally)
+                if 'Mentees' in invite_mentor_mentee:
+                    allies_to_be_invited.extend(Ally.objects.filter(interested_in_mentor_training=True))
 
 
-        EventAllyRelation.objects.bulk_create(all_event_ally_objs)
+                allies_to_be_invited.extend(Ally.objects.filter(area_of_research__in=invite_ally_belonging_to_research_area))
+                student_categories_to_include_for_event = []
 
-        return redirect('/dashboard')
+                for category in invite_ally_belonging_to_special_categories:
+                    if  category == 'First generation college-student':
+                        student_categories_to_include_for_event.extend(StudentCategories.objects.filter(first_gen_college_student=True))
+
+                    elif category == 'Low-income':
+                        student_categories_to_include_for_event.extend(StudentCategories.objects.filter(low_income=True))
+
+                    elif category == 'Underrepresented racial/ethnic minority':
+                        student_categories_to_include_for_event.extend(StudentCategories.objects.filter(under_represented_racial_ethnic=True))
+
+                    elif category == 'LGBTQ':
+                        student_categories_to_include_for_event.extend(StudentCategories.objects.filter(lgbtq=True))
+
+                    elif category == 'Rural':
+                        student_categories_to_include_for_event.extend(StudentCategories.objects.filter(rural=True))
+
+                    elif category == 'Disabled':
+                        student_categories_to_include_for_event.extend(StudentCategories.objects.filter(disabled=True))
+
+                invited_allies_ids = AllyStudentCategoryRelation.objects.filter(student_category__in=student_categories_to_include_for_event).values('ally')
+                allies_to_be_invited.extend(
+                    Ally.objects.filter(id__in=invited_allies_ids)
+                    )
+
+            all_event_ally_objs = []
+            invited_allies = set()
+            allies_to_be_invited = set(allies_to_be_invited)
+
+            for ally in allies_to_be_invited:
+                if ally.user.is_active:
+                    event_ally_rel_obj = EventInviteeRelation(event=event, ally=ally)
+                    all_event_ally_objs.append(event_ally_rel_obj)
+                    invited_allies.add(event_ally_rel_obj.ally)
+
+
+            EventInviteeRelation.objects.bulk_create(all_event_ally_objs)
+
+            messages.success(request, "Event successfully created!")
+            return redirect('/calendar')
+
+
+class CalendarListView(TemplateView):
+    template_name = "sap/calendar_list.html"
+
+
+class RegisterEventView(TemplateView):
+    def get(self, request, *args, **kwargs):
+        return render(request, self.template_name)
+
+    def get(self, request, *args, **kwargs):
+        pass
+
+
+
+class DeregisterEventView(TemplateView):
+    def get(self, request, *args, **kwargs):
+        # template =
+        pass
+
+    def post(self, request, *args, **kwargs):
+    # TODO: a function to withdraw from meeting
+        pass
 
 
 class SignUpView(TemplateView):

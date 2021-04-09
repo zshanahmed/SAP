@@ -2,10 +2,11 @@
 Password reset token generator module
 """
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
+from django.contrib.auth.models import User
 import six
 
 
-class AccountActivationTokenGenerator(PasswordResetTokenGenerator):
+class AccountActivationToken(PasswordResetTokenGenerator):
     """
     A unique token for a user to activate new account
     """
@@ -25,5 +26,5 @@ class PasswordResetToken(PasswordResetTokenGenerator):
         )
 
 
-account_activation_token = AccountActivationTokenGenerator()
+account_activation_token = AccountActivationToken()
 password_reset_token = PasswordResetToken()

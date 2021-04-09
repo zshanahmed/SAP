@@ -76,6 +76,38 @@
       .attr("href", "/delete/?username=" + recipient);
   });
 
+  $("#eventModal").on("show.bs.modal", function (event) {
+    var el = $(event.relatedTarget);
+
+    var start_time = el.data('start')
+    var end_time = el.data('end')
+    var title = el.data('title')
+    var description = el.data('description')
+    var location = el.data('location')
+
+    const start_date = new Date(start_time)
+    const end_date = new Date(end_time)
+
+    // If necessary, you could initiate an AJAX request here (and then do the updating in a callback).
+    // Update the modal's content. We'll use jQuery here, but you could use a data binding library or other methods instead.
+    var modal = $(this);
+    modal
+      .find(".modal-title")
+      .html("<div><strong>"+title+"</strong></div>");
+    modal
+      .find(".modal-body")
+      .html(
+          "<strong>Description:</strong>  "+ description + "<br/>"+
+          "<strong>Location:</strong>  "+ location + "<br/>"+
+          "<div class='pt-3 d-flex justify-content-between'>" +
+          "<div><strong>Start Day:</strong>  "+ start_date.toDateString()+ "</div>" +
+          "<div><strong>Start Time:</strong>  "+ start_date.toLocaleTimeString('en-US')+ "</div></div>"+
+          "<div class='d-flex justify-content-between'>" +
+          "<div><strong>End Day:</strong>  "+ end_date.toDateString()+ "</div>" +
+          "<div><strong>End Time:</strong>  "+ end_date.toLocaleTimeString('en-US')+ "</div></div>"
+      );
+  });
+
   $('input[type="file"]').change(function(e){
             var fileName = e.target.files[0].name;
             console.log(fileName);
