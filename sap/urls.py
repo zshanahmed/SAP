@@ -34,7 +34,7 @@ urlpatterns = [
 
     url(r'^calendar/$',
         login_required(views.CalendarView.as_view()),
-        name='ally-calendar'),
+        name='calendar'),
 
     url('analytics/',
         login_required(views.AnalyticsView.as_view()),
@@ -75,6 +75,10 @@ urlpatterns = [
         login_required(views.CreateEventView.as_view()),
         name='create_event'),
 
+    url(r'^announcements/$',
+        login_required(views.Announcements.as_view()),
+        name='announcements'),
+
     url('about/',
         login_required(views.AboutPageView.as_view()),
         name='sap-about'),
@@ -89,6 +93,8 @@ urlpatterns = [
         name='sign-up-confirm'),
 
     url(r'^download_allies/$', login_required(views.DownloadAllies.allies_download), name='download_allies'),
+    url(r'^create_announcements/$',
+        login_required(views.CreateAnnouncement.create_announcement), name='create_announcement'),
 
     url(r'^upload_allies/$', login_required(views.UploadAllies.upload_allies), name='upload_allies'),
 ]

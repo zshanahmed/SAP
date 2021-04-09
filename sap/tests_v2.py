@@ -854,3 +854,102 @@ class ForgotPasswordTest(TestCase):
             link, data=data, follow=True)
         # self.assertEqual(response.url, link)
         self.assertEqual(response.status_code, HTTPStatus.OK)
+
+
+class SignUpDoneViewTests(TestCase):
+    """
+    Unit tests for SignUpDoneView
+    """
+    def setUp(self):
+        self.username = 'admin'
+        self.username_active = 'user_active'
+        self.password = 'admin_password1'
+        self.email = 'email@test.com'
+        self.email_active = 'email_active@test.com'
+        self.user = User.objects.create_user(username=self.username, email=self.email, password=self.password)
+        self.user_active = User.objects.create_user(username=self.username_active, email=self.email_active,
+                                                    password=self.password,
+                                                    is_active=True)
+        self.client = Client()
+
+    def test_if_user_come_from_signup(self):
+        """
+        If user comes from sign-up, redirect to the page
+        """
+        response = self.client.post(
+            '/sign-up/',
+            {
+                'csrfmiddlewaretoken': ['K5dFCUih0K6ZYklAemhvIWSpCebK86zdx4ric6ucIPLUQhAdtdT7hhp4r5etxoJY'],
+                'firstName': ['hawk'],
+                'lastName': ['herky'],
+                'new_username': ['hawkherky'],
+                'new_email': ['hawkherky@uiowa.edu'],
+                'new_password': self.password,
+                'repeat_password': self.password,
+                'roleSelected': ['Staff'],
+                'studentsInterestedRadios': ['Yes'],
+                'howCanWeHelp': ['sasdasdasd'],
+            }
+        )
+
+        # response2 = response
+        url = response.url
+        self.assertEqual(url, '/sign-up-done/')
+        self.assertEqual(response.status_code, 302)
+
+    def test_signup_if_user_is_authenticated(self):
+        """
+        If user is authenticated
+        """
+        self.client.login(username=self.username, password=self.password)
+        response = self.client.get(reverse('sap:sign-up-done'))
+        self.assertEqual(response.status_code, 302)
+
+    def test_signup_if_keyerror(self):
+        """
+        If keyerror
+        """
+        self.client.logout()
+        response = self.client.get(reverse('sap:sign-up-done'))
+        self.assertEqual(response.status_code, 302)
+
+    def test_signup_if_keyerror_and_is_authenticated(self):
+        """
+        If keyerror and is_authenticated
+        """
+        self.client.login(username=self.username, password=self.password)
+        response = self.client.get(reverse('sap:sign-up-done'))
+        self.assertEqual(response.status_code, 302)
+
+
+class ForgotPasswordDoneView(TestCase):
+    """
+    Unit tests for SignUpDoneView
+    """
+    def setUp(self):
+        self.username = 'admin'
+        self.username_active = 'user_active'
+        self.password = 'admin_password1'
+        self.email = 'email@test.com'
+        self.email_active = 'email_active@test.com'
+        self.user = User.objects.create_user(username=self.username, email=self.email, password=self.password)
+        self.user_active = User.objects.create_user(username=self.username_active, email=self.email_active,
+                                                    password=self.password,
+                                                    is_active=True)
+        self.client = Client()
+
+    def test_forgotpassword_if_keyerror(self):
+        """
+        If keyerror
+        """
+        self.client.logout()
+        response = self.client.get(reverse('sap:password-forgot-done'))
+        self.assertEqual(response.status_code, 302)
+
+    def test_forgotpassword_if_keyerror_and_is_authenticated(self):
+        """
+        If keyerror and is_authenticated
+        """
+        self.client.login(username=self.username, password=self.password)
+        response = self.client.get(reverse('sap:password-forgot-done'))
+        self.assertEqual(response.status_code, 302)
