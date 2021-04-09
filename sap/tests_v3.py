@@ -4,6 +4,7 @@ contains unit tests for sap app
 import os
 import io
 from datetime import datetime
+from django.db.models import Q
 from http import HTTPStatus
 from django.urls import reverse
 from django.contrib.auth import get_user_model
@@ -782,11 +783,8 @@ class TestAnalyticsPage(TestCase):
         self.assertEqual(years, yearDict)
 
     def test_userTypePerYear(self):
-        allies = Ally.objects.all()
-        new_allies = self.undergrads
-        new_allies += allies.filter(username="bigUser4")[0]
-        new_allies += allies.filter(username="bigUser5")[0]
-        new_allies += allies.filter(username="bigUser6")[0]
-        years = views.AnalyticsView.userTypePerYear(self.undergrads)
+        new_allies = Ally.objects.filter(Q(hawk_id__startswith='bigUser'))
+        yearDict = {datetime.strftime(datetime.now(), "%Y"): [0, 0, 0, 0]}
+        years = views.AnalyticsView.userTypePerYear(new_allies, yearDict)
         yearDict = {datetime.strftime(datetime.now(), "%Y"): [1, 1, 4, 1]}
         self.assertEqual(years, yearDict)

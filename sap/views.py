@@ -532,13 +532,32 @@ class AnalyticsView(AccessMixin, TemplateView):
     template_name = "sap/analytics.html"
 
     @staticmethod
+    def yearHelper(ally):
+        user = ally.user
+        joined = user.date_joined
+        joined = datetime.datetime.strftime(joined, '%Y')
+        return joined
+
+    @staticmethod
     def findYears(allies):
         yearAndNumber = {}
         for ally in allies:
-            user = ally.user
-            joined = user.date_joined
-            joined = datetime.datetime.strftime(joined, '%Y')
+            joined = AnalyticsView.yearHelper(ally)
             yearAndNumber[joined] = [0, 0, 0, 0] ##Staff,Grad,Undergrad,Faculty
+        return yearAndNumber
+
+    @staticmethod
+    def userTypePerYear(allies, yearAndNumber):
+        for ally in allies:
+            joined = AnalyticsView.yearHelper(ally)
+            if ally.user_type == 'Staff':
+                yearAndNumber[joined][0] += 1
+            if ally.user_type == 'Graduate Student':
+                yearAndNumber[joined][1] += 1
+            if ally.user_type == 'Undergraduate Student':
+                yearAndNumber[joined][2] += 1
+            if ally.user_type == 'Faculty':
+                yearAndNumber[joined][3] += 1
         return yearAndNumber
 
     @staticmethod
