@@ -360,6 +360,7 @@ class CreateEventTests(TestCase):
             'event_start_time': ['2021-03-31T15:32'],
             'event_end_time': ['2021-04-30T15:32'],
             'role_selected': ['Graduate Student'],
+            'school_year_selected': ['Sophomore'],
             'mentor_status': ['Mentors', 'Mentees'],
             'research_area': ['Biochemistry']
         })

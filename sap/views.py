@@ -617,6 +617,11 @@ class CreateEventView(AccessMixin, TemplateView):
         else:
             invite_ally_user_types = []
 
+        if 'school_year_selected' in new_event_dict:
+            invite_ally_school_years = new_event_dict['school_year_selected']
+        else:
+            invite_ally_school_years = []
+
         if 'mentor_status' in new_event_dict:
             invite_mentor_mentee = new_event_dict['mentor_status']
         else:
@@ -661,6 +666,7 @@ class CreateEventView(AccessMixin, TemplateView):
             allies_to_be_invited = []
 
             allies_to_be_invited.extend(Ally.objects.filter(user_type__in=invite_ally_user_types))
+            allies_to_be_invited.extend(Ally.objects.filter(year__in=invite_ally_school_years))
 
             if 'Mentors' in invite_mentor_mentee:
                 allies_to_be_invited.extend(Ally.objects.filter(interested_in_mentoring=True))
@@ -907,8 +913,10 @@ class SignUpView(TemplateView):
                 return redirect('/sign-up')
 
             else:   # If user is not active, delete user_temp and create new user on db with is_active=False
-                ally_temp = Ally.objects.get(user=user_temp)
-                ally_temp.delete()
+
+                ally_temp = Ally.objects.filter(user=user_temp)
+                if ally_temp.exists():
+                    ally_temp[0].delete()
                 user_temp.delete()
 
                 # print(request.POST)
