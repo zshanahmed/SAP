@@ -14,7 +14,7 @@ import xlsxwriter
 from .models import Ally, StudentCategories, AllyStudentCategoryRelation
 from fuzzywuzzy import fuzz
 
-from .models import Ally, StudentCategories, AllyStudentCategoryRelation, Event, EventAllyRelation
+from .models import Ally, StudentCategories, AllyStudentCategoryRelation, Event, EventAttendeeRelation, EventInviteeRelation
 from django.views import generic
 from django.views.generic import TemplateView, View
 from django.contrib import messages
@@ -632,7 +632,9 @@ class CreateEventView(AccessMixin, TemplateView):
         event = Event.objects.create(title=event_title,
                                      description=event_description,
                                      start_time=parse_datetime(event_start_time + '-0500'), # converting time to central time before storing in db
-                                     location=event_location
+                                     end_time=parse_datetime(event_end_time + '-0500'),
+                                     allday=event_allday,
+                                     location=event_location,
                                      )
 
         if invite_all_selected:

@@ -85,14 +85,27 @@ class Event(models.Model):
     location = models.CharField(max_length=500, null=True)
 
 
-class EventAllyRelation(models.Model):
+class EventInviteeRelation(models.Model):
     """
-    EventAllyRelation table contains information about the Event ally mappings
+    EventInviteeRelation table contains information about the Event Invitee mappings
     One event can have many allies invited and vice versa
     """
     event = models.ForeignKey(Event,
                               on_delete=models.CASCADE
                               )
-    ally = models.ForeignKey(Ally,
+    invitee = models.ForeignKey(Ally,
+                             on_delete=models.CASCADE
+                             )
+
+
+class EventAttendeeRelation(models.Model):
+    """
+    EventAttendeeRelation table contains information about the Event ally mappings
+    One event can have many allies registered and vice versa
+    """
+    event = models.ForeignKey(Event,
+                              on_delete=models.CASCADE
+                              )
+    attendee = models.ForeignKey(Ally,
                              on_delete=models.CASCADE
                              )
