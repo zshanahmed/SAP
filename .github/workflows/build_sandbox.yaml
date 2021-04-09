@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - sandbox
-      - 194_linter_run_pipeline
 
 env:
   WEBAPP_NAME: 'sep-team1-iba'  # Replace with the name of your Azure web app
