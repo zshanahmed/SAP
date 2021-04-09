@@ -48,11 +48,6 @@ staffNumbers = limitToTen(staffNumbers);
 gradNumbers = limitToTen(gradNumbers);
 facultyNumbers = limitToTen(facultyNumbers);
 
-console.log(otherYear);
-console.log(staffNumbers);
-console.log(gradNumbers);
-console.log(facultyNumbers);
-
 var myLineChart = new Chart(ctx, {
   type: 'line',
   data: {
@@ -120,7 +115,7 @@ var myLineChart = new Chart(ctx, {
         },
         gridLines: {
           display: false,
-          drawBorder: false
+          drawBorder: false,
         },
         ticks: {
           maxTicksLimit: 7
@@ -138,7 +133,8 @@ var myLineChart = new Chart(ctx, {
         gridLines: {
           color: "rgb(234, 236, 244)",
           zeroLineColor: "rgb(234, 236, 244)",
-          drawBorder: false,
+          display: true,
+          drawBorder: true,
           borderDash: [2],
           zeroLineBorderDash: [2]
         }
