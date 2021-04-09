@@ -5,6 +5,7 @@ $(document).ready(function() {
         var event_date = new Date(myData[i]['fields']['datetime'])
         var entry = {
             title: myData[i]['fields']['title'],
+            description: myData[i]['fields']['description'],
             start: event_date,
             allDay: false,
             className: colors[i% colors.length],
