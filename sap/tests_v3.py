@@ -3,6 +3,7 @@ contains unit tests for sap app
 """
 import os
 import io
+from datetime import datetime
 from http import HTTPStatus
 from django.urls import reverse
 from django.contrib.auth import get_user_model
@@ -711,6 +712,10 @@ class TestAnalyticsPage(TestCase):
                                                    under_represented_racial_ethnic=True, transfer_student=True,
                                                    lgbtq=True, low_income=True, disabled=True)
         make_big_user()
+        self.undergrads = [Ally.objects.filter(hawk_id="bigUser")[0],
+                           Ally.objects.filter(hawk_id="bigUser1")[0],
+                           Ally.objects.filter(hawk_id="bigUser2")[0],
+                           Ally.objects.filter(hawk_id="bigUser3")[0],]
 
     def test_get_analytics(self):
         """
@@ -737,10 +742,11 @@ class TestAnalyticsPage(TestCase):
         self.assertEqual(category[0].id, categories[0].id)
 
     def test_numUndergrad(self):
-        undergrads = [Ally.objects.filter(hawk_id="bigUser")[0],
-                      Ally.objects.filter(hawk_id="bigUser1")[0],
-                      Ally.objects.filter(hawk_id="bigUser2")[0],
-                      Ally.objects.filter(hawk_id="bigUser3")[0], ]
-
-        numPerYear = views.AnalyticsView.undergradPerYear(undergrads)
+        numPerYear = views.AnalyticsView.undergradPerYear(self.undergrads)
         self.assertEqual(numPerYear, [1, 1, 1, 1])
+
+    def test_getYear(self):
+        years = views.AnalyticsView.findYears(self.undergrads)
+        yearDict = {datetime.strftime(datetime.now(), "%Y"): [0, 0, 0, 0]}
+        self.assertEqual(years, yearDict)
+

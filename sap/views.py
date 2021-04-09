@@ -532,6 +532,16 @@ class AnalyticsView(AccessMixin, TemplateView):
     template_name = "sap/analytics.html"
 
     @staticmethod
+    def findYears(allies):
+        yearAndNumber = {}
+        for ally in allies:
+            user = ally.user
+            joined = user.date_joined
+            joined = datetime.datetime.strftime(joined, '%Y')
+            yearAndNumber[joined] = [0, 0, 0, 0] ##Staff,Grad,Undergrad,Faculty
+        return yearAndNumber
+
+    @staticmethod
     def findTheCategories(allies, relation, categories):
         categoriesList = []
         for ally in allies:
