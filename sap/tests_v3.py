@@ -391,6 +391,24 @@ class CreateEventTests(TestCase):
         assert event.exists()
         assert EventInviteeRelation.objects.filter(event=event[0], ally=self.ally).exists()
 
+    def test_end_date_less_than_start_date(self):
+        response = self.client.post('/create_event/',
+            {'csrfmiddlewaretoken': ['nhfQKKeiz3GSWp10SsXcVciNJiIm50yLc5vX81YXodQNB8ynsI6aeVFeF70b0580'],
+             'event_title': ['Hackathon UIOWA'],
+             'event_description': ['Hackathon for competition in different areas'],
+             'event_start_time': ['2021-04-09T14:38'],
+             'event_end_time': ['2021-04-07T14:38'],
+             'event_allday': ['event_allday'],
+             'event_location': ['Seamans Hall'],
+             'invite_all': ['invite_all'],
+             'role_selected': ['Staff', 'Graduate Student', 'Undergraduate Student', 'Faculty'],
+             'mentor_status': ['Mentors', 'Mentees'],
+             'special_category': ['First generation college-student', 'Rural', 'Low-income', 'Underrepresented racial/ethnic minority', 'Disabled', 'Transfer Student', 'LGBTQ'],
+             'research_area': ['Biochemistry', 'Bioinformatics', 'Biology', 'Biomedical Engineering', 'Chemical Engineering', 'Chemistry', 'Computer Science and Engineering', 'Environmental Science', 'Health and Human Physiology', 'Mathematics', 'Microbiology', 'Neuroscience', 'Nursing', 'Physics', 'Psychology']
+             }, follow= True)
+        self.assertContains(
+            response, "End time cannot be less than start time!", html=True
+        )
 
 class CreateAdminViewTest(TestCase):
     """
