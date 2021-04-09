@@ -15,7 +15,7 @@ var myPieChart = new Chart(ctx, {
     labels: ["Freshman", "Sophomore", "Junior", "Senior"],
     datasets: [{
       data: undergradsPerYear,
-      backgroundColor: ['#dbe340', '#ffbc47', '#fc4c4c', '#3b3b3b'],
+      backgroundColor: ['#dbe340', '#ffbc47', '#fc4c4c', '#4f4f4f'],
       hoverBackgroundColor: ['#c7cf38', '#e0a63f', '#de3c3c', '#000000'],
       hoverBorderColor: "rgba(234, 236, 244, 1)",
     }],
