@@ -39,4 +39,4 @@ jobs:
         SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY }}
 
     - name: Run linter
-        run:  pylint --load-plugins pylint_django --django-settings-module=azuresite.settings sap/
+      run:  pylint --load-plugins pylint_django --django-settings-module=azuresite.settings sap/
