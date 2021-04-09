@@ -16,7 +16,7 @@ import xlsxwriter
 from .models import Ally, StudentCategories, AllyStudentCategoryRelation
 from fuzzywuzzy import fuzz
 
-from .models import Ally, StudentCategories, AllyStudentCategoryRelation, Event, EventAllyRelation
+from .models import Ally, StudentCategories, AllyStudentCategoryRelation, Event, EventAttendeeRelation, EventInviteeRelation
 from django.views import generic
 from django.views.generic import TemplateView, View
 from django.contrib import messages
@@ -332,22 +332,8 @@ class ChangeAdminPassword(View):
         })
 
 
-class CalendarView(View):
-    """
-    Show calendar to allies so that they can signup for events
-    """
-    def get(self, request):
-        events_list = []
-        curr_user = request.user
-        if not curr_user.is_staff:
-            curr_ally = Ally.objects.get(user_id=curr_user.id)
-            curr_events = EventAllyRelation.objects.filter(ally_id=curr_ally.id)
-            for event in curr_events:
-                events_list.append(Event.objects.get(id=event.event_id))
-        else:
-            events_list = Event.objects.all()
-        events = serializers.serialize('json', events_list)
-        return render(request, 'sap/calendar.html', context={"events": events, "user": curr_user})
+class CalendarView(TemplateView):
+    template_name = "sap/calendar.html"
 
 class EditAdminProfile(View):
     """
@@ -544,6 +530,7 @@ class MentorsListView(generic.ListView):
                     allies_list = allies_list.exclude(id=ally.id)
             return render(request, 'sap/dashboard_ally.html', {'allies_list': allies_list})
 
+
 class AnalyticsView(AccessMixin, TemplateView):
     template_name = "sap/analytics.html"
 
@@ -614,8 +601,16 @@ class CreateEventView(AccessMixin, TemplateView):
         new_event_dict = dict(request.POST)
         event_title = new_event_dict['event_title'][0]
         event_description = new_event_dict['event_description'][0]
-        event_date_time = new_event_dict['event_date_time'][0]
+        event_start_time = new_event_dict['event_start_time'][0]
+        event_end_time = new_event_dict['event_end_time'][0]
         event_location = new_event_dict['event_location'][0]
+
+        allies_list = Ally.objects.order_by('-id')
+        for ally in allies_list:
+            if not ally.user.is_active:
+                allies_list = allies_list.exclude(id=ally.id)
+
+        allies_list = list(allies_list)
 
         if 'role_selected' in new_event_dict:
             invite_ally_user_types = new_event_dict['role_selected']
@@ -643,14 +638,25 @@ class CreateEventView(AccessMixin, TemplateView):
         else:
             invite_all_selected = []
 
+        if 'event_allday' in new_event_dict:
+            allday = True
+
+        else:
+            allday = True
+
         event = Event.objects.create(title=event_title,
                                      description=event_description,
-                                     datetime=parse_datetime(event_date_time + '-0500'), # converting time to central time before storing in db
-                                     location=event_location
+                                     start_time=parse_datetime(event_start_time + '-0500'), # converting time to central time before storing in db
+                                     end_time=parse_datetime(event_end_time + '-0500'),
+                                     location=event_location,
+                                     allday=allday,
                                      )
 
         if invite_all_selected:
-            allies_to_be_invited = list(Ally.objects.all())
+            # If all allies are invited
+            # TODO: only invite active allies
+            allies_to_be_invited = allies_list
+
         else:
             allies_to_be_invited = []
 
@@ -695,15 +701,39 @@ class CreateEventView(AccessMixin, TemplateView):
         allies_to_be_invited = set(allies_to_be_invited)
 
         for ally in allies_to_be_invited:
-            event_ally_rel_obj = EventAllyRelation(event=event, ally=ally)
-            all_event_ally_objs.append(event_ally_rel_obj)
-            invited_allies.add(event_ally_rel_obj.ally)
+            if ally.user.is_active:
+                event_ally_rel_obj = EventInviteeRelation(event=event, ally=ally)
+                all_event_ally_objs.append(event_ally_rel_obj)
+                invited_allies.add(event_ally_rel_obj.ally)
 
 
-        EventAllyRelation.objects.bulk_create(all_event_ally_objs)
+        EventInviteeRelation.objects.bulk_create(all_event_ally_objs)
 
         messages.success(request, "Event successfully created!")
         return redirect('/calendar')
+
+
+class CalendarListView(TemplateView):
+    template_name = "sap/calendar_list.html"
+
+
+class RegisterEventView(TemplateView):
+    def get(self, request, *args, **kwargs):
+        return render(request, self.template_name)
+
+    def get(self, request, *args, **kwargs):
+        pass
+
+
+
+class DeregisterEventView(TemplateView):
+    def get(self, request, *args, **kwargs):
+        # template =
+        pass
+
+    def post(self, request, *args, **kwargs):
+    # TODO: a function to withdraw from meeting
+        pass
 
 
 class SignUpView(TemplateView):

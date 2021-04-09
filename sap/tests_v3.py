@@ -10,7 +10,7 @@ from django.test import TestCase, Client  # tests file
 import pandas as pd
 import numpy as np
 import sap.views as views
-from .models import Ally, StudentCategories, AllyStudentCategoryRelation, Event, EventAllyRelation
+from .models import Ally, StudentCategories, AllyStudentCategoryRelation, Event, EventInviteeRelation, EventAttendeeRelation
 from .tests import create_ally
 
 User = get_user_model()
@@ -292,6 +292,7 @@ class CreateEventTests(TestCase):
         self.password = 'admin_password1'
         self.user = User.objects.create_user(self.username, 'email@test.com', self.password)
         self.user.is_staff = True
+        self.user.is_active = True
         self.user.save()
         self.client = Client()
         self.client.login(username=self.username, password=self.password)
@@ -300,7 +301,9 @@ class CreateEventTests(TestCase):
                                                   email='john2@uiowa.edu',
                                                   password='johndoe2',
                                                   first_name='John2',
-                                                  last_name='Doe')
+                                                  last_name='Doe',
+                                                  is_active=True,
+                                                  )
 
         self.ally = Ally.objects.create(
             user=self.ally_user,
@@ -315,7 +318,7 @@ class CreateEventTests(TestCase):
         self.category = StudentCategories.objects.create(lgbtq=True)
         self.student_ally_rel = AllyStudentCategoryRelation.objects.create(
             ally=self.ally,
-            student_category=self.category
+            student_category=self.category,
         )
 
     def test_get(self):
@@ -334,15 +337,16 @@ class CreateEventTests(TestCase):
             'event_title': ['title of the event'],
             'event_description': ['description of the event'],
             'event_location': ['https://zoom.us/abc123edf'],
-            'event_date_time': ['2021-03-31T15:32'],
-            'invite_all': 'true'
+            'event_start_time': ['2021-03-31T15:32'],
+            'event_end_time': ['2021-04-30T15:32'],
+            'invite_all': 'true',
         })
 
         url = response.url
         event = Event.objects.filter(title='title of the event')
         assert url == '/calendar'
         assert event.exists()
-        assert EventAllyRelation.objects.filter(event=event[0], ally=self.ally).exists()
+        assert EventInviteeRelation.objects.filter(event=event[0], ally=self.ally).exists()
 
     def test_invite_biochem_student(self):
         """
@@ -353,7 +357,8 @@ class CreateEventTests(TestCase):
             'event_title': ['title of the event 2'],
             'event_description': ['description of the event 2'],
             'event_location': ['https://zoom.us/abc123edf2'],
-            'event_date_time': ['2021-03-31T15:32'],
+            'event_start_time': ['2021-03-31T15:32'],
+            'event_end_time': ['2021-04-30T15:32'],
             'role_selected': ['Graduate Student'],
             'mentor_status': ['Mentors', 'Mentees'],
             'research_area': ['Biochemistry']
@@ -363,7 +368,7 @@ class CreateEventTests(TestCase):
         event = Event.objects.filter(title='title of the event 2')
         assert url == '/calendar'
         assert event.exists()
-        assert EventAllyRelation.objects.filter(event=event[0], ally=self.ally).exists()
+        assert EventInviteeRelation.objects.filter(event=event[0], ally=self.ally).exists()
 
     def test_invite_special_category_student(self):
         """
@@ -374,7 +379,8 @@ class CreateEventTests(TestCase):
             'event_title': ['title of the event 3'],
             'event_description': ['description of the event 3'],
             'event_location': ['https://zoom.us/abc123edf2'],
-            'event_date_time': ['2021-03-31T15:32'],
+            'event_start_time': ['2021-03-31T15:32'],
+            'event_end_time': ['2021-04-30T15:32'],
             'special_category': ['First generation college-student', 'Rural', 'Low-income',
                                  'Underrepresented racial/ethnic minority', 'Disabled', 'Transfer Student', 'LGBTQ'],
         })
@@ -383,7 +389,7 @@ class CreateEventTests(TestCase):
         event = Event.objects.filter(title='title of the event 3')
         assert url == '/calendar'
         assert event.exists()
-        assert EventAllyRelation.objects.filter(event=event[0], ally=self.ally).exists()
+        assert EventInviteeRelation.objects.filter(event=event[0], ally=self.ally).exists()
 
 
 class CreateAdminViewTest(TestCase):

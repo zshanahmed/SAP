@@ -109,10 +109,30 @@
                                     <input name="event_description" type="text" class="form-control form-control-user" id="event_description" placeholder="Description of the Event" required>
                                 </div>
                                 <div class="form-group">
-                                    <p style="font-size: 12px;margin-left: 20px;margin-bottom: 0px;">*Enter date and time of the event in central time</p>
-                                    <input name="event_date_time" type="datetime-local" class="form-control form-control-user" id="event_date_time"
-                                           placeholder="Date and Time of the Event in mm/dd/yyyy, hh/mm (AM or PM)" required>
+                                    <p style="font-size: 12px;margin-left: 20px;margin-bottom: 0px;">*Enter start time of the event in central time</p>
+                                    <input name="event_start_time" type="datetime-local" class="form-control form-control-user" id="event_start_time"
+                                           placeholder="Start time of the event in mm/dd/yyyy, hh/mm (AM or PM)" required>
                                 </div>
+                                <div class="form-group">
+                                    <p style="font-size: 12px;margin-left: 20px;margin-bottom: 0px;">*Enter end time of the event in central time</p>
+                                    <input name="event_end_time" type="datetime-local" class="form-control form-control-user" id="event_end_time"
+                                           placeholder="End time of the event in mm/dd/yyyy, hh/mm (AM or PM)" required>
+                                </div>
+                                <div class="py-2">
+                                    <strong>All day event:</strong>
+                                    <div class="form-check form-check-inline" >
+                                        <div class="px-2">
+                                            <input type="checkbox" name="event_allday" id="event_allday" value="event_allday">
+                                            <label class="form-check-label" for="event_allday">All day</label>
+                                        </div>
+                                    </div>
+                                </div>
+
+<!--                                <div class="form-group">-->
+<!--                                    <p style="font-size: 12px;margin-left: 20px;margin-bottom: 0px;">*Enter end time of the event in central time</p>-->
+<!--                                    <input name="event_date_time" type="datetime-local" class="form-control form-control-user" id="event_endtime"-->
+<!--                                           placeholder="Date and Time of the Event in mm/dd/yyyy, hh/mm (AM or PM)" required>-->
+<!--                                </div>-->
                                 <div class="form-group">
                                     <input name="event_location" type="text" class="form-control form-control-user" id="event_location"
                                            placeholder="Location of the event (meeting link or address)" required>
