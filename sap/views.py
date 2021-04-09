@@ -600,8 +600,14 @@ class CreateEventView(AccessMixin, TemplateView):
         event_description = new_event_dict['event_description'][0]
         event_start_time = new_event_dict['event_start_time'][0]
         event_end_time = new_event_dict['event_end_time'][0]
-        event_allday = new_event_dict['event_allday'][0]
         event_location = new_event_dict['event_location'][0]
+
+        allies_list = Ally.objects.order_by('-id')
+        for ally in allies_list:
+            if not ally.user.is_active:
+                allies_list = allies_list.exclude(id=ally.id)
+
+        allies_list = list(allies_list)
 
         if 'role_selected' in new_event_dict:
             invite_ally_user_types = new_event_dict['role_selected']
@@ -628,17 +634,26 @@ class CreateEventView(AccessMixin, TemplateView):
             invite_all_selected = True
         else:
             invite_all_selected = []
+            
+        if 'event_allday' in new_event_dict:
+            allday = True
+
+        else:
+            allday = True
 
         event = Event.objects.create(title=event_title,
                                      description=event_description,
                                      start_time=parse_datetime(event_start_time + '-0500'), # converting time to central time before storing in db
                                      end_time=parse_datetime(event_end_time + '-0500'),
-                                     allday=event_allday,
                                      location=event_location,
+                                     allday=allday,
                                      )
 
         if invite_all_selected:
-            allies_to_be_invited = list(Ally.objects.all())
+            # If all allies are invited
+            # TODO: only invite active allies
+            allies_to_be_invited = allies_list
+
         else:
             allies_to_be_invited = []
 
@@ -683,12 +698,12 @@ class CreateEventView(AccessMixin, TemplateView):
         allies_to_be_invited = set(allies_to_be_invited)
 
         for ally in allies_to_be_invited:
-            event_ally_rel_obj = EventAllyRelation(event=event, ally=ally)
+            event_ally_rel_obj = EventInviteeRelation(event=event, ally=ally)
             all_event_ally_objs.append(event_ally_rel_obj)
             invited_allies.add(event_ally_rel_obj.ally)
 
 
-        EventAllyRelation.objects.bulk_create(all_event_ally_objs)
+        EventInviteeRelation.objects.bulk_create(all_event_ally_objs)
 
         return redirect('/dashboard')
 

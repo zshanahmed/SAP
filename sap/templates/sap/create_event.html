@@ -118,10 +118,16 @@
                                     <input name="event_end_time" type="datetime-local" class="form-control form-control-user" id="event_end_time"
                                            placeholder="End time of the event in mm/dd/yyyy, hh/mm (AM or PM)" required>
                                 </div>
-                                <div class="form-group">
-                                    <input type="checkbox" name="event_allday" id="event_allday">
-                                    <label class="form-check-label" for="event_allday">All-day Event</label>
+                                <div class="py-2">
+                                    <strong>All day event:</strong>
+                                    <div class="form-check form-check-inline" >
+                                        <div class="px-2">
+                                            <input type="checkbox" name="event_allday" id="event_allday" value="event_allday">
+                                            <label class="form-check-label" for="event_allday">All day</label>
+                                        </div>
+                                    </div>
                                 </div>
+
 <!--                                <div class="form-group">-->
 <!--                                    <p style="font-size: 12px;margin-left: 20px;margin-bottom: 0px;">*Enter end time of the event in central time</p>-->
 <!--                                    <input name="event_date_time" type="datetime-local" class="form-control form-control-user" id="event_endtime"-->
