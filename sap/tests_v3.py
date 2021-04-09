@@ -10,7 +10,7 @@ from django.test import TestCase, Client  # tests file
 import pandas as pd
 import numpy as np
 import sap.views as views
-from .models import Ally, StudentCategories, AllyStudentCategoryRelation, Event, EventAllyRelation
+from .models import Ally, StudentCategories, AllyStudentCategoryRelation, Event, EventInviteeRelation
 from .tests import create_ally
 
 User = get_user_model()
@@ -292,6 +292,7 @@ class CreateEventTests(TestCase):
         self.password = 'admin_password1'
         self.user = User.objects.create_user(self.username, 'email@test.com', self.password)
         self.user.is_staff = True
+        self.user.is_active = True
         self.user.save()
         self.client = Client()
         self.client.login(username=self.username, password=self.password)
@@ -300,7 +301,9 @@ class CreateEventTests(TestCase):
                                                   email='john2@uiowa.edu',
                                                   password='johndoe2',
                                                   first_name='John2',
-                                                  last_name='Doe')
+                                                  last_name='Doe',
+                                                  is_active=True,
+                                                  )
 
         self.ally = Ally.objects.create(
             user=self.ally_user,
@@ -315,15 +318,24 @@ class CreateEventTests(TestCase):
         self.category = StudentCategories.objects.create(lgbtq=True)
         self.student_ally_rel = AllyStudentCategoryRelation.objects.create(
             ally=self.ally,
-            student_category=self.category
+            student_category=self.category,
         )
 
-    def test_get(self):
+    def test_get_is_staff(self):
         """
-        test to check if the create event page is rendered properly
+        test to check if the create event page is rendered properly, staff permission
         """
         response = self.client.get('/create_event/')
         self.assertEqual(response.status_code, 200)
+
+    def test_get_not_is_staff(self):
+        """
+        test to check if the create event page is rendered properly
+        """
+        self.user.is_staff = False
+        self.user.save()
+        response = self.client.get('/create_event/')
+        self.assertEqual(response.status_code, 403)
 
     def test_invite_all(self):
         """
@@ -334,15 +346,16 @@ class CreateEventTests(TestCase):
             'event_title': ['title of the event'],
             'event_description': ['description of the event'],
             'event_location': ['https://zoom.us/abc123edf'],
-            'event_date_time': ['2021-03-31T15:32'],
-            'invite_all': 'true'
+            'event_start_time': ['2021-03-31T15:32'],
+            'event_end_time': ['2021-04-30T15:32'],
+            'invite_all': 'true',
         })
 
         url = response.url
         event = Event.objects.filter(title='title of the event')
-        assert url == '/dashboard'
+        assert url == '/calendar'
         assert event.exists()
-        assert EventAllyRelation.objects.filter(event=event[0], ally=self.ally).exists()
+        assert EventInviteeRelation.objects.filter(event=event[0], ally=self.ally).exists()
 
     def test_invite_biochem_student(self):
         """
@@ -353,17 +366,19 @@ class CreateEventTests(TestCase):
             'event_title': ['title of the event 2'],
             'event_description': ['description of the event 2'],
             'event_location': ['https://zoom.us/abc123edf2'],
-            'event_date_time': ['2021-03-31T15:32'],
+            'event_start_time': ['2021-03-31T15:32'],
+            'event_end_time': ['2021-04-30T15:32'],
             'role_selected': ['Graduate Student'],
+            'school_year_selected': ['Sophomore'],
             'mentor_status': ['Mentors', 'Mentees'],
             'research_area': ['Biochemistry']
         })
 
         url = response.url
         event = Event.objects.filter(title='title of the event 2')
-        assert url == '/dashboard'
+        assert url == '/calendar'
         assert event.exists()
-        assert EventAllyRelation.objects.filter(event=event[0], ally=self.ally).exists()
+        assert EventInviteeRelation.objects.filter(event=event[0], ally=self.ally).exists()
 
     def test_invite_special_category_student(self):
         """
@@ -374,17 +389,36 @@ class CreateEventTests(TestCase):
             'event_title': ['title of the event 3'],
             'event_description': ['description of the event 3'],
             'event_location': ['https://zoom.us/abc123edf2'],
-            'event_date_time': ['2021-03-31T15:32'],
+            'event_start_time': ['2021-03-31T15:32'],
+            'event_end_time': ['2021-04-30T15:32'],
             'special_category': ['First generation college-student', 'Rural', 'Low-income',
                                  'Underrepresented racial/ethnic minority', 'Disabled', 'Transfer Student', 'LGBTQ'],
         })
 
         url = response.url
         event = Event.objects.filter(title='title of the event 3')
-        assert url == '/dashboard'
+        assert url == '/calendar'
         assert event.exists()
-        assert EventAllyRelation.objects.filter(event=event[0], ally=self.ally).exists()
+        assert EventInviteeRelation.objects.filter(event=event[0], ally=self.ally).exists()
 
+    def test_end_date_less_than_start_date(self):
+        response = self.client.post('/create_event/',
+            {'csrfmiddlewaretoken': ['nhfQKKeiz3GSWp10SsXcVciNJiIm50yLc5vX81YXodQNB8ynsI6aeVFeF70b0580'],
+             'event_title': ['Hackathon UIOWA'],
+             'event_description': ['Hackathon for competition in different areas'],
+             'event_start_time': ['2021-04-09T14:38'],
+             'event_end_time': ['2021-04-07T14:38'],
+             'event_allday': ['event_allday'],
+             'event_location': ['Seamans Hall'],
+             'invite_all': ['invite_all'],
+             'role_selected': ['Staff', 'Graduate Student', 'Undergraduate Student', 'Faculty'],
+             'mentor_status': ['Mentors', 'Mentees'],
+             'special_category': ['First generation college-student', 'Rural', 'Low-income', 'Underrepresented racial/ethnic minority', 'Disabled', 'Transfer Student', 'LGBTQ'],
+             'research_area': ['Biochemistry', 'Bioinformatics', 'Biology', 'Biomedical Engineering', 'Chemical Engineering', 'Chemistry', 'Computer Science and Engineering', 'Environmental Science', 'Health and Human Physiology', 'Mathematics', 'Microbiology', 'Neuroscience', 'Nursing', 'Physics', 'Psychology']
+             }, follow= True)
+        self.assertContains(
+            response, "End time cannot be less than start time!", html=True
+        )
 
 class CreateAdminViewTest(TestCase):
     """
@@ -661,3 +695,56 @@ class AlliesIndexViewTests(TestCase):
             response.context['allies_list'],
             ['<Ally: hawk_id_2>', '<Ally: hawk_id_1>']  # Need to return in the descending order
         )
+
+class CalendarViewTests(TestCase):
+    """
+    Unit tests for calendar view
+    """
+    def setUp(self):
+        self.username = 'admin'
+        self.password = 'admin_password1'
+        self.client = Client()
+
+        self.user = User.objects.create_user(self.username, 'email@test.com', self.password)
+        self.event = Event.objects.create(title='Internship', description='Internship', start_time='2021-04-20 21:05:00', end_time='2021-04-26 21:05:00', location='MacLean')
+
+        self.ally_user = User.objects.create_user('allytesting', 'allyemail@test.com', 'ally_password1')
+        self.ally_user.is_staff = False
+
+        self.ally = Ally.objects.create(
+            user=self.ally_user,
+            hawk_id='johndoe2',
+            user_type='Graduate Student',
+            works_at='College of Engineering',
+            area_of_research='Biochemistry',
+            major='Electrical Engineering',
+            willing_to_volunteer_for_events=True
+        )
+
+        self.category = StudentCategories.objects.create(lgbtq=True)
+        self.student_ally_rel = AllyStudentCategoryRelation.objects.create(
+            ally=self.ally,
+            student_category=self.category
+        )
+
+        self.user.is_staff = True
+        self.user.save()
+
+        self.event_ally_rel = EventInviteeRelation.objects.create(ally_id=self.ally.id, event_id=self.event.id)
+
+    def test_calendar_access_admin(self):
+        """
+        Unit tests for admin view on calendar
+        """
+        self.client.login(username=self.username, password=self.password)
+        response = self.client.get(reverse('sap:calendar'))
+        self.assertContains(response, "Calendar")
+
+    def test_calendar_access_non_admin(self):
+        """
+        Unit tests for ally view for calendar
+        """
+        self.client.login(username=self.ally_user, password='ally_password1')
+        response = self.client.get(reverse('sap:calendar'))
+        self.assertContains(response, "Calendar")
+        self.assertContains(response, self.event.title)

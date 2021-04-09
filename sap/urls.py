@@ -34,7 +34,7 @@ urlpatterns = [
 
     url(r'^calendar/$',
         login_required(views.CalendarView.as_view()),
-        name='ally-calendar'),
+        name='calendar'),
 
     url('analytics/',
         login_required(views.AnalyticsView.as_view()),

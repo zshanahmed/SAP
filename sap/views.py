@@ -1,6 +1,8 @@
 # pylint: skip-file
 
 import io, os, os.path, csv, uuid, datetime
+
+from django.core import serializers
 from django.http import HttpResponseForbidden, HttpResponse
 from django.contrib.auth import logout, login
 from django.contrib.auth import authenticate
@@ -14,7 +16,7 @@ import xlsxwriter
 from .models import Ally, StudentCategories, AllyStudentCategoryRelation, Announcement
 from fuzzywuzzy import fuzz
 
-from .models import Ally, StudentCategories, AllyStudentCategoryRelation, Event, EventAllyRelation
+from .models import Ally, StudentCategories, AllyStudentCategoryRelation, Event, EventAttendeeRelation, EventInviteeRelation
 from django.views import generic
 from django.views.generic import TemplateView, View
 from django.contrib import messages
@@ -353,7 +355,21 @@ class ChangeAdminPassword(View):
 
 
 class CalendarView(TemplateView):
-    template_name = "sap/calendar.html"
+    """
+     Show calendar to allies so that they can signup for events
+    """
+    def get(self, request):
+        events_list = []
+        curr_user = request.user
+        if not curr_user.is_staff:
+            curr_ally = Ally.objects.get(user_id=curr_user.id)
+            curr_events = EventInviteeRelation.objects.filter(ally_id=curr_ally.id)
+            for event in curr_events:
+                events_list.append(Event.objects.get(id=event.event_id))
+        else:
+            events_list = Event.objects.all()
+        events = serializers.serialize('json', events_list)
+        return render(request, 'sap/calendar.html', context={"events": events, "user": curr_user})
 
 class EditAdminProfile(View):
     """
@@ -562,6 +578,7 @@ class MentorsListView(generic.ListView):
                     allies_list = allies_list.exclude(id=ally.id)
             return render(request, 'sap/dashboard_ally.html', {'allies_list': allies_list})
 
+
 class AnalyticsView(AccessMixin, TemplateView):
     template_name = "sap/analytics.html"
 
@@ -626,19 +643,36 @@ class CreateEventView(AccessMixin, TemplateView):
     template_name = "sap/create_event.html"
 
     def get(self, request):
-        return render(request, self.template_name)
+        if request.user.is_staff:
+            return render(request, self.template_name)
+        else:
+            return redirect('sap:resources')
+
 
     def post(self, request):
         new_event_dict = dict(request.POST)
         event_title = new_event_dict['event_title'][0]
         event_description = new_event_dict['event_description'][0]
-        event_date_time = new_event_dict['event_date_time'][0]
+        event_start_time = new_event_dict['event_start_time'][0]
+        event_end_time = new_event_dict['event_end_time'][0]
         event_location = new_event_dict['event_location'][0]
+
+        allies_list = Ally.objects.order_by('-id')
+        for ally in allies_list:
+            if not ally.user.is_active:
+                allies_list = allies_list.exclude(id=ally.id)
+
+        allies_list = list(allies_list)
 
         if 'role_selected' in new_event_dict:
             invite_ally_user_types = new_event_dict['role_selected']
         else:
             invite_ally_user_types = []
+
+        if 'school_year_selected' in new_event_dict:
+            invite_ally_school_years = new_event_dict['school_year_selected']
+        else:
+            invite_ally_school_years = []
 
         if 'mentor_status' in new_event_dict:
             invite_mentor_mentee = new_event_dict['mentor_status']
@@ -660,19 +694,36 @@ class CreateEventView(AccessMixin, TemplateView):
             invite_all_selected = True
         else:
             invite_all_selected = []
+            
+        if 'event_allday' in new_event_dict:
+            allday = True
 
-        event = Event.objects.create(title=event_title,
-                                     description=event_description,
-                                     datetime=parse_datetime(event_date_time + '-0500'), # converting time to central time before storing in db
-                                     location=event_location
-                                     )
-
-        if invite_all_selected:
-            allies_to_be_invited = list(Ally.objects.all())
         else:
-            allies_to_be_invited = []
+            allday = False
+
+        if (event_end_time < event_start_time):
+            messages.warning(request, 'End time cannot be less than start time!')
+            return redirect('/create_event')
+
+        else:
+            event = Event.objects.create(title=event_title,
+                                         description=event_description,
+                                         start_time=parse_datetime(event_start_time + '-0500'), # converting time to central time before storing in db
+                                         end_time=parse_datetime(event_end_time + '-0500'),
+                                         location=event_location,
+                                         allday=allday,
+                                         )
+
+            if invite_all_selected:
+                # If all allies are invited
+                # TODO: only invite active allies
+                allies_to_be_invited = allies_list
+
+            else:
+                allies_to_be_invited = []
 
             allies_to_be_invited.extend(Ally.objects.filter(user_type__in=invite_ally_user_types))
+            allies_to_be_invited.extend(Ally.objects.filter(year__in=invite_ally_school_years))
 
             if 'Mentors' in invite_mentor_mentee:
                 allies_to_be_invited.extend(Ally.objects.filter(interested_in_mentoring=True))
@@ -708,19 +759,50 @@ class CreateEventView(AccessMixin, TemplateView):
                 Ally.objects.filter(id__in=invited_allies_ids)
                 )
 
-        all_event_ally_objs = []
-        invited_allies = set()
-        allies_to_be_invited = set(allies_to_be_invited)
+            all_event_ally_objs = []
+            invited_allies = set()
+            allies_to_be_invited = set(allies_to_be_invited)
 
-        for ally in allies_to_be_invited:
-            event_ally_rel_obj = EventAllyRelation(event=event, ally=ally)
-            all_event_ally_objs.append(event_ally_rel_obj)
-            invited_allies.add(event_ally_rel_obj.ally)
+            for ally in allies_to_be_invited:
+                if ally.user.is_active:
+                    event_ally_rel_obj = EventInviteeRelation(event=event, ally=ally)
+                    all_event_ally_objs.append(event_ally_rel_obj)
+                    invited_allies.add(event_ally_rel_obj.ally)
 
 
-        EventAllyRelation.objects.bulk_create(all_event_ally_objs)
+            EventInviteeRelation.objects.bulk_create(all_event_ally_objs)
 
-        return redirect('/dashboard')
+            messages.success(request, "Event successfully created!")
+            return redirect('/calendar')
+
+
+class RegisterEventView(TemplateView):
+    """
+    Register for event.
+    """
+    def get(self, request, *args, **kwargs):
+        # # TODO: Update this function once frontend gets done
+        # user_current = request.user
+        # ally_current = Ally.objects.get(user=user_current)
+        # event_id = 1
+        #
+        # if ally_current is not None and user_current.is_active:
+        #     AllyStudentCategoryRelation.objects.create(event_id=event.id,
+        #                                                ally_id=ally_current.id)
+        #     messages.success(request,
+        #                      'You have successfully register for this event!')
+        #
+        # else:
+        #     messages.warning(request,
+        #                      'You cannot register for this event.')
+        pass
+
+
+
+class DeregisterEventView(TemplateView):
+    def get(self, request, *args, **kwargs):
+        # template =
+        pass
 
 
 class SignUpView(TemplateView):
@@ -890,8 +972,10 @@ class SignUpView(TemplateView):
                 return redirect('/sign-up')
 
             else:   # If user is not active, delete user_temp and create new user on db with is_active=False
-                ally_temp = Ally.objects.get(user=user_temp)
-                ally_temp.delete()
+
+                ally_temp = Ally.objects.filter(user=user_temp)
+                if ally_temp.exists():
+                    ally_temp[0].delete()
                 user_temp.delete()
 
                 # print(request.POST)
@@ -948,6 +1032,25 @@ class SignUpDoneView(TemplateView):
     A view which is presented if the user successfully fill out the form presented in Sign-Up view
     """
     template_name = "sap/sign-up-done.html"
+    def get(self, request, *args, **kwargs):
+        site = get_current_site(request)
+        accepted_origin = 'http:' + '//' + site.domain + reverse('sap:sign-up')
+
+        try:
+            origin = request.headers['Referer']
+
+            if request.headers['Referer'] and origin == accepted_origin:
+                return render(request, self.template_name)
+            elif request.user.is_authenticated:
+                return redirect('sap:resources')
+            else:
+                return redirect('sap:home')
+
+        except KeyError:
+            if request.user.is_authenticated:
+                return redirect('sap:resources')
+            else:
+                return redirect('sap:home')
 
 
 class SignUpConfirmView(TemplateView):
@@ -1046,6 +1149,26 @@ class ForgotPasswordDoneView(TemplateView):
     A view which is presented if the user entered valid email in Forget Password view
     """
     template_name = "sap/password-forgot-done.html"
+
+    def get(self, request, *args, **kwargs):
+        site = get_current_site(request)
+        accepted_origin = 'http:' + '//' + site.domain + reverse('sap:password-forgot')
+
+        try:
+            origin = request.headers['Referer']
+
+            if request.headers['Referer'] and origin == accepted_origin:
+                return render(request, self.template_name)
+            elif request.user.is_authenticated:
+                return redirect('sap:resources')
+            else:
+                return redirect('sap:home')
+
+        except KeyError:
+            if request.user.is_authenticated:
+                return redirect('sap:resources')
+            else:
+                return redirect('sap:home')
 
 
 class ForgotPasswordConfirmView(TemplateView):

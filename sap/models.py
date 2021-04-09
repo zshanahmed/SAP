@@ -79,11 +79,13 @@ class Event(models.Model):
     """
     title = models.CharField(max_length=200, null=True)
     description = models.CharField(max_length=1000, null=True)
-    datetime = models.DateTimeField()
+    start_time = models.DateTimeField(default=None, null=True)
+    end_time = models.DateTimeField(default=None, null=True)
+    allday = models.BooleanField(default=False)
     location = models.CharField(max_length=500, null=True)
 
 
-class EventAllyRelation(models.Model):
+class EventInviteeRelation(models.Model):
     """
     EventAllyRelation table contains information about the Event ally mappings
     One event can have many allies invited and vice versa
@@ -104,3 +106,14 @@ class Announcement(models.Model):
     title = models.CharField(max_length=200, null=True)
     description = models.CharField(max_length=1000, null=True)
     created_at = models.DateTimeField()
+class EventAttendeeRelation(models.Model):
+    """
+    EventAttendeeRelation table contains information about the Event ally mappings
+    One event can have many allies registered and vice versa
+    """
+    event = models.ForeignKey(Event,
+                              on_delete=models.CASCADE
+                              )
+    ally = models.ForeignKey(Ally,
+                             on_delete=models.CASCADE
+                             )
