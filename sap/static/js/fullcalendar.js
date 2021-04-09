@@ -5350,7 +5350,9 @@ function DayEventRenderer() {
 				skinCss +
 				"'" +
 			">" +
-			"<div id='fc-event-inner' class='fc-event-inner' data-toggle='modal' data-target='#eventModal' data-url="+(event.start)+">";
+			"<div id='fc-event-inner' class='fc-event-inner' " +
+			"data-toggle='modal' data-target='#eventModal' " +
+			"data-title=\""+(event.title)+"\" data-description=\""+(event.description)+"\"  data-url=\""+(event.start)+"\">";
 		if (!event.allDay && segment.isStart) {
 			html +=
 				"<span class='fc-event-time'>" +
