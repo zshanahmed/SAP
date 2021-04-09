@@ -355,6 +355,7 @@ class CreateEventTests(TestCase):
             'event_location': ['https://zoom.us/abc123edf2'],
             'event_date_time': ['2021-03-31T15:32'],
             'role_selected': ['Graduate Student'],
+            'school_year_selected': ['Sophomore'],
             'mentor_status': ['Mentors', 'Mentees'],
             'research_area': ['Biochemistry']
         })
