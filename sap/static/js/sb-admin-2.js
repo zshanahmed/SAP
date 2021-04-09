@@ -79,12 +79,14 @@
   $("#eventModal").on("show.bs.modal", function (event) {
     var el = $(event.relatedTarget);
 
-    var time = el.data('url')
+    var start_time = el.data('start')
+    var end_time = el.data('end')
     var title = el.data('title')
     var description = el.data('description')
     var location = el.data('location')
 
-    const date = new Date(time)
+    const start_date = new Date(start_time)
+    const end_date = new Date(end_time)
 
     // If necessary, you could initiate an AJAX request here (and then do the updating in a callback).
     // Update the modal's content. We'll use jQuery here, but you could use a data binding library or other methods instead.
@@ -98,8 +100,11 @@
           "<strong>Description:</strong>  "+ description + "<br/>"+
           "<strong>Location:</strong>  "+ location + "<br/>"+
           "<div class='pt-3 d-flex justify-content-between'>" +
-          "<div><strong>Day:</strong>  "+ date.toDateString()+ "</div>" +
-          "<div><strong>Time:</strong>  "+ date.toLocaleTimeString('en-US')+ "</div></div>"
+          "<div><strong>Start Day:</strong>  "+ start_date.toDateString()+ "</div>" +
+          "<div><strong>Start Time:</strong>  "+ start_date.toLocaleTimeString('en-US')+ "</div></div>"+
+          "<div class='d-flex justify-content-between'>" +
+          "<div><strong>End Day:</strong>  "+ end_date.toDateString()+ "</div>" +
+          "<div><strong>End Time:</strong>  "+ end_date.toLocaleTimeString('en-US')+ "</div></div>"
       );
   });
 

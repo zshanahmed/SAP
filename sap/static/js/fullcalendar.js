@@ -5355,7 +5355,8 @@ function DayEventRenderer() {
 				"data-title=\""+(event.title)+"\" " +
 				"data-description=\""+(event.description)+"\"  " +
 				"data-location=\""+(event.location)+"\"  " +
-				"data-url=\""+(event.start)+"\">";
+				"data-end=\""+(event.end)+"\"  " +
+				"data-start=\""+(event.start)+"\"+>";
 		if (!event.allDay && segment.isStart) {
 			html +=
 				"<span class='fc-event-time'>" +

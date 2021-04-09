@@ -2,12 +2,14 @@ $(document).ready(function() {
     var events = [];
     var colors = ['success', 'info', 'important', 'chill', 'orange', 'teal']
     for (let i = 0; i < myData.length; i ++) {
-        var event_date = new Date(myData[i]['fields']['datetime'])
+        var start_time = new Date(myData[i]['fields']['start_time'])
+        var end_time = new Date(myData[i]['fields']['end_time'])
         var entry = {
             title: myData[i]['fields']['title'],
             description: myData[i]['fields']['description'],
             location: myData[i]['fields']['location'],
-            start: event_date,
+            start: start_time,
+            end: end_time,
             allDay: false,
             className: colors[i% colors.length],
         }
