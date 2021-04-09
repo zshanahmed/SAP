@@ -6,6 +6,7 @@ $(document).ready(function() {
         var entry = {
             title: myData[i]['fields']['title'],
             description: myData[i]['fields']['description'],
+            location: myData[i]['fields']['location'],
             start: event_date,
             allDay: false,
             className: colors[i% colors.length],

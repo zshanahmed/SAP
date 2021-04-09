@@ -6,9 +6,6 @@
 {% block content %}
     <!-- Page Wrapper -->
     <div id="wrapper">
-
-        {% include "./partials/_sidebar.html" with role="admin" %}
-
         <!-- Content Wrapper -->
         <div id="content-wrapper" class="d-flex flex-column">
 
@@ -24,6 +21,8 @@
                 {% endif %}
 
                 {% include './partials/_topbar.html' with role="admin" %}
+                {% include "./partials/_sidebar.html" with role="admin" %}
+
                 {% include './partials/_filters.html' with role="admin" %}
 
                 <!-- End of Topbar -->

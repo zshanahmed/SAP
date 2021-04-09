@@ -78,9 +78,12 @@
 
   $("#eventModal").on("show.bs.modal", function (event) {
     var el = $(event.relatedTarget);
+
     var time = el.data('url')
     var title = el.data('title')
     var description = el.data('description')
+    var location = el.data('location')
+
     const date = new Date(time)
 
     // If necessary, you could initiate an AJAX request here (and then do the updating in a callback).
@@ -88,11 +91,12 @@
     var modal = $(this);
     modal
       .find(".modal-title")
-      .html("<strong>"+title+"</strong>");
+      .html("<div><strong>"+title+"</strong></div>");
     modal
       .find(".modal-body")
       .html(
           "<strong>Description:</strong>  "+ description + "<br/>"+
+          "<strong>Location:</strong>  "+ location + "<br/>"+
           "<div class='pt-3 d-flex justify-content-between'>" +
           "<div><strong>Day:</strong>  "+ date.toDateString()+ "</div>" +
           "<div><strong>Time:</strong>  "+ date.toLocaleTimeString('en-US')+ "</div></div>"
