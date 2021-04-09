@@ -363,6 +363,7 @@ class EditAdminProfile(View):
             'form': form
         })
 
+
 class AlliesListView(AccessMixin, TemplateView):
 
     def get(self, request):
@@ -711,25 +712,31 @@ class CreateEventView(AccessMixin, TemplateView):
         return redirect('/calendar')
 
 
-class CalendarListView(TemplateView):
-    template_name = "sap/calendar_list.html"
-
-
 class RegisterEventView(TemplateView):
+    """
+    Register for event.
+    """
     def get(self, request, *args, **kwargs):
-        return render(request, self.template_name)
+        # TODO: Update this function once frontend gets done
+        user_current = request.user
+        ally_current = Ally.objects.get(user=user_current)
+        event_id = 1
 
-    def get(self, request, *args, **kwargs):
-        pass
+        if ally_current is not None and user_current.is_active:
+            AllyStudentCategoryRelation.objects.create(event_id=event.id,
+                                                       ally_id=ally_current.id)
+            messages.success(request,
+                             'You have successfully register for this event!')
+
+        else:
+            messages.warning(request,
+                             'You cannot register for this event.')
+
 
 
 class DeregisterEventView(TemplateView):
     def get(self, request, *args, **kwargs):
         # template =
-        pass
-
-    def post(self, request, *args, **kwargs):
-    # TODO: a function to withdraw from meeting
         pass
 
 
@@ -958,6 +965,25 @@ class SignUpDoneView(TemplateView):
     A view which is presented if the user successfully fill out the form presented in Sign-Up view
     """
     template_name = "sap/sign-up-done.html"
+    def get(self, request, *args, **kwargs):
+        site = get_current_site(request)
+        accepted_origin = 'http:' + '//' + site.domain + reverse('sap:sign-up')
+
+        try:
+            origin = request.headers['Referer']
+
+            if request.headers['Referer'] and origin == accepted_origin:
+                return render(request, self.template_name)
+            elif request.user.is_authenticated:
+                return redirect('sap:resources')
+            else:
+                return redirect('sap:home')
+
+        except KeyError:
+            if request.user.is_authenticated:
+                return redirect('sap:resources')
+            else:
+                return redirect('sap:home')
 
 
 class SignUpConfirmView(TemplateView):
@@ -1056,6 +1082,26 @@ class ForgotPasswordDoneView(TemplateView):
     A view which is presented if the user entered valid email in Forget Password view
     """
     template_name = "sap/password-forgot-done.html"
+
+    def get(self, request, *args, **kwargs):
+        site = get_current_site(request)
+        accepted_origin = 'http:' + '//' + site.domain + reverse('sap:password-forgot')
+
+        try:
+            origin = request.headers['Referer']
+
+            if request.headers['Referer'] and origin == accepted_origin:
+                return render(request, self.template_name)
+            elif request.user.is_authenticated:
+                return redirect('sap:resources')
+            else:
+                return redirect('sap:home')
+
+        except KeyError:
+            if request.user.is_authenticated:
+                return redirect('sap:resources')
+            else:
+                return redirect('sap:home')
 
 
 class ForgotPasswordConfirmView(TemplateView):
