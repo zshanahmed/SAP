@@ -531,7 +531,8 @@ class MentorsListView(generic.ListView):
 class AnalyticsView(AccessMixin, TemplateView):
     template_name = "sap/analytics.html"
 
-    def findTheCategories(self, allies, relation, categories):
+    @staticmethod
+    def findTheCategories(allies, relation, categories):
         categoriesList = []
         for ally in allies:
             categoryRelation = relation.filter(ally_id=ally.id)
@@ -541,7 +542,8 @@ class AnalyticsView(AccessMixin, TemplateView):
                     categoriesList.append(category[0])
         return categoriesList
 
-    def determineNumPerCategory(self, categoryList):
+    @staticmethod
+    def determineNumPerCategory(categoryList):
         perCategory = [0, 0, 0, 0, 0, 0, 0] #lbtq,minorities,rural,disabled,firstGen,transfer,lowIncome
         for category in categoryList:
             if category.lgbtq:
@@ -560,7 +562,8 @@ class AnalyticsView(AccessMixin, TemplateView):
                 perCategory[6] += 1
         return perCategory
 
-    def undergradPerYear(self, allies):
+    @staticmethod
+    def undergradPerYear(allies):
         perCategory = [0, 0, 0, 0] #Freshman,Sophmore,Junior,Senior
         for ally in allies:
             if ally.year == "Freshman":
@@ -582,13 +585,13 @@ class AnalyticsView(AccessMixin, TemplateView):
         students = allies.filter(user_type="Undergraduate Student")
         mentors = allies.filter(~Q(user_type="Undergraduate Student"))
 
-        studentCategories = self.findTheCategories(students, relation, categories)
-        mentorCategories = self.findTheCategories(mentors, relation, categories)
+        studentCategories = AnalyticsView.findTheCategories(students, relation, categories)
+        mentorCategories = AnalyticsView.findTheCategories(mentors, relation, categories)
 
-        numStudentCategories = self.determineNumPerCategory(studentCategories)
-        numMentorCategories = self.determineNumPerCategory(mentorCategories)
+        numStudentCategories = AnalyticsView.determineNumPerCategory(studentCategories)
+        numMentorCategories = AnalyticsView.determineNumPerCategory(mentorCategories)
 
-        numUndergradPerYear = self.undergradPerYear(students)
+        numUndergradPerYear = AnalyticsView.undergradPerYear(students)
 
         return render(request, 'sap/analytics.html', {"numStudentCategories": numStudentCategories,
                                                       "numMentorCategories": numMentorCategories,

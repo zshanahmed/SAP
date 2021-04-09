@@ -37,6 +37,47 @@ categoryFields = ['under_represented_racial_ethnic', 'first_gen_college_student'
                   'transfer_student', 'lgbtq', 'low_income', 'rural', 'disabled']
 
 
+def make_big_user():
+    bigUser = User.objects.create_user(username="bigUser", password="bigPassword", email="bigEmail@uiowa.edu")
+    bigAlly = Ally.objects.create(user=bigUser, user_id=bigUser.id, user_type='Undergraduate Student',
+                                  hawk_id=bigUser.username, major='biomedical engineering', year='Freshman',
+                                  interested_in_joining_lab=True, has_lab_experience=False,
+                                  interested_in_mentoring=False, information_release=True)
+    bigCategory = StudentCategories.objects.create(rural=True, first_gen_college_student=True,
+                                                   under_represented_racial_ethnic=True, transfer_student=False,
+                                                   lgbtq=True, low_income=False, disabled=True)
+    AllyStudentCategoryRelation.objects.create(ally_id=bigAlly.id, student_category_id=bigCategory.id)
+
+    bigUser1 = User.objects.create_user(username="bigUser1", password="bigPassword", email="bigEmail1@uiowa.edu")
+    bigAlly1 = Ally.objects.create(user=bigUser1, user_id=bigUser1.id, user_type='Undergraduate Student',
+                                  hawk_id=bigUser1.username, major='biomedical engineering', year='Sophomore',
+                                  interested_in_joining_lab=True, has_lab_experience=False,
+                                  interested_in_mentoring=False, information_release=True)
+    bigCategory1 = StudentCategories.objects.create(rural=False, first_gen_college_student=True,
+                                                   under_represented_racial_ethnic=True, transfer_student=False,
+                                                   lgbtq=True, low_income=False, disabled=True)
+    AllyStudentCategoryRelation.objects.create(ally_id=bigAlly1.id, student_category_id=bigCategory1.id)
+
+    bigUser2 = User.objects.create_user(username="bigUser2", password="bigPassword", email="bigEmail2@uiowa.edu")
+    bigAlly2 = Ally.objects.create(user=bigUser2, user_id=bigUser2.id, user_type='Undergraduate Student',
+                                  hawk_id=bigUser2.username, major='biomedical engineering', year='Junior',
+                                  interested_in_joining_lab=True, has_lab_experience=False,
+                                  interested_in_mentoring=False, information_release=True)
+    bigCategory2 = StudentCategories.objects.create(rural=True, first_gen_college_student=True,
+                                                   under_represented_racial_ethnic=True, transfer_student=False,
+                                                   lgbtq=True, low_income=False, disabled=True)
+    AllyStudentCategoryRelation.objects.create(ally_id=bigAlly2.id, student_category_id=bigCategory2.id)
+
+    bigUser3 = User.objects.create_user(username="bigUser3", password="bigPassword", email="bigEmail3@uiowa.edu")
+    bigAlly3 = Ally.objects.create(user=bigUser3, user_id=bigUser3.id, user_type='Undergraduate Student',
+                                  hawk_id=bigUser3.username, major='biomedical engineering', year='Senior',
+                                  interested_in_joining_lab=True, has_lab_experience=False,
+                                  interested_in_mentoring=False, information_release=True)
+    bigCategory3 = StudentCategories.objects.create(rural=True, first_gen_college_student=True,
+                                                   under_represented_racial_ethnic=True, transfer_student=False,
+                                                   lgbtq=True, low_income=False, disabled=True)
+    AllyStudentCategoryRelation.objects.create(ally_id=bigAlly3.id, student_category_id=bigCategory3.id)
+
 class DownloadAlliesTest(TestCase):
     """
     Unit tests for download csv feature
@@ -661,3 +702,45 @@ class AlliesIndexViewTests(TestCase):
             response.context['allies_list'],
             ['<Ally: hawk_id_2>', '<Ally: hawk_id_1>']  # Need to return in the descending order
         )
+
+class TestAnalyticsPage(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.client.login(username='admin', password='admin_password1')
+        self.bigCategory = StudentCategories.objects.create(rural=True, first_gen_college_student=True,
+                                                   under_represented_racial_ethnic=True, transfer_student=True,
+                                                   lgbtq=True, low_income=True, disabled=True)
+        make_big_user()
+
+    def test_get_analytics(self):
+        """
+        Test good respone from the Analytics page.
+        """
+        response = self.client.get(reverse('sap:sap-analytics'))
+        self.assertEqual(response.status_code, 302)
+
+    def test_num_per_Category(self):
+        categoryList = [self.bigCategory]
+
+        categoryList = views.AnalyticsView.determineNumPerCategory(categoryList)
+
+        self.assertEqual(categoryList, [1, 1, 1, 1, 1, 1, 1])
+
+    def test_find_category(self):
+        ally = [Ally.objects.filter(hawk_id="bigUser")[0]]
+        relation = AllyStudentCategoryRelation.objects.all()
+        categories = StudentCategories.objects.all()
+        categoryRelation = relation.filter(ally_id=ally[0].id)
+        category = categories.filter(id=categoryRelation[0].student_category_id)
+        categories = views.AnalyticsView.findTheCategories(ally, relation, categories)
+
+        self.assertEqual(category[0].id, categories[0].id)
+
+    def test_numUndergrad(self):
+        undergrads = [Ally.objects.filter(hawk_id="bigUser")[0],
+                      Ally.objects.filter(hawk_id="bigUser1")[0],
+                      Ally.objects.filter(hawk_id="bigUser2")[0],
+                      Ally.objects.filter(hawk_id="bigUser3")[0], ]
+
+        numPerYear = views.AnalyticsView.undergradPerYear(undergrads)
+        self.assertEqual(numPerYear, [1, 1, 1, 1])
