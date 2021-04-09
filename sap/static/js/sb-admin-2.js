@@ -77,13 +77,10 @@
   });
 
   $("#eventModal").on("show.bs.modal", function (event) {
-    const events = document.querySelector('#fc-event-inner');
-    var title = events.dataset.title // "3"
-    // var button = $(event.relatedTarget); // Button that triggered the modal
-    // var title = button.data("title"); // Extract info from data-* attributes
+    var button = $(event.relatedTarget); // Button that triggered the modal
+    var title = button.data("title"); // Extract info from data-* attributes
     // If necessary, you could initiate an AJAX request here (and then do the updating in a callback).
     // Update the modal's content. We'll use jQuery here, but you could use a data binding library or other methods instead.
-    console.log(title);
     var modal = $(this);
     modal
       .find(".modal-title")

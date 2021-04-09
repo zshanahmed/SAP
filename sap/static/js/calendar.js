@@ -11,7 +11,6 @@ $(document).ready(function() {
         }
         events.push(entry);
     }
-    console.log(events);
     var date = new Date();
     var d = date.getDate();
     var m = date.getMonth();

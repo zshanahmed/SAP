@@ -340,7 +340,7 @@ class CreateEventTests(TestCase):
 
         url = response.url
         event = Event.objects.filter(title='title of the event')
-        assert url == '/dashboard'
+        assert url == '/calendar'
         assert event.exists()
         assert EventAllyRelation.objects.filter(event=event[0], ally=self.ally).exists()
 
@@ -361,7 +361,7 @@ class CreateEventTests(TestCase):
 
         url = response.url
         event = Event.objects.filter(title='title of the event 2')
-        assert url == '/dashboard'
+        assert url == '/calendar'
         assert event.exists()
         assert EventAllyRelation.objects.filter(event=event[0], ally=self.ally).exists()
 
@@ -381,7 +381,7 @@ class CreateEventTests(TestCase):
 
         url = response.url
         event = Event.objects.filter(title='title of the event 3')
-        assert url == '/dashboard'
+        assert url == '/calendar'
         assert event.exists()
         assert EventAllyRelation.objects.filter(event=event[0], ally=self.ally).exists()
 
@@ -661,3 +661,56 @@ class AlliesIndexViewTests(TestCase):
             response.context['allies_list'],
             ['<Ally: hawk_id_2>', '<Ally: hawk_id_1>']  # Need to return in the descending order
         )
+
+class CalendarViewTests(TestCase):
+    """
+    Unit tests for calendar view
+    """
+    def setUp(self):
+        self.username = 'admin'
+        self.password = 'admin_password1'
+        self.client = Client()
+
+        self.user = User.objects.create_user(self.username, 'email@test.com', self.password)
+        self.event = Event.objects.create(title='Internship', description='Internship', datetime='2021-03-26 21:05:00', location='MacLean')
+
+        self.ally_user = User.objects.create_user('allytesting', 'allyemail@test.com', 'ally_password1')
+        self.ally_user.is_staff = False
+
+        self.ally = Ally.objects.create(
+            user=self.ally_user,
+            hawk_id='johndoe2',
+            user_type='Graduate Student',
+            works_at='College of Engineering',
+            area_of_research='Biochemistry',
+            major='Electrical Engineering',
+            willing_to_volunteer_for_events=True
+        )
+
+        self.category = StudentCategories.objects.create(lgbtq=True)
+        self.student_ally_rel = AllyStudentCategoryRelation.objects.create(
+            ally=self.ally,
+            student_category=self.category
+        )
+
+        self.user.is_staff = True
+        self.user.save()
+
+        self.event_ally_rel = EventAllyRelation.objects.create(ally_id=self.ally.id, event_id=self.event.id)
+
+    def test_calendar_access_admin(self):
+        """
+        Unit tests for admin view on calendar
+        """
+        self.client.login(username=self.username, password=self.password)
+        response = self.client.get(reverse('sap:calendar'))
+        self.assertContains(response, "Calendar")
+
+    def test_calendar_access_non_admin(self):
+        """
+        Unit tests for ally view for calendar
+        """
+        self.client.login(username=self.ally_user, password='ally_password1')
+        response = self.client.get(reverse('sap:calendar'))
+        self.assertContains(response, "Calendar")
+        self.assertContains(response, self.event.title)

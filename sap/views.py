@@ -337,8 +337,17 @@ class CalendarView(View):
     Show calendar to allies so that they can signup for events
     """
     def get(self, request):
-        events = serializers.serialize('json', list(Event.objects.all()))
-        return render(request, 'sap/calendar.html', context={"events": events, "user": request.user})
+        events_list = []
+        curr_user = request.user
+        if not curr_user.is_staff:
+            curr_ally = Ally.objects.get(user_id=curr_user.id)
+            curr_events = EventAllyRelation.objects.filter(ally_id=curr_ally.id)
+            for event in curr_events:
+                events_list.append(Event.objects.get(id=event.event_id))
+        else:
+            events_list = Event.objects.all()
+        events = serializers.serialize('json', events_list)
+        return render(request, 'sap/calendar.html', context={"events": events, "user": curr_user})
 
 class EditAdminProfile(View):
     """

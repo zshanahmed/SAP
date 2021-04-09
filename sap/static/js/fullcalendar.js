@@ -5359,7 +5359,6 @@ function DayEventRenderer() {
 				) +
 				"</span>";
 		}
-		console.log(event.title);
 		html +=
 			"<span class='fc-event-title'>" +
 			htmlEscape(event.title || '') +
