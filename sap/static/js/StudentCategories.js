@@ -27,31 +27,56 @@ function number_format(number, decimals, dec_point, thousands_sep) {
   return s.join(dec);
 }
 
-// Bar Chart Example
-var ctx = document.getElementById("myBarChart");
-var categoriesCount = document.getElementById("studentCategories").innerText;
-categoriesCount = categoriesCount.replaceAll("[", "");
-categoriesCount = categoriesCount.replaceAll("]", "");
-categoriesCount = categoriesCount.split(",");
-var maximum = -1;
-for(i = 0; i<categoriesCount.length; i++){
-  categoriesCount[i] = parseInt(categoriesCount[i]);
-  if (categoriesCount[i] > maximum){
-    maximum = categoriesCount[i];
+export function listify(string) {
+  var stringValue = string
+  stringValue = stringValue.replaceAll("[", "");
+  stringValue = stringValue.replaceAll("]", "");
+  stringValue = stringValue.split(",");
+  for (let i = 0; i<stringValue.length; i++){
+    stringValue[i] = parseInt(stringValue[i]);
+  }
+  return stringValue
+}
+
+function findMax(array) {
+  let max = -1
+  for (let i = 0; i<array.length; i++){
+    if (array[i] > max) {
+      max = array[i]
+    }
   }
 }
+
+// Bar Chart Example
+var ctx = document.getElementById("myBarChart");
+var categoriesCount = document.getElementById("numStudentCategories").innerText;
+var mentorCategoriesCount = document.getElementById("numMentorCategories").innerText;
+
+categoriesCount = listify(categoriesCount);
+mentorCategoriesCount = listify(mentorCategoriesCount);
+
+var studentMaximum = findMax(categoriesCount);
+var mentorMaximum = findMax(mentorCategoriesCount);
+var maximum = findMax([studentMaximum, mentorMaximum]);
+
 var myBarChart = new Chart(ctx, {
   type: 'bar',
   data: {
     labels: ["LGBTQ", "Minorities", "Rural",
       "Disabled", "First-Generation", "Transfer Student", "Low-Income"],
     datasets: [{
-      label: "Total number: ",
-      backgroundColor: "#4e73df",
-      hoverBackgroundColor: "#2e59d9",
-      borderColor: "#4e73df",
+      label: "Undergraduate number: ",
+      backgroundColor: "#ffba24",
+      hoverBackgroundColor: "#ffba24",
+      borderColor: "#ffba24",
       data: categoriesCount,
-    }],
+    }, {
+      label: "Number Faculty/Staff/Graduate Student willing to mentor: ",
+      backgroundColor: "#000000",
+      hoverBackgroundColor: "#000000",
+      borderColor: "#000000",
+      data: mentorCategoriesCount,
+        }],
   },
   options: {
     maintainAspectRatio: false,

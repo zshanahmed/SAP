@@ -2,16 +2,21 @@
 Chart.defaults.global.defaultFontFamily = 'Nunito', '-apple-system,system-ui,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif';
 Chart.defaults.global.defaultFontColor = '#858796';
 
+import { listify } from './StudentCategories.js';
+
 // Pie Chart Example
 var ctx = document.getElementById("myPieChart");
+var undergradsPerYear = document.getElementById("numUndergradPerYear").innerText;
+undergradsPerYear = listify(undergradsPerYear);
+
 var myPieChart = new Chart(ctx, {
   type: 'doughnut',
   data: {
-    labels: ["Direct", "Referral", "Social"],
+    labels: ["Freshman", "Sophomore", "Junior", "Senior"],
     datasets: [{
-      data: [55, 30, 15],
-      backgroundColor: ['#ff4040', '#1cc88a', '#36b9cc'],
-      hoverBackgroundColor: ['#ff0000', '#17a673', '#2c9faf'],
+      data: undergradsPerYear,
+      backgroundColor: ['#dbe340', '#ffbc47', '#fc4c4c', '#3b3b3b'],
+      hoverBackgroundColor: ['#c7cf38', '#e0a63f', '#de3c3c', '#000000'],
       hoverBorderColor: "rgba(234, 236, 244, 1)",
     }],
   },

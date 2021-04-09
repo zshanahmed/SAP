@@ -13,7 +13,7 @@ from django.db import IntegrityError
 import xlsxwriter
 from .models import Ally, StudentCategories, AllyStudentCategoryRelation
 from fuzzywuzzy import fuzz
-
+from django.db.models import Q
 from .models import Ally, StudentCategories, AllyStudentCategoryRelation, Event, EventAllyRelation
 from django.views import generic
 from django.views.generic import TemplateView, View
@@ -531,21 +531,68 @@ class MentorsListView(generic.ListView):
 class AnalyticsView(AccessMixin, TemplateView):
     template_name = "sap/analytics.html"
 
+    def findTheCategories(self, allies, relation, categories):
+        categoriesList = []
+        for ally in allies:
+            categoryRelation = relation.filter(ally_id=ally.id)
+            if categoryRelation.exists():
+                category = categories.filter(id=categoryRelation[0].student_category_id)
+                if category.exists():
+                    categoriesList.append(category[0])
+        return categoriesList
+
+    def determineNumPerCategory(self, categoryList):
+        perCategory = [0, 0, 0, 0, 0, 0, 0] #lbtq,minorities,rural,disabled,firstGen,transfer,lowIncome
+        for category in categoryList:
+            if category.lgbtq:
+                perCategory[0] += 1
+            if category.under_represented_racial_ethnic:
+                perCategory[1] += 1
+            if category.rural:
+                perCategory[2] += 1
+            if category.disabled:
+                perCategory[3] += 1
+            if category.first_gen_college_student:
+                perCategory[4] += 1
+            if category.transfer_student:
+                perCategory[5] += 1
+            if category.low_income:
+                perCategory[6] += 1
+        return perCategory
+
+    def undergradPerYear(self, allies):
+        perCategory = [0, 0, 0, 0] #Freshman,Sophmore,Junior,Senior
+        for ally in allies:
+            if ally.year == "Freshman":
+                perCategory[0] += 1
+            if ally.year == "Sophomore":
+                perCategory[1] += 1
+            if ally.year == "Junior":
+                perCategory[2] += 1
+            if ally.year == "Senior":
+                perCategory[3] += 1
+
+        return perCategory
+
     def get(self, request):
         allies = Ally.objects.all()
         categories = StudentCategories.objects.all()
+        relation = AllyStudentCategoryRelation.objects.all()
 
-        minorities = len(categories.filter(under_represented_racial_ethnic=True))
-        transfers = len(categories.filter(transfer_student=True))
-        firstGen = len(categories.filter(first_gen_college_student=True))
-        disabled = len(categories.filter(disabled=True))
-        lgbtq = len(categories.filter(lgbtq=True))
-        rural = len(categories.filter(rural=True))
-        lowIncome = len(categories.filter(low_income=True))
+        students = allies.filter(user_type="Undergraduate Student")
+        mentors = allies.filter(~Q(user_type="Undergraduate Student"))
 
-        categoriesCount = [lgbtq, minorities, rural, disabled, firstGen, transfers, lowIncome]
+        studentCategories = self.findTheCategories(students, relation, categories)
+        mentorCategories = self.findTheCategories(mentors, relation, categories)
 
-        return render(request, 'sap/analytics.html', {"categoriesCount": categoriesCount})
+        numStudentCategories = self.determineNumPerCategory(studentCategories)
+        numMentorCategories = self.determineNumPerCategory(mentorCategories)
+
+        numUndergradPerYear = self.undergradPerYear(students)
+
+        return render(request, 'sap/analytics.html', {"numStudentCategories": numStudentCategories,
+                                                      "numMentorCategories": numMentorCategories,
+                                                      "numUndergradPerYear": numUndergradPerYear, })
 
 
 
