@@ -2,7 +2,7 @@
 Chart.defaults.global.defaultFontFamily = 'Nunito', '-apple-system,system-ui,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif';
 Chart.defaults.global.defaultFontColor = '#858796';
 
-import { listify } from './StudentCategories.js';
+import {findMax, listify} from './StudentCategories.js';
 
 function number_format(number, decimals, dec_point, thousands_sep) {
   // *     example: number_format(1234.56, 2, ',', ' ');
@@ -29,20 +29,39 @@ function number_format(number, decimals, dec_point, thousands_sep) {
   return s.join(dec);
 }
 
+
+function limitToTen(array){
+  var limitedArray = []
+  for (let i=array.length-1; i > array.length-11; i--){
+    console.log(i);
+    if (i>=0){
+      limitedArray.push(array[i]);
+    }
+  }
+  return limitedArray;
+}
+
+
 // Area Chart Example
 var ctx = document.getElementById("myAreaChart");
 var undergradYears = document.getElementById("undergradYears").innerText;
 var undergradNumbers = document.getElementById("undergradNumbers").innerText;
 undergradYears = listify(undergradYears);
 undergradNumbers = listify(undergradNumbers);
+undergradYears = limitToTen(undergradYears);
+undergradNumbers = limitToTen(undergradNumbers);
+
+var maximum = findMax(undergradNumbers)
+
 console.log(undergradYears);
 console.log(undergradNumbers);
+
 var myLineChart = new Chart(ctx, {
   type: 'line',
   data: {
-    labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+    labels: undergradYears,
     datasets: [{
-      label: "Earnings",
+      label: "Undergraduates this Year",
       lineTension: .01,
       backgroundColor: "rgba(78, 115, 223, 0.05)",
       borderColor: "rgba(78, 115, 223, 1)",
@@ -54,7 +73,7 @@ var myLineChart = new Chart(ctx, {
       pointHoverBorderColor: "rgba(78, 115, 223, 1)",
       pointHitRadius: 10,
       pointBorderWidth: 2,
-      data: [0, 10000, 5000, 15000, 10000, 20000, 15000, 25000, 20000, 30000, 25000, 40000],
+      data: undergradNumbers,
     }],
   },
   options: {
@@ -77,7 +96,7 @@ var myLineChart = new Chart(ctx, {
           drawBorder: false
         },
         ticks: {
-          maxTicksLimit: 7
+          maxTicksLimit: 10
         }
       }],
       yAxes: [{
@@ -86,7 +105,7 @@ var myLineChart = new Chart(ctx, {
           padding: 10,
           // Include a dollar sign in the ticks
           callback: function(value, index, values) {
-            return '$' + number_format(value);
+            return  number_format(value);
           }
         },
         gridLines: {
@@ -118,9 +137,12 @@ var myLineChart = new Chart(ctx, {
       callbacks: {
         label: function(tooltipItem, chart) {
           var datasetLabel = chart.datasets[tooltipItem.datasetIndex].label || '';
-          return datasetLabel + ': $' + number_format(tooltipItem.yLabel);
+          return datasetLabel + ': ' + number_format(tooltipItem.yLabel);
         }
       }
     }
   }
 });
+
+
+export { limitToTen };

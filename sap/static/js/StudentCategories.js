@@ -27,7 +27,7 @@ function number_format(number, decimals, dec_point, thousands_sep) {
   return s.join(dec);
 }
 
-export function listify(string) {
+function listify(string) {
   var stringValue = string
   stringValue = stringValue.replaceAll("[", "");
   stringValue = stringValue.replaceAll("]", "");
@@ -146,3 +146,5 @@ var myBarChart = new Chart(ctx, {
     },
   }
 });
+
+export { listify, findMax };

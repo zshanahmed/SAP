@@ -533,15 +533,24 @@ class AnalyticsView(AccessMixin, TemplateView):
 
     @staticmethod
     def cleanUndergradDic(undergradDic):
-        print(undergradDic)
         years = []
         numbers = []
         if undergradDic != {}:
-            for key in sorted(undergradDic):
+            for key in sorted(undergradDic, reverse=True):
                 years.append(int(key))
                 numbers.append(undergradDic[key])
         return years, numbers
 
+    @staticmethod
+    def cleanOtherDic(otherDic):
+        years = []
+        numbers = [[], [], []]
+        if otherDic != {}:
+            for key in sorted(otherDic, reverse=True):
+                years.append(int(key))
+                for i in range(0, 3):
+                    numbers[i].append(otherDic[key][i])
+        return years, numbers
 
     @staticmethod
     def yearHelper(ally):
@@ -628,8 +637,9 @@ class AnalyticsView(AccessMixin, TemplateView):
         relation = AllyStudentCategoryRelation.objects.all()
 
         otherYear, undergradYear = AnalyticsView.findYears(allies)
-        otherJoinedPerYear, undergradJoinedPerYear = AnalyticsView.userTypePerYear(allies,otherYear,undergradYear)
+        otherJoinedPerYear, undergradJoinedPerYear = AnalyticsView.userTypePerYear(allies, otherYear, undergradYear)
         undergradYears, undergradNumbers = AnalyticsView.cleanUndergradDic(undergradJoinedPerYear)
+        otherYears, otherNumbers = AnalyticsView.cleanOtherDic(otherJoinedPerYear)
 
         students = allies.filter(user_type="Undergraduate Student")
         mentors = allies.filter(~Q(user_type="Undergraduate Student"))
@@ -647,7 +657,10 @@ class AnalyticsView(AccessMixin, TemplateView):
                                                       "numUndergradPerYear": numUndergradPerYear,
                                                       "undergradYears": undergradYears,
                                                       "undergradNumbers": undergradNumbers,
-                                                      "otherJoinedPerYear": otherJoinedPerYear, })
+                                                      "otherYears": otherYears,
+                                                      "staffNumbers": otherNumbers[0],
+                                                      "gradNumbers": otherNumbers[1],
+                                                      "facultyNumbers": otherNumbers[2], })
 
 class AdminProfileView(TemplateView):
     template_name = "sap/profile.html"

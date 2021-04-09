@@ -802,3 +802,11 @@ class TestAnalyticsPage(TestCase):
         years, numbers = views.AnalyticsView.cleanUndergradDic(undergradYears)
         self.assertEqual(years, [int(datetime.strftime(datetime.now(), "%Y"))])
         self.assertEqual(numbers, [4])
+
+    def test_cleanOtherDic(self):
+        yearDict = {datetime.strftime(datetime.now(), "%Y"): [0, 0, 0]}
+        yearDict1 = {datetime.strftime(datetime.now(), "%Y"): 0}
+        years, undergradYears = views.AnalyticsView.userTypePerYear(self.bigUsers, yearDict, yearDict1)
+        cleanedYears, cleanedOther = views.AnalyticsView.cleanOtherDic(years)
+        self.assertEqual(cleanedYears, [int(datetime.strftime(datetime.now(), "%Y"))])
+        self.assertEqual(cleanedOther, [[1], [1], [1]])
