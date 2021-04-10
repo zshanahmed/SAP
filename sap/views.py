@@ -18,7 +18,7 @@ from fuzzywuzzy import fuzz
 
 from .models import Ally, StudentCategories, AllyStudentCategoryRelation, Event, EventAttendeeRelation, EventInviteeRelation
 from django.db.models import Q
-from .models import Ally, StudentCategories, AllyStudentCategoryRelation, Event, EventAllyRelation
+from .models import Ally, StudentCategories, AllyStudentCategoryRelation, Event
 from django.views import generic
 from django.views.generic import TemplateView, View
 from django.contrib import messages
@@ -717,7 +717,7 @@ class AnalyticsView(AccessMixin, TemplateView):
                                                           "facultyNumbers": otherNumbers[2], })
         else:
             messages.error(request, "No allies to display!")
-            return redirect('sap:dashboard')
+            return redirect('sap:sap-dashboard')
 
 class AdminProfileView(TemplateView):
     template_name = "sap/profile.html"

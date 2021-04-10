@@ -689,7 +689,7 @@ class AdminAccessTests(TestCase):
         """
         self.client.login(username=self.username, password=self.password)
         response = self.client.get(reverse('sap:sap-analytics'))
-        self.assertEqual(response.status_code, HTTPStatus.OK)
+        self.assertEqual(response.status_code, 302)
 
 
 class NonAdminAccessTests(TestCase):
