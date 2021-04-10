@@ -17,6 +17,8 @@ from .models import Ally, StudentCategories, AllyStudentCategoryRelation, Announ
 from fuzzywuzzy import fuzz
 
 from .models import Ally, StudentCategories, AllyStudentCategoryRelation, Event, EventAttendeeRelation, EventInviteeRelation
+from django.db.models import Q
+from .models import Ally, StudentCategories, AllyStudentCategoryRelation, Event
 from django.views import generic
 from django.views.generic import TemplateView, View
 from django.contrib import messages
@@ -307,7 +309,7 @@ class CreateAnnouncement(AccessMixin, HttpResponse):
                 description = description,
                 created_at=datetime.datetime.now()
             )
-            
+
             messages.success(request, 'Annoucement created successfully !!')
             return redirect('sap:sap-dashboard')
         else:
@@ -582,6 +584,140 @@ class MentorsListView(generic.ListView):
 class AnalyticsView(AccessMixin, TemplateView):
     template_name = "sap/analytics.html"
 
+    @staticmethod
+    def cleanUndergradDic(undergradDic):
+        years = []
+        numbers = []
+        if undergradDic != {}:
+            for key in sorted(undergradDic, reverse=True):
+                years.append(int(key))
+                numbers.append(undergradDic[key])
+        return years, numbers
+
+    @staticmethod
+    def cleanOtherDic(otherDic):
+        years = []
+        numbers = [[], [], []]
+        if otherDic != {}:
+            for key in sorted(otherDic, reverse=True):
+                years.append(int(key))
+                for i in range(0, 3):
+                    numbers[i].append(otherDic[key][i])
+        return years, numbers
+
+    @staticmethod
+    def yearHelper(ally):
+        user = ally.user
+        joined = user.date_joined
+        joined = datetime.datetime.strftime(joined, '%Y')
+        return joined
+
+    @staticmethod
+    def findYears(allies):
+        yearAndNumber = {}
+        undergradNumber = {}
+        for ally in allies:
+            joined = AnalyticsView.yearHelper(ally)
+            if ally.user_type != 'Undergraduate Student':
+                yearAndNumber[joined] = [0, 0, 0] ##Staff,Grad,Faculty
+            else:
+                undergradNumber[joined] = 0 ##num undergrad in a particular year
+        return yearAndNumber, undergradNumber
+
+    @staticmethod
+    def userTypePerYear(allies, yearAndNumber, undergradNumber):
+        for ally in allies:
+            joined = AnalyticsView.yearHelper(ally)
+            if ally.user_type == 'Staff':
+                yearAndNumber[joined][0] += 1
+            elif ally.user_type == 'Graduate Student':
+                yearAndNumber[joined][1] += 1
+            elif ally.user_type == 'Undergraduate Student':
+                undergradNumber[joined] += 1
+            elif ally.user_type == 'Faculty':
+                yearAndNumber[joined][2] += 1
+        return yearAndNumber, undergradNumber
+
+    @staticmethod
+    def findTheCategories(allies, relation, categories):
+        categoriesList = []
+        for ally in allies:
+            categoryRelation = relation.filter(ally_id=ally.id)
+            if categoryRelation.exists():
+                category = categories.filter(id=categoryRelation[0].student_category_id)
+                if category.exists():
+                    categoriesList.append(category[0])
+        return categoriesList
+
+    @staticmethod
+    def determineNumPerCategory(categoryList):
+        perCategory = [0, 0, 0, 0, 0, 0, 0] #lbtq,minorities,rural,disabled,firstGen,transfer,lowIncome
+        for category in categoryList:
+            if category.lgbtq:
+                perCategory[0] += 1
+            if category.under_represented_racial_ethnic:
+                perCategory[1] += 1
+            if category.rural:
+                perCategory[2] += 1
+            if category.disabled:
+                perCategory[3] += 1
+            if category.first_gen_college_student:
+                perCategory[4] += 1
+            if category.transfer_student:
+                perCategory[5] += 1
+            if category.low_income:
+                perCategory[6] += 1
+        return perCategory
+
+    @staticmethod
+    def undergradPerYear(allies):
+        perCategory = [0, 0, 0, 0] #Freshman,Sophmore,Junior,Senior
+        for ally in allies:
+            if ally.year == "Freshman":
+                perCategory[0] += 1
+            if ally.year == "Sophomore":
+                perCategory[1] += 1
+            if ally.year == "Junior":
+                perCategory[2] += 1
+            if ally.year == "Senior":
+                perCategory[3] += 1
+
+        return perCategory
+
+    def get(self, request):
+        allies = Ally.objects.all()
+        if len(allies) != 0:
+            categories = StudentCategories.objects.all()
+            relation = AllyStudentCategoryRelation.objects.all()
+
+            otherYear, undergradYear = AnalyticsView.findYears(allies)
+            otherJoinedPerYear, undergradJoinedPerYear = AnalyticsView.userTypePerYear(allies, otherYear, undergradYear)
+            undergradYears, undergradNumbers = AnalyticsView.cleanUndergradDic(undergradJoinedPerYear)
+            otherYears, otherNumbers = AnalyticsView.cleanOtherDic(otherJoinedPerYear)
+
+            students = allies.filter(user_type="Undergraduate Student")
+            mentors = allies.filter(~Q(user_type="Undergraduate Student"))
+
+            studentCategories = AnalyticsView.findTheCategories(students, relation, categories)
+            mentorCategories = AnalyticsView.findTheCategories(mentors, relation, categories)
+
+            numStudentCategories = AnalyticsView.determineNumPerCategory(studentCategories)
+            numMentorCategories = AnalyticsView.determineNumPerCategory(mentorCategories)
+
+            numUndergradPerYear = AnalyticsView.undergradPerYear(students)
+
+            return render(request, 'sap/analytics.html', {"numStudentCategories": numStudentCategories,
+                                                          "numMentorCategories": numMentorCategories,
+                                                          "numUndergradPerYear": numUndergradPerYear,
+                                                          "undergradYears": undergradYears,
+                                                          "undergradNumbers": undergradNumbers,
+                                                          "otherYears": otherYears,
+                                                          "staffNumbers": otherNumbers[0],
+                                                          "gradNumbers": otherNumbers[1],
+                                                          "facultyNumbers": otherNumbers[2], })
+        else:
+            messages.error(request, "No allies to display!")
+            return redirect('sap:sap-dashboard')
 
 class AdminProfileView(TemplateView):
     template_name = "sap/profile.html"
@@ -694,7 +830,7 @@ class CreateEventView(AccessMixin, TemplateView):
             invite_all_selected = True
         else:
             invite_all_selected = []
-            
+
         if 'event_allday' in new_event_dict:
             allday = True
 

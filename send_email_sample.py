@@ -9,7 +9,7 @@ from sendgrid.helpers.mail import Mail
 
 message = Mail(
     from_email='iba@uiowa.edu',    # this email address must be in Sendgrid's sender list
-    to_emails='RECIPIENT_EMAIL_ADDRESS@EMAIL.COM',
+    to_emails='eshaeffer@uiowa.edu',
     subject='Sample Email From Science Alliance Portal',
     html_content='<strong>This is an email from Science Alliance Portal</strong>')
 try:
