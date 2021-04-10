@@ -38,9 +38,6 @@ jobs:
       run: python manage.py test
       env:
         SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY }}
-
-    - name: Run linter
-      run:  pylint --load-plugins pylint_django --django-settings-module=azuresite.settings sap/
     
     - name: Upload artifact for deployment jobs
       uses: actions/upload-artifact@v2
