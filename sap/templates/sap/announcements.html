@@ -1,0 +1,75 @@
+{% extends 'sap/base.html' %}
+{% load static %}
+
+{% block title %}IBA - Dashboard{% endblock title %}
+
+{% block content %}
+    <!-- Page Wrapper -->
+    <div id="wrapper">
+
+        {% include "./partials/_sidebar.html" with role=role %}
+
+        <!-- Content Wrapper -->
+        <div id="content-wrapper" class="d-flex flex-column">
+
+            <!-- Main Content -->
+            <div id="content">
+                {% if messages %}
+                <div class="alert alert-primary alert-dismissible fade show" role="alert">
+                    {% for message in messages %}
+                        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+                    {% endfor %}
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                {% endif %}
+                
+                {% include './partials/_topbar.html' with role=role %}
+                
+                {% for announcment in announcments_list %}
+                <div class="container-fluid float-left">
+                    <!-- <div style="height: 27px; visibility: hidden"></div> -->
+                    <div class="card shadow mb-4">
+                        <div class="card-header py-3">
+                            <h6 class="m-0 font-weight-bold text-primary">{{ announcment.title }}</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <div class="form-group row">
+                                    <div class="col-sm-6 mb-3 mb-sm-0">
+                                        <strong>Description: </strong>{{ announcment.description }}
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <div class="col-sm-6 mb-3 mb-sm-0">
+                                        <strong>Created At: </strong>{{ announcment.created_at }}
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <div class="col-sm-6 mb-3 mb-sm-0">
+                                        <strong>Created by: </strong>{{ announcment.username }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            <!-- End of Main Content -->
+
+       {% include './partials/_footer.html' %}
+
+        </div>
+        <!-- End of Content Wrapper -->
+
+    </div>
+    <!-- End of Page Wrapper -->
+
+    <!-- Scroll to Top Button-->
+    <a class="scroll-to-top rounded" href="#page-top">
+        <i class="fas fa-angle-up"></i>
+    </a>
+
+{% endblock content %}

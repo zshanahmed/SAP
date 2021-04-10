@@ -3,6 +3,8 @@ contains unit tests for sap app
 """
 import os
 import io
+from datetime import datetime
+from django.db.models import Q
 from http import HTTPStatus
 from django.urls import reverse
 from django.contrib.auth import get_user_model
@@ -10,7 +12,7 @@ from django.test import TestCase, Client  # tests file
 import pandas as pd
 import numpy as np
 import sap.views as views
-from .models import Ally, StudentCategories, AllyStudentCategoryRelation, Event, EventInviteeRelation, EventAttendeeRelation
+from .models import Ally, StudentCategories, AllyStudentCategoryRelation, Event, EventInviteeRelation
 from .tests import create_ally
 
 User = get_user_model()
@@ -18,7 +20,7 @@ User = get_user_model()
 
 def wack_test_db():
     """
-    Delete everything from the database
+    Delete users/allies/categories from the database
     """
     User.objects.all().delete()
     Ally.objects.all().delete()
@@ -36,6 +38,78 @@ allyFields = ['user_type', 'area_of_research', 'openings_in_lab_serving_at', 'de
 categoryFields = ['under_represented_racial_ethnic', 'first_gen_college_student',
                   'transfer_student', 'lgbtq', 'low_income', 'rural', 'disabled']
 
+
+def make_big_user():
+
+    bigUser = User.objects.create_user(username="bigUser", password="bigPassword", email="bigEmail@uiowa.edu")
+    bigAlly = Ally.objects.create(user=bigUser, user_id=bigUser.id, user_type='Undergraduate Student',
+                                  hawk_id=bigUser.username, major='biomedical engineering', year='Freshman',
+                                  interested_in_joining_lab=True, has_lab_experience=False,
+                                  interested_in_mentoring=False, information_release=True)
+    bigCategory = StudentCategories.objects.create(rural=True, first_gen_college_student=True,
+                                                   under_represented_racial_ethnic=True, transfer_student=False,
+                                                   lgbtq=True, low_income=False, disabled=True)
+    AllyStudentCategoryRelation.objects.create(ally_id=bigAlly.id, student_category_id=bigCategory.id)
+
+    bigUser1 = User.objects.create_user(username="bigUser1", password="bigPassword", email="bigEmail1@uiowa.edu")
+    bigAlly1 = Ally.objects.create(user=bigUser1, user_id=bigUser1.id, user_type='Undergraduate Student',
+                                  hawk_id=bigUser1.username, major='biomedical engineering', year='Sophomore',
+                                  interested_in_joining_lab=True, has_lab_experience=False,
+                                  interested_in_mentoring=False, information_release=True)
+    bigCategory1 = StudentCategories.objects.create(rural=False, first_gen_college_student=True,
+                                                   under_represented_racial_ethnic=True, transfer_student=False,
+                                                   lgbtq=True, low_income=False, disabled=True)
+    AllyStudentCategoryRelation.objects.create(ally_id=bigAlly1.id, student_category_id=bigCategory1.id)
+
+    bigUser2 = User.objects.create_user(username="bigUser2", password="bigPassword", email="bigEmail2@uiowa.edu")
+    bigAlly2 = Ally.objects.create(user=bigUser2, user_id=bigUser2.id, user_type='Undergraduate Student',
+                                  hawk_id=bigUser2.username, major='biomedical engineering', year='Junior',
+                                  interested_in_joining_lab=True, has_lab_experience=False,
+                                  interested_in_mentoring=False, information_release=True)
+    bigCategory2 = StudentCategories.objects.create(rural=True, first_gen_college_student=True,
+                                                   under_represented_racial_ethnic=True, transfer_student=False,
+                                                   lgbtq=True, low_income=False, disabled=True)
+    AllyStudentCategoryRelation.objects.create(ally_id=bigAlly2.id, student_category_id=bigCategory2.id)
+
+    bigUser3 = User.objects.create_user(username="bigUser3", password="bigPassword", email="bigEmail3@uiowa.edu")
+    bigAlly3 = Ally.objects.create(user=bigUser3, user_id=bigUser3.id, user_type='Undergraduate Student',
+                                  hawk_id=bigUser3.username, major='biomedical engineering', year='Senior',
+                                  interested_in_joining_lab=True, has_lab_experience=False,
+                                  interested_in_mentoring=False, information_release=True)
+    bigCategory3 = StudentCategories.objects.create(rural=True, first_gen_college_student=True,
+                                                   under_represented_racial_ethnic=True, transfer_student=False,
+                                                   lgbtq=True, low_income=False, disabled=True)
+    AllyStudentCategoryRelation.objects.create(ally_id=bigAlly3.id, student_category_id=bigCategory3.id)
+
+    bigUser4 = User.objects.create_user(username="bigUser4", password="bigPassword", email="bigEmail4@uiowa.edu")
+    bigAlly4 = Ally.objects.create(user=bigUser4, user_id=bigUser4.id, user_type='Staff',
+                                  hawk_id=bigUser4.username, major='biomedical engineering', year='Senior',
+                                  interested_in_joining_lab=True, has_lab_experience=False,
+                                  interested_in_mentoring=False, information_release=True)
+    bigCategory4 = StudentCategories.objects.create(rural=True, first_gen_college_student=True,
+                                                   under_represented_racial_ethnic=True, transfer_student=False,
+                                                   lgbtq=True, low_income=False, disabled=True)
+    AllyStudentCategoryRelation.objects.create(ally_id=bigAlly4.id, student_category_id=bigCategory4.id)
+
+    bigUser5 = User.objects.create_user(username="bigUser5", password="bigPassword", email="bigEmail5@uiowa.edu")
+    bigAlly5 = Ally.objects.create(user=bigUser5, user_id=bigUser5.id, user_type='Faculty',
+                                  hawk_id=bigUser5.username, major='biomedical engineering', year='Senior',
+                                  interested_in_joining_lab=True, has_lab_experience=False,
+                                  interested_in_mentoring=False, information_release=True)
+    bigCategory5 = StudentCategories.objects.create(rural=True, first_gen_college_student=True,
+                                                   under_represented_racial_ethnic=True, transfer_student=False,
+                                                   lgbtq=True, low_income=False, disabled=True)
+    AllyStudentCategoryRelation.objects.create(ally_id=bigAlly5.id, student_category_id=bigCategory5.id)
+
+    bigUser6 = User.objects.create_user(username="bigUser6", password="bigPassword", email="bigEmail6@uiowa.edu")
+    bigAlly6 = Ally.objects.create(user=bigUser6, user_id=bigUser6.id, user_type='Graduate Student',
+                                  hawk_id=bigUser6.username, major='biomedical engineering', year='Senior',
+                                  interested_in_joining_lab=True, has_lab_experience=False,
+                                  interested_in_mentoring=False, information_release=True)
+    bigCategory6 = StudentCategories.objects.create(rural=True, first_gen_college_student=True,
+                                                   under_represented_racial_ethnic=True, transfer_student=False,
+                                                   lgbtq=True, low_income=False, disabled=True)
+    AllyStudentCategoryRelation.objects.create(ally_id=bigAlly6.id, student_category_id=bigCategory6.id)
 
 class DownloadAlliesTest(TestCase):
     """
@@ -321,12 +395,21 @@ class CreateEventTests(TestCase):
             student_category=self.category,
         )
 
-    def test_get(self):
+    def test_get_is_staff(self):
         """
-        test to check if the create event page is rendered properly
+        test to check if the create event page is rendered properly, staff permission
         """
         response = self.client.get('/create_event/')
         self.assertEqual(response.status_code, 200)
+
+    def test_get_not_is_staff(self):
+        """
+        test to check if the create event page is rendered properly
+        """
+        self.user.is_staff = False
+        self.user.save()
+        response = self.client.get('/create_event/')
+        self.assertEqual(response.status_code, 403)
 
     def test_invite_all(self):
         """
@@ -360,6 +443,7 @@ class CreateEventTests(TestCase):
             'event_start_time': ['2021-03-31T15:32'],
             'event_end_time': ['2021-04-30T15:32'],
             'role_selected': ['Graduate Student'],
+            'school_year_selected': ['Sophomore'],
             'mentor_status': ['Mentors', 'Mentees'],
             'research_area': ['Biochemistry']
         })
@@ -605,7 +689,7 @@ class AdminAccessTests(TestCase):
         """
         self.client.login(username=self.username, password=self.password)
         response = self.client.get(reverse('sap:sap-analytics'))
-        self.assertEqual(response.status_code, HTTPStatus.OK)
+        self.assertEqual(response.status_code, 302)
 
 
 class NonAdminAccessTests(TestCase):
@@ -738,3 +822,78 @@ class CalendarViewTests(TestCase):
         response = self.client.get(reverse('sap:calendar'))
         self.assertContains(response, "Calendar")
         self.assertContains(response, self.event.title)
+
+class TestAnalyticsPage(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.client.login(username='admin', password='admin_password1')
+        self.bigCategory = StudentCategories.objects.create(rural=True, first_gen_college_student=True,
+                                                   under_represented_racial_ethnic=True, transfer_student=True,
+                                                   lgbtq=True, low_income=True, disabled=True)
+        make_big_user()
+        self.undergrads = [Ally.objects.filter(hawk_id="bigUser")[0],
+                           Ally.objects.filter(hawk_id="bigUser1")[0],
+                           Ally.objects.filter(hawk_id="bigUser2")[0],
+                           Ally.objects.filter(hawk_id="bigUser3")[0],]
+
+        self.bigUsers = Ally.objects.filter(Q(hawk_id__startswith='bigUser'))
+
+    def test_get_analytics(self):
+        """
+        Test good respone from the Analytics page.
+        """
+        response = self.client.get(reverse('sap:sap-analytics'))
+        self.assertEqual(response.status_code, 302)
+
+    def test_num_per_Category(self):
+        categoryList = [self.bigCategory]
+
+        categoryList = views.AnalyticsView.determineNumPerCategory(categoryList)
+
+        self.assertEqual(categoryList, [1, 1, 1, 1, 1, 1, 1])
+
+    def test_find_category(self):
+        ally = [Ally.objects.filter(hawk_id="bigUser")[0]]
+        relation = AllyStudentCategoryRelation.objects.all()
+        categories = StudentCategories.objects.all()
+        categoryRelation = relation.filter(ally_id=ally[0].id)
+        category = categories.filter(id=categoryRelation[0].student_category_id)
+        categories = views.AnalyticsView.findTheCategories(ally, relation, categories)
+
+        self.assertEqual(category[0].id, categories[0].id)
+
+    def test_numUndergrad(self):
+        numPerYear = views.AnalyticsView.undergradPerYear(self.undergrads)
+        self.assertEqual(numPerYear, [1, 1, 1, 1])
+
+    def test_getYear(self):
+        years, yearsUndergrad = views.AnalyticsView.findYears(self.bigUsers)
+        yearDict = {datetime.strftime(datetime.now(), "%Y"): [0, 0, 0]}
+        yearDict1 = {datetime.strftime(datetime.now(), "%Y"): 0}
+        self.assertEqual(years, yearDict)
+        self.assertEqual(yearsUndergrad, yearDict1)
+
+    def test_userTypePerYear(self):
+        yearDict = {datetime.strftime(datetime.now(), "%Y"): [0, 0, 0]}
+        yearDict1 = {datetime.strftime(datetime.now(), "%Y"): 0}
+        years, undergradYears = views.AnalyticsView.userTypePerYear(self.bigUsers, yearDict, yearDict1)
+        yearDict = {datetime.strftime(datetime.now(), "%Y"): [1, 1, 1]}
+        yearDict1 = {datetime.strftime(datetime.now(), "%Y"): 4}
+        self.assertEqual(years, yearDict)
+        self.assertEqual(undergradYears, yearDict1)
+
+    def test_cleanUndergradDic(self):
+        yearDict = {datetime.strftime(datetime.now(), "%Y"): [0, 0, 0]}
+        yearDict1 = {datetime.strftime(datetime.now(), "%Y"): 0}
+        years, undergradYears = views.AnalyticsView.userTypePerYear(self.undergrads, yearDict, yearDict1)
+        years, numbers = views.AnalyticsView.cleanUndergradDic(undergradYears)
+        self.assertEqual(years, [int(datetime.strftime(datetime.now(), "%Y"))])
+        self.assertEqual(numbers, [4])
+
+    def test_cleanOtherDic(self):
+        yearDict = {datetime.strftime(datetime.now(), "%Y"): [0, 0, 0]}
+        yearDict1 = {datetime.strftime(datetime.now(), "%Y"): 0}
+        years, undergradYears = views.AnalyticsView.userTypePerYear(self.bigUsers, yearDict, yearDict1)
+        cleanedYears, cleanedOther = views.AnalyticsView.cleanOtherDic(years)
+        self.assertEqual(cleanedYears, [int(datetime.strftime(datetime.now(), "%Y"))])
+        self.assertEqual(cleanedOther, [[1], [1], [1]])

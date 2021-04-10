@@ -5,6 +5,7 @@
 
 {% block content %}
 
+
     <!-- Page Wrapper -->
     <div id="wrapper">
 
@@ -28,12 +29,61 @@
 
                 {% include './partials/_topbar.html' %}
 
-                <div class="container-fluid">
-
-                    This will be the Analytics Page
-
+                <div class="container-fluid col-md-6 float-left">
+                    <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                        Student Categories and Faculty/Staff willing to Mentor
+                    </div>
+                    <div id="numStudentCategories" style="display: none">{{ numStudentCategories }}</div>
+                    <div id="numMentorCategories" style="display: none">{{ numMentorCategories }}</div>
+                    <div class="card-body">
+                        <div class="chart-bar">
+                            <div class="chart-bar">
+                                <canvas id="myBarChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-
+                <div class="container-fluid col-md-6 float-right">
+                    <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                        Number of Undergraduates per Class
+                    </div>
+                    <div id="numUndergradPerYear" style="display: none">{{ numUndergradPerYear }}</div>
+                    <div class="chart-pie">
+                            <div class="chart-pie">
+                                <canvas id="myPieChart"></canvas>
+                            </div>
+                    </div>
+                </div>
+            </div>
+            <div class="container-fluid">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                        Undergraduates Joined per Year
+                </div>
+                    <div class="card-body">
+                        <div id="undergradYears" style="display: none">{{ undergradYears }}</div>
+                        <div id="undergradNumbers" style="display: none">{{ undergradNumbers }}</div>
+                        <div class="chart-area">
+                            <div class="chart-area">
+                                <canvas id="myAreaChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+            </div>
+            <div class="container-fluid">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                        Staff, Graduate Students, and Faculty Joined per Year
+                </div>
+                    <div class="card-body">
+                        <div id="otherYears" style="display: none">{{ otherYears }}</div>
+                        <div id="staffNumbers" style="display: none">{{ staffNumbers }}</div>
+                        <div id="gradNumbers" style="display: none">{{ gradNumbers }}</div>
+                        <div id="facultyNumbers" style="display: none">{{ facultyNumbers }}</div>
+                        <div class="chart-area">
+                            <div class="chart-area">
+                                <canvas id="myAreaChart1"></canvas>
+                            </div>
+                        </div>
+                    </div>
             </div>
             <!-- End of Main Content -->
 
@@ -50,4 +100,9 @@
         <i class="fas fa-angle-up"></i>
     </a>
 
+<script src="{% static 'vendor/chart.js/Chart.min.js' %}"></script>
+<script type="module" src="{% static 'js/StudentCategories.js' %}"></script>
+<script type="module" src="{% static 'js/UndergradPerYear.js' %}"></script>
+<script type="module" src="{% static 'js/UndergradJoinPerYear.js' %}"></script>
+<script type="module" src="{% static 'js/OtherJoinPerYear.js' %}"></script>
 {% endblock content %}

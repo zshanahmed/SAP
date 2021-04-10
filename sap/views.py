@@ -13,10 +13,12 @@ from django.utils.encoding import force_bytes, force_text
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError
 import xlsxwriter
-from .models import Ally, StudentCategories, AllyStudentCategoryRelation
+from .models import Ally, StudentCategories, AllyStudentCategoryRelation, Announcement
 from fuzzywuzzy import fuzz
 
 from .models import Ally, StudentCategories, AllyStudentCategoryRelation, Event, EventAttendeeRelation, EventInviteeRelation
+from django.db.models import Q
+from .models import Ally, StudentCategories, AllyStudentCategoryRelation, Event
 from django.views import generic
 from django.views.generic import TemplateView, View
 from django.contrib import messages
@@ -291,6 +293,28 @@ class EditAllyProfile(View):
             return redirect('sap:ally-dashboard')
 
 
+class CreateAnnouncement(AccessMixin, HttpResponse):
+    """
+    Create annoucnemnnts
+    """
+    def create_announcement(request):
+        if request.user.is_staff:
+            postDict = dict(request.POST)
+            curr_user = request.user
+            title = postDict['title'][0]
+            description = postDict['desc'][0]
+            announcement = Announcement.objects.create(
+                username=curr_user.username,
+                title = title,
+                description = description,
+                created_at=datetime.datetime.now()
+            )
+
+            messages.success(request, 'Annoucement created successfully !!')
+            return redirect('sap:sap-dashboard')
+        else:
+            return HttpResponseForbidden()
+
 class DeleteAllyProfileFromAdminDashboard(AccessMixin, View):
     def get(self, request, *args, **kwargs):
         username = request.GET['username']
@@ -377,6 +401,18 @@ class EditAdminProfile(View):
         return render(request, 'sap/profile.html', {
             'form': form
         })
+
+
+class Announcements(TemplateView):
+    def get(self, request):
+        announcments_list = Announcement.objects.order_by('-created_at')
+        if request.user.is_staff:
+            role="admin"
+        else:
+            role="ally"
+        for announcment in announcments_list:
+            pass
+        return render(request, 'sap/announcements.html', {'announcments_list': announcments_list, 'role': role})
 
 class AlliesListView(AccessMixin, TemplateView):
 
@@ -548,6 +584,140 @@ class MentorsListView(generic.ListView):
 class AnalyticsView(AccessMixin, TemplateView):
     template_name = "sap/analytics.html"
 
+    @staticmethod
+    def cleanUndergradDic(undergradDic):
+        years = []
+        numbers = []
+        if undergradDic != {}:
+            for key in sorted(undergradDic, reverse=True):
+                years.append(int(key))
+                numbers.append(undergradDic[key])
+        return years, numbers
+
+    @staticmethod
+    def cleanOtherDic(otherDic):
+        years = []
+        numbers = [[], [], []]
+        if otherDic != {}:
+            for key in sorted(otherDic, reverse=True):
+                years.append(int(key))
+                for i in range(0, 3):
+                    numbers[i].append(otherDic[key][i])
+        return years, numbers
+
+    @staticmethod
+    def yearHelper(ally):
+        user = ally.user
+        joined = user.date_joined
+        joined = datetime.datetime.strftime(joined, '%Y')
+        return joined
+
+    @staticmethod
+    def findYears(allies):
+        yearAndNumber = {}
+        undergradNumber = {}
+        for ally in allies:
+            joined = AnalyticsView.yearHelper(ally)
+            if ally.user_type != 'Undergraduate Student':
+                yearAndNumber[joined] = [0, 0, 0] ##Staff,Grad,Faculty
+            else:
+                undergradNumber[joined] = 0 ##num undergrad in a particular year
+        return yearAndNumber, undergradNumber
+
+    @staticmethod
+    def userTypePerYear(allies, yearAndNumber, undergradNumber):
+        for ally in allies:
+            joined = AnalyticsView.yearHelper(ally)
+            if ally.user_type == 'Staff':
+                yearAndNumber[joined][0] += 1
+            elif ally.user_type == 'Graduate Student':
+                yearAndNumber[joined][1] += 1
+            elif ally.user_type == 'Undergraduate Student':
+                undergradNumber[joined] += 1
+            elif ally.user_type == 'Faculty':
+                yearAndNumber[joined][2] += 1
+        return yearAndNumber, undergradNumber
+
+    @staticmethod
+    def findTheCategories(allies, relation, categories):
+        categoriesList = []
+        for ally in allies:
+            categoryRelation = relation.filter(ally_id=ally.id)
+            if categoryRelation.exists():
+                category = categories.filter(id=categoryRelation[0].student_category_id)
+                if category.exists():
+                    categoriesList.append(category[0])
+        return categoriesList
+
+    @staticmethod
+    def determineNumPerCategory(categoryList):
+        perCategory = [0, 0, 0, 0, 0, 0, 0] #lbtq,minorities,rural,disabled,firstGen,transfer,lowIncome
+        for category in categoryList:
+            if category.lgbtq:
+                perCategory[0] += 1
+            if category.under_represented_racial_ethnic:
+                perCategory[1] += 1
+            if category.rural:
+                perCategory[2] += 1
+            if category.disabled:
+                perCategory[3] += 1
+            if category.first_gen_college_student:
+                perCategory[4] += 1
+            if category.transfer_student:
+                perCategory[5] += 1
+            if category.low_income:
+                perCategory[6] += 1
+        return perCategory
+
+    @staticmethod
+    def undergradPerYear(allies):
+        perCategory = [0, 0, 0, 0] #Freshman,Sophmore,Junior,Senior
+        for ally in allies:
+            if ally.year == "Freshman":
+                perCategory[0] += 1
+            if ally.year == "Sophomore":
+                perCategory[1] += 1
+            if ally.year == "Junior":
+                perCategory[2] += 1
+            if ally.year == "Senior":
+                perCategory[3] += 1
+
+        return perCategory
+
+    def get(self, request):
+        allies = Ally.objects.all()
+        if len(allies) != 0:
+            categories = StudentCategories.objects.all()
+            relation = AllyStudentCategoryRelation.objects.all()
+
+            otherYear, undergradYear = AnalyticsView.findYears(allies)
+            otherJoinedPerYear, undergradJoinedPerYear = AnalyticsView.userTypePerYear(allies, otherYear, undergradYear)
+            undergradYears, undergradNumbers = AnalyticsView.cleanUndergradDic(undergradJoinedPerYear)
+            otherYears, otherNumbers = AnalyticsView.cleanOtherDic(otherJoinedPerYear)
+
+            students = allies.filter(user_type="Undergraduate Student")
+            mentors = allies.filter(~Q(user_type="Undergraduate Student"))
+
+            studentCategories = AnalyticsView.findTheCategories(students, relation, categories)
+            mentorCategories = AnalyticsView.findTheCategories(mentors, relation, categories)
+
+            numStudentCategories = AnalyticsView.determineNumPerCategory(studentCategories)
+            numMentorCategories = AnalyticsView.determineNumPerCategory(mentorCategories)
+
+            numUndergradPerYear = AnalyticsView.undergradPerYear(students)
+
+            return render(request, 'sap/analytics.html', {"numStudentCategories": numStudentCategories,
+                                                          "numMentorCategories": numMentorCategories,
+                                                          "numUndergradPerYear": numUndergradPerYear,
+                                                          "undergradYears": undergradYears,
+                                                          "undergradNumbers": undergradNumbers,
+                                                          "otherYears": otherYears,
+                                                          "staffNumbers": otherNumbers[0],
+                                                          "gradNumbers": otherNumbers[1],
+                                                          "facultyNumbers": otherNumbers[2], })
+        else:
+            messages.error(request, "No allies to display!")
+            return redirect('sap:sap-dashboard')
 
 class AdminProfileView(TemplateView):
     template_name = "sap/profile.html"
@@ -609,7 +779,11 @@ class CreateEventView(AccessMixin, TemplateView):
     template_name = "sap/create_event.html"
 
     def get(self, request):
-        return render(request, self.template_name)
+        if request.user.is_staff:
+            return render(request, self.template_name)
+        else:
+            return redirect('sap:resources')
+
 
     def post(self, request):
         new_event_dict = dict(request.POST)
@@ -630,6 +804,11 @@ class CreateEventView(AccessMixin, TemplateView):
             invite_ally_user_types = new_event_dict['role_selected']
         else:
             invite_ally_user_types = []
+
+        if 'school_year_selected' in new_event_dict:
+            invite_ally_school_years = new_event_dict['school_year_selected']
+        else:
+            invite_ally_school_years = []
 
         if 'mentor_status' in new_event_dict:
             invite_mentor_mentee = new_event_dict['mentor_status']
@@ -679,41 +858,42 @@ class CreateEventView(AccessMixin, TemplateView):
             else:
                 allies_to_be_invited = []
 
-                allies_to_be_invited.extend(Ally.objects.filter(user_type__in=invite_ally_user_types))
+            allies_to_be_invited.extend(Ally.objects.filter(user_type__in=invite_ally_user_types))
+            allies_to_be_invited.extend(Ally.objects.filter(year__in=invite_ally_school_years))
 
-                if 'Mentors' in invite_mentor_mentee:
-                    allies_to_be_invited.extend(Ally.objects.filter(interested_in_mentoring=True))
+            if 'Mentors' in invite_mentor_mentee:
+                allies_to_be_invited.extend(Ally.objects.filter(interested_in_mentoring=True))
 
-                if 'Mentees' in invite_mentor_mentee:
-                    allies_to_be_invited.extend(Ally.objects.filter(interested_in_mentor_training=True))
+            if 'Mentees' in invite_mentor_mentee:
+                allies_to_be_invited.extend(Ally.objects.filter(interested_in_mentor_training=True))
 
 
-                allies_to_be_invited.extend(Ally.objects.filter(area_of_research__in=invite_ally_belonging_to_research_area))
-                student_categories_to_include_for_event = []
+            allies_to_be_invited.extend(Ally.objects.filter(area_of_research__in=invite_ally_belonging_to_research_area))
+            student_categories_to_include_for_event = []
 
-                for category in invite_ally_belonging_to_special_categories:
-                    if  category == 'First generation college-student':
-                        student_categories_to_include_for_event.extend(StudentCategories.objects.filter(first_gen_college_student=True))
+            for category in invite_ally_belonging_to_special_categories:
+                if  category == 'First generation college-student':
+                    student_categories_to_include_for_event.extend(StudentCategories.objects.filter(first_gen_college_student=True))
 
-                    elif category == 'Low-income':
-                        student_categories_to_include_for_event.extend(StudentCategories.objects.filter(low_income=True))
+                elif category == 'Low-income':
+                    student_categories_to_include_for_event.extend(StudentCategories.objects.filter(low_income=True))
 
-                    elif category == 'Underrepresented racial/ethnic minority':
-                        student_categories_to_include_for_event.extend(StudentCategories.objects.filter(under_represented_racial_ethnic=True))
+                elif category == 'Underrepresented racial/ethnic minority':
+                    student_categories_to_include_for_event.extend(StudentCategories.objects.filter(under_represented_racial_ethnic=True))
 
-                    elif category == 'LGBTQ':
-                        student_categories_to_include_for_event.extend(StudentCategories.objects.filter(lgbtq=True))
+                elif category == 'LGBTQ':
+                    student_categories_to_include_for_event.extend(StudentCategories.objects.filter(lgbtq=True))
 
-                    elif category == 'Rural':
-                        student_categories_to_include_for_event.extend(StudentCategories.objects.filter(rural=True))
+                elif category == 'Rural':
+                    student_categories_to_include_for_event.extend(StudentCategories.objects.filter(rural=True))
 
-                    elif category == 'Disabled':
-                        student_categories_to_include_for_event.extend(StudentCategories.objects.filter(disabled=True))
+                elif category == 'Disabled':
+                    student_categories_to_include_for_event.extend(StudentCategories.objects.filter(disabled=True))
 
-                invited_allies_ids = AllyStudentCategoryRelation.objects.filter(student_category__in=student_categories_to_include_for_event).values('ally')
-                allies_to_be_invited.extend(
-                    Ally.objects.filter(id__in=invited_allies_ids)
-                    )
+            invited_allies_ids = AllyStudentCategoryRelation.objects.filter(student_category__in=student_categories_to_include_for_event).values('ally')
+            allies_to_be_invited.extend(
+                Ally.objects.filter(id__in=invited_allies_ids)
+                )
 
             all_event_ally_objs = []
             invited_allies = set()
@@ -732,15 +912,25 @@ class CreateEventView(AccessMixin, TemplateView):
             return redirect('/calendar')
 
 
-class CalendarListView(TemplateView):
-    template_name = "sap/calendar_list.html"
-
-
 class RegisterEventView(TemplateView):
+    """
+    Register for event.
+    """
     def get(self, request, *args, **kwargs):
-        return render(request, self.template_name)
-
-    def get(self, request, *args, **kwargs):
+        # # TODO: Update this function once frontend gets done
+        # user_current = request.user
+        # ally_current = Ally.objects.get(user=user_current)
+        # event_id = 1
+        #
+        # if ally_current is not None and user_current.is_active:
+        #     AllyStudentCategoryRelation.objects.create(event_id=event.id,
+        #                                                ally_id=ally_current.id)
+        #     messages.success(request,
+        #                      'You have successfully register for this event!')
+        #
+        # else:
+        #     messages.warning(request,
+        #                      'You cannot register for this event.')
         pass
 
 
@@ -748,10 +938,6 @@ class RegisterEventView(TemplateView):
 class DeregisterEventView(TemplateView):
     def get(self, request, *args, **kwargs):
         # template =
-        pass
-
-    def post(self, request, *args, **kwargs):
-    # TODO: a function to withdraw from meeting
         pass
 
 
@@ -922,8 +1108,10 @@ class SignUpView(TemplateView):
                 return redirect('/sign-up')
 
             else:   # If user is not active, delete user_temp and create new user on db with is_active=False
-                ally_temp = Ally.objects.get(user=user_temp)
-                ally_temp.delete()
+
+                ally_temp = Ally.objects.filter(user=user_temp)
+                if ally_temp.exists():
+                    ally_temp[0].delete()
                 user_temp.delete()
 
                 # print(request.POST)
@@ -980,6 +1168,25 @@ class SignUpDoneView(TemplateView):
     A view which is presented if the user successfully fill out the form presented in Sign-Up view
     """
     template_name = "sap/sign-up-done.html"
+    def get(self, request, *args, **kwargs):
+        site = get_current_site(request)
+        accepted_origin = 'http:' + '//' + site.domain + reverse('sap:sign-up')
+
+        try:
+            origin = request.headers['Referer']
+
+            if request.headers['Referer'] and origin == accepted_origin:
+                return render(request, self.template_name)
+            elif request.user.is_authenticated:
+                return redirect('sap:resources')
+            else:
+                return redirect('sap:home')
+
+        except KeyError:
+            if request.user.is_authenticated:
+                return redirect('sap:resources')
+            else:
+                return redirect('sap:home')
 
 
 class SignUpConfirmView(TemplateView):
@@ -1078,6 +1285,26 @@ class ForgotPasswordDoneView(TemplateView):
     A view which is presented if the user entered valid email in Forget Password view
     """
     template_name = "sap/password-forgot-done.html"
+
+    def get(self, request, *args, **kwargs):
+        site = get_current_site(request)
+        accepted_origin = 'http:' + '//' + site.domain + reverse('sap:password-forgot')
+
+        try:
+            origin = request.headers['Referer']
+
+            if request.headers['Referer'] and origin == accepted_origin:
+                return render(request, self.template_name)
+            elif request.user.is_authenticated:
+                return redirect('sap:resources')
+            else:
+                return redirect('sap:home')
+
+        except KeyError:
+            if request.user.is_authenticated:
+                return redirect('sap:resources')
+            else:
+                return redirect('sap:home')
 
 
 class ForgotPasswordConfirmView(TemplateView):
