@@ -848,7 +848,7 @@ class TestAnalyticsPage(TestCase):
     def test_num_per_Category(self):
         categoryList = [self.bigCategory]
 
-        categoryList = views.AnalyticsView.determineNumPerCategory(categoryList)
+        categoryList = views.AnalyticsView.determine_num_per_category(categoryList)
 
         self.assertEqual(categoryList, [1, 1, 1, 1, 1, 1, 1])
 
@@ -858,16 +858,16 @@ class TestAnalyticsPage(TestCase):
         categories = StudentCategories.objects.all()
         categoryRelation = relation.filter(ally_id=ally[0].id)
         category = categories.filter(id=categoryRelation[0].student_category_id)
-        categories = views.AnalyticsView.findTheCategories(ally, relation, categories)
+        categories = views.AnalyticsView.find_the_categories(ally, relation, categories)
 
         self.assertEqual(category[0].id, categories[0].id)
 
     def test_numUndergrad(self):
-        numPerYear = views.AnalyticsView.undergradPerYear(self.undergrads)
+        numPerYear = views.AnalyticsView.undergrad_per_year(self.undergrads)
         self.assertEqual(numPerYear, [1, 1, 1, 1])
 
     def test_getYear(self):
-        years, yearsUndergrad = views.AnalyticsView.findYears(self.bigUsers)
+        years, yearsUndergrad = views.AnalyticsView.find_years(self.bigUsers)
         yearDict = {datetime.strftime(datetime.now(), "%Y"): [0, 0, 0]}
         yearDict1 = {datetime.strftime(datetime.now(), "%Y"): 0}
         self.assertEqual(years, yearDict)
@@ -876,7 +876,7 @@ class TestAnalyticsPage(TestCase):
     def test_userTypePerYear(self):
         yearDict = {datetime.strftime(datetime.now(), "%Y"): [0, 0, 0]}
         yearDict1 = {datetime.strftime(datetime.now(), "%Y"): 0}
-        years, undergradYears = views.AnalyticsView.userTypePerYear(self.bigUsers, yearDict, yearDict1)
+        years, undergradYears = views.AnalyticsView.user_type_per_year(self.bigUsers, yearDict, yearDict1)
         yearDict = {datetime.strftime(datetime.now(), "%Y"): [1, 1, 1]}
         yearDict1 = {datetime.strftime(datetime.now(), "%Y"): 4}
         self.assertEqual(years, yearDict)
@@ -885,15 +885,15 @@ class TestAnalyticsPage(TestCase):
     def test_cleanUndergradDic(self):
         yearDict = {datetime.strftime(datetime.now(), "%Y"): [0, 0, 0]}
         yearDict1 = {datetime.strftime(datetime.now(), "%Y"): 0}
-        years, undergradYears = views.AnalyticsView.userTypePerYear(self.undergrads, yearDict, yearDict1)
-        years, numbers = views.AnalyticsView.cleanUndergradDic(undergradYears)
+        years, undergradYears = views.AnalyticsView.user_type_per_year(self.undergrads, yearDict, yearDict1)
+        years, numbers = views.AnalyticsView.clean_undergrad_dic(undergradYears)
         self.assertEqual(years, [int(datetime.strftime(datetime.now(), "%Y"))])
         self.assertEqual(numbers, [4])
 
     def test_cleanOtherDic(self):
         yearDict = {datetime.strftime(datetime.now(), "%Y"): [0, 0, 0]}
         yearDict1 = {datetime.strftime(datetime.now(), "%Y"): 0}
-        years, undergradYears = views.AnalyticsView.userTypePerYear(self.bigUsers, yearDict, yearDict1)
-        cleanedYears, cleanedOther = views.AnalyticsView.cleanOtherDic(years)
+        years, undergradYears = views.AnalyticsView.user_type_per_year(self.bigUsers, yearDict, yearDict1)
+        cleanedYears, cleanedOther = views.AnalyticsView.clean_other_dic(years)
         self.assertEqual(cleanedYears, [int(datetime.strftime(datetime.now(), "%Y"))])
         self.assertEqual(cleanedOther, [[1], [1], [1]])

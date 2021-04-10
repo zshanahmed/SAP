@@ -1,51 +1,49 @@
-# pylint: skip-file
-
-import io, os, os.path, csv, uuid, datetime
+"""
+views has functions that are mapped to the urls in urls.py
+"""
+import io
+import os
+import os.path
+import csv
+import uuid
+import datetime
+from datetime import date
+import xlsxwriter
+from fuzzywuzzy import fuzz
+from sendgrid import SendGridAPIClient
+from sendgrid.helpers.mail import Mail
+import pandas as pd
 
 from django.core import serializers
+from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponseForbidden, HttpResponse
-from django.contrib.auth import logout, login
+from django.contrib.auth import logout
 from django.contrib.auth import authenticate
-from django.contrib.auth.views import PasswordResetConfirmView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse
 from django.utils.encoding import force_bytes, force_text
-from django.core.exceptions import ValidationError
 from django.db import IntegrityError
-import xlsxwriter
-from .models import Ally, StudentCategories, AllyStudentCategoryRelation, Announcement
-from fuzzywuzzy import fuzz
-
-from .models import Ally, StudentCategories, AllyStudentCategoryRelation, Event, EventAttendeeRelation, EventInviteeRelation
 from django.db.models import Q
-from .models import Ally, StudentCategories, AllyStudentCategoryRelation, Event
 from django.views import generic
 from django.views.generic import TemplateView, View
-from django.contrib import messages
 from django.contrib.auth import update_session_auth_hash
-from django.contrib.auth.forms import PasswordChangeForm, PasswordResetForm, SetPasswordForm
+from django.contrib.auth.forms import PasswordChangeForm, PasswordResetForm
 from django.shortcuts import render, redirect
-from django.contrib.auth.models import User
-from .forms import UpdateAdminProfileForm, UserPasswordForgotForm, UserResetForgotPasswordForm
+from django.contrib.auth import get_user_model
 from django.contrib import messages
-from django.views.decorators.http import require_http_methods
 from django.contrib.sites.shortcuts import get_current_site
 from django.template.loader import render_to_string
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
-from .tokens import password_reset_token, account_activation_token
-from sendgrid import SendGridAPIClient
-from sendgrid.helpers.mail import Mail
-from datetime import date
-
-import pandas as pd
-import numpy as np
-
-from .forms import UpdateAdminProfileForm
 from django.http import HttpResponseNotFound
 from django.utils.dateparse import parse_datetime
+from .tokens import password_reset_token, account_activation_token
 
+from .forms import UpdateAdminProfileForm, UserResetForgotPasswordForm
+from .models import Announcement, EventInviteeRelation, Ally, StudentCategories, AllyStudentCategoryRelation, Event
 
 # Create your views here.
+
+User = get_user_model()
 
 
 def login_success(request):
@@ -55,12 +53,17 @@ def login_success(request):
 
     if request.user.is_authenticated:
         if request.user.is_staff:
-            # users landing page
             return redirect('sap:sap-dashboard')
-        else:
-            return redirect('sap:ally-dashboard')
+
+        return redirect('sap:ally-dashboard')
+
+    return redirect('sap:home')
+
 
 def logout_request(request):
+    """
+    function to log an user out
+    """
     logout(request)
     return redirect('sap:home')
 
@@ -77,7 +80,13 @@ class AccessMixin(LoginRequiredMixin):
 
 
 class ViewAllyProfileFromAdminDashboard(View):
-    def get(self, request, *args, **kwargs):
+    """
+    Class that contains admin dashboard view
+    """
+    def get(self, request):
+        """
+        method to retrieve all ally information
+        """
         username = request.GET['username']
         try:
             user = User.objects.get(username=username)
@@ -85,36 +94,43 @@ class ViewAllyProfileFromAdminDashboard(View):
             return render(request, 'sap/admin_ally_table/view_ally.html', {
                 'ally': ally
             })
-        except:
+        except ObjectDoesNotExist:
             return HttpResponseNotFound()
 
 
 class EditAllyProfile(View):
+    """
+    Enter what this class/method does
+    """
 
-    def set_boolean(self, list, postDict, ally, same):
-        selectionDict = {'studentsInterestedRadios': ally.people_who_might_be_interested_in_iba,
+    @staticmethod
+    def set_boolean(_list, post_dict, ally, same):
+        """Enter what this class/method does"""
+        selection_dict = {'studentsInterestedRadios': ally.people_who_might_be_interested_in_iba,
                          'labShadowRadios': ally.willing_to_offer_lab_shadowing,
                          'connectingRadios': ally.interested_in_connecting_with_other_mentors,
-                        'openingRadios': ally.openings_in_lab_serving_at,
+                         'openingRadios': ally.openings_in_lab_serving_at,
                          'mentoringFacultyRadios': ally.interested_in_mentoring,
-                        'trainingRadios': ally.interested_in_mentor_training,
+                         'trainingRadios': ally.interested_in_mentor_training,
                          'volunteerRadios': ally.willing_to_volunteer_for_events,
                          'interestRadios': ally.interested_in_joining_lab,
-                        'experienceRadios': ally.has_lab_experience,
+                         'experienceRadios': ally.has_lab_experience,
                          'interestedRadios': ally.interested_in_mentoring,
                          'agreementRadios': ally.information_release,
                          'beingMentoredRadios': ally.interested_in_being_mentored}
-        dict = {}
-        for selection in list:
-            if postDict[selection][0] == 'Yes':
-                dict[selection] = True
-                same = same and (dict[selection] == selectionDict[selection])
+        dictionary = {}
+        for selection in _list:
+            if post_dict[selection][0] == 'Yes':
+                dictionary[selection] = True
+                same = same and (dictionary[selection] == selection_dict[selection])
             else:
-                dict[selection] = False
-                same = same and (dict[selection] == selectionDict[selection])
-        return dict, same
+                dictionary[selection] = False
+                same = same and (dictionary[selection] == selection_dict[selection])
+        return dictionary, same
 
-    def get(self, request, *args, **kwargs):
+    @staticmethod
+    def get(request, username=''):
+        """Enter what this class/method does"""
         try:
             username = request.GET['username']
         except KeyError:
@@ -135,25 +151,26 @@ class EditAllyProfile(View):
                 print(e)
                 return HttpResponseNotFound()
 
-    def post(self, request, username=''):
-        postDict = dict(request.POST)
+    def post(self, request):
+        """Enter what this class/method does"""
+        post_dict = dict(request.POST)
         user_req = request.user
         message = ''
-        if User.objects.filter(username=postDict["username"][0]).exists():
+        if User.objects.filter(username=post_dict["username"][0]).exists():
             same = True
-            user = User.objects.get(username=postDict["username"][0])
+            user = User.objects.get(username=post_dict["username"][0])
             ally = Ally.objects.get(user=user)
             try:
-                userType = postDict['roleSelected'][0]
-                if userType != ally.user_type:
-                    ally.user_type = userType
+                user_type = post_dict['roleSelected'][0]
+                if user_type != ally.user_type:
+                    ally.user_type = user_type
                     same = False
             except KeyError:
                 message += ' User type could not be updated!\n'
             try:
-                hawkId = postDict['hawkID'][0]
-                if hawkId != ally.hawk_id and hawkId != '':
-                    ally.hawk_id = hawkId
+                hawk_id = post_dict['hawkID'][0]
+                if hawk_id != ally.hawk_id and hawk_id != '':
+                    ally.hawk_id = hawk_id
                     same = False
             except KeyError:
                 message += " HawkID could not be updated!\n"
@@ -161,17 +178,17 @@ class EditAllyProfile(View):
                 selections, same = self.set_boolean(
                     ['studentsInterestedRadios', 'labShadowRadios', 'connectingRadios',
                      'openingRadios', 'mentoringFacultyRadios',
-                     'trainingRadios', 'volunteerRadios'], postDict, ally, same)
+                     'trainingRadios', 'volunteerRadios'], post_dict, ally, same)
                 try:
-                    aor = ','.join(postDict['stemGradCheckboxes'])
+                    aor = ','.join(post_dict['stemGradCheckboxes'])
                 except KeyError:
                     aor = ""
                 try:
-                    how_can_we_help = postDict["howCanWeHelp"][0]
+                    how_can_we_help = post_dict["howCanWeHelp"][0]
                 except KeyError:
                     how_can_we_help = ""
                 try:
-                    description = postDict['research-des'][0]
+                    description = post_dict['research-des'][0]
                 except KeyError:
                     description = ""
                 if not (description == ally.description_of_research_done_at_lab and
@@ -194,15 +211,15 @@ class EditAllyProfile(View):
                 if user_req.is_staff:
                     selections, same = self.set_boolean(
                         ['interestRadios', 'experienceRadios', 'interestedRadios', 'beingMentoredRadios'],
-                        postDict, ally, same)
+                        post_dict, ally, same)
                 else:
                     selections, same = self.set_boolean(
                         ['interestRadios', 'experienceRadios', 'beingMentoredRadios',
                          'interestedRadios', 'agreementRadios'],
-                        postDict, ally, same)
+                        post_dict, ally, same)
 
-                year = postDict['undergradRadios'][0]
-                major = postDict['major'][0]
+                year = post_dict['undergradRadios'][0]
+                major = post_dict['major'][0]
                 if not (year == ally.year and major == ally.major):
                     same = False
                 ally.year = year
@@ -221,18 +238,18 @@ class EditAllyProfile(View):
             badPassword = False
 
             try:
-                newUsername = postDict['newUsername'][0]
+                newUsername = post_dict['newUsername'][0]
                 if newUsername != '' and newUsername != user.username:
                     if not User.objects.filter(username=newUsername):
                         user.username = newUsername
                         same = False
                     else:
                         badUser = True
-                        message +=" Username not updated - Username already exists!\n"
+                        message += " Username not updated - Username already exists!\n"
             except KeyError:
                 message += ' Username could not be updated!\n'
             try:
-                newPassword = postDict['password'][0]
+                newPassword = post_dict['password'][0]
                 if newPassword != '':
                     if not len(newPassword) < 8:
                         user.set_password(newPassword)
@@ -243,8 +260,8 @@ class EditAllyProfile(View):
             except KeyError:
                 message += ' Password could not be updated!\n'
             try:
-                firstName = postDict['firstName'][0]
-                lastName = postDict['lastName'][0]
+                firstName = post_dict['firstName'][0]
+                lastName = post_dict['lastName'][0]
                 if firstName != '' and firstName != user.first_name:
                     user.first_name = firstName
                     same = False
@@ -255,7 +272,7 @@ class EditAllyProfile(View):
                 message += ' First name or last name could not be updated!\n'
             if user_req.is_staff:
                 try:
-                    email = postDict['email'][0]
+                    email = post_dict['email'][0]
                     if email != '' and email != user.email:
                         if not User.objects.filter(email=email).exists():
                             user.email = email
@@ -272,18 +289,18 @@ class EditAllyProfile(View):
                 else:
                     messages.add_message(request, messages.WARNING,
                                          'No Changes Detected!' + message)
-                return redirect(reverse('sap:admin_edit_ally', args=[postDict['username'][0]]))
+                return redirect(reverse('sap:admin_edit_ally', args=[post_dict['username'][0]]))
             if same:
                 messages.add_message(request, messages.WARNING,
                                      'No Changes Detected!' + message)
-                return redirect(reverse('sap:admin_edit_ally', args=[postDict['username'][0]]))
+                return redirect(reverse('sap:admin_edit_ally', args=[post_dict['username'][0]]))
 
             if not user_req.is_staff:
                 messages.add_message(request, messages.SUCCESS,
-                                        'Profile updated!\n' + message)
+                                     'Profile updated!\n' + message)
             else:
                 messages.add_message(request, messages.SUCCESS,
-                                    'Ally updated!\n' + message)
+                                     'Ally updated!\n' + message)
         else:
             messages.add_message(request, messages.WARNING,
                                  'Ally does not exist!')
@@ -297,7 +314,11 @@ class CreateAnnouncement(AccessMixin, HttpResponse):
     """
     Create annoucnemnnts
     """
+
     def create_announcement(request):
+        """
+        Enter what this class/method does
+        """
         if request.user.is_staff:
             postDict = dict(request.POST)
             curr_user = request.user
@@ -305,8 +326,8 @@ class CreateAnnouncement(AccessMixin, HttpResponse):
             description = postDict['desc'][0]
             announcement = Announcement.objects.create(
                 username=curr_user.username,
-                title = title,
-                description = description,
+                title=title,
+                description=description,
                 created_at=datetime.datetime.now()
             )
 
@@ -315,15 +336,20 @@ class CreateAnnouncement(AccessMixin, HttpResponse):
         else:
             return HttpResponseForbidden()
 
+
 class DeleteAllyProfileFromAdminDashboard(AccessMixin, View):
-    def get(self, request, *args, **kwargs):
+    """
+    Enter what this class/method does
+    """
+    def get(self, request):
+        """Enter what this class/method does"""
         username = request.GET['username']
         try:
             user = User.objects.get(username=username)
             ally = Ally.objects.get(user=user)
             ally.delete()
             user.delete()
-            messages.success(request, 'Successfully deleted the user '+username)
+            messages.success(request, 'Successfully deleted the user ' + username)
             return redirect('sap:sap-dashboard')
         except Exception as e:
             print(e)
@@ -334,13 +360,16 @@ class ChangeAdminPassword(View):
     """
     Change the password for admin
     """
+
     def get(self, request, *args, **kwargs):
+        """Enter what this class/method does"""
         form = PasswordChangeForm(request.user)
         return render(request, 'sap/change_password.html', {
             'form': form
         })
 
     def post(self, request, *args, **kwargs):
+        """Enter what this class/method does"""
         form = PasswordChangeForm(request.user, request.POST)
         if form.is_valid():
             user = form.save()
@@ -360,7 +389,9 @@ class CalendarView(TemplateView):
     """
      Show calendar to allies so that they can signup for events
     """
+
     def get(self, request):
+        """Enter what this class/method does"""
         events_list = []
         curr_user = request.user
         if not curr_user.is_staff:
@@ -373,17 +404,21 @@ class CalendarView(TemplateView):
         events = serializers.serialize('json', events_list)
         return render(request, 'sap/calendar.html', context={"events": events, "user": curr_user})
 
+
 class EditAdminProfile(View):
     """
     Change the profile for admin
     """
-    def get(self, request, *args, **kwargs):
+
+    def get(self, request):
+        """Enter what this class/method does"""
         form = UpdateAdminProfileForm()
         return render(request, 'sap/profile.html', {
             'form': form
         })
 
-    def post(self, request, *args, **kwargs):
+    def post(self, request):
+        """Enter what this class/method does"""
         curr_user = request.user
         form = UpdateAdminProfileForm(request.POST)
 
@@ -404,19 +439,24 @@ class EditAdminProfile(View):
 
 
 class Announcements(TemplateView):
+    """Enter what this class/method does"""
     def get(self, request):
+        """Enter what this class/method does"""
         announcments_list = Announcement.objects.order_by('-created_at')
         if request.user.is_staff:
-            role="admin"
+            role = "admin"
         else:
-            role="ally"
+            role = "ally"
         for announcment in announcments_list:
             pass
         return render(request, 'sap/announcements.html', {'announcments_list': announcments_list, 'role': role})
 
+
 class AlliesListView(AccessMixin, TemplateView):
+    """Enter what this class/method does"""
 
     def get(self, request):
+        """Enter what this class/method does"""
         allies_list = Ally.objects.order_by('-id')
         for ally in allies_list:
             if not ally.user.is_active:
@@ -424,6 +464,7 @@ class AlliesListView(AccessMixin, TemplateView):
         return render(request, 'sap/dashboard.html', {'allies_list': allies_list})
 
     def post(self, request):
+        """Enter what this class/method does"""
         if request.POST.get("form_type") == 'filters':
             postDict = dict(request.POST)
             if 'stemGradCheckboxes' in postDict:
@@ -431,36 +472,36 @@ class AlliesListView(AccessMixin, TemplateView):
                 exclude_from_aor_default = False
             else:
                 exclude_from_aor_default = True
-                stemfields =[]
-            
+                stemfields = []
+
             if 'undergradYear' in postDict:
                 exclude_from_year_default = False
                 undergradYear = postDict['undergradYear']
             else:
                 exclude_from_year_default = True
                 undergradYear = []
-            
+
             if 'idUnderGradCheckboxes' in postDict:
                 studentCategories = postDict['idUnderGradCheckboxes']
                 exclude_from_sc_default = False
             else:
                 exclude_from_sc_default = True
                 studentCategories = []
-            
+
             if 'roleSelected' in postDict:
                 userTypes = postDict['roleSelected']
                 exclude_from_ut_default = False
             else:
                 exclude_from_ut_default = True
                 userTypes = []
-            
+
             if 'mentorshipStatus' in postDict:
                 mentorshipStatus = postDict['mentorshipStatus'][0]
                 exclude_from_ms_default = False
             else:
                 exclude_from_ms_default = True
                 mentorshipStatus = []
-            
+
             major = postDict['major'][0]
             if major != '':
                 exclude_from_major_default = False
@@ -468,7 +509,8 @@ class AlliesListView(AccessMixin, TemplateView):
                 exclude_from_major_default = True
 
             allies_list = Ally.objects.order_by('-id')
-            if not (exclude_from_year_default and exclude_from_aor_default and exclude_from_sc_default and exclude_from_ut_default and exclude_from_ms_default and exclude_from_major_default):
+            if not (exclude_from_year_default and exclude_from_aor_default and exclude_from_sc_default and
+                    exclude_from_ut_default and exclude_from_ms_default and exclude_from_major_default):
                 for ally in allies_list:
                     exclude_from_aor = exclude_from_aor_default
                     exclude_from_year = exclude_from_year_default
@@ -486,13 +528,13 @@ class AlliesListView(AccessMixin, TemplateView):
                         aor = []
                     if (stemfields) and (not bool(set(stemfields) & set(aor))):
                         exclude_from_aor = True
-                    
-                    if (mentorshipStatus != []):
+
+                    if mentorshipStatus != []:
                         if (mentorshipStatus == 'Mentor') and (ally.interested_in_mentoring == False):
                             exclude_from_ms = True
                         elif (mentorshipStatus == 'Mentee') and (ally.interested_in_being_mentored == False):
                             exclude_from_ms = True
-                    
+
                     try:
                         categories = AllyStudentCategoryRelation.objects.filter(
                             ally_id=ally.id).values()[0]
@@ -501,13 +543,14 @@ class AlliesListView(AccessMixin, TemplateView):
                     except:
                         studentCategories = []
 
-                    if (studentCategories):
+                    if studentCategories:
                         for cat in studentCategories:
                             if (cat == 'First generation college-student') and (categories.first_gen_college_student == False):
                                 exclude_from_sc = True
                             elif (cat == 'Low-income') and (categories.low_income == False):
                                 exclude_from_sc = True
-                            elif (cat == 'Underrepresented racial/ethnic minority') and (categories.under_represented_racial_ethnic == False):
+                            elif (cat == 'Underrepresented racial/ethnic minority') and \
+                                    (categories.under_represented_racial_ethnic == False):
                                 exclude_from_sc = True
                             elif (cat == 'LGBTQ') and (categories.lgbtq == False):
                                 exclude_from_sc = True
@@ -518,23 +561,27 @@ class AlliesListView(AccessMixin, TemplateView):
 
                     if (undergradYear) and (ally.year not in undergradYear):
                         exclude_from_year = True
-                    
+
                     if (userTypes) and (ally.user_type not in userTypes):
                         print('User Type:', ally.user_type)
                         exclude_from_ut = True
 
-                    if exclude_from_aor and exclude_from_year and exclude_from_sc and exclude_from_ut and exclude_from_ms and exclude_from_major:
+                    if exclude_from_aor and exclude_from_year and exclude_from_sc and exclude_from_ut \
+                            and exclude_from_ms and exclude_from_major:
                         allies_list = allies_list.exclude(id=ally.id)
             for ally in allies_list:
                 if not ally.user.is_active:
                     allies_list = allies_list.exclude(id=ally.id)
             return render(request, 'sap/dashboard.html', {'allies_list': allies_list})
 
+
 class MentorsListView(generic.ListView):
+    """Enter what this class/method does"""
     template_name = 'sap/dashboard_ally.html'
     context_object_name = 'allies_list'
 
     def get(self, request):
+        """Enter what this class/method does"""
         allies_list = Ally.objects.order_by('-id')
         for ally in allies_list:
             if not ally.user.is_active:
@@ -542,6 +589,7 @@ class MentorsListView(generic.ListView):
         return render(request, 'sap/dashboard_ally.html', {'allies_list': allies_list})
 
     def post(self, request):
+        """Enter what this class/method does"""
         if request.POST.get("form_type") == 'filters':
             postDict = dict(request.POST)
             if 'stemGradCheckboxes' in postDict:
@@ -549,7 +597,7 @@ class MentorsListView(generic.ListView):
                 exclude_from_aor_default = False
             else:
                 exclude_from_aor_default = True
-                stemfields =[]
+                stemfields = []
             if 'undergradYear' in postDict:
                 exclude_from_year_default = False
                 undergradYear = postDict['undergradYear']
@@ -569,7 +617,6 @@ class MentorsListView(generic.ListView):
                     if (stemfields) and (not bool(set(stemfields) & set(aor))):
                         exclude_from_aor = True
 
-
                     if (undergradYear) and (ally.year not in undergradYear):
                         exclude_from_year = True
 
@@ -582,77 +629,87 @@ class MentorsListView(generic.ListView):
 
 
 class AnalyticsView(AccessMixin, TemplateView):
+    """Enter what this class/method does"""
     template_name = "sap/analytics.html"
 
     @staticmethod
-    def cleanUndergradDic(undergradDic):
+    def clean_undergrad_dic(undergrad_dic):
+        """Enter what this class/method does"""
         years = []
         numbers = []
-        if undergradDic != {}:
-            for key in sorted(undergradDic, reverse=True):
+        if undergrad_dic != {}:
+            for key in sorted(undergrad_dic, reverse=True):
                 years.append(int(key))
-                numbers.append(undergradDic[key])
+                numbers.append(undergrad_dic[key])
         return years, numbers
 
     @staticmethod
-    def cleanOtherDic(otherDic):
+    def clean_other_dic(other_dic):
+        """Enter what this class/method does"""
         years = []
         numbers = [[], [], []]
-        if otherDic != {}:
-            for key in sorted(otherDic, reverse=True):
+        if other_dic != {}:
+            for key in sorted(other_dic, reverse=True):
                 years.append(int(key))
                 for i in range(0, 3):
-                    numbers[i].append(otherDic[key][i])
+                    numbers[i].append(other_dic[key][i])
         return years, numbers
 
     @staticmethod
     def yearHelper(ally):
+        """Enter what this class/method does"""
         user = ally.user
         joined = user.date_joined
         joined = datetime.datetime.strftime(joined, '%Y')
         return joined
 
     @staticmethod
-    def findYears(allies):
-        yearAndNumber = {}
-        undergradNumber = {}
+    def find_years(allies):
+        """Enter what this class/method does"""
+        year_and_number = {}
+        undergrad_number = {}
         for ally in allies:
             joined = AnalyticsView.yearHelper(ally)
             if ally.user_type != 'Undergraduate Student':
-                yearAndNumber[joined] = [0, 0, 0] ##Staff,Grad,Faculty
+                year_and_number[joined] = [0, 0, 0]  # Staff,Grad,Faculty
             else:
-                undergradNumber[joined] = 0 ##num undergrad in a particular year
-        return yearAndNumber, undergradNumber
+                undergrad_number[joined] = 0  # num undergrad in a particular year
+        return year_and_number, undergrad_number
 
     @staticmethod
-    def userTypePerYear(allies, yearAndNumber, undergradNumber):
+    def user_type_per_year(allies, year_and_number, undergrad_number):
+        """Enter what this class/method does"""
         for ally in allies:
             joined = AnalyticsView.yearHelper(ally)
             if ally.user_type == 'Staff':
-                yearAndNumber[joined][0] += 1
+                year_and_number[joined][0] += 1
             elif ally.user_type == 'Graduate Student':
-                yearAndNumber[joined][1] += 1
+                year_and_number[joined][1] += 1
             elif ally.user_type == 'Undergraduate Student':
-                undergradNumber[joined] += 1
+                undergrad_number[joined] += 1
             elif ally.user_type == 'Faculty':
-                yearAndNumber[joined][2] += 1
-        return yearAndNumber, undergradNumber
+                year_and_number[joined][2] += 1
+        return year_and_number, undergrad_number
 
     @staticmethod
-    def findTheCategories(allies, relation, categories):
-        categoriesList = []
+    def find_the_categories(allies, relation, categories):
+        """Enter what this class/method does"""
+        categories_list = []
         for ally in allies:
-            categoryRelation = relation.filter(ally_id=ally.id)
-            if categoryRelation.exists():
-                category = categories.filter(id=categoryRelation[0].student_category_id)
+            category_relation = relation.filter(ally_id=ally.id)
+            if category_relation.exists():
+                category = categories.filter(id=category_relation[0].student_category_id)
                 if category.exists():
-                    categoriesList.append(category[0])
-        return categoriesList
+                    categories_list.append(category[0])
+        return categories_list
 
     @staticmethod
-    def determineNumPerCategory(categoryList):
-        perCategory = [0, 0, 0, 0, 0, 0, 0] #lbtq,minorities,rural,disabled,firstGen,transfer,lowIncome
-        for category in categoryList:
+    def determine_num_per_category(category_list):
+        """
+        Docstring here
+        """
+        perCategory = [0, 0, 0, 0, 0, 0, 0]  # lbtq,minorities,rural,disabled,firstGen,transfer,lowIncome
+        for category in category_list:
             if category.lgbtq:
                 perCategory[0] += 1
             if category.under_represented_racial_ethnic:
@@ -670,99 +727,113 @@ class AnalyticsView(AccessMixin, TemplateView):
         return perCategory
 
     @staticmethod
-    def undergradPerYear(allies):
-        perCategory = [0, 0, 0, 0] #Freshman,Sophmore,Junior,Senior
+    def undergrad_per_year(allies):
+        """
+        @param allies:
+        @return:
+        """
+        per_category = [0, 0, 0, 0]  # Freshman,Sophmore,Junior,Senior
         for ally in allies:
             if ally.year == "Freshman":
-                perCategory[0] += 1
+                per_category[0] += 1
             if ally.year == "Sophomore":
-                perCategory[1] += 1
+                per_category[1] += 1
             if ally.year == "Junior":
-                perCategory[2] += 1
+                per_category[2] += 1
             if ally.year == "Senior":
-                perCategory[3] += 1
+                per_category[3] += 1
 
-        return perCategory
+        return per_category
 
     def get(self, request):
+        """Enter what this class/method does"""
         allies = Ally.objects.all()
+
         if len(allies) != 0:
             categories = StudentCategories.objects.all()
             relation = AllyStudentCategoryRelation.objects.all()
 
-            otherYear, undergradYear = AnalyticsView.findYears(allies)
-            otherJoinedPerYear, undergradJoinedPerYear = AnalyticsView.userTypePerYear(allies, otherYear, undergradYear)
-            undergradYears, undergradNumbers = AnalyticsView.cleanUndergradDic(undergradJoinedPerYear)
-            otherYears, otherNumbers = AnalyticsView.cleanOtherDic(otherJoinedPerYear)
+            other_year, undergrad_year = AnalyticsView.find_years(allies)
+            other_joined_per_year, undergrad_joined_per_year = AnalyticsView.user_type_per_year(allies, other_year, undergrad_year)
+            undergrad_years, undergrad_numbers = AnalyticsView.clean_undergrad_dic(undergrad_joined_per_year)
+            other_years, other_numbers = AnalyticsView.clean_other_dic(other_joined_per_year)
 
             students = allies.filter(user_type="Undergraduate Student")
             mentors = allies.filter(~Q(user_type="Undergraduate Student"))
 
-            studentCategories = AnalyticsView.findTheCategories(students, relation, categories)
-            mentorCategories = AnalyticsView.findTheCategories(mentors, relation, categories)
+            student_categories = AnalyticsView.find_the_categories(students, relation, categories)
+            mentor_categories = AnalyticsView.find_the_categories(mentors, relation, categories)
 
-            numStudentCategories = AnalyticsView.determineNumPerCategory(studentCategories)
-            numMentorCategories = AnalyticsView.determineNumPerCategory(mentorCategories)
+            num_student_categories = AnalyticsView.determine_num_per_category(student_categories)
+            num_mentor_categories = AnalyticsView.determine_num_per_category(mentor_categories)
 
-            numUndergradPerYear = AnalyticsView.undergradPerYear(students)
+            num_undergrad_per_year = AnalyticsView.undergrad_per_year(students)
 
-            return render(request, 'sap/analytics.html', {"numStudentCategories": numStudentCategories,
-                                                          "numMentorCategories": numMentorCategories,
-                                                          "numUndergradPerYear": numUndergradPerYear,
-                                                          "undergradYears": undergradYears,
-                                                          "undergradNumbers": undergradNumbers,
-                                                          "otherYears": otherYears,
-                                                          "staffNumbers": otherNumbers[0],
-                                                          "gradNumbers": otherNumbers[1],
-                                                          "facultyNumbers": otherNumbers[2], })
+            return render(request, 'sap/analytics.html', {"numStudentCategories": num_student_categories,
+                                                          "numMentorCategories": num_mentor_categories,
+                                                          "numUndergradPerYear": num_undergrad_per_year,
+                                                          "undergradYears": undergrad_years,
+                                                          "undergradNumbers": undergrad_numbers,
+                                                          "otherYears": other_years,
+                                                          "staffNumbers": other_numbers[0],
+                                                          "gradNumbers": other_numbers[1],
+                                                          "facultyNumbers": other_numbers[2], })
         else:
             messages.error(request, "No allies to display!")
             return redirect('sap:sap-dashboard')
 
+
 class AdminProfileView(TemplateView):
+    """Enter what this class/method does"""
     template_name = "sap/profile.html"
 
 
 class AboutPageView(TemplateView):
+    """Enter what this class/method does"""
     template_name = "sap/about.html"
 
 
 class ResourcesView(TemplateView):
+    """Enter what this class/method does"""
     template_name = "sap/resources.html"
 
 
 class SupportPageView(TemplateView):
+    """Enter what this class/method does"""
     template_name = "sap/support.html"
 
 
 class CreateAdminView(AccessMixin, TemplateView):
+    """Enter what this class/method does"""
     template_name = "sap/create_iba_admin.html"
 
     def get(self, request):
+        """Enter what this class/method does"""
         return render(request, self.template_name)
 
     def post(self, request):
+        """Enter what this class/method does"""
         newAdminDict = dict(request.POST)
         valid = True
         for key in newAdminDict:
             if newAdminDict[key][0] == '':
                 valid = False
         if valid:
-            #Check if username credentials are correct
+            # Check if username credentials are correct
             if authenticate(request, username=newAdminDict['current_username'][0],
                             password=newAdminDict['current_password'][0]) is not None:
-                #if are check username exists in database
+                # if are check username exists in database
                 if User.objects.filter(username=newAdminDict['new_username'][0]).exists():
                     messages.add_message(request, messages.ERROR, 'Account was not created because username exists')
                     return redirect('/create_iba_admin')
-                #Check if repeated password is same
+                # Check if repeated password is same
                 elif newAdminDict['new_password'][0] != newAdminDict['repeat_password'][0]:
                     messages.add_message(request, messages.ERROR, 'New password was not the same as repeated password')
                     return redirect('/create_iba_admin')
                 else:
                     messages.add_message(request, messages.SUCCESS, 'Account Created')
                     user = User.objects.create_user(newAdminDict['new_username'][0],
-                                             newAdminDict['new_email'][0], newAdminDict['new_password'][0])
+                                                    newAdminDict['new_email'][0], newAdminDict['new_password'][0])
                     user.is_staff = True
                     user.save()
                     return redirect('/dashboard')
@@ -776,16 +847,18 @@ class CreateAdminView(AccessMixin, TemplateView):
 
 
 class CreateEventView(AccessMixin, TemplateView):
+    """Enter what this class/method does"""
     template_name = "sap/create_event.html"
 
     def get(self, request):
+        """Enter what this class/method does"""
         if request.user.is_staff:
             return render(request, self.template_name)
         else:
             return redirect('sap:resources')
 
-
     def post(self, request):
+        """Enter what this class/method does"""
         new_event_dict = dict(request.POST)
         event_title = new_event_dict['event_title'][0]
         event_description = new_event_dict['event_description'][0]
@@ -825,7 +898,6 @@ class CreateEventView(AccessMixin, TemplateView):
         else:
             invite_ally_belonging_to_research_area = []
 
-
         if 'invite_all' in new_event_dict:
             invite_all_selected = True
         else:
@@ -837,14 +909,15 @@ class CreateEventView(AccessMixin, TemplateView):
         else:
             allday = False
 
-        if (event_end_time < event_start_time):
+        if event_end_time < event_start_time:
             messages.warning(request, 'End time cannot be less than start time!')
             return redirect('/create_event')
 
         else:
             event = Event.objects.create(title=event_title,
                                          description=event_description,
-                                         start_time=parse_datetime(event_start_time + '-0500'), # converting time to central time before storing in db
+                                         start_time=parse_datetime(event_start_time + '-0500'),
+                                         # converting time to central time before storing in db
                                          end_time=parse_datetime(event_end_time + '-0500'),
                                          location=event_location,
                                          allday=allday,
@@ -867,12 +940,11 @@ class CreateEventView(AccessMixin, TemplateView):
             if 'Mentees' in invite_mentor_mentee:
                 allies_to_be_invited.extend(Ally.objects.filter(interested_in_mentor_training=True))
 
-
             allies_to_be_invited.extend(Ally.objects.filter(area_of_research__in=invite_ally_belonging_to_research_area))
             student_categories_to_include_for_event = []
 
             for category in invite_ally_belonging_to_special_categories:
-                if  category == 'First generation college-student':
+                if category == 'First generation college-student':
                     student_categories_to_include_for_event.extend(StudentCategories.objects.filter(first_gen_college_student=True))
 
                 elif category == 'Low-income':
@@ -890,10 +962,11 @@ class CreateEventView(AccessMixin, TemplateView):
                 elif category == 'Disabled':
                     student_categories_to_include_for_event.extend(StudentCategories.objects.filter(disabled=True))
 
-            invited_allies_ids = AllyStudentCategoryRelation.objects.filter(student_category__in=student_categories_to_include_for_event).values('ally')
+            invited_allies_ids = AllyStudentCategoryRelation.objects.filter(student_category__in=
+                                                                            student_categories_to_include_for_event).values('ally')
             allies_to_be_invited.extend(
                 Ally.objects.filter(id__in=invited_allies_ids)
-                )
+            )
 
             all_event_ally_objs = []
             invited_allies = set()
@@ -905,7 +978,6 @@ class CreateEventView(AccessMixin, TemplateView):
                     all_event_ally_objs.append(event_ally_rel_obj)
                     invited_allies.add(event_ally_rel_obj.ally)
 
-
             EventInviteeRelation.objects.bulk_create(all_event_ally_objs)
 
             messages.success(request, "Event successfully created!")
@@ -916,7 +988,9 @@ class RegisterEventView(TemplateView):
     """
     Register for event.
     """
+
     def get(self, request, *args, **kwargs):
+        """Enter what this class/method does"""
         # # TODO: Update this function once frontend gets done
         # user_current = request.user
         # ally_current = Ally.objects.get(user=user_current)
@@ -934,17 +1008,20 @@ class RegisterEventView(TemplateView):
         pass
 
 
-
 class DeregisterEventView(TemplateView):
+    """Enter what this class/method does"""
     def get(self, request, *args, **kwargs):
+        """Enter what this class/method does"""
         # template =
         pass
 
 
 class SignUpView(TemplateView):
+    """Enter what this class/method does"""
     template_name = "sap/sign-up.html"
 
     def make_categories(self, studentCategories):
+        """Enter what this class/method does"""
 
         categories = StudentCategories.objects.create()
         for id in studentCategories:
@@ -964,66 +1041,67 @@ class SignUpView(TemplateView):
         return categories
 
     def set_boolean(self, list, postDict):
-        dict = {}
+        """Enter what this class/method does"""
+        dictionary = {}
         for selection in list:
             if postDict[selection][0] == 'Yes':
-                dict[selection] = True
+                dictionary[selection] = True
             else:
-                dict[selection] = False
-        return dict
+                dictionary[selection] = False
+        return dictionary
 
-    def create_new_user(self, postDict):
+    def create_new_user(self, post_dict):
         """
         Create new user and associated ally based on what user inputs in sign-up page
         """
-        user = User.objects.create_user(username=postDict["new_username"][0],
-                                        password=postDict["new_password"][0],
-                                        email=postDict["new_email"][0],
-                                        first_name=postDict["firstName"][0],
-                                        last_name=postDict["lastName"][0],
+        user = User.objects.create_user(username=post_dict["new_username"][0],
+                                        password=post_dict["new_password"][0],
+                                        email=post_dict["new_email"][0],
+                                        first_name=post_dict["firstName"][0],
+                                        last_name=post_dict["lastName"][0],
                                         is_active=False  # Important! Set to False until user verify via email
                                         )
 
-        if postDict['roleSelected'][0] == 'Staff':
-            selections = self.set_boolean(['studentsInterestedRadios'], postDict)
+        if post_dict['roleSelected'][0] == 'Staff':
+            selections = self.set_boolean(['studentsInterestedRadios'], post_dict)
             ally = Ally.objects.create(user=user,
-                                       user_type=postDict['roleSelected'][0],
+                                       user_type=post_dict['roleSelected'][0],
                                        hawk_id=user.username,
                                        people_who_might_be_interested_in_iba=selections['studentsInterestedRadios'],
-                                       how_can_science_ally_serve_you=postDict['howCanWeHelp'])
+                                       how_can_science_ally_serve_you=post_dict['howCanWeHelp'])
         else:
-            if postDict['roleSelected'][0] == 'Undergraduate Student':
+            if post_dict['roleSelected'][0] == 'Undergraduate Student':
                 try:
-                    categories = self.make_categories(postDict["idUnderGradCheckboxes"])
+                    categories = self.make_categories(post_dict["idUnderGradCheckboxes"])
                 except KeyError:
                     categories = StudentCategories.objects.create()
                 undergradList = ['interestRadios', 'experienceRadios', 'interestedRadios',
                                  'agreementRadios', 'beingMentoredRadios']
-                selections = self.set_boolean(undergradList, postDict)
+                selections = self.set_boolean(undergradList, post_dict)
                 ally = Ally.objects.create(user=user,
-                                           user_type=postDict['roleSelected'][0],
+                                           user_type=post_dict['roleSelected'][0],
                                            hawk_id=user.username,
-                                           major=postDict['major'][0],
-                                           year=postDict['undergradRadios'][0],
+                                           major=post_dict['major'][0],
+                                           year=post_dict['undergradRadios'][0],
                                            interested_in_joining_lab=selections['interestRadios'],
                                            has_lab_experience=selections['experienceRadios'],
                                            interested_in_mentoring=selections['interestedRadios'],
                                            information_release=selections['agreementRadios'])
-            elif postDict['roleSelected'][0] == 'Graduate Student':
+            elif post_dict['roleSelected'][0] == 'Graduate Student':
                 try:
-                    stem_fields = ','.join(postDict['stemGradCheckboxes'])
+                    stem_fields = ','.join(post_dict['stemGradCheckboxes'])
                 except KeyError:
                     stem_fields = None
                 try:
-                    categories = self.make_categories(postDict['mentoringGradCheckboxes'])
+                    categories = self.make_categories(post_dict['mentoringGradCheckboxes'])
                 except KeyError:
                     categories = StudentCategories.objects.create()
 
                 gradList = ['mentoringGradRadios', 'labShadowRadios', 'connectingRadios', 'volunteerGradRadios',
                             'gradTrainingRadios']
-                selections = self.set_boolean(gradList, postDict)
+                selections = self.set_boolean(gradList, post_dict)
                 ally = Ally.objects.create(user=user,
-                                           user_type=postDict['roleSelected'][0],
+                                           user_type=post_dict['roleSelected'][0],
                                            hawk_id=user.username,
                                            area_of_research=stem_fields,
                                            interested_in_mentoring=selections['mentoringGradRadios'],
@@ -1032,23 +1110,23 @@ class SignUpView(TemplateView):
                                            willing_to_volunteer_for_events=selections['volunteerGradRadios'],
                                            interested_in_mentor_training=selections['gradTrainingRadios'])
 
-            elif postDict['roleSelected'][0] == 'Faculty':
+            elif post_dict['roleSelected'][0] == 'Faculty':
                 try:
-                    stem_fields = ','.join(postDict['stemCheckboxes'])
+                    stem_fields = ','.join(post_dict['stemCheckboxes'])
                 except KeyError:
                     stem_fields = None
                 facultyList = ['openingRadios', 'volunteerRadios', 'trainingRadios', 'mentoringFacultyRadios']
-                selections = self.set_boolean(facultyList, postDict)
+                selections = self.set_boolean(facultyList, post_dict)
                 try:
-                    categories = self.make_categories(postDict['mentoringCheckboxes'])
+                    categories = self.make_categories(post_dict['mentoringCheckboxes'])
                 except KeyError:
                     categories = StudentCategories.objects.create()
                 ally = Ally.objects.create(user=user,
-                                           user_type=postDict['roleSelected'][0],
+                                           user_type=post_dict['roleSelected'][0],
                                            hawk_id=user.username,
                                            area_of_research=stem_fields,
                                            openings_in_lab_serving_at=selections['openingRadios'],
-                                           description_of_research_done_at_lab=postDict['research-des'][0],
+                                           description_of_research_done_at_lab=post_dict['research-des'][0],
                                            interested_in_mentoring=selections['mentoringFacultyRadios'],
                                            willing_to_volunteer_for_events=selections['volunteerRadios'],
                                            interested_in_mentor_training=selections['trainingRadios'])
@@ -1102,12 +1180,12 @@ class SignUpView(TemplateView):
         if User.objects.filter(email=postDict["new_email"][0]).exists():
             user_temp = User.objects.get(email=postDict["new_email"][0])
 
-            if user_temp.is_active: # If user is active, cannot create new account
+            if user_temp.is_active:  # If user is active, cannot create new account
                 messages.warning(request,
                                  'Account can not be created because an account associated with this email address already exists!')
                 return redirect('/sign-up')
 
-            else:   # If user is not active, delete user_temp and create new user on db with is_active=False
+            else:  # If user is not active, delete user_temp and create new user on db with is_active=False
 
                 ally_temp = Ally.objects.filter(user=user_temp)
                 if ally_temp.exists():
@@ -1125,14 +1203,14 @@ class SignUpView(TemplateView):
                 #     return redirect('/sign-up')
                 elif postDict["new_password"][0] != postDict["repeat_password"][0]:
                     messages.warning(request,
-                                     "Repeated password is not the same as the inputted password!",)
+                                     "Repeated password is not the same as the inputted password!", )
                     return redirect("/sign-up")
                 elif len(postDict["new_password"][0]) < min_length:
                     messages.warning(request,
-                                     "Password must be at least {0} characters long".format(min_length),)
+                                     "Password must be at least {0} characters long".format(min_length), )
                     return redirect("/sign-up")
                 else:
-                    user, ally = self.create_new_user(postDict=postDict)
+                    user, ally = self.create_new_user(post_dict=postDict)
                     site = get_current_site(request)
                     self.send_verification_email(user=user, site=site, entered_email=postDict["new_email"][0])
 
@@ -1156,7 +1234,7 @@ class SignUpView(TemplateView):
                                  "Password must be at least {0} characters long".format(min_length))
                 return redirect("/sign-up")
             else:
-                user, ally = self.create_new_user(postDict=postDict)
+                user, ally = self.create_new_user(post_dict=postDict)
                 site = get_current_site(request)
                 self.send_verification_email(user=user, site=site, entered_email=postDict["new_email"][0])
 
@@ -1168,7 +1246,9 @@ class SignUpDoneView(TemplateView):
     A view which is presented if the user successfully fill out the form presented in Sign-Up view
     """
     template_name = "sap/sign-up-done.html"
+
     def get(self, request, *args, **kwargs):
+        """Enter what this class/method does"""
         site = get_current_site(request)
         accepted_origin = 'http:' + '//' + site.domain + reverse('sap:sign-up')
 
@@ -1194,7 +1274,9 @@ class SignUpConfirmView(TemplateView):
     Only for those who click on verification email during sign-up.
     No POST method.
     """
+
     def get(self, request, *args, **kwargs):
+        """Enter what this class/method does"""
         path = request.path
         path_1, token = os.path.split(path)
         path_0, uidb64 = os.path.split(path_1)
@@ -1224,13 +1306,16 @@ class ForgotPasswordView(TemplateView):
     A view which allows users to reset their password in case they forget it.
     Send a confirmation emails with unique token
     """
+
     # template_name = "sap/password-forgot.html"
 
     def get(self, request, *args, **kwargs):
+        """Enter what this class/method does"""
         form = PasswordResetForm(request.GET)
         return render(request, 'sap/password-forgot.html', {'form': form})
 
-    def post(self, request, *args, **kwargs):
+    def post(self, request):
+        """Enter what this class/method does"""
         form = PasswordResetForm(request.POST)
 
         if form.is_valid():
@@ -1248,7 +1333,7 @@ class ForgotPasswordView(TemplateView):
                     'user': user,
                     'protocol': 'http',
                     'domain': site.domain,
-                    'uid': urlsafe_base64_encode(force_bytes(user.pk)), # encode user's primary key
+                    'uid': urlsafe_base64_encode(force_bytes(user.pk)),  # encode user's primary key
                     'token': password_reset_token.make_token(user),
                 })
 
@@ -1287,6 +1372,7 @@ class ForgotPasswordDoneView(TemplateView):
     template_name = "sap/password-forgot-done.html"
 
     def get(self, request, *args, **kwargs):
+        """Enter what this class/method does"""
         site = get_current_site(request)
         accepted_origin = 'http:' + '//' + site.domain + reverse('sap:password-forgot')
 
@@ -1312,8 +1398,10 @@ class ForgotPasswordConfirmView(TemplateView):
     A unique view to users who click to the reset forgot passwork link.
     Allow them to create new password.
     """
+
     # template_name = "sap/password-forgot-confirm.html"
     def get(self, request, *args, **kwargs):
+        """Enter what this class/method does"""
         path = request.path
         path_1, token = os.path.split(path)
         path_0, uidb64 = os.path.split(path_1)
@@ -1337,6 +1425,7 @@ class ForgotPasswordConfirmView(TemplateView):
             return redirect('sap:home')
 
     def post(self, request, *args, **kwargs):
+        """Enter what this class/method does"""
         path = request.path
         path_1, token = os.path.split(path)
         path_0, uidb64 = os.path.split(path_1)
@@ -1381,10 +1470,14 @@ allyFields = ['user_type', 'area_of_research', 'openings_in_lab_serving_at', 'de
               'has_lab_experience']
 categoryFields = ['under_represented_racial_ethnic', 'first_gen_college_student', 'transfer_student', 'lgbtq',
                   'low_income', 'rural', 'disabled']
+
+
 class DownloadAllies(AccessMixin, HttpResponse):
+    """Enter what this class/method does"""
 
     @staticmethod
     def fields_helper(model, columns):
+        """Enter what this class/method does"""
         for field in model._meta.get_fields():
             fields = str(field).split(".")[-1]
             if fields in userFields or fields in allyFields or fields in categoryFields:
@@ -1393,6 +1486,7 @@ class DownloadAllies(AccessMixin, HttpResponse):
 
     @staticmethod
     def cleanup(dict):
+        """Enter what this class/method does"""
         ar = []
         for item in dict.items():
             if item[0] in userFields or item[0] in allyFields or item[0] in categoryFields:
@@ -1404,6 +1498,7 @@ class DownloadAllies(AccessMixin, HttpResponse):
 
     @staticmethod
     def get_data():
+        """Enter what this class/method does"""
         users = User.objects.all()
         allies = Ally.objects.all()
         categories = StudentCategories.objects.all()
@@ -1426,6 +1521,7 @@ class DownloadAllies(AccessMixin, HttpResponse):
         return data
 
     def allies_download(request):
+        """Enter what this class/method does"""
         if request.user.is_staff:
             response = HttpResponse(content_type='text/csv')
             today = date.today()
@@ -1445,20 +1541,25 @@ class DownloadAllies(AccessMixin, HttpResponse):
             return HttpResponseForbidden()
 
 
-boolFields=['Do you currently have openings for undergraduate students in your lab?',
-            'Would you be willing to offer lab shadowing to potential students?',
-            'Are you interested in mentoring students?',
-            'Are you interested in connecting with other mentors?',
-            'Would you be willing to volunteer for panels, networking workshops, and other events as professional development for students?',
-            'Are you interested in mentor training?',
-            'Do you know students who would be interested in the Science Alliance?',
-            'Are you interested in joining a lab?',
-            'Do you have experience working in a laboratory?',
-            'Are you interested in becoming a peer mentor?']
+boolFields = ['Do you currently have openings for undergraduate students in your lab?',
+              'Would you be willing to offer lab shadowing to potential students?',
+              'Are you interested in mentoring students?',
+              'Are you interested in connecting with other mentors?',
+              'Would you be willing to volunteer for panels, networking workshops, and other ' + \
+              'events as professional development for students?',
+              'Are you interested in mentor training?',
+              'Do you know students who would be interested in the Science Alliance?',
+              'Are you interested in joining a lab?',
+              'Do you have experience working in a laboratory?',
+              'Are you interested in becoming a peer mentor?']
+
+
 class UploadAllies(AccessMixin, HttpResponse):
+    """Enter what this class/method does"""
 
     @staticmethod
     def cleanupFrame(df):
+        """Enter what this class/method does"""
         errorlog = {}
         try:
             df = df.drop(['Workflow ID', 'Status', 'Name'], axis=1)
@@ -1478,7 +1579,7 @@ class UploadAllies(AccessMixin, HttpResponse):
             df = df.join(df2)
             df['email'] = df['Initiator'].str.extract(r'(.*@uiowa.edu)')
             df = df.drop(['Initiator'], axis=1)
-        except:
+        except Exception as e:
             errorlog[3000] = "CRITICAL ERROR: data could not be extracted from \'Initiator\' column " \
                              "and added as columns"
             return df, errorlog
@@ -1496,7 +1597,8 @@ class UploadAllies(AccessMixin, HttpResponse):
                 'Do you currently have openings for undergraduate students in your lab?': 'openings_in_lab_serving_at',
                 'Would you be willing to offer lab shadowing to potential students?': 'willing_to_offer_lab_shadowing',
                 'Are you interested in connecting with other mentors?': 'interested_in_connecting_with_other_mentors',
-                'Would you be willing to volunteer for panels, networking workshops, and other events as professional development for students?': 'willing_to_volunteer_for_events',
+                'Would you be willing to volunteer for panels, networking workshops, and other events as professional ' +
+                'development for students?': 'willing_to_volunteer_for_events',
                 'Are you interested in mentor training?': 'interested_in_mentor_training',
                 'Do you know students who would be interested in the Science Alliance?': 'people_who_might_be_interested_in_iba',
                 'Are you interested in joining a lab?': 'interested_in_joining_lab',
@@ -1504,7 +1606,7 @@ class UploadAllies(AccessMixin, HttpResponse):
             }, axis=1)
         except KeyError:
             errorlog[4000] = "CRITICAL ERROR: boolean could not replace blanks. Ensure the following are present:" + \
-                str(boolFields)
+                             str(boolFields)
             return df, errorlog
         try:
             df = df.fillna(value='')
@@ -1514,14 +1616,16 @@ class UploadAllies(AccessMixin, HttpResponse):
             df['Year'] = df['Year'].replace(regex=r'\s\([^)]*\)', value='')
             df = df.rename({'STEM Area of Research': 'area_of_research',
                             'University Type': 'user_type',
-                            'Please provide a short description of the type of research done by undergrads': 'description_of_research_done_at_lab',
+                            'Please provide a short description of the type of research done by undergrads':
+                                'description_of_research_done_at_lab',
                             'Year': 'year', 'Major': 'major',
                             'How can the Science Alliance serve you?': 'how_can_science_ally_serve_you'},
                            axis=1)
         except KeyError:
             errorlog[5000] = "CRITICAL ERROR: problem in tidying charfield columns. ensure the following is present:" \
-            "STEM Area of Research, University Type, Please provide a short description of the type of research done by undergrads, " \
-            "Year, Major"
+                             "STEM Area of Research, University Type, Please provide a short description of the type " \
+                             "of research done by undergrads, " \
+                             "Year, Major"
             return df, errorlog
         try:
             df['Submission Date'] = df['Submission Date'].map(lambda x: x.strftime("%b-%d-%Y"))
@@ -1534,9 +1638,9 @@ class UploadAllies(AccessMixin, HttpResponse):
             for i in range(0, len(df)):
                 hawkid = df['first_name'][i][0] + df['last_name'][i]
                 df['username'][i] = hawkid.lower()
-        except:
+        except Exception as e:
             errorlog[7000] = "CRITICAL ERROR: Could not convert first name and last name to hawkid. Please Ensure the " \
-            "Initiator is present"
+                             "Initiator is present"
             return df, errorlog
         df['information_release'] = False
         df['interested_in_being_mentored'] = False
@@ -1548,7 +1652,8 @@ class UploadAllies(AccessMixin, HttpResponse):
             # pd.set_option('display.max_columns', 100)
             # print(df)
             for i in range(0, len(df)):
-                tmp = df['Are you interested in serving as a mentor to students who identify as any of the following (check all that may apply)'][i]
+                tmp = df['Are you interested in serving as a mentor to students who identify as any ' \
+                         'of the following (check all that may apply)'][i]
                 if 'First generation college-student' in tmp:
                     df['first_gen_college_student'][i] = True
                 if 'LGBTQ' in tmp:
@@ -1557,65 +1662,69 @@ class UploadAllies(AccessMixin, HttpResponse):
                     df['transfer_student'][i] = True
                 if 'Underrepresented racial/ethnic minority' in tmp:
                     df['under_represented_racial_ethnic'][i] = True
-            df = df.drop(['Are you interested in serving as a mentor to students who identify as any of the following (check all that may apply)'], axis=1)
-        except:
+            df = df.drop(['Are you interested in serving as a mentor to students who identify as any of the following '
+                          '(check all that may apply)'], axis=1)
+        except Exception as e:
             errorlog[8000] = "Possible data error: willing to mentor may be inaccurate. Please ensure the column: " \
-            "\'Are you interested in serving as a mentor to students who identify as any of the following (check all that may apply)\'" \
-            " is present"
+                             "\'Are you interested in serving as a mentor to students who identify as any of the following " \
+                             "(check all that may apply)\'" \
+                             " is present"
         return df, errorlog
-
 
     @staticmethod
     def makeAlliesFromDataFrame(df, errorLog):
-        columns = list(df.columns)
-        passwordLog = {}
-        allyData = {}
-        userData = {}
-        categoryData = {}
+        """Enter what this class/method does"""
+        password_log = {}
+        ally_data = {}
+        user_data = {}
+        category_data = {}
         try:
-            allyData = df[allyFields].to_dict('index')
-            userData = df[userFields].to_dict('index')
-            categoryData = df[categoryFields].to_dict('index')
+            ally_data = df[allyFields].to_dict('index')
+            user_data = df[userFields].to_dict('index')
+            category_data = df[categoryFields].to_dict('index')
         except KeyError:
             errorLog[9000] = "CRITICAL ERROR: Data does not contain necessary columns. Please ensure that the data has columns:\n" + \
-                str(userFields + allyFields + categoryFields)
-        for ally in allyData.items():
+                             str(userFields + allyFields + categoryFields)
+        for ally in ally_data.items():
             if ("Staff" == ally[1]['user_type'] or "Graduate Student" == ally[1]['user_type']
                     or "Undergraduate Student" == ally[1]['user_type'] or "Faculty" == ally[1]['user_type']):
                 password = uuid.uuid4().hex[0:9]
-                user = userData[ally[0]]
+                user = user_data[ally[0]]
                 try:
                     time = datetime.datetime.strptime(user['date_joined'], '%b-%d-%Y')
-                    #time = datetime.strptime(user['date_joined'], "%Y-%m-%d")
+                    # time = datetime.strptime(user['date_joined'], "%Y-%m-%d")
                     user = User.objects.create_user(username=user['username'], password=password, email=user['email'],
-                                                first_name=user['first_name'], last_name=user['last_name'],
+                                                    first_name=user['first_name'], last_name=user['last_name'],
                                                     date_joined=time)
-                    passwordLog[ally[0]] = password
+                    password_log[ally[0]] = password
                     try:
                         ally1 = Ally.objects.create(user=user, user_type=ally[1]['user_type'], hawk_id=user.username,
-                                                   area_of_research=ally[1]['area_of_research'],
-                                                   interested_in_mentoring=ally[1]['interested_in_mentoring'],
-                                                   willing_to_offer_lab_shadowing=ally[1]['willing_to_offer_lab_shadowing'],
-                                                interested_in_connecting_with_other_mentors=ally[1]['interested_in_connecting_with_other_mentors'],
-                                                   willing_to_volunteer_for_events=ally[1]['willing_to_volunteer_for_events'],
-                                                   interested_in_mentor_training=ally[1]['interested_in_mentor_training'],
-                                                   major=ally[1]['major'], information_release=ally[1]['information_release'],
-                                                   has_lab_experience=ally[1]['has_lab_experience'],
-                                                   year=ally[1]['year'], interested_in_being_mentored=ally[1]['interested_in_being_mentored'],
-                                                   description_of_research_done_at_lab=ally[1]['description_of_research_done_at_lab'],
-                                                   interested_in_joining_lab=ally[1]['interested_in_joining_lab'],
-                                                   openings_in_lab_serving_at=ally[1]['openings_in_lab_serving_at'],
-                                                   people_who_might_be_interested_in_iba=ally[1]['people_who_might_be_interested_in_iba'],
-                                                   how_can_science_ally_serve_you=ally[1]['how_can_science_ally_serve_you'],
-                                                   works_at=ally[1]['works_at'])
-                        if not (ally[1]['user_type'] == "Staff"):
-                            category = categoryData[ally[0]]
+                                                    area_of_research=ally[1]['area_of_research'],
+                                                    interested_in_mentoring=ally[1]['interested_in_mentoring'],
+                                                    willing_to_offer_lab_shadowing=ally[1]['willing_to_offer_lab_shadowing'],
+                                                    interested_in_connecting_with_other_mentors=ally[1][
+                                                        'interested_in_connecting_with_other_mentors'],
+                                                    willing_to_volunteer_for_events=ally[1]['willing_to_volunteer_for_events'],
+                                                    interested_in_mentor_training=ally[1]['interested_in_mentor_training'],
+                                                    major=ally[1]['major'], information_release=ally[1]['information_release'],
+                                                    has_lab_experience=ally[1]['has_lab_experience'],
+                                                    year=ally[1]['year'], interested_in_being_mentored=ally[1]
+                            ['interested_in_being_mentored'],
+                                                    description_of_research_done_at_lab=ally[1]['description_of_research_done_at_lab'],
+                                                    interested_in_joining_lab=ally[1]['interested_in_joining_lab'],
+                                                    openings_in_lab_serving_at=ally[1]['openings_in_lab_serving_at'],
+                                                    people_who_might_be_interested_in_iba=ally[1]['people_who_might_be_interested_in_iba'],
+                                                    how_can_science_ally_serve_you=ally[1]['how_can_science_ally_serve_you'],
+                                                    works_at=ally[1]['works_at'])
+                        if not ally[1]['user_type'] == "Staff":
+                            category = category_data[ally[0]]
                             categories = StudentCategories.objects.create(rural=category['rural'],
                                                                           transfer_student=category['transfer_student'],
                                                                           lgbtq=category['lgbtq'],
                                                                           low_income=category['low_income'],
                                                                           first_gen_college_student=category['first_gen_college_student'],
-                                                                          under_represented_racial_ethnic=category['under_represented_racial_ethnic'],
+                                                                          under_represented_racial_ethnic=category
+                                                                          ['under_represented_racial_ethnic'],
                                                                           disabled=category['disabled'])
                             AllyStudentCategoryRelation.objects.create(ally_id=ally1.id,
                                                                        student_category_id=categories.id)
@@ -1628,31 +1737,32 @@ class UploadAllies(AccessMixin, HttpResponse):
             else:
                 errorLog[ally[0]] = "Improperly formated -  user_type must be: Staff, Faculty, " \
                                     "Undergraduate Student, or Graduate Student"
-        return errorLog, passwordLog
+        return errorLog, password_log
 
     @staticmethod
     def processFile(file):
-        errorLog = {}
-        passwordLog = {}
+        """Enter what this class/method does"""
+        error_log = {}
         df = pd.DataFrame()
         try:
             df = pd.read_csv(file)
-        except:
+        except Exception as e:
             try:
                 df = pd.read_excel(file)
-            except:
-                errorLog[900] = "Problem reading file: was it stored in .csv or xlsx?"
+            except Exception as e:
+                error_log[900] = "Problem reading file: was it stored in .csv or xlsx?"
 
         columns = list(df.columns)
         if columns != (userFields + allyFields + categoryFields):
-            df, errorLog = UploadAllies.cleanupFrame(df)
+            df, error_log = UploadAllies.cleanupFrame(df)
         else:
             df = df.replace(df.fillna('', inplace=True))
-        errorLog, passwordLog = UploadAllies.makeAlliesFromDataFrame(df, errorLog)
-        return UploadAllies.makeFile(df, errorLog, passwordLog)
+        error_log, password_log = UploadAllies.makeAlliesFromDataFrame(df, error_log)
+        return UploadAllies.make_file(df, error_log, password_log)
 
     @staticmethod
-    def makeFile(df, errorLog, passwordLog):
+    def make_file(df, error_log, password_log):
+        """Enter what this class/method does"""
         output = io.BytesIO()
         workbook = xlsxwriter.Workbook(output)
         passwords = workbook.add_worksheet('New Passwords')
@@ -1664,12 +1774,12 @@ class UploadAllies(AccessMixin, HttpResponse):
         errors.write(0, 1, 'failure mode')
         row = 1
         column = 0
-        for error in errorLog.items():
+        for error in error_log.items():
             errors.write(row, column, error[0])
             errors.write(row, column + 1, error[1])
             row += 1
         row = 1
-        for password in passwordLog.items():
+        for password in password_log.items():
             passwords.write(row, column, df['username'][password[0]])
             passwords.write(row, column + 1, df['email'][password[0]])
             passwords.write(row, column + 2, password[1])
@@ -1678,8 +1788,8 @@ class UploadAllies(AccessMixin, HttpResponse):
         output.seek(0)
         return output
 
-
     def upload_allies(request):
+        """Enter what this class/method does"""
         if request.user.is_staff:
             try:
                 file = request.FILES['file']
