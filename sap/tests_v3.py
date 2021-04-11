@@ -12,7 +12,7 @@ from django.test import TestCase, Client  # tests file
 import pandas as pd
 import numpy as np
 import sap.views as views
-import sap.views_v2
+import sap.views_v2 as views_v2
 from .models import Ally, StudentCategories, AllyStudentCategoryRelation, Event, EventInviteeRelation
 from .tests import create_ally
 
@@ -29,15 +29,9 @@ def wack_test_db():
     AllyStudentCategoryRelation.objects.all().delete()
 
 
-userFields = ['last_login', 'username', 'first_name', 'last_name', 'email', 'is_active', 'date_joined']
-allyFields = ['user_type', 'area_of_research', 'openings_in_lab_serving_at', 'description_of_research_done_at_lab',
-              'interested_in_mentoring', 'interested_in_mentor_training', 'willing_to_offer_lab_shadowing',
-              'interested_in_connecting_with_other_mentors', 'willing_to_volunteer_for_events', 'works_at',
-              'people_who_might_be_interested_in_iba', 'how_can_science_ally_serve_you', 'year', 'major',
-              'information_release', 'interested_in_being_mentored', 'interested_in_joining_lab',
-              'has_lab_experience']
-categoryFields = ['under_represented_racial_ethnic', 'first_gen_college_student',
-                  'transfer_student', 'lgbtq', 'low_income', 'rural', 'disabled']
+userFields = views_v2.userFields
+allyFields = views_v2.allyFields
+categoryFields = views_v2.categoryFields
 
 
 def make_big_undergrad():
@@ -355,7 +349,7 @@ class UploadFileTest(TestCase):
         self.assertEqual(response.status_code, 200)
 
         local_df = UploadFileTest.make_frame()
-        local_df1, _ = sap.views_v2.UploadAllies.cleanup_frame(self.data_frame_1)
+        local_df1, _ = views_v2.UploadAllies.cleanup_frame(self.data_frame_1)
         local_df1 = local_df1[userFields + allyFields + categoryFields]
         local_df['last_login'] = ''
         for category in categoryFields:
