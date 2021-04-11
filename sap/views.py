@@ -139,23 +139,23 @@ class EditAllyProfile(View):
         if (username != user_req.username) and not user_req.is_staff:
             messages.warning(request, 'Access Denied!')
             return redirect('sap:ally-dashboard')
-        else:
-            try:
-                user = User.objects.get(username=username)
-                ally = Ally.objects.get(user=user)
-                return render(request, 'sap/admin_ally_table/edit_ally.html', {
-                    'ally': ally,
-                    'req': request.user,
-                })
-            except Exception as e:
-                print(e)
-                return HttpResponseNotFound()
+
+        try:
+            user = User.objects.get(username=username)
+            ally = Ally.objects.get(user=user)
+            return render(request, 'sap/admin_ally_table/edit_ally.html', {
+                'ally': ally,
+                'req': request.user,
+            })
+        except ObjectDoesNotExist:
+            return HttpResponseNotFound()
 
     def post(self, request):
         """Enter what this class/method does"""
         post_dict = dict(request.POST)
         user_req = request.user
         message = ''
+
         if User.objects.filter(username=post_dict["username"][0]).exists():
             same = True
             user = User.objects.get(username=post_dict["username"][0])
@@ -169,7 +169,7 @@ class EditAllyProfile(View):
                 message += ' User type could not be updated!\n'
             try:
                 hawk_id = post_dict['hawkID'][0]
-                if hawk_id != ally.hawk_id and hawk_id != '':
+                if hawk_id not in (ally.hawk_id, ''):
                     ally.hawk_id = hawk_id
                     same = False
             except KeyError:
@@ -233,57 +233,57 @@ class EditAllyProfile(View):
                     ally.information_release = selections['agreementRadios']
                 ally.save()
 
-            badUser = False
-            badEmail = False
-            badPassword = False
+            bad_user = False
+            bad_email = False
+            bad_password = False
 
             try:
-                newUsername = post_dict['newUsername'][0]
-                if newUsername != '' and newUsername != user.username:
-                    if not User.objects.filter(username=newUsername):
-                        user.username = newUsername
+                new_username = post_dict['newUsername'][0]
+                if new_username != '' and new_username != user.username:
+                    if not User.objects.filter(username=new_username):
+                        user.username = new_username
                         same = False
                     else:
-                        badUser = True
+                        bad_user = True
                         message += " Username not updated - Username already exists!\n"
             except KeyError:
                 message += ' Username could not be updated!\n'
             try:
-                newPassword = post_dict['password'][0]
-                if newPassword != '':
-                    if not len(newPassword) < 8:
-                        user.set_password(newPassword)
+                new_password = post_dict['password'][0]
+                if new_password != '':
+                    if not len(new_password) < 8:
+                        user.set_password(new_password)
                         same = False
                     else:
-                        badPassword = True
+                        bad_password = True
                         message += " Password could not be set because it is less than 8 characters long!"
             except KeyError:
                 message += ' Password could not be updated!\n'
             try:
-                firstName = post_dict['firstName'][0]
-                lastName = post_dict['lastName'][0]
-                if firstName != '' and firstName != user.first_name:
-                    user.first_name = firstName
+                first_name = post_dict['firstName'][0]
+                last_name = post_dict['lastName'][0]
+                if first_name not in ('', user.first_name):
+                    user.first_name = first_name
                     same = False
-                if lastName != '' and lastName != user.last_name:
-                    user.last_name = lastName
+                if last_name not in ('', user.last_name):
+                    user.last_name = last_name
                     same = False
             except KeyError:
                 message += ' First name or last name could not be updated!\n'
             if user_req.is_staff:
                 try:
                     email = post_dict['email'][0]
-                    if email != '' and email != user.email:
+                    if email not in ('', user.email):
                         if not User.objects.filter(email=email).exists():
                             user.email = email
                             same = False
                         else:
                             message += " Email could not be updated - Email already exists!\n"
-                            badEmail = True
+                            bad_email = True
                 except KeyError:
                     message += ' Email could not be updated!\n'
             user.save()
-            if badPassword or badEmail or badPassword or badUser:
+            if bad_password or bad_email or bad_password or bad_user:
                 if same:
                     messages.add_message(request, messages.WARNING, message)
                 else:
@@ -306,8 +306,8 @@ class EditAllyProfile(View):
                                  'Ally does not exist!')
         if user_req.is_staff:
             return redirect('sap:sap-dashboard')
-        else:
-            return redirect('sap:ally-dashboard')
+
+        return redirect('sap:ally-dashboard')
 
 
 class CreateAnnouncement(AccessMixin, HttpResponse):
@@ -315,16 +315,17 @@ class CreateAnnouncement(AccessMixin, HttpResponse):
     Create annoucnemnnts
     """
 
-    def create_announcement(request):
+    @classmethod
+    def create_announcement(cls, request):
         """
         Enter what this class/method does
         """
         if request.user.is_staff:
-            postDict = dict(request.POST)
+            post_dict = dict(request.POST)
             curr_user = request.user
-            title = postDict['title'][0]
-            description = postDict['desc'][0]
-            announcement = Announcement.objects.create(
+            title = post_dict['title'][0]
+            description = post_dict['desc'][0]
+            Announcement.objects.create(
                 username=curr_user.username,
                 title=title,
                 description=description,
@@ -333,8 +334,8 @@ class CreateAnnouncement(AccessMixin, HttpResponse):
 
             messages.success(request, 'Annoucement created successfully !!')
             return redirect('sap:sap-dashboard')
-        else:
-            return HttpResponseForbidden()
+
+        return HttpResponseForbidden()
 
 
 class DeleteAllyProfileFromAdminDashboard(AccessMixin, View):
@@ -344,6 +345,7 @@ class DeleteAllyProfileFromAdminDashboard(AccessMixin, View):
     def get(self, request):
         """Enter what this class/method does"""
         username = request.GET['username']
+
         try:
             user = User.objects.get(username=username)
             ally = Ally.objects.get(user=user)
@@ -351,8 +353,8 @@ class DeleteAllyProfileFromAdminDashboard(AccessMixin, View):
             user.delete()
             messages.success(request, 'Successfully deleted the user ' + username)
             return redirect('sap:sap-dashboard')
-        except Exception as e:
-            print(e)
+
+        except ObjectDoesNotExist:
             return HttpResponseNotFound("")
 
 
@@ -377,8 +379,8 @@ class ChangeAdminPassword(View):
             messages.success(
                 request, 'Password Updated Successfully !')
             return redirect('sap:change_password')
-        else:
-            messages.error(request, "Could not Update Password !")
+
+        messages.error(request, "Could not Update Password !")
 
         return render(request, 'sap/change_password.html', {
             'form': form
@@ -1020,31 +1022,31 @@ class SignUpView(TemplateView):
     """Enter what this class/method does"""
     template_name = "sap/sign-up.html"
 
-    def make_categories(self, studentCategories):
+    def make_categories(self, student_categories):
         """Enter what this class/method does"""
 
         categories = StudentCategories.objects.create()
-        for id in studentCategories:
-            if id == 'First generation college-student':
+        for category_id in student_categories:
+            if category_id == 'First generation college-student':
                 categories.first_gen_college_student = True
-            elif id == 'Low-income':
+            elif category_id == 'Low-income':
                 categories.low_income = True
-            elif id == 'Underrepresented racial/ethnic minority':
+            elif category_id == 'Underrepresented racial/ethnic minority':
                 categories.under_represented_racial_ethnic = True
-            elif id == 'LGBTQ':
+            elif category_id == 'LGBTQ':
                 categories.lgbtq = True
-            elif id == 'Rural':
+            elif category_id == 'Rural':
                 categories.rural = True
-            elif id == 'Disabled':
+            elif category_id == 'Disabled':
                 categories.disabled = True
         categories.save()
         return categories
 
-    def set_boolean(self, list, postDict):
+    def set_boolean(self, _list, post_dict):
         """Enter what this class/method does"""
         dictionary = {}
-        for selection in list:
-            if postDict[selection][0] == 'Yes':
+        for selection in _list:
+            if post_dict[selection][0] == 'Yes':
                 dictionary[selection] = True
             else:
                 dictionary[selection] = False
@@ -1075,9 +1077,9 @@ class SignUpView(TemplateView):
                     categories = self.make_categories(post_dict["idUnderGradCheckboxes"])
                 except KeyError:
                     categories = StudentCategories.objects.create()
-                undergradList = ['interestRadios', 'experienceRadios', 'interestedRadios',
+                undergrad_list = ['interestRadios', 'experienceRadios', 'interestedRadios',
                                  'agreementRadios', 'beingMentoredRadios']
-                selections = self.set_boolean(undergradList, post_dict)
+                selections = self.set_boolean(undergrad_list, post_dict)
                 ally = Ally.objects.create(user=user,
                                            user_type=post_dict['roleSelected'][0],
                                            hawk_id=user.username,
@@ -1097,9 +1099,9 @@ class SignUpView(TemplateView):
                 except KeyError:
                     categories = StudentCategories.objects.create()
 
-                gradList = ['mentoringGradRadios', 'labShadowRadios', 'connectingRadios', 'volunteerGradRadios',
+                grad_list = ['mentoringGradRadios', 'labShadowRadios', 'connectingRadios', 'volunteerGradRadios',
                             'gradTrainingRadios']
-                selections = self.set_boolean(gradList, post_dict)
+                selections = self.set_boolean(grad_list, post_dict)
                 ally = Ally.objects.create(user=user,
                                            user_type=post_dict['roleSelected'][0],
                                            hawk_id=user.username,
@@ -1115,8 +1117,8 @@ class SignUpView(TemplateView):
                     stem_fields = ','.join(post_dict['stemCheckboxes'])
                 except KeyError:
                     stem_fields = None
-                facultyList = ['openingRadios', 'volunteerRadios', 'trainingRadios', 'mentoringFacultyRadios']
-                selections = self.set_boolean(facultyList, post_dict)
+                faculty_list = ['openingRadios', 'volunteerRadios', 'trainingRadios', 'mentoringFacultyRadios']
+                selections = self.set_boolean(faculty_list, post_dict)
                 try:
                     categories = self.make_categories(post_dict['mentoringCheckboxes'])
                 except KeyError:
@@ -1139,6 +1141,7 @@ class SignUpView(TemplateView):
         """
         Send verification email to finish sign-up, basically set is_active to True
         """
+        _ = self.__doc__
         message_body = render_to_string('sap/sign-up-mail.html', {
             'user': user,
             'protocol': 'http',
@@ -1154,8 +1157,8 @@ class SignUpView(TemplateView):
             html_content=message_body)
 
         try:
-            sg = SendGridAPIClient(os.environ.get('SENDGRID_API_KEY'))
-            response = sg.send(email_content)
+            sendgrid_obj = SendGridAPIClient(os.environ.get('SENDGRID_API_KEY'))
+            sendgrid_obj.send(email_content)
 
         except Exception as e:
             print(e)
@@ -1173,12 +1176,12 @@ class SignUpView(TemplateView):
         be created with its email address.
         If user/ally is in the db but is_active=True, cannot create new account with that email address.
         """
-        postDict = dict(request.POST)
+        post_dict = dict(request.POST)
 
         min_length = 8  # Minimum length for a valid password
 
-        if User.objects.filter(email=postDict["new_email"][0]).exists():
-            user_temp = User.objects.get(email=postDict["new_email"][0])
+        if User.objects.filter(email=post_dict["new_email"][0]).exists():
+            user_temp = User.objects.get(email=post_dict["new_email"][0])
 
             if user_temp.is_active:  # If user is active, cannot create new account
                 messages.warning(request,
@@ -1193,7 +1196,7 @@ class SignUpView(TemplateView):
                 user_temp.delete()
 
                 # print(request.POST)
-                if User.objects.filter(username=postDict["new_username"][0]).exists():
+                if User.objects.filter(username=post_dict["new_username"][0]).exists():
                     messages.warning(request,
                                      'Account can not be created because username already exists!')
                     return redirect('/sign-up')
@@ -1201,23 +1204,23 @@ class SignUpView(TemplateView):
                 #     messages.add_message(request, messages.WARNING,
                 #                          'Account can not be created because email already exists')
                 #     return redirect('/sign-up')
-                elif postDict["new_password"][0] != postDict["repeat_password"][0]:
+                elif post_dict["new_password"][0] != post_dict["repeat_password"][0]:
                     messages.warning(request,
                                      "Repeated password is not the same as the inputted password!", )
                     return redirect("/sign-up")
-                elif len(postDict["new_password"][0]) < min_length:
+                elif len(post_dict["new_password"][0]) < min_length:
                     messages.warning(request,
                                      "Password must be at least {0} characters long".format(min_length), )
                     return redirect("/sign-up")
                 else:
-                    user, ally = self.create_new_user(post_dict=postDict)
+                    user, _ = self.create_new_user(post_dict=post_dict)
                     site = get_current_site(request)
-                    self.send_verification_email(user=user, site=site, entered_email=postDict["new_email"][0])
+                    self.send_verification_email(user=user, site=site, entered_email=post_dict["new_email"][0])
 
                     return redirect("sap:sign-up-done")
 
-        elif not User.objects.filter(email=postDict["new_email"][0]).exists():
-            if User.objects.filter(username=postDict["new_username"][0]).exists():
+        elif not User.objects.filter(email=post_dict["new_email"][0]).exists():
+            if User.objects.filter(username=post_dict["new_username"][0]).exists():
                 messages.warning(request,
                                  'Account can not be created because username already exists!')
                 return redirect('/sign-up')
@@ -1225,18 +1228,18 @@ class SignUpView(TemplateView):
             #     messages.add_message(request, messages.WARNING,
             #                          'Account can not be created because email already exists')
             #     return redirect('/sign-up')
-            elif postDict["new_password"][0] != postDict["repeat_password"][0]:
+            elif post_dict["new_password"][0] != post_dict["repeat_password"][0]:
                 messages.warning(request,
                                  "Repeated password is not the same as the inputted password!")
                 return redirect("/sign-up")
-            elif len(postDict["new_password"][0]) < min_length:
+            elif len(post_dict["new_password"][0]) < min_length:
                 messages.warning(request,
                                  "Password must be at least {0} characters long".format(min_length))
                 return redirect("/sign-up")
             else:
-                user, ally = self.create_new_user(post_dict=postDict)
+                user, ally = self.create_new_user(post_dict=post_dict)
                 site = get_current_site(request)
-                self.send_verification_email(user=user, site=site, entered_email=postDict["new_email"][0])
+                self.send_verification_email(user=user, site=site, entered_email=post_dict["new_email"][0])
 
                 return redirect("sap:sign-up-done")
 
@@ -1279,7 +1282,7 @@ class SignUpConfirmView(TemplateView):
         """Enter what this class/method does"""
         path = request.path
         path_1, token = os.path.split(path)
-        path_0, uidb64 = os.path.split(path_1)
+        _, uidb64 = os.path.split(path_1)
 
         try:
             uid = force_text(urlsafe_base64_decode(uidb64))
@@ -1291,14 +1294,15 @@ class SignUpConfirmView(TemplateView):
         if user is not None and user.is_active:
             messages.success(request, 'Account already verified.')
             return redirect('sap:home')
-        elif user is not None and account_activation_token.check_token(user, token):
+
+        if user is not None and account_activation_token.check_token(user, token):
             user.is_active = True  # activates the user
             user.save()
             messages.success(request, 'Account successfully created! You can now log in with your new account.')
             return redirect('sap:home')
-        else:
-            messages.error(request, 'Invalid account activation link.')
-            return redirect('sap:home')
+
+        messages.error(request, 'Invalid account activation link.')
+        return redirect('sap:home')
 
 
 class ForgotPasswordView(TemplateView):
@@ -1351,16 +1355,16 @@ class ForgotPasswordView(TemplateView):
 
                 try:
                     # TODO: Change API key and invalidate the old one
-                    sg = SendGridAPIClient(os.environ.get('SENDGRID_API_KEY'))
-                    response = sg.send(email_content)
-                except Exception as e:
-                    print(e)
+                    sendgrid_obj = SendGridAPIClient(os.environ.get('SENDGRID_API_KEY'))
+                    sendgrid_obj.send(email_content)
+                except Exception:
+                    #print(e)
+                    pass
 
                 return redirect('/password-forgot-done')
 
-            else:
-                return redirect('/password-forgot-done')
-                # return render(request, 'account/password-forgot.html', {'form': form})
+            return redirect('/password-forgot-done')
+            # return render(request, 'account/password-forgot.html', {'form': form})
 
         return render(request, 'sap/password-forgot.html', {'form': form})
 
@@ -1381,10 +1385,11 @@ class ForgotPasswordDoneView(TemplateView):
 
             if request.headers['Referer'] and origin == accepted_origin:
                 return render(request, self.template_name)
-            elif request.user.is_authenticated:
+
+            if request.user.is_authenticated:
                 return redirect('sap:resources')
-            else:
-                return redirect('sap:home')
+
+            return redirect('sap:home')
 
         except KeyError:
             if request.user.is_authenticated:
@@ -1433,8 +1438,8 @@ class ForgotPasswordConfirmView(TemplateView):
         try:
             uid = force_text(urlsafe_base64_decode(uidb64))
             user = User.objects.get(pk=uid)
-        except (TypeError, ValueError, OverflowError, User.DoesNotExist) as e:
-            messages.warning(request, str(e))
+        except (TypeError, ValueError, OverflowError, User.DoesNotExist) as exception:
+            messages.warning(request, str(exception))
             user = None
 
         if user is not None and password_reset_token.check_token(user, token):
@@ -1448,17 +1453,18 @@ class ForgotPasswordConfirmView(TemplateView):
                 user.save()
                 messages.success(request, 'New Password Created Successfully!')
                 return redirect('sap:home')
-            else:
-                context = {
-                    'form': UserResetForgotPasswordForm(user),
-                    'uid': uidb64,
-                    'token': token
-                }
-                messages.error(request, 'Password does not meet requirements.')
-                return render(request, 'sap/password-forgot-confirm.html', context)
-        else:
-            messages.error(request, 'Password reset link is invalid. Please request a new password reset.')
-            return redirect('sap:home')
+
+            # else part
+            context = {
+                'form': UserResetForgotPasswordForm(user),
+                'uid': uidb64,
+                'token': token
+            }
+            messages.error(request, 'Password does not meet requirements.')
+            return render(request, 'sap/password-forgot-confirm.html', context)
+
+        messages.error(request, 'Password reset link is invalid. Please request a new password reset.')
+        return redirect('sap:home')
 
 
 userFields = ['last_login', 'username', 'first_name', 'last_name', 'email', 'is_active', 'date_joined']
@@ -1485,16 +1491,16 @@ class DownloadAllies(AccessMixin, HttpResponse):
         return columns
 
     @staticmethod
-    def cleanup(dict):
+    def cleanup(dictionary):
         """Enter what this class/method does"""
-        ar = []
-        for item in dict.items():
+        ar_list = []
+        for item in dictionary.items():
             if item[0] in userFields or item[0] in allyFields or item[0] in categoryFields:
                 if item[0] == 'date_joined':
-                    ar.append(item[1].strftime("%b-%d-%Y"))
+                    ar_list.append(item[1].strftime("%b-%d-%Y"))
                 else:
-                    ar.append(item[1])
-        return ar
+                    ar_list.append(item[1])
+        return ar_list
 
     @staticmethod
     def get_data():
@@ -1502,32 +1508,33 @@ class DownloadAllies(AccessMixin, HttpResponse):
         users = User.objects.all()
         allies = Ally.objects.all()
         categories = StudentCategories.objects.all()
-        categoryRelation = AllyStudentCategoryRelation.objects.all()
+        category_relation = AllyStudentCategoryRelation.objects.all()
 
         data = []
         for ally in allies:
-            userId = ally.user_id
-            allyId = ally.id
+            user_id = ally.user_id
+            ally_id = ally.id
 
-            category = categoryRelation.filter(ally_id=allyId)
+            category = category_relation.filter(ally_id=ally_id)
             if category.exists():
-                categoryId = category[0].student_category_id
-                tmp = DownloadAllies.cleanup(users.filter(id=userId)[0].__dict__) + DownloadAllies.cleanup(ally.__dict__) + \
-                      DownloadAllies.cleanup(categories.filter(id=categoryId)[0].__dict__)
+                category_id = category[0].student_category_id
+                tmp = DownloadAllies.cleanup(users.filter(id=user_id)[0].__dict__) + DownloadAllies.cleanup(ally.__dict__) + \
+                      DownloadAllies.cleanup(categories.filter(id=category_id)[0].__dict__)
             else:
-                tmp = DownloadAllies.cleanup(users.filter(id=userId)[0].__dict__) + DownloadAllies.cleanup(ally.__dict__) + \
+                tmp = DownloadAllies.cleanup(users.filter(id=user_id)[0].__dict__) + DownloadAllies.cleanup(ally.__dict__) + \
                       [None, None, None, None, None, None, None]
             data.append(tmp)
         return data
 
+    @staticmethod
     def allies_download(request):
         """Enter what this class/method does"""
         if request.user.is_staff:
             response = HttpResponse(content_type='text/csv')
             today = date.today()
             today = today.strftime("%b-%d-%Y")
-            fileName = today + "_ScienceAllianceAllies.csv"
-            response['Content-Disposition'] = 'attachment; filename=' + fileName
+            file_name = today + "_ScienceAllianceAllies.csv"
+            response['Content-Disposition'] = 'attachment; filename=' + file_name
             columns = []
             columns = DownloadAllies.fields_helper(User, columns)
             columns = DownloadAllies.fields_helper(Ally, columns)
@@ -1537,8 +1544,8 @@ class DownloadAllies(AccessMixin, HttpResponse):
             writer.writerow(columns)
             writer.writerows(data)
             return response
-        else:
-            return HttpResponseForbidden()
+
+        return HttpResponseForbidden()
 
 
 boolFields = ['Do you currently have openings for undergraduate students in your lab?',
@@ -1558,42 +1565,42 @@ class UploadAllies(AccessMixin, HttpResponse):
     """Enter what this class/method does"""
 
     @staticmethod
-    def cleanupFrame(df):
+    def cleanup_frame(data_frame):
         """Enter what this class/method does"""
         errorlog = {}
         try:
-            df = df.drop(['Workflow ID', 'Status', 'Name'], axis=1)
+            data_frame = data_frame.drop(['Workflow ID', 'Status', 'Name'], axis=1)
         except KeyError:
             errorlog[1000] = "Could not drop unnecessary columns \'Workflow ID\', \'Status\', \'Name\'"
         try:
-            df1 = pd.DataFrame({"Name": df['Initiator']})
+            data_frame1 = pd.DataFrame({"Name": data_frame['Initiator']})
         except KeyError:
             errorlog[2000] = "CRITICAL ERROR: The \'Initiator\' column is not present, cannot proceed"
-            return df, errorlog
+            return data_frame, errorlog
         try:
-            df2 = df1.applymap(lambda x: x.split('\n'))
-            df2 = df2.applymap(lambda x: x[0] + x[1])
-            df2 = df2.replace(regex=['\d'], value='')
-            df2 = df2['Name'].str.split(', ', n=1, expand=True)
-            df2 = df2.rename({0: 'last_name', 1: 'first_name'}, axis=1)
-            df = df.join(df2)
-            df['email'] = df['Initiator'].str.extract(r'(.*@uiowa.edu)')
-            df = df.drop(['Initiator'], axis=1)
-        except Exception as e:
+            data_frame2 = data_frame1.applymap(lambda x: x.split('\n'))
+            data_frame2 = data_frame2.applymap(lambda x: x[0] + x[1])
+            data_frame2 = data_frame2.replace(regex=['\d'], value='')
+            data_frame2 = data_frame2['Name'].str.split(', ', n=1, expand=True)
+            data_frame2 = data_frame2.rename({0: 'last_name', 1: 'first_name'}, axis=1)
+            data_frame = data_frame.join(data_frame2)
+            data_frame['email'] = data_frame['Initiator'].str.extract(r'(.*@uiowa.edu)')
+            data_frame = data_frame.drop(['Initiator'], axis=1)
+        except Exception:
             errorlog[3000] = "CRITICAL ERROR: data could not be extracted from \'Initiator\' column " \
                              "and added as columns"
-            return df, errorlog
+            return data_frame, errorlog
         try:
-            df[boolFields] = df[boolFields].fillna(value=False)
-            df[boolFields] = df[boolFields].replace('Yes (Yes)', True)
-            df[boolFields] = df[boolFields].replace('No (No)', False)
-            df['interested_in_mentoring'] = False
-            for i in range(0, len(df)):
-                df['interested_in_mentoring'][i] = df['Are you interested in becoming a peer mentor?'][i] or \
-                                                   df['Are you interested in mentoring students?'][i]
-            df = df.drop(['Are you interested in becoming a peer mentor?',
+            data_frame[boolFields] = data_frame[boolFields].fillna(value=False)
+            data_frame[boolFields] = data_frame[boolFields].replace('Yes (Yes)', True)
+            data_frame[boolFields] = data_frame[boolFields].replace('No (No)', False)
+            data_frame['interested_in_mentoring'] = False
+            for i in range(0, len(data_frame)):
+                data_frame['interested_in_mentoring'][i] = data_frame['Are you interested in becoming a peer mentor?'][i] or \
+                                                   data_frame['Are you interested in mentoring students?'][i]
+            data_frame = data_frame.drop(['Are you interested in becoming a peer mentor?',
                           'Are you interested in mentoring students?'], axis=1)
-            df = df.rename({
+            data_frame = data_frame.rename({
                 'Do you currently have openings for undergraduate students in your lab?': 'openings_in_lab_serving_at',
                 'Would you be willing to offer lab shadowing to potential students?': 'willing_to_offer_lab_shadowing',
                 'Are you interested in connecting with other mentors?': 'interested_in_connecting_with_other_mentors',
@@ -1607,14 +1614,14 @@ class UploadAllies(AccessMixin, HttpResponse):
         except KeyError:
             errorlog[4000] = "CRITICAL ERROR: boolean could not replace blanks. Ensure the following are present:" + \
                              str(boolFields)
-            return df, errorlog
+            return data_frame, errorlog
         try:
-            df = df.fillna(value='')
-            df['STEM Area of Research'] = df['STEM Area of Research'].replace(regex=[r'\n'], value=',')
-            df['STEM Area of Research'] = df['STEM Area of Research'].replace(regex=[r'\s\([^)]*\)'], value='')
-            df['University Type'] = df['University Type'].replace(regex=[r'\s\([^)]*\)', '/Post-doc'], value='')
-            df['Year'] = df['Year'].replace(regex=r'\s\([^)]*\)', value='')
-            df = df.rename({'STEM Area of Research': 'area_of_research',
+            data_frame = data_frame.fillna(value='')
+            data_frame['STEM Area of Research'] = data_frame['STEM Area of Research'].replace(regex=[r'\n'], value=',')
+            data_frame['STEM Area of Research'] = data_frame['STEM Area of Research'].replace(regex=[r'\s\([^)]*\)'], value='')
+            data_frame['University Type'] = data_frame['University Type'].replace(regex=[r'\s\([^)]*\)', '/Post-doc'], value='')
+            data_frame['Year'] = data_frame['Year'].replace(regex=r'\s\([^)]*\)', value='')
+            data_frame = data_frame.rename({'STEM Area of Research': 'area_of_research',
                             'University Type': 'user_type',
                             'Please provide a short description of the type of research done by undergrads':
                                 'description_of_research_done_at_lab',
@@ -1626,68 +1633,67 @@ class UploadAllies(AccessMixin, HttpResponse):
                              "STEM Area of Research, University Type, Please provide a short description of the type " \
                              "of research done by undergrads, " \
                              "Year, Major"
-            return df, errorlog
+            return data_frame, errorlog
         try:
-            df['Submission Date'] = df['Submission Date'].map(lambda x: x.strftime("%b-%d-%Y"))
-            df = df.rename({'Submission Date': 'date_joined'}, axis=1)
+            data_frame['Submission Date'] = data_frame['Submission Date'].map(lambda x: x.strftime("%b-%d-%Y"))
+            data_frame = data_frame.rename({'Submission Date': 'date_joined'}, axis=1)
         except KeyError:
             errorlog[6000] = "CRITICAL ERROR: problem converting timestamp to date, please ensure Submission Date is a column"
-            return df, errorlog
+            return data_frame, errorlog
         try:
-            df['username'] = ''
-            for i in range(0, len(df)):
-                hawkid = df['first_name'][i][0] + df['last_name'][i]
-                df['username'][i] = hawkid.lower()
+            data_frame['username'] = ''
+            for i in range(0, len(data_frame)):
+                hawkid = data_frame['first_name'][i][0] + data_frame['last_name'][i]
+                data_frame['username'][i] = hawkid.lower()
         except Exception as e:
             errorlog[7000] = "CRITICAL ERROR: Could not convert first name and last name to hawkid. Please Ensure the " \
                              "Initiator is present"
-            return df, errorlog
-        df['information_release'] = False
-        df['interested_in_being_mentored'] = False
-        df['is_active'] = True
-        df['works_at'] = ''
-        df['last_login'] = ''
-        df[categoryFields] = False
+            return data_frame, errorlog
+        data_frame['information_release'] = False
+        data_frame['interested_in_being_mentored'] = False
+        data_frame['is_active'] = True
+        data_frame['works_at'] = ''
+        data_frame['last_login'] = ''
+        data_frame[categoryFields] = False
         try:
             # pd.set_option('display.max_columns', 100)
-            # print(df)
-            for i in range(0, len(df)):
-                tmp = df['Are you interested in serving as a mentor to students who identify as any ' \
+            for i in range(0, len(data_frame)):
+                tmp = data_frame['Are you interested in serving as a mentor to students who identify as any ' \
                          'of the following (check all that may apply)'][i]
                 if 'First generation college-student' in tmp:
-                    df['first_gen_college_student'][i] = True
+                    data_frame['first_gen_college_student'][i] = True
                 if 'LGBTQ' in tmp:
-                    df['lgbtq'][i] = True
+                    data_frame['lgbtq'][i] = True
                 if 'Transfer student' in tmp:
-                    df['transfer_student'][i] = True
+                    data_frame['transfer_student'][i] = True
                 if 'Underrepresented racial/ethnic minority' in tmp:
-                    df['under_represented_racial_ethnic'][i] = True
-            df = df.drop(['Are you interested in serving as a mentor to students who identify as any of the following '
+                    data_frame['under_represented_racial_ethnic'][i] = True
+            data_frame = data_frame.drop(['Are you interested in serving as a mentor to students who identify as any of the following '
                           '(check all that may apply)'], axis=1)
-        except Exception as e:
+        except Exception:
             errorlog[8000] = "Possible data error: willing to mentor may be inaccurate. Please ensure the column: " \
                              "\'Are you interested in serving as a mentor to students who identify as any of the following " \
                              "(check all that may apply)\'" \
                              " is present"
-        return df, errorlog
+        return data_frame, errorlog
 
     @staticmethod
-    def makeAlliesFromDataFrame(df, errorLog):
+    def make_allies_from_data_frame(data_frame, error_log):
         """Enter what this class/method does"""
         password_log = {}
         ally_data = {}
         user_data = {}
         category_data = {}
         try:
-            ally_data = df[allyFields].to_dict('index')
-            user_data = df[userFields].to_dict('index')
-            category_data = df[categoryFields].to_dict('index')
+            ally_data = data_frame[allyFields].to_dict('index')
+            user_data = data_frame[userFields].to_dict('index')
+            category_data = data_frame[categoryFields].to_dict('index')
         except KeyError:
-            errorLog[9000] = "CRITICAL ERROR: Data does not contain necessary columns. Please ensure that the data has columns:\n" + \
-                             str(userFields + allyFields + categoryFields)
+            error_log[9000] = "CRITICAL ERROR: Data does not contain necessary columns. Please ensure that the data has columns:\n" + \
+                              str(userFields + allyFields + categoryFields)
         for ally in ally_data.items():
-            if ("Staff" == ally[1]['user_type'] or "Graduate Student" == ally[1]['user_type']
-                    or "Undergraduate Student" == ally[1]['user_type'] or "Faculty" == ally[1]['user_type']):
+            if ("Staff" == ally[1]['user_type'] or ally[1]['user_type'] == "Graduate Student"
+                    or ally[1]['user_type'] == "Undergraduate Student" or ally[1]['user_type'] == 'Faculty'):
                 password = uuid.uuid4().hex[0:9]
                 user = user_data[ally[0]]
                 try:
@@ -1729,39 +1735,39 @@ class UploadAllies(AccessMixin, HttpResponse):
                             AllyStudentCategoryRelation.objects.create(ally_id=ally1.id,
                                                                        student_category_id=categories.id)
                     except IntegrityError:
-                        errorLog[ally[0]] = "Ally already exists in the database"
+                        error_log[ally[0]] = "Ally already exists in the database"
 
                 except IntegrityError:
-                    errorLog[ally[0]] = "user with username: " + user['username'] + " or email: " + user['email'] \
-                                        + " already exists in database"
+                    error_log[ally[0]] = "user with username: " + user['username'] + " or email: " + user['email'] \
+                                         + " already exists in database"
             else:
-                errorLog[ally[0]] = "Improperly formated -  user_type must be: Staff, Faculty, " \
+                error_log[ally[0]] = "Improperly formated -  user_type must be: Staff, Faculty, " \
                                     "Undergraduate Student, or Graduate Student"
-        return errorLog, password_log
+        return error_log, password_log
 
     @staticmethod
-    def processFile(file):
+    def process_file(file):
         """Enter what this class/method does"""
         error_log = {}
-        df = pd.DataFrame()
+        data_frame = pd.DataFrame()
         try:
-            df = pd.read_csv(file)
-        except Exception as e:
+            data_frame = pd.read_csv(file)
+        except Exception:
             try:
-                df = pd.read_excel(file)
-            except Exception as e:
+                data_frame = pd.read_excel(file)
+            except Exception:
                 error_log[900] = "Problem reading file: was it stored in .csv or xlsx?"
 
-        columns = list(df.columns)
+        columns = list(data_frame.columns)
         if columns != (userFields + allyFields + categoryFields):
-            df, error_log = UploadAllies.cleanupFrame(df)
+            data_frame, error_log = UploadAllies.cleanup_frame(data_frame)
         else:
-            df = df.replace(df.fillna('', inplace=True))
-        error_log, password_log = UploadAllies.makeAlliesFromDataFrame(df, error_log)
-        return UploadAllies.make_file(df, error_log, password_log)
+            data_frame = data_frame.replace(data_frame.fillna('', inplace=True))
+        error_log, password_log = UploadAllies.make_allies_from_data_frame(data_frame, error_log)
+        return UploadAllies.make_file(data_frame, error_log, password_log)
 
     @staticmethod
-    def make_file(df, error_log, password_log):
+    def make_file(data_frame, error_log, password_log):
         """Enter what this class/method does"""
         output = io.BytesIO()
         workbook = xlsxwriter.Workbook(output)
@@ -1780,32 +1786,33 @@ class UploadAllies(AccessMixin, HttpResponse):
             row += 1
         row = 1
         for password in password_log.items():
-            passwords.write(row, column, df['username'][password[0]])
-            passwords.write(row, column + 1, df['email'][password[0]])
+            passwords.write(row, column, data_frame['username'][password[0]])
+            passwords.write(row, column + 1, data_frame['email'][password[0]])
             passwords.write(row, column + 2, password[1])
             row += 1
         workbook.close()
         output.seek(0)
         return output
 
+    @staticmethod
     def upload_allies(request):
         """Enter what this class/method does"""
         if request.user.is_staff:
             try:
                 file = request.FILES['file']
-                output = UploadAllies.processFile(file)
+                output = UploadAllies.process_file(file)
                 today = date.today()
                 today = today.strftime("%b-%d-%Y")
-                fileName = today + "_SAP_Upload-log.xlsx"
+                file_name = today + "_SAP_Upload-log.xlsx"
                 response = HttpResponse(
                     output,
                     content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
                 )
-                response['Content-Disposition'] = 'attachment; filename=' + fileName
+                response['Content-Disposition'] = 'attachment; filename=' + file_name
                 return response
             except KeyError:
                 messages.add_message(request, messages.ERROR, 'Please select a file to upload!')
 
             return redirect('sap:sap-dashboard')
-        else:
-            return HttpResponseForbidden()
+
+        return HttpResponseForbidden()
