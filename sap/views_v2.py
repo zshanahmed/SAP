@@ -9,7 +9,7 @@ import uuid
 from datetime import date
 
 import pandas as pd
-from pandas.errors import ParserError
+from pandas.errors import ParserError, EmptyDataError
 import xlsxwriter
 from xlrd import XLRDError
 from sendgrid import SendGridAPIClient
@@ -803,6 +803,8 @@ class UploadAllies(AccessMixin, HttpResponse):
             data_frame = pd.read_csv(file)
         except ParserError:
             error_log[900] = "Empty xlsx cannot make allies."
+        except EmptyDataError:
+            error_log[900] = "Empty csv cannot make allies"
         except UnicodeDecodeError:
             try:
                 data_frame = pd.read_excel(file)
