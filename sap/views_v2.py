@@ -9,7 +9,9 @@ import uuid
 from datetime import date
 
 import pandas as pd
+from pandas.errors import ParserError
 import xlsxwriter
+from xlrd import XLRDError
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
 from django.contrib import messages
@@ -613,9 +615,8 @@ class UploadAllies(AccessMixin, HttpResponse):
     """Enter what this class/method does"""
 
     @staticmethod
-    def cleanup_frame(data_frame):
+    def cleanup_frame(data_frame, errorlog):
         """Enter what this class/method does"""
-        errorlog = {}
         try:
             data_frame = data_frame.drop(['Workflow ID', 'Status', 'Name'], axis=1)
         except KeyError:
@@ -634,7 +635,7 @@ class UploadAllies(AccessMixin, HttpResponse):
             data_frame = data_frame.join(data_frame2)
             data_frame['email'] = data_frame['Initiator'].str.extract(r'(.*@uiowa.edu)')
             data_frame = data_frame.drop(['Initiator'], axis=1)
-        except Exception:
+        except KeyError:
             errorlog[3000] = "CRITICAL ERROR: data could not be extracted from \'Initiator\' column " \
                              "and added as columns"
             return data_frame, errorlog
@@ -693,7 +694,7 @@ class UploadAllies(AccessMixin, HttpResponse):
             for i in range(0, len(data_frame)):
                 hawkid = data_frame['first_name'][i][0] + data_frame['last_name'][i]
                 data_frame['username'][i] = hawkid.lower()
-        except Exception:
+        except KeyError:
             errorlog[7000] = "CRITICAL ERROR: Could not convert first name and last name to hawkid. Please Ensure the " \
                              "Initiator is present"
             return data_frame, errorlog
@@ -718,7 +719,7 @@ class UploadAllies(AccessMixin, HttpResponse):
                     data_frame['under_represented_racial_ethnic'][i] = True
             data_frame = data_frame.drop(['Are you interested in serving as a mentor to students who identify as any of the following '
                                           '(check all that may apply)'], axis=1)
-        except Exception:
+        except KeyError:
             errorlog[8000] = "Possible data error: willing to mentor may be inaccurate. Please ensure the column: " \
                              "\'Are you interested in serving as a mentor to students who identify as any of the following " \
                              "(check all that may apply)\'" \
@@ -800,15 +801,16 @@ class UploadAllies(AccessMixin, HttpResponse):
         data_frame = pd.DataFrame()
         try:
             data_frame = pd.read_csv(file)
-        except Exception:
+        except ParserError:
+            error_log[900] = "Empty xlsx cannot make allies."
+        except UnicodeDecodeError:
             try:
                 data_frame = pd.read_excel(file)
-            except Exception:
+            except XLRDError:
                 error_log[900] = "Problem reading file: was it stored in .csv or xlsx?"
-
         columns = list(data_frame.columns)
         if columns != (userFields + allyFields + categoryFields):
-            data_frame, error_log = UploadAllies.cleanup_frame(data_frame)
+            data_frame, error_log = UploadAllies.cleanup_frame(data_frame, error_log)
         else:
             data_frame = data_frame.replace(data_frame.fillna('', inplace=True))
         error_log, password_log = UploadAllies.make_allies_from_data_frame(data_frame, error_log)
