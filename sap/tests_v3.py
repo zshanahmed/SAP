@@ -12,6 +12,7 @@ from django.test import TestCase, Client  # tests file
 import pandas as pd
 import numpy as np
 import sap.views as views
+import sap.views_v2 as views_v2
 from .models import Ally, StudentCategories, AllyStudentCategoryRelation, Event, EventInviteeRelation
 from .tests import create_ally
 
@@ -28,15 +29,9 @@ def wack_test_db():
     AllyStudentCategoryRelation.objects.all().delete()
 
 
-userFields = ['last_login', 'username', 'first_name', 'last_name', 'email', 'is_active', 'date_joined']
-allyFields = ['user_type', 'area_of_research', 'openings_in_lab_serving_at', 'description_of_research_done_at_lab',
-              'interested_in_mentoring', 'interested_in_mentor_training', 'willing_to_offer_lab_shadowing',
-              'interested_in_connecting_with_other_mentors', 'willing_to_volunteer_for_events', 'works_at',
-              'people_who_might_be_interested_in_iba', 'how_can_science_ally_serve_you', 'year', 'major',
-              'information_release', 'interested_in_being_mentored', 'interested_in_joining_lab',
-              'has_lab_experience']
-categoryFields = ['under_represented_racial_ethnic', 'first_gen_college_student',
-                  'transfer_student', 'lgbtq', 'low_income', 'rural', 'disabled']
+userFields = views_v2.userFields
+allyFields = views_v2.allyFields
+categoryFields = views_v2.categoryFields
 
 
 def make_big_undergrad():
@@ -354,7 +349,7 @@ class UploadFileTest(TestCase):
         self.assertEqual(response.status_code, 200)
 
         local_df = UploadFileTest.make_frame()
-        local_df1, _ = views.UploadAllies.cleanupFrame(self.data_frame_1)
+        local_df1, _ = views_v2.UploadAllies.cleanup_frame(self.data_frame_1)
         local_df1 = local_df1[userFields + allyFields + categoryFields]
         local_df['last_login'] = ''
         for category in categoryFields:
@@ -873,7 +868,7 @@ class TestAnalyticsPage(TestCase):
         """
         category_list = [self.big_category]
 
-        category_list = views.AnalyticsView.determineNumPerCategory(category_list)
+        category_list = views.AnalyticsView.determine_num_per_category(category_list)
 
         self.assertEqual(category_list, [1, 1, 1, 1, 1, 1, 1])
 
@@ -886,7 +881,7 @@ class TestAnalyticsPage(TestCase):
         categories = StudentCategories.objects.all()
         category_relation = relation.filter(ally_id=ally[0].id)
         category = categories.filter(id=category_relation[0].student_category_id)
-        categories = views.AnalyticsView.findTheCategories(ally, relation, categories)
+        categories = views.AnalyticsView.find_the_categories(ally, relation, categories)
 
         self.assertEqual(category[0].id, categories[0].id)
 
@@ -894,14 +889,14 @@ class TestAnalyticsPage(TestCase):
         """
         Looks if the undergrad per year function is returning the right number per year in school
         """
-        num_per_year = views.AnalyticsView.undergradPerYear(self.undergrads)
+        num_per_year = views.AnalyticsView.undergrad_per_year(self.undergrads)
         self.assertEqual(num_per_year, [1, 1, 1, 1])
 
     def test_get_year(self):
         """
         Checks if the function that makes the inital dict is working correctly
         """
-        years, years_undergrad = views.AnalyticsView.findYears(self.big_users)
+        years, years_undergrad = views.AnalyticsView.find_years(self.big_users)
         year_dict = {datetime.strftime(datetime.now(), "%Y"): [0, 0, 0]}
         year_dict1 = {datetime.strftime(datetime.now(), "%Y"): 0}
         self.assertEqual(years, year_dict)
@@ -913,7 +908,7 @@ class TestAnalyticsPage(TestCase):
         """
         year_dict = {datetime.strftime(datetime.now(), "%Y"): [0, 0, 0]}
         year_dict1 = {datetime.strftime(datetime.now(), "%Y"): 0}
-        years, undergrad_years = views.AnalyticsView.userTypePerYear(self.big_users, year_dict, year_dict1)
+        years, undergrad_years = views.AnalyticsView.user_type_per_year(self.big_users, year_dict, year_dict1)
         year_dict = {datetime.strftime(datetime.now(), "%Y"): [1, 1, 1]}
         year_dict1 = {datetime.strftime(datetime.now(), "%Y"): 4}
         self.assertEqual(years, year_dict)
@@ -925,8 +920,8 @@ class TestAnalyticsPage(TestCase):
         """
         year_dict = {datetime.strftime(datetime.now(), "%Y"): [0, 0, 0]}
         year_dict1 = {datetime.strftime(datetime.now(), "%Y"): 0}
-        years, undergrad_years = views.AnalyticsView.userTypePerYear(self.undergrads, year_dict, year_dict1)
-        years, numbers = views.AnalyticsView.cleanUndergradDic(undergrad_years)
+        years, undergrad_years = views.AnalyticsView.user_type_per_year(self.undergrads, year_dict, year_dict1)
+        years, numbers = views.AnalyticsView.clean_undergrad_dic(undergrad_years)
         self.assertEqual(years, [int(datetime.strftime(datetime.now(), "%Y"))])
         self.assertEqual(numbers, [4])
 
@@ -936,8 +931,8 @@ class TestAnalyticsPage(TestCase):
         """
         year_dict = {datetime.strftime(datetime.now(), "%Y"): [0, 0, 0]}
         year_dict1 = {datetime.strftime(datetime.now(), "%Y"): 0}
-        years, undergrad_years = views.AnalyticsView.userTypePerYear(self.big_users, year_dict, year_dict1)
+        years, undergrad_years = views.AnalyticsView.user_type_per_year(self.big_users, year_dict, year_dict1)
         self.assertEqual(undergrad_years, {datetime.strftime(datetime.now(), "%Y"): 4})
-        cleaned_years, cleaned_other = views.AnalyticsView.cleanOtherDic(years)
+        cleaned_years, cleaned_other = views.AnalyticsView.clean_other_dic(years)
         self.assertEqual(cleaned_years, [int(datetime.strftime(datetime.now(), "%Y"))])
         self.assertEqual(cleaned_other, [[1], [1], [1]])

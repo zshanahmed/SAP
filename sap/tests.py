@@ -229,7 +229,7 @@ class AdminAllyTableFeatureTests(TestCase):
 
         self.assertContains(
             response, "No allies are available.", html=True
-        )
+         )
 
         # Should find our johndoe
         response = self.client.post(
