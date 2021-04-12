@@ -84,6 +84,9 @@
     var title = el.data('title')
     var description = el.data('description')
     var location = el.data('location')
+    var id = el.data('id')
+
+    console.log(id);
 
     const start_date = new Date(start_time)
     const end_date = new Date(end_time)
@@ -106,6 +109,10 @@
           "<div><strong>End Day:</strong>  "+ end_date.toDateString()+ "</div>" +
           "<div><strong>End Time:</strong>  "+ end_date.toLocaleTimeString('en-US')+ "</div></div>"
       );
+    modal
+      .find(".modal-footer a")
+      .attr("href", "/delete_event/?event_id=" + id);
+    console.log(id);
   });
 
   $('input[type="file"]').change(function(e){
