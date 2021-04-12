@@ -836,6 +836,27 @@ class CalendarViewTests(TestCase):
         self.assertContains(response, "Calendar")
         self.assertContains(response, self.event.title)
 
+    def test_delete_event_admin(self):
+        """
+        Unit tests for admin to delete event
+        """
+        self.client.login(username=self.username, password=self.password)
+        response = self.client.get('/delete_event/', {'event_id': self.event.id}, follow=True)
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        self.assertNotContains(response, self.event.title, html=True)
+        message = list(response.context['messages'])[0]
+        self.assertEqual(message.message, "Event deleted successfully!")
+
+    def test_delete_event_admin_fail(self):
+        """
+        Unit tests for admin to delete event
+        """
+        self.client.login(username=self.username, password=self.password)
+        response = self.client.get('/delete_event/', {'event_id': -1}, follow=True)
+        message = list(response.context['messages'])[0]
+        self.assertEqual(message.message, "Event doesn't exist!")
+
+
 class TestAnalyticsPage(TestCase):
     """
     Test the analytics page methods/get function

@@ -38,6 +38,9 @@ urlpatterns = [
         login_required(views.CalendarView.as_view()),
         name='calendar'),
 
+    url(r'^delete_event/$', login_required(sap.views_v2.DeleteEventView.as_view()),
+        name='admin_delete_event'),
+
     url('analytics/',
         login_required(views.AnalyticsView.as_view()),
         name='sap-analytics'),
