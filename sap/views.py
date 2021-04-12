@@ -379,7 +379,9 @@ class CalendarView(TemplateView):
     """
 
     def get(self, request):
-        """Enter what this class/method does"""
+        """
+        This function gets all the events to be shown on Calendar
+        """
         events_list = []
         curr_user = request.user
         if not curr_user.is_staff:
