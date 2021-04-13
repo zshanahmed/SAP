@@ -77,16 +77,18 @@
   });
 
   $("#eventModal").on("show.bs.modal", function (event) {
-    var el = $(event.relatedTarget);
+    const el = $(event.relatedTarget);
 
-    var start_time = el.data('start')
-    var end_time = el.data('end')
-    var title = el.data('title')
-    var description = el.data('description')
-    var location = el.data('location')
-    var id = el.data('id')
+    const start_time = el.data('start');
+    const end_time = el.data('end');
+    const title = el.data('title');
+    const description = el.data('description');
+    const location = el.data('location');
+    const id = el.data('id');
+    const numInvited = el.data('numinvited');
+    const numAttending = el.data('numattending');
 
-    console.log(id);
+    console.log(numInvited);
 
     const start_date = new Date(start_time)
     const end_date = new Date(end_time)
@@ -107,12 +109,14 @@
           "<div><strong>Start Time:</strong>  "+ start_date.toLocaleTimeString('en-US')+ "</div></div>"+
           "<div class='d-flex justify-content-between'>" +
           "<div><strong>End Day:</strong>  "+ end_date.toDateString()+ "</div>" +
-          "<div><strong>End Time:</strong>  "+ end_date.toLocaleTimeString('en-US')+ "</div></div>"
+          "<div><strong>End Time:</strong>  "+ end_date.toLocaleTimeString('en-US')+ "</div></div>"+
+          "<div class='d-flex justify-content-between mt-2'>" +
+          "<div><strong>No. of People Invited:</strong>  "+ numInvited+ "</div>" +
+          "<div><strong>No. of People Signed Up:</strong>  "+ numAttending+ "</div></div>"
       );
     modal
       .find(".modal-footer a")
       .attr("href", "/delete_event/?event_id=" + id);
-    console.log(id);
   });
 
   $('input[type="file"]').change(function(e){

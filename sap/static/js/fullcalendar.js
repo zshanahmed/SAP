@@ -5356,6 +5356,8 @@ function DayEventRenderer() {
 				"data-description=\""+(event.description)+"\"  " +
 				"data-location=\""+(event.location)+"\"  " +
 				"data-id=\""+(event.id)+"\"  " +
+				"data-numinvited=\""+(event.num_invited)+"\"  " +
+				"data-numattending=\""+(event.num_attending)+"\"  " +
 				"data-end=\""+(event.end)+"\"  " +
 				"data-start=\""+(event.start)+"\">";
 		if (!event.allDay && segment.isStart) {

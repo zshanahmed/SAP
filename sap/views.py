@@ -391,8 +391,14 @@ class CalendarView(TemplateView):
                 events_list.append(Event.objects.get(id=event.event_id))
         else:
             events_list = Event.objects.all()
+            for event in events_list:
+                event.num_invited = EventInviteeRelation.objects.filter(event_id=event.id).count()
         events = serializers.serialize('json', events_list)
-        return render(request, 'sap/calendar.html', context={"events": events, "user": curr_user})
+        return render(request, 'sap/calendar.html',
+                      context={
+                          "events": events,
+                          "user": curr_user
+                      })
 
 
 class EditAdminProfile(View):

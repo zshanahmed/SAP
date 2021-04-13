@@ -9,6 +9,8 @@ $(document).ready(function() {
             title: myData[i]['fields']['title'],
             description: myData[i]['fields']['description'],
             location: myData[i]['fields']['location'],
+            num_invited: myData[i]['fields']['num_invited'],
+            num_attending: myData[i]['fields']['num_attending'],
             start: start_time,
             end: end_time,
             allDay: false,
