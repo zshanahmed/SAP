@@ -390,11 +390,11 @@ class CalendarView(TemplateView):
             for event in curr_events:
                 events_list.append(Event.objects.get(id=event.event_id))
         else:
-            for event in Event.objects.all():
+            events_list = Event.objects.all()
+            for event in events_list:
                 event.num_invited = EventInviteeRelation.objects.filter(event_id=event.id).count()
                 event.num_attending = EventAttendeeRelation.objects.filter(event_id=event.id).count()
                 event.save()
-            events_list = Event.objects.all()
         events = serializers.serialize('json', events_list)
         return render(request, 'sap/calendar.html',
                       context={
