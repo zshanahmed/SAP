@@ -52,6 +52,15 @@ def logout_request(request):
     return redirect('sap:home')
 
 
+class CustomLoginView(LoginView):
+
+    def get(self, request):
+        pass
+
+    def post(self, request):
+        pass
+
+
 class AccessMixin(LoginRequiredMixin):
     """
     Redirect users based on whether they are staff or not
