@@ -793,7 +793,8 @@ class CalendarViewTests(TestCase):
         self.user = User.objects.create_user(self.username, 'email@test.com', self.password)
         self.event = Event.objects.create(title='Internship', description='Internship',
                                           start_time='2021-04-20 21:05:00',
-                                          end_time='2021-04-26 21:05:00', location='MacLean')
+                                          end_time='2021-04-26 21:05:00', location='MacLean',
+                                          num_invited=30, num_attending=10)
 
         self.ally_user = User.objects.create_user('allytesting', 'allyemail@test.com', 'ally_password1')
         self.ally_user.is_staff = False
@@ -849,7 +850,7 @@ class CalendarViewTests(TestCase):
 
     def test_delete_event_admin_fail(self):
         """
-        Unit tests for admin to delete event
+        Unit tests for admin to delete event that doesnt exist
         """
         self.client.login(username=self.username, password=self.password)
         response = self.client.get('/delete_event/', {'event_id': -1}, follow=True)
