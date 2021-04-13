@@ -879,10 +879,10 @@ class DeleteEventView(AccessMixin, View):
         """
         event_id = request.GET['event_id']
         try:
-            event = Event.objects.get(id=event_id)
+            event = Event.objects.get(pk=event_id)
             event.delete()
             messages.success(request, 'Event deleted successfully!')
             return redirect(reverse('sap:calendar'))
-        except KeyError:
+        except:
             messages.warning(request, "Event doesn't exist!")
         return redirect(reverse('sap:calendar'))
