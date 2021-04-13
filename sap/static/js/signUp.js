@@ -5,7 +5,7 @@ function yesnoCheck(div_name) {
     function addRadioOptions(div_id, field_list)
     {
         x = document.getElementById(div_id);
-\        var i, field;
+        var i, field;
 
         for (i=0; i<field_list.length; i++)
         {
