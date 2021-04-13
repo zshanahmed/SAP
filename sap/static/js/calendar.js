@@ -13,8 +13,10 @@ $(document).ready(function() {
             num_attending: myData[i]['fields']['num_attending'],
             start: start_time,
             end: end_time,
-            allDay: false,
             className: colors[i% colors.length],
+        }
+        if (myData[i]['fields']['allday'] === false) {
+            entry['allDay'] = myData[i]['fields']['allday']
         }
         events.push(entry);
     }
