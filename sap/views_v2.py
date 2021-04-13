@@ -23,12 +23,13 @@ from django.http import HttpResponse, HttpResponseForbidden
 from django.shortcuts import render, redirect
 from django.template.loader import render_to_string
 from django.urls import reverse
+from django.core.exceptions import ObjectDoesNotExist
 from django.utils.encoding import force_bytes, force_text
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
-from django.views.generic import TemplateView
+from django.views.generic import TemplateView, View
 
 from sap.forms import UserResetForgotPasswordForm
-from sap.models import StudentCategories, Ally, AllyStudentCategoryRelation
+from sap.models import StudentCategories, Ally, AllyStudentCategoryRelation, Event
 from sap.tokens import account_activation_token, password_reset_token
 from sap.views import User, AccessMixin
 
@@ -868,3 +869,21 @@ class UploadAllies(AccessMixin, HttpResponse):
             return redirect('sap:sap-dashboard')
 
         return HttpResponseForbidden()
+
+class DeleteEventView(AccessMixin, View):
+    """
+    Delete event from calendar view
+    """
+    def get(self, request):
+        """
+        Method to get event which needs to be deleted
+        """
+        event_id = request.GET['event_id']
+        try:
+            event = Event.objects.get(pk=event_id)
+            event.delete()
+            messages.success(request, 'Event deleted successfully!')
+            return redirect(reverse('sap:calendar'))
+        except ObjectDoesNotExist:
+            messages.warning(request, "Event doesn't exist!")
+        return redirect(reverse('sap:calendar'))

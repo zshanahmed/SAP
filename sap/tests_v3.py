@@ -349,7 +349,7 @@ class UploadFileTest(TestCase):
         self.assertEqual(response.status_code, 200)
 
         local_df = UploadFileTest.make_frame()
-        local_df1, _ = views_v2.UploadAllies.cleanup_frame(self.data_frame_1)
+        local_df1, _ = views_v2.UploadAllies.cleanup_frame(self.data_frame_1, {})
         local_df1 = local_df1[userFields + allyFields + categoryFields]
         local_df['last_login'] = ''
         for category in categoryFields:
@@ -793,7 +793,8 @@ class CalendarViewTests(TestCase):
         self.user = User.objects.create_user(self.username, 'email@test.com', self.password)
         self.event = Event.objects.create(title='Internship', description='Internship',
                                           start_time='2021-04-20 21:05:00',
-                                          end_time='2021-04-26 21:05:00', location='MacLean')
+                                          end_time='2021-04-26 21:05:00', location='MacLean',
+                                          num_invited=30, num_attending=10)
 
         self.ally_user = User.objects.create_user('allytesting', 'allyemail@test.com', 'ally_password1')
         self.ally_user.is_staff = False
@@ -835,6 +836,27 @@ class CalendarViewTests(TestCase):
         response = self.client.get(reverse('sap:calendar'))
         self.assertContains(response, "Calendar")
         self.assertContains(response, self.event.title)
+
+    def test_delete_event_admin(self):
+        """
+        Unit tests for admin to delete event
+        """
+        self.client.login(username=self.username, password=self.password)
+        response = self.client.get('/delete_event/', {'event_id': self.event.id}, follow=True)
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        self.assertNotContains(response, self.event.title, html=True)
+        message = list(response.context['messages'])[0]
+        self.assertEqual(message.message, "Event deleted successfully!")
+
+    def test_delete_event_admin_fail(self):
+        """
+        Unit tests for admin to delete event that doesnt exist
+        """
+        self.client.login(username=self.username, password=self.password)
+        response = self.client.get('/delete_event/', {'event_id': -1}, follow=True)
+        message = list(response.context['messages'])[0]
+        self.assertEqual(message.message, "Event doesn't exist!")
+
 
 class TestAnalyticsPage(TestCase):
     """

@@ -23,7 +23,7 @@ from django.http import HttpResponseNotFound
 from django.utils.dateparse import parse_datetime
 
 from .forms import UpdateAdminProfileForm
-from .models import Announcement, EventInviteeRelation, Ally, StudentCategories, AllyStudentCategoryRelation, Event
+from .models import Announcement, EventInviteeRelation, EventAttendeeRelation, Ally, StudentCategories, AllyStudentCategoryRelation, Event
 
 # Create your views here.
 
@@ -379,7 +379,9 @@ class CalendarView(TemplateView):
     """
 
     def get(self, request):
-        """Enter what this class/method does"""
+        """
+        This function gets all the events to be shown on Calendar
+        """
         events_list = []
         curr_user = request.user
         if not curr_user.is_staff:
@@ -389,8 +391,16 @@ class CalendarView(TemplateView):
                 events_list.append(Event.objects.get(id=event.event_id))
         else:
             events_list = Event.objects.all()
+            for event in events_list:
+                event.num_invited = EventInviteeRelation.objects.filter(event_id=event.id).count()
+                event.num_attending = EventAttendeeRelation.objects.filter(event_id=event.id).count()
+                event.save()
         events = serializers.serialize('json', events_list)
-        return render(request, 'sap/calendar.html', context={"events": events, "user": curr_user})
+        return render(request, 'sap/calendar.html',
+                      context={
+                          "events": events,
+                          "user": curr_user
+                      })
 
 
 class EditAdminProfile(View):
