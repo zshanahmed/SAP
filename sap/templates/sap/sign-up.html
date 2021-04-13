@@ -59,11 +59,11 @@
                                     <strong>Please select your role in the university:</strong>
                                     <div class="form-check form-check-inline">
                                         <div class="px-2">
-                                            <input type="radio" name="roleSelected" id="staffCheck" value="Staff" onclick="javascript:yesnoCheck('staffContent');"  required  > 
+                                            <input type="radio" name="roleSelected" id="staffCheck" value="Staff" onclick="javascript:yesnoCheck('gradStaffFac');"  required  >
                                             <label class="form-check-label" for="staffCheck">Staff</label>
                                         </div>
                                         <div class="px-2">
-                                        <input type="radio" name="roleSelected" id="gradCheck" value="Graduate Student" onclick="javascript:yesnoCheck('gradContent');"  required  > 
+                                        <input type="radio" name="roleSelected" id="gradCheck" value="Graduate Student" onclick="javascript:yesnoCheck('gradStaffFac');"  required  >
                                         <label class="form-check-label" for="gradCheck">Grad</label>  
                                         </div>
                                         <div class="px-2">
@@ -71,7 +71,7 @@
                                         <label class="form-check-label" for="undergradCheck">Undergrad</label>
                                         </div>
                                         <div class="px-2">
-                                            <input type="radio" name="roleSelected" id="facultyCheck" value="Faculty" onclick="javascript:yesnoCheck('facultyContent');"  required  > 
+                                            <input type="radio" name="roleSelected" id="facultyCheck" value="Faculty" onclick="javascript:yesnoCheck('gradStaffFac');"  required  >
                                             <label class="form-check-label" for="facultyCheck">Faculty</label>
                                         </div>
                                       
@@ -91,55 +91,53 @@
                 </div>
             </div>
         </div>
-
     </div>
+    
+    <!-- Graduate Student, Faculty, Staff Content -->
 
-    <!-- Content to fill in contents divs -->
-
-    <!-- Staff Content -->
-    <div id='staffContent' style="display: none">
+    <div id='gradStaffFac' style="display: none">
+        <div class="py-1">
+            <strong>STEM Area of Research:</strong> 
+              <div class="form-check" id="areaOfResearchCheckboxes"></div>
+         </div>
+        <div class="py-3">
+            <input name="research-des" type="text" class="form-control form-control-user" id="research-des" placeholder="Brief description of Research" maxlength="500">
+        </div>
+        <div class="py-1">
+            <strong>Do you currently have openings for undergraduate students in your lab?</strong>
+              <div class="form-check" id="openingRadios"></div>
+         </div>
+         <div class="py-1">
+            <strong>Are you interested in mentoring students?</strong> 
+              <div class="form-check" id="mentoringRadios"></div>
+         </div>
+        <div class="py-1">
+            <strong>Are you interested in connecting with other mentors?</strong>
+             <div class="form-check" id="connectingWithMentorsRadios"></div>
+         </div>
         <strong>Do you know students who would be interested in the Science Alliance?</strong>
         <div class="py-1">
             <div class="form-check" id="studentsInterestedRadios"></div>
         </div>
-        
-        <div class="py-1"><strong>How can science alliance serve you?</strong></div>
-        <input name="howCanWeHelp" type="text" class="form-control form-control-user" id="howHelp" required>
-    </div>
-    
-    <!-- Graduate Student Content -->
-
-    <div id='gradContent' style="display: none">
-        <div class="py-1">
-            <strong>STEM Area of Research:</strong> 
-              <div class="form-check" id="stemGradCheckboxes"></div> 
-         </div> 
-         <div class="py-1">
-            <strong>Are you interested in mentoring students?</strong> 
-              <div class="form-check" id="mentoringGradRadios"></div> 
-         </div>
          <div class="py-1">
             <strong>Are you interested in serving as a mentor to students who identify as any of the following? (check all that apply)</strong> 
-              <div class="form-check" id="mentoringGradCheckboxes"></div> 
+              <div class="form-check" id="mentorCheckboxes"></div>
          </div>
          <div class="py-1">
             <strong>Would you be willing to offer lab shadowing to potential students?</strong> 
               <div class="form-check" id="labShadowRadios"></div> 
          </div>
          <div class="py-1">
-            <strong>Are you interested in connecting with other mentors?</strong> 
-             <div class="form-check" id="connectingRadios">
-             </div>  
-         </div>
-         <div class="py-1">
             <strong>Would you be willing to volunteer for panels, networking workshops, and other events as professional development for students?</strong> 
-             <div class="form-check" id="volunteerGradRadios">
+             <div class="form-check" id="volunteerRadios">
              </div>  
          </div>
          <div class="py-1">
             <strong>Are you interested in mentor training?</strong> 
-             <div class="form-check" id="gradTrainingRadios"></div> 
-        </div>        
+             <div class="form-check" id="trainingRadios"></div>
+        </div>
+        <div class="py-1"><strong>How can science alliance serve you?</strong></div>
+        <input name="howCanWeHelp" type="text" class="form-control form-control-user" id="howHelp" required>
       </div>
       
     <!-- Undergraduate student content -->
@@ -147,30 +145,28 @@
     <div id='undergradContent' style="display: none">
         <div class="py-1">
            <strong>Year:</strong> 
-            <div class="form-check" id="undergradRadios"></div> 
+            <div class="form-check" id="undergradYear"></div>
         </div>
-
         <div class="py-1">
             <strong>Do you identify as? (check all that apply)</strong> 
-             <div class="form-check" id="idUnderGradCheckboxes"></div> 
+             <div class="form-check" id="identityCheckboxes"></div>
          </div>
-        
         <div class="py-3">
             <input name="major" type="text" class="form-control form-control-user" id="major" placeholder="Please enter your Major"  required > 
         </div>
         <div class="py-1">
            <strong>Are you interested in joining a lab?</strong> 
-            <div class="form-check" id="interestRadios">
+            <div class="form-check" id="interestLabRadios">
             </div>  
         </div>
         <div class="py-1">
            <strong>Do you have experience working in a laboratory?</strong>   
-             <div class="form-check" id="experienceRadios">
+             <div class="form-check" id="labExperienceRadios">
              </div>  
          </div>  
          <div class="py-1">
             <strong>Are you interested in becoming a peer mentor?</strong> 
-             <div class="form-check" id="interestedRadios">
+             <div class="form-check" id="undergradMentoringRadios">
              </div>  
          </div>
         <div class="py-1">
@@ -183,38 +179,6 @@
              <div class="form-check" id="agreementRadios">
              </div>  
          </div>    
-      </div>
-    
-      <!-- Faculty Content  -->
-      
-    <div id='facultyContent' style="display: none">
-        <div class="py-1">
-           <strong>STEM Area of Research:</strong> 
-             <div class="form-check" id="stemCheckboxes"></div> 
-        </div> 
-        <div class="py-3">
-            <input name="research-des" type="text" class="form-control form-control-user" id="research-des" placeholder="Brief description of Research" maxlength="500"  required > 
-        </div>
-        <div class="py-1">
-            <strong>Do you currently have openings for undergraduate students in your lab?</strong> 
-              <div class="form-check" id="openingRadios"></div> 
-         </div>
-         <div class="py-1">
-            <strong>Are you interested in mentoring students?</strong> 
-              <div class="form-check" id="mentoringFacultyRadios"></div> 
-         </div>
-         <div class="py-1">
-            <strong>Are you interested in serving as a mentor to students who identify as any of the following? (check all that apply)</strong> 
-            <div class="form-check" id="mentoringCheckboxes"></div> 
-         </div> 
-         <div class="py-1">
-            <strong>Would you be willing to volunteer for panels, networking workshops, and other events as professional development for students?</strong> 
-              <div class="form-check" id="volunteerRadios"></div> 
-         </div>
-         <div class="py-1">
-            <strong>Are you interested in mentor training?</strong> 
-              <div class="form-check" id="trainingRadios"></div> 
-         </div>       
       </div>
 
     <script src="{% static 'js/signUp.js' %}"></script>
