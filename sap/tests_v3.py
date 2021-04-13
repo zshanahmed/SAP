@@ -349,7 +349,7 @@ class UploadFileTest(TestCase):
         self.assertEqual(response.status_code, 200)
 
         local_df = UploadFileTest.make_frame()
-        local_df1, _ = views_v2.UploadAllies.cleanup_frame(self.data_frame_1)
+        local_df1, _ = views_v2.UploadAllies.cleanup_frame(self.data_frame_1, {})
         local_df1 = local_df1[userFields + allyFields + categoryFields]
         local_df['last_login'] = ''
         for category in categoryFields:
