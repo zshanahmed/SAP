@@ -23,6 +23,7 @@ from django.http import HttpResponse, HttpResponseForbidden
 from django.shortcuts import render, redirect
 from django.template.loader import render_to_string
 from django.urls import reverse
+from django.core.exceptions import ObjectDoesNotExist
 from django.utils.encoding import force_bytes, force_text
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.views.generic import TemplateView, View
@@ -883,6 +884,6 @@ class DeleteEventView(AccessMixin, View):
             event.delete()
             messages.success(request, 'Event deleted successfully!')
             return redirect(reverse('sap:calendar'))
-        except:
+        except ObjectDoesNotExist:
             messages.warning(request, "Event doesn't exist!")
         return redirect(reverse('sap:calendar'))
