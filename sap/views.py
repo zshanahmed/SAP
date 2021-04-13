@@ -23,7 +23,7 @@ from django.http import HttpResponseNotFound
 from django.utils.dateparse import parse_datetime
 
 from .forms import UpdateAdminProfileForm
-from .models import Announcement, EventInviteeRelation, Ally, StudentCategories, AllyStudentCategoryRelation, Event
+from .models import Announcement, EventInviteeRelation, EventAttendeeRelation, Ally, StudentCategories, AllyStudentCategoryRelation, Event
 
 # Create your views here.
 
@@ -393,6 +393,7 @@ class CalendarView(TemplateView):
             events_list = Event.objects.all()
             for event in events_list:
                 event.num_invited = EventInviteeRelation.objects.filter(event_id=event.id).count()
+                event.num_attending = EventAttendeeRelation.objects.filter(event_id=event.id).count()
         events = serializers.serialize('json', events_list)
         return render(request, 'sap/calendar.html',
                       context={
