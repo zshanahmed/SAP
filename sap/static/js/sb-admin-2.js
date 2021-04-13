@@ -88,11 +88,21 @@
     const numInvited = el.data('numinvited');
     const numAttending = el.data('numattending');
 
-    console.log(numInvited);
-
     const start_date = new Date(start_time)
     const end_date = new Date(end_time)
-
+    let footer_content = "<strong>Description:</strong>  "+ description + "<br/>"+
+          "<strong>Location:</strong>  "+ location + "<br/>"+
+          "<div class='pt-3 d-flex justify-content-between'>" +
+          "<div><strong>Start Day:</strong>  "+ start_date.toDateString()+ "</div>" +
+          "<div><strong>Start Time:</strong>  "+ start_date.toLocaleTimeString('en-US')+ "</div></div>"+
+          "<div class='d-flex justify-content-between'>" +
+          "<div><strong>End Day:</strong>  "+ end_date.toDateString()+ "</div>" +
+          "<div><strong>End Time:</strong>  "+ end_date.toLocaleTimeString('en-US')+ "</div></div>"
+    if (isAdmin !== "False") {
+      footer_content +=  "<div class='d-flex justify-content-between mt-2'>" +
+          "<div><strong>No. of People Invited:</strong>  "+ numInvited+ "</div>" +
+          "<div><strong>No. of People Signed Up:</strong>  "+ numAttending+ "</div></div>"
+    }
     // If necessary, you could initiate an AJAX request here (and then do the updating in a callback).
     // Update the modal's content. We'll use jQuery here, but you could use a data binding library or other methods instead.
     var modal = $(this);
@@ -101,19 +111,7 @@
       .html("<div><strong>"+title+"</strong></div>");
     modal
       .find(".modal-body")
-      .html(
-          "<strong>Description:</strong>  "+ description + "<br/>"+
-          "<strong>Location:</strong>  "+ location + "<br/>"+
-          "<div class='pt-3 d-flex justify-content-between'>" +
-          "<div><strong>Start Day:</strong>  "+ start_date.toDateString()+ "</div>" +
-          "<div><strong>Start Time:</strong>  "+ start_date.toLocaleTimeString('en-US')+ "</div></div>"+
-          "<div class='d-flex justify-content-between'>" +
-          "<div><strong>End Day:</strong>  "+ end_date.toDateString()+ "</div>" +
-          "<div><strong>End Time:</strong>  "+ end_date.toLocaleTimeString('en-US')+ "</div></div>"+
-          "<div class='d-flex justify-content-between mt-2'>" +
-          "<div><strong>No. of People Invited:</strong>  "+ numInvited+ "</div>" +
-          "<div><strong>No. of People Signed Up:</strong>  "+ numAttending+ "</div></div>"
-      );
+      .html(footer_content);
     modal
       .find(".modal-footer a")
       .attr("href", "/delete_event/?event_id=" + id);
