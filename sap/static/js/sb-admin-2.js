@@ -85,8 +85,6 @@
     const description = el.data('description');
     const location = el.data('location');
     const id = el.data('id');
-    const numInvited = el.data('numinvited');
-    const numAttending = el.data('numattending');
 
     const start_date = new Date(start_time)
     const end_date = new Date(end_time)
@@ -99,6 +97,9 @@
           "<div><strong>End Day:</strong>  "+ end_date.toDateString()+ "</div>" +
           "<div><strong>End Time:</strong>  "+ end_date.toLocaleTimeString('en-US')+ "</div></div>"
     if (isAdmin !== "False") {
+      const numInvited = el.data('numinvited');
+      const numAttending = el.data('numattending');
+
       footer_content +=  "<div class='d-flex justify-content-between mt-2'>" +
           "<div><strong>No. of People Invited:</strong>  "+ numInvited+ "</div>" +
           "<div><strong>No. of People Signed Up:</strong>  "+ numAttending+ "</div></div>"
@@ -119,7 +120,6 @@
 
   $('input[type="file"]').change(function(e){
             var fileName = e.target.files[0].name;
-            console.log(fileName);
             $('#uploadCsvLabel').text(fileName);
   });
 
