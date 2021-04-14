@@ -107,7 +107,9 @@ class SignUpTests(TestCase):
                 'roleSelected': ['Graduate Student'],
                 'areaOfResearchCheckboxes': ['Biochemistry'],
                 'mentoringRadios': ['Yes'],
-                'mentorCheckboxes': ['First generation college-student'],
+                'mentorCheckboxes': ['First generation college-student',
+                                     'Underrepresented racial/ethnic minority',
+                                     'LGBTQ', 'Rural', 'Disabled'],
                 'labShadowRadios': ['Yes'],
                 'connectingWithMentorsRadios': ['Yes'],
                 'volunteerRadios': ['Yes'],
@@ -763,9 +765,11 @@ class SignUpDoneViewTests(TestCase):
                 'new_email': ['hawkherky@uiowa.edu'],
                 'new_password': self.password,
                 'repeat_password': self.password,
-                'roleSelected': ['Staff'],
-                'studentsInterestedRadios': ['Yes'],
-                'howCanWeHelp': ['sasdasdasd'],
+                'roleSelected': ['Graduate Student'],
+                'research-des': ['research'],
+                'openingRadios': ['No'], 'mentoringRadios': ['No'], 'connectingWithMentorsRadios': ['Yes'],
+                'studentsInterestedRadios': ['No'], 'labShadowRadios': ['Yes'],
+                'volunteerRadios': ['Yes'], 'trainingRadios': ['Yes'], 'howCanWeHelp': ['no']
             }
         )
 

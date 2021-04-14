@@ -146,10 +146,9 @@ class EditAllyProfile(View):
     # 'beingMentoredRadios': ['No']}
 
     def post(self, request):
-        """Enter what this class/method does"""
+        """Updates profile details from edit_ally page"""
         post_dict = dict(request.POST)
 
-        print(post_dict)
         user_req = request.user
         message = ''
 
@@ -177,7 +176,7 @@ class EditAllyProfile(View):
                      'openingRadios', 'mentoringRadios',
                      'mentorTrainingRadios', 'volunteerRadios'], post_dict, ally, same)
                 try:
-                    aor = ','.join(post_dict['stemGradCheckboxes'])
+                    aor = ','.join(post_dict['areaOfResearchCheckboxes'])
                 except KeyError:
                     aor = ""
                 try:
@@ -649,7 +648,7 @@ class MentorsListView(generic.ListView):
 
 
 class AnalyticsView(AccessMixin, TemplateView):
-    """Enter what this class/method does"""
+    """takes in input from other methods and returns the seperate years and numbers"""
     template_name = "sap/analytics.html"
 
     @staticmethod
@@ -665,7 +664,7 @@ class AnalyticsView(AccessMixin, TemplateView):
 
     @staticmethod
     def clean_other_dic(other_dic):
-        """Enter what this class/method does"""
+        """takes in input from other methods and returns the seperate years and numbers"""
         years = []
         numbers = [[], [], []]
         if other_dic != {}:
@@ -677,7 +676,7 @@ class AnalyticsView(AccessMixin, TemplateView):
 
     @staticmethod
     def year_helper(ally):
-        """Enter what this class/method does"""
+        """turns datetime object into a string (just the year)"""
         user = ally.user
         joined = user.date_joined
         joined = datetime.datetime.strftime(joined, '%Y')
@@ -685,7 +684,7 @@ class AnalyticsView(AccessMixin, TemplateView):
 
     @staticmethod
     def find_years(allies):
-        """Enter what this class/method does"""
+        """get the years that each user type signed up for"""
         year_and_number = {}
         undergrad_number = {}
         for ally in allies:
@@ -698,7 +697,7 @@ class AnalyticsView(AccessMixin, TemplateView):
 
     @staticmethod
     def user_type_per_year(allies, year_and_number, undergrad_number):
-        """Enter what this class/method does"""
+        """Finds the number of each type of ally that signup per year"""
         for ally in allies:
             joined = AnalyticsView.year_helper(ally)
             if ally.user_type == 'Staff':
@@ -713,7 +712,7 @@ class AnalyticsView(AccessMixin, TemplateView):
 
     @staticmethod
     def find_the_categories(allies, relation, categories):
-        """Enter what this class/method does"""
+        """finds all categories and appends them to a list"""
         categories_list = []
         for ally in allies:
             category_relation = relation.filter(ally_id=ally.id)
@@ -726,7 +725,7 @@ class AnalyticsView(AccessMixin, TemplateView):
     @staticmethod
     def determine_num_per_category(category_list):
         """
-        Docstring here
+        Gets the number per category of allies
         """
         per_category = [0, 0, 0, 0, 0, 0, 0]  # lbtq,minorities,rural,disabled,firstGen,transfer,lowIncome
         for category in category_list:
@@ -749,8 +748,7 @@ class AnalyticsView(AccessMixin, TemplateView):
     @staticmethod
     def undergrad_per_year(allies):
         """
-        @param allies:
-        @return:
+        gets number of students per year
         """
         per_category = [0, 0, 0, 0]  # Freshman,Sophmore,Junior,Senior
         for ally in allies:
@@ -766,7 +764,7 @@ class AnalyticsView(AccessMixin, TemplateView):
         return per_category
 
     def get(self, request):
-        """Enter what this class/method does"""
+        """gets analytics view"""
         allies = Ally.objects.all()
 
         if len(allies) != 0:
