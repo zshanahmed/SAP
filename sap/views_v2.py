@@ -496,11 +496,11 @@ categoryFields = ['under_represented_racial_ethnic', 'first_gen_college_student'
 
 
 class DownloadAllies(AccessMixin, HttpResponse):
-    """Enter what this class/method does"""
+    """Downloads allies in the database"""
 
     @staticmethod
     def fields_helper(model, columns):
-        """Enter what this class/method does"""
+        """only gets relevant fields from each database entry"""
         for field in model._meta.get_fields():
             fields = str(field).split(".")[-1]
             if fields in userFields or fields in allyFields or fields in categoryFields:
@@ -509,7 +509,7 @@ class DownloadAllies(AccessMixin, HttpResponse):
 
     @staticmethod
     def cleanup(dictionary):
-        """Enter what this class/method does"""
+        """outputs nicely formatted list of data"""
         ar_list = []
         for item in dictionary.items():
             if item[0] in userFields or item[0] in allyFields or item[0] in categoryFields:
@@ -521,7 +521,7 @@ class DownloadAllies(AccessMixin, HttpResponse):
 
     @staticmethod
     def get_data():
-        """Enter what this class/method does"""
+        """Make pandas dataframe of ally data"""
         users = User.objects.all()
         allies = Ally.objects.all()
         categories = StudentCategories.objects.all()
@@ -531,7 +531,6 @@ class DownloadAllies(AccessMixin, HttpResponse):
         for ally in allies:
             user_id = ally.user_id
             ally_id = ally.id
-
             category = category_relation.filter(ally_id=ally_id)
             if category.exists():
                 category_id = category[0].student_category_id
@@ -545,7 +544,7 @@ class DownloadAllies(AccessMixin, HttpResponse):
 
     @staticmethod
     def allies_download(request):
-        """Enter what this class/method does"""
+        """Takes request and outputs allies csv as HttpResponse"""
         if request.user.is_staff:
             response = HttpResponse(content_type='text/csv')
             today = date.today()
