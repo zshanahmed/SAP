@@ -452,13 +452,9 @@ class Announcements(TemplateView):
             utc_now = announcment.created_at
             central = timezone('US/Central')
 
-            print(announcment.created_at)
             announcment.created_at = utc_now.astimezone(central)
-            
-
             announcment.created_at = announcment.created_at.strftime(
-                "%m/%d/%Y, %I:%M %p")
-            print(announcment.created_at)
+                "%m/%d/%Y, %I:%M %p")            
 
         return render(request, 'sap/announcements.html', {'announcments_list': announcments_list, 'role': role})
 

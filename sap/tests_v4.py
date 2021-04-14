@@ -108,6 +108,19 @@ class AdminAllyTableFeatureTests(TestCase):
 
         self.client.login(username=self.username, password=self.password)
 
+        # Should return no allies
+        response = self.client.post(
+            '/create_announcements/', {
+                'csrfmiddlewaretoken': ['XdNiZpT3jpCeRzd2kq8bbRPUmc0tKFP7dsxNaQNTUhblQPK7lne9sX0mrE5khfHH'],
+                'title': 'Test Annoucement',
+                'desc': 'Description of test announcement'
+            }, follow=True
+        )
+
+        self.assertContains(
+            response, "Annoucement created successfully !!", html=True
+        )
+
         response = self.client.get('/announcements/')
         self.assertEqual(response.status_code, 200)
 
