@@ -196,10 +196,14 @@ class DownloadAlliesTest(TestCase):
         self.categories4 = StudentCategories.objects.create(rural=True, first_gen_college_student=False,
                                                             under_represented_racial_ethnic=True, transfer_student=False,
                                                             lgbtq=True, low_income=False, disabled=True)
+        self.categories1 = StudentCategories.objects.create(rural=True, first_gen_college_student=False,
+                                                            under_represented_racial_ethnic=True, transfer_student=False,
+                                                            lgbtq=True, low_income=True, disabled=True)
 
         AllyStudentCategoryRelation.objects.create(ally_id=self.ally2.id, student_category_id=self.categories2.id)
         AllyStudentCategoryRelation.objects.create(ally_id=self.ally3.id, student_category_id=self.categories3.id)
         AllyStudentCategoryRelation.objects.create(ally_id=self.ally4.id, student_category_id=self.categories4.id)
+        AllyStudentCategoryRelation.objects.create(ally_id=self.ally1.id, student_category_id=self.categories1.id)
 
         columns = []
         columns = DownloadAlliesTest.fields_helper(User, columns)
@@ -208,7 +212,7 @@ class DownloadAlliesTest(TestCase):
 
         data = []
         user1 = DownloadAlliesTest.cleanup(self.user1.__dict__) + \
-                DownloadAlliesTest.cleanup(self.ally1.__dict__) + [None, None, None, None, None, None, None]
+                DownloadAlliesTest.cleanup(self.ally1.__dict__) + DownloadAlliesTest.cleanup(self.categories1.__dict__)
         user2 = DownloadAlliesTest.cleanup(self.user2.__dict__) + \
                 DownloadAlliesTest.cleanup(self.ally2.__dict__) + DownloadAlliesTest.cleanup(self.categories2.__dict__)
 
@@ -267,14 +271,10 @@ class UploadFileTest(TestCase):
         allies = Ally.objects.all()
         data = []
         for user in allies:
-            if user.user_type != "Staff":
-                categories = StudentCategories.objects.filter(
-                    id=AllyStudentCategoryRelation.objects.filter(ally_id=user.id)[0].student_category_id)[0]
-                data.append(DownloadAlliesTest.cleanup(User.objects.filter(id=user.user_id)[0].__dict__) +
-                            DownloadAlliesTest.cleanup(user.__dict__) + DownloadAlliesTest.cleanup(categories.__dict__))
-            else:
-                data.append(DownloadAlliesTest.cleanup(User.objects.filter(id=user.user_id)[0].__dict__) +
-                            DownloadAlliesTest.cleanup(user.__dict__) + [None, None, None, None, None, None])
+            categories = StudentCategories.objects.filter(
+                id=AllyStudentCategoryRelation.objects.filter(ally_id=user.id)[0].student_category_id)[0]
+            data.append(DownloadAlliesTest.cleanup(User.objects.filter(id=user.user_id)[0].__dict__) +
+                        DownloadAlliesTest.cleanup(user.__dict__) + DownloadAlliesTest.cleanup(categories.__dict__))
 
         data_frame = pd.DataFrame(columns=columns, data=data)
         data_frame = data_frame.replace(0, False)
@@ -349,7 +349,7 @@ class UploadFileTest(TestCase):
         self.assertEqual(response.status_code, 200)
 
         local_df = UploadFileTest.make_frame()
-        local_df1, _ = views_v2.UploadAllies.cleanup_frame(self.data_frame_1)
+        local_df1, _ = views_v2.UploadAllies.cleanup_frame(self.data_frame_1, {})
         local_df1 = local_df1[userFields + allyFields + categoryFields]
         local_df['last_login'] = ''
         for category in categoryFields:

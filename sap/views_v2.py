@@ -737,18 +737,17 @@ class UploadAllies(AccessMixin, HttpResponse):
                                                     people_who_might_be_interested_in_iba=ally[1]['people_who_might_be_interested_in_iba'],
                                                     how_can_science_ally_serve_you=ally[1]['how_can_science_ally_serve_you'],
                                                     works_at=ally[1]['works_at'])
-                        if not ally[1]['user_type'] == "Staff":
-                            category = category_data[ally[0]]
-                            categories = StudentCategories.objects.create(rural=category['rural'],
-                                                                          transfer_student=category['transfer_student'],
-                                                                          lgbtq=category['lgbtq'],
-                                                                          low_income=category['low_income'],
-                                                                          first_gen_college_student=category['first_gen_college_student'],
-                                                                          under_represented_racial_ethnic=category
-                                                                          ['under_represented_racial_ethnic'],
-                                                                          disabled=category['disabled'])
-                            AllyStudentCategoryRelation.objects.create(ally_id=ally1.id,
-                                                                       student_category_id=categories.id)
+                        category = category_data[ally[0]]
+                        categories = StudentCategories.objects.create(rural=category['rural'],
+                                                                      transfer_student=category['transfer_student'],
+                                                                      lgbtq=category['lgbtq'],
+                                                                      low_income=category['low_income'],
+                                                                      first_gen_college_student=category['first_gen_college_student'],
+                                                                      under_represented_racial_ethnic=category
+                                                                      ['under_represented_racial_ethnic'],
+                                                                      disabled=category['disabled'])
+                        AllyStudentCategoryRelation.objects.create(ally_id=ally1.id,
+                                                                   student_category_id=categories.id)
                     except IntegrityError:
                         error_log[ally[0]] = "Ally already exists in the database"
 
