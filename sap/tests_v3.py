@@ -864,7 +864,8 @@ class TestAnalyticsPage(TestCase):
     """
     def setUp(self):
         self.client = Client()
-        self.client.login(username='admin', password='admin_password1')
+        User.objects.create_user(username="admin1", password='12345678', is_staff=True)
+        self.client.login(username='admin1', password='12345678')
         self.big_category = StudentCategories.objects.create(rural=True, first_gen_college_student=True,
                                                    under_represented_racial_ethnic=True, transfer_student=True,
                                                    lgbtq=True, low_income=True, disabled=True)
@@ -881,8 +882,9 @@ class TestAnalyticsPage(TestCase):
         """
         Test good response from the Analytics page.
         """
+
         response = self.client.get(reverse('sap:sap-analytics'))
-        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.status_code, 200)
 
     def test_num_per_category(self):
         """
