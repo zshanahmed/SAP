@@ -39,7 +39,7 @@ addRadioOptions('labExperienceRadios', ['Yes', 'No'])
 addRadioOptions('beingMentoredRadios', ['Yes', 'No'])
 addRadioOptions('agreementRadios',['Yes','No'])
 
-//Staff-Faculty-Grad
+//Staff-Facul   faculty-Grad
 addRadioOptions('connectingWithMentorsRadios', ['Yes', 'No'])
 addRadioOptions('studentsInterestedRadios', ['Yes', 'No'])
 addRadioOptions('mentoringRadios', ['Yes', 'No'])
@@ -47,6 +47,10 @@ addCheckBoxes('mentorCheckboxes',['First generation college-student','Rural', 'L
 addRadioOptions('trainingRadios',['Yes','No'])
 addRadioOptions('labShadowRadios',['Yes','No'])
 addRadioOptions('volunteerRadios',['Yes','No'])
-addCheckBoxes('areaOfResearchCheckboxes',['Biochemistry', 'Bioinformatics', 'Biology', 'Biomedical Engineering','Chemical Engineering','Chemistry','Computer Science and Engineering','Environmental Science','Health and Human Physiology','Mathematics','Microbiology','Neuroscience','Nursing','Physics','Psychology'])
+addCheckBoxes('areaOfResearchCheckboxes',
+    ['Biochemistry', 'Bioinformatics', 'Biology', 'Biomedical Engineering','Chemical Engineering',
+        'Chemistry','Computer Science and Engineering', 'Computer Science',
+        'Environmental Science','Health and Human Physiology',
+        'Mathematics','Microbiology','Neuroscience','Nursing','Physics','Psychology'])
 addRadioOptions('openingRadios', ['Yes', 'No'])
 addRadioOptions('mentorTrainingRadios',['Yes','No'])
