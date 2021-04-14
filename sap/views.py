@@ -135,9 +135,20 @@ class EditAllyProfile(View):
         except ObjectDoesNotExist:
             return HttpResponseNotFound()
 
+
+
+#{'csrfmiddlewaretoken': ['ex5Zuuyjk241FNEvxQoU4a4bnYbw4oI9gtHoblO2iG6EHhRhgAmvcerjUN9Wa6c9'],
+    # 'firstName': ['Alesia'], 'lastName': ['Larsen'], 'newUsername': ['alarsen'], 'username':
+    # ['alarsen'], 'email': ['alesia-larsen@uiowa.ed'], 'hawkID': ['alarsen'], 'password': [''],
+    # 'roleSelected': ['Undergraduate Student'], 'undergradYear': ['Freshman'], 'major': ['Human Physiolog'],
+    # 'intersetLabRadios': ['Yes'], 'labExperienceRadios': ['No'], 'undergradMentoringRadios': ['Yes'],
+    # 'beingMentoredRadios': ['No']}
+
     def post(self, request):
         """Enter what this class/method does"""
         post_dict = dict(request.POST)
+
+        print(post_dict)
         user_req = request.user
         message = ''
 
@@ -161,9 +172,9 @@ class EditAllyProfile(View):
                 message += " HawkID could not be updated!\n"
             if ally.user_type != "Undergraduate Student":
                 selections, same = self.set_boolean(
-                    ['studentsInterestedRadios', 'labShadowRadios', 'connectingRadios',
-                     'openingRadios', 'mentoringFacultyRadios',
-                     'trainingRadios', 'volunteerRadios'], post_dict, ally, same)
+                    ['studentsInterestedRadios', 'labShadowRadios', 'connectingWithMentorsRadios',
+                     'openingRadios', 'mentoringRadios',
+                     'mentorTrainingRadios', 'volunteerRadios'], post_dict, ally, same)
                 try:
                     aor = ','.join(post_dict['stemGradCheckboxes'])
                 except KeyError:
@@ -185,35 +196,35 @@ class EditAllyProfile(View):
                 ally.area_of_research = aor
 
                 ally.people_who_might_be_interested_in_iba = selections['studentsInterestedRadios']
-                ally.interested_in_mentoring = selections['mentoringFacultyRadios']
+                ally.interested_in_mentoring = selections['mentoringRadios']
                 ally.willing_to_offer_lab_shadowing = selections['labShadowRadios']
                 ally.openings_in_lab_serving_at = selections['openingRadios']
-                ally.interested_in_connecting_with_other_mentors = selections['connectingRadios']
+                ally.interested_in_connecting_with_other_mentors = selections['connectingWithMentorsRadios']
                 ally.willing_to_volunteer_for_events = selections['volunteerRadios']
-                ally.interested_in_mentor_training = selections['trainingRadios']
+                ally.interested_in_mentor_training = selections['mentorTrainingRadios']
                 ally.save()
             else:
                 if user_req.is_staff:
                     selections, same = self.set_boolean(
-                        ['interestRadios', 'experienceRadios', 'interestedRadios', 'beingMentoredRadios'],
+                        ['interestLabRadios', 'labExperienceRadios', 'undergradMentoringRadios', 'beingMentoredRadios'],
                         post_dict, ally, same)
                 else:
                     selections, same = self.set_boolean(
-                        ['interestRadios', 'experienceRadios', 'beingMentoredRadios',
-                         'interestedRadios', 'agreementRadios'],
+                        ['interestLabRadios', 'labExperienceRadios', 'beingMentoredRadios',
+                         'undergradMentoringRadios', 'agreementRadios'],
                         post_dict, ally, same)
 
-                year = post_dict['undergradRadios'][0]
+                year = post_dict['undergradYear'][0]
                 major = post_dict['major'][0]
                 if not (year == ally.year and major == ally.major):
                     same = False
                 ally.year = year
                 ally.major = major
 
-                ally.interested_in_joining_lab = selections['interestRadios']
-                ally.has_lab_experience = selections['experienceRadios']
+                ally.interested_in_joining_lab = selections['interestLabRadios']
+                ally.has_lab_experience = selections['labExperienceRadios']
                 ally.interested_in_being_mentored = selections['beingMentoredRadios']
-                ally.interested_in_mentoring = selections['interestedRadios']
+                ally.interested_in_mentoring = selections['undergradMentoringRadios']
                 if not user_req.is_staff:
                     ally.information_release = selections['agreementRadios']
                 ally.save()
