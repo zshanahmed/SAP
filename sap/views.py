@@ -3,7 +3,7 @@ views has functions that are mapped to the urls in urls.py
 """
 import datetime
 from fuzzywuzzy import fuzz
-from pytz import utc, timezone
+from pytz import timezone
 
 from django.core import serializers
 from django.core.exceptions import ObjectDoesNotExist
@@ -447,15 +447,13 @@ class Announcements(TemplateView):
             role = "admin"
         else:
             role = "ally"
-        
         for announcment in announcments_list:
             utc_now = announcment.created_at
             central = timezone('US/Central')
 
             announcment.created_at = utc_now.astimezone(central)
             announcment.created_at = announcment.created_at.strftime(
-                "%m/%d/%Y, %I:%M %p")            
-
+                "%m/%d/%Y, %I:%M %p")
         return render(request, 'sap/announcements.html', {'announcments_list': announcments_list, 'role': role})
 
 
