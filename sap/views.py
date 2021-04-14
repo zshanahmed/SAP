@@ -93,13 +93,14 @@ class EditAllyProfile(View):
         """Enter what this class/method does"""
         selection_dict = {'studentsInterestedRadios': ally.people_who_might_be_interested_in_iba,
                           'labShadowRadios': ally.willing_to_offer_lab_shadowing,
-                          'connectingRadios': ally.interested_in_connecting_with_other_mentors,
+                          'connectingWithMentorsRadios': ally.interested_in_connecting_with_other_mentors,
                           'openingRadios': ally.openings_in_lab_serving_at,
-                          'mentoringFacultyRadios': ally.interested_in_mentoring,
-                          'trainingRadios': ally.interested_in_mentor_training,
+                          'mentoringRadios': ally.interested_in_mentoring,
+                          'undergradMentoringRadios': ally.interested_in_mentoring,
+                          'mentorTrainingRadios': ally.interested_in_mentor_training,
                           'volunteerRadios': ally.willing_to_volunteer_for_events,
-                          'interestRadios': ally.interested_in_joining_lab,
-                          'experienceRadios': ally.has_lab_experience,
+                          'interestLabRadios': ally.interested_in_joining_lab,
+                          'labExperienceRadios': ally.has_lab_experience,
                           'interestedRadios': ally.interested_in_mentoring,
                           'agreementRadios': ally.information_release,
                           'beingMentoredRadios': ally.interested_in_being_mentored}
@@ -162,7 +163,7 @@ class EditAllyProfile(View):
                     ally.user_type = user_type
                     same = False
             except KeyError:
-                message += ' User type could not be updated!\n'
+                message += 'User type could not be updated!\n'
             try:
                 hawk_id = post_dict['hawkID'][0]
                 if hawk_id not in (ally.hawk_id, ''):

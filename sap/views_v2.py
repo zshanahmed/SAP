@@ -76,7 +76,6 @@ def set_boolean(_list, post_dict):
 
 def make_categories(student_categories):
     """Enter what this class/method does"""
-
     categories = StudentCategories.objects.create()
     for category_id in student_categories:
         if category_id == 'First generation college-student':
@@ -99,85 +98,54 @@ def create_new_user(post_dict):
     """
     Create new user and associated ally based on what user inputs in sign-up page
     """
+    print(post_dict)
     user = User.objects.create_user(username=post_dict["new_username"][0],
                                     password=post_dict["new_password"][0],
                                     email=post_dict["new_email"][0],
                                     first_name=post_dict["firstName"][0],
                                     last_name=post_dict["lastName"][0],
-                                    is_active=False  # Important! Set to False until user verify via email
-                                    )
+                                    is_active=False)  # Set to False until user verify via email
 
-    if post_dict['roleSelected'][0] == 'Staff':
-        selections = set_boolean(['studentsInterestedRadios'], post_dict)
+    if post_dict['roleSelected'][0] != "Undergraduate Student":
+        selections = set_boolean(['studentsInterestedRadios', 'labShadowRadios', 'connectingWithMentorsRadios',
+                                  'openingRadios', 'mentoringRadios', 'trainingRadios', 'volunteerRadios'],
+                                 post_dict)
+        try:
+            stem_fields = ','.join(post_dict['areaOfResearchCheckboxes'])
+        except KeyError:
+            stem_fields = None
+        ally = Ally.objects.create(user=user, user_type=post_dict['roleSelected'][0], hawk_id=user.username,
+                                   people_who_might_be_interested_in_iba=selections['studentsInterestedRadios'],
+                                   how_can_science_ally_serve_you=post_dict['howCanWeHelp'][0],
+                                   area_of_research=stem_fields, openings_in_lab_serving_at=selections['openingRadios'],
+                                   willing_to_offer_lab_shadowing=selections['labShadowRadios'],
+                                   interested_in_mentor_training=selections['trainingRadios'],
+                                   willing_to_volunteer_for_events=selections['volunteerRadios'],
+                                   interested_in_mentoring=selections['mentoringRadios'],
+                                   interested_in_connecting_with_other_mentors=selections['connectingWithMentorsRadios'],
+                                   description_of_research_done_at_lab=post_dict['research-des'][0])
+        try:
+            categories = make_categories(post_dict["mentorCheckboxes"])
+        except KeyError:
+            categories = StudentCategories.objects.create()
+    else:
+        selections = set_boolean(['interestLabRadios', 'labExperienceRadios', 'beingMentoredRadios',
+                                  'undergradMentoringRadios', 'agreementRadios'], post_dict)
         ally = Ally.objects.create(user=user,
                                    user_type=post_dict['roleSelected'][0],
                                    hawk_id=user.username,
-                                   people_who_might_be_interested_in_iba=selections['studentsInterestedRadios'],
-                                   how_can_science_ally_serve_you=post_dict['howCanWeHelp'])
-    else:
-        if post_dict['roleSelected'][0] == 'Undergraduate Student':
-            try:
-                categories = make_categories(post_dict["idUnderGradCheckboxes"])
-            except KeyError:
-                categories = StudentCategories.objects.create()
-            undergrad_list = ['interestRadios', 'experienceRadios', 'interestedRadios',
-                              'agreementRadios', 'beingMentoredRadios']
-            selections = set_boolean(undergrad_list, post_dict)
-            ally = Ally.objects.create(user=user,
-                                       user_type=post_dict['roleSelected'][0],
-                                       hawk_id=user.username,
-                                       major=post_dict['major'][0],
-                                       year=post_dict['undergradRadios'][0],
-                                       interested_in_joining_lab=selections['interestRadios'],
-                                       has_lab_experience=selections['experienceRadios'],
-                                       interested_in_mentoring=selections['interestedRadios'],
-                                       information_release=selections['agreementRadios'])
-        elif post_dict['roleSelected'][0] == 'Graduate Student':
-            try:
-                stem_fields = ','.join(post_dict['stemGradCheckboxes'])
-            except KeyError:
-                stem_fields = None
-            try:
-                categories = make_categories(post_dict['mentoringGradCheckboxes'])
-            except KeyError:
-                categories = StudentCategories.objects.create()
-
-            grad_list = ['mentoringGradRadios', 'labShadowRadios', 'connectingRadios', 'volunteerGradRadios',
-                         'gradTrainingRadios']
-            selections = set_boolean(grad_list, post_dict)
-            ally = Ally.objects.create(user=user,
-                                       user_type=post_dict['roleSelected'][0],
-                                       hawk_id=user.username,
-                                       area_of_research=stem_fields,
-                                       interested_in_mentoring=selections['mentoringGradRadios'],
-                                       willing_to_offer_lab_shadowing=selections['labShadowRadios'],
-                                       interested_in_connecting_with_other_mentors=selections['connectingRadios'],
-                                       willing_to_volunteer_for_events=selections['volunteerGradRadios'],
-                                       interested_in_mentor_training=selections['gradTrainingRadios'])
-
-        elif post_dict['roleSelected'][0] == 'Faculty':
-            try:
-                stem_fields = ','.join(post_dict['stemCheckboxes'])
-            except KeyError:
-                stem_fields = None
-            faculty_list = ['openingRadios', 'volunteerRadios', 'trainingRadios', 'mentoringFacultyRadios']
-            selections = set_boolean(faculty_list, post_dict)
-            try:
-                categories = make_categories(post_dict['mentoringCheckboxes'])
-            except KeyError:
-                categories = StudentCategories.objects.create()
-            ally = Ally.objects.create(user=user,
-                                       user_type=post_dict['roleSelected'][0],
-                                       hawk_id=user.username,
-                                       area_of_research=stem_fields,
-                                       openings_in_lab_serving_at=selections['openingRadios'],
-                                       description_of_research_done_at_lab=post_dict['research-des'][0],
-                                       interested_in_mentoring=selections['mentoringFacultyRadios'],
-                                       willing_to_volunteer_for_events=selections['volunteerRadios'],
-                                       interested_in_mentor_training=selections['trainingRadios'])
-
-        AllyStudentCategoryRelation.objects.create(student_category_id=categories.id, ally_id=ally.id)
-
+                                   major=post_dict['major'][0],
+                                   year=post_dict['undergradYear'][0],
+                                   interested_in_joining_lab=selections['interestLabRadios'],
+                                   has_lab_experience=selections['labExperienceRadios'],
+                                   interested_in_mentoring=selections['undergradMentoringRadios'],
+                                   information_release=selections['agreementRadios'],
+                                   interested_in_being_mentored=selections['beingMentoredRadios'])
+        try:
+            categories = make_categories(post_dict["identityCheckboxes"])
+        except KeyError:
+            categories = StudentCategories.objects.create()
+    AllyStudentCategoryRelation.objects.create(student_category_id=categories.id, ally_id=ally.id)
     return user, ally
 
 
@@ -267,8 +235,7 @@ class SignUpView(TemplateView):
                 self.send_verification_email(user=user, site=site, entered_email=post_dict["new_email"][0])
 
                 return redirect("sap:sign-up-done")
-
-        elif not User.objects.filter(email=post_dict["new_email"][0]).exists():
+        else:
             if User.objects.filter(username=post_dict["new_username"][0]).exists():
                 messages.warning(request,
                                  'Account can not be created because username already exists!')
