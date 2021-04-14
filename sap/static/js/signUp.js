@@ -5,7 +5,6 @@ function yesnoCheck(div_name) {
     function addRadioOptions(div_id, field_list)
     {
         x = document.getElementById(div_id);
-        console.log(x.innerHTML);
         var i, field;
 
         for (i=0; i<field_list.length; i++)
@@ -19,7 +18,6 @@ function yesnoCheck(div_name) {
 function addCheckBoxes(div_id, field_list)
 {
     x = document.getElementById(div_id);
-    console.log(x.innerHTML);
     var i, field;
 
     for (i=0; i<field_list.length; i++)

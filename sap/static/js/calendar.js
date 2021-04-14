@@ -5,13 +5,18 @@ $(document).ready(function() {
         var start_time = new Date(myData[i]['fields']['start_time'])
         var end_time = new Date(myData[i]['fields']['end_time'])
         var entry = {
+            id : myData[i]['pk'],
             title: myData[i]['fields']['title'],
             description: myData[i]['fields']['description'],
             location: myData[i]['fields']['location'],
+            num_invited: myData[i]['fields']['num_invited'],
+            num_attending: myData[i]['fields']['num_attending'],
             start: start_time,
             end: end_time,
-            allDay: false,
             className: colors[i% colors.length],
+        }
+        if (myData[i]['fields']['allday'] === false) {
+            entry['allDay'] = myData[i]['fields']['allday']
         }
         events.push(entry);
     }
