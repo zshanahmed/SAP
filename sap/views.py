@@ -16,6 +16,7 @@ from django.db.models import Q
 from django.views import generic
 from django.views.generic import TemplateView, View
 from django.contrib.auth import update_session_auth_hash
+from django.contrib.auth import views as auth_views
 from django.contrib.auth.forms import PasswordChangeForm
 from django.shortcuts import render, redirect
 from django.contrib.auth import get_user_model
@@ -53,7 +54,7 @@ def logout_request(request):
     return redirect('sap:home')
 
 
-class CustomLoginView(LoginView):
+class CustomLoginView(auth_views.LoginView):
 
     def get(self, request):
 

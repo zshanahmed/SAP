@@ -835,6 +835,7 @@ class UploadAllies(AccessMixin, HttpResponse):
 
         return HttpResponseForbidden()
 
+
 class DeleteEventView(AccessMixin, View):
     """
     Delete event from calendar view

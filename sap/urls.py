@@ -11,7 +11,10 @@ from . import views
 
 app_name = 'sap'
 urlpatterns = [
-    path('', auth_views.LoginView.as_view(
+    # path('', auth_views.LoginView.as_view(
+    #     template_name='sap/login.html'), name='home'),
+
+    path('', views.CustomLoginView.as_view(
         template_name='sap/login.html'), name='home'),
 
     path('logout/', views.logout_request, name='logout'),
