@@ -116,22 +116,21 @@ class EditAllyProfile(View):
         return dictionary, same
 
     @staticmethod
-    def get(request, username=''):
+    def get(request, username='', category_relation_id=0):
         """Enter what this class/method does"""
-        try:
-            username = request.GET['username']
-        except KeyError:
-            username = request.path.split('/')[-2]
         user_req = request.user
         if (username != user_req.username) and not user_req.is_staff:
             messages.warning(request, 'Access Denied!')
             return redirect('sap:ally-dashboard')
-
         try:
             user = User.objects.get(username=username)
+            category_relation = AllyStudentCategoryRelation.objects.get(id=category_relation_id)
+            category = StudentCategories.objects.get(id=category_relation.student_category_id)
             ally = Ally.objects.get(user=user)
+
             return render(request, 'sap/admin_ally_table/edit_ally.html', {
                 'ally': ally,
+                'category': category,
                 'req': request.user,
             })
         except ObjectDoesNotExist:
@@ -472,14 +471,15 @@ class AlliesListView(AccessMixin, TemplateView):
     """Enter what this class/method does"""
 
     def get(self, request):
-        """Enter what this class/method does"""
+        """Renders the dashboard with the allies and categories as django template variables."""
         allies_list = Ally.objects.order_by('-id')
-        categories = StudentCategories.objects.all()
+        category_relation = AllyStudentCategoryRelation.objects.order_by('-id')
+        category_ally = {}
         for ally in allies_list:
-            if not ally.user.is_active:
-                allies_list = allies_list.exclude(id=ally.id)
-        return render(request, 'sap/dashboard.html', {'allies_list': allies_list,
-                                                      'categories': categories})
+            if ally.user.is_active:
+                this_category_relation = category_relation.filter(ally_id=ally.id)[0]
+                category_ally[this_category_relation.student_category_id] = ally
+        return render(request, 'sap/dashboard.html', {'category_ally':  category_ally})
 
     def post(self, request):
         """Enter what this class/method does"""

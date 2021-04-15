@@ -8,7 +8,7 @@
         </div>
         <div class="card-body">
             <div class="table-responsive">
-                {% if allies_list %}
+                {% if category_ally %}
                     <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
                         <thead>
                             <tr>
@@ -31,7 +31,7 @@
                             </tr>
                         </tfoot>
                         <tbody>
-                            {% for ally in allies_list %}
+                            {% for categoryRelation, ally in category_ally.items %}
                                 <!-- Logout Modal-->
                                 <div class="modal fade" id="delAllyModal" tabindex="-1" role="dialog" aria-labelledby="delAllyModalLabel" aria-hidden="true">
                                     <div class="modal-dialog" role="document">
@@ -67,7 +67,7 @@
                                             </li>
                                             {% if role == "admin" %}
                                                 <li class="list-inline-item">
-                                                    <a href="/edit_allies/{{ ally.user.username }}" class="btn btn-success btn-sm" type="button" data-toggle="tooltip" data-placement="top"
+                                                    <a href="/edit_allies/{{ ally.user.username }}/" class="btn btn-success btn-sm" type="button" data-toggle="tooltip" data-placement="top"
                                                         title="Edit"><i class="fa fa-edit"></i></a>
                                                 </li>
                                                 <li class="list-inline-item">
