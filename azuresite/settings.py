@@ -147,6 +147,4 @@ MESSAGE_TAGS = {
     messages.ERROR: 'danger'
 }
 
-
-
 AUTHENTICATION_BACKENDS = ['django.contrib.auth.backends.AllowAllUsersModelBackend']

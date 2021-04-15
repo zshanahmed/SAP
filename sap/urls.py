@@ -12,18 +12,12 @@ from . import views
 app_name = 'sap'
 urlpatterns = [
     path('',
-         auth_views.LoginView.as_view(template_name='sap/login.html', redirect_authenticated_user=True),
-         # kwargs={'redirect_authenticated_user': True},
+         auth_views.LoginView.as_view(template_name='sap/login.html',
+                                      redirect_authenticated_user=True),
          name='home'),
 
-    # url(r'^$',
-    #     auth_views.LoginView.as_view(redirect_authenticated_user=True),
-    #     name='home'),
-
-    # url(r'^$', views.CustomLoginView.as_view(template_name='sap/login.html'),
-    #      name='home'),
-
-    path('logout/', views.logout_request, name='logout'),
+    path('logout/', views.logout_request,
+         name='logout'),
 
     url(r'login_success/$', views.login_success,
         name='login_success'),
