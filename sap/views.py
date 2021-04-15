@@ -94,13 +94,14 @@ class EditAllyProfile(View):
         """Enter what this class/method does"""
         selection_dict = {'studentsInterestedRadios': ally.people_who_might_be_interested_in_iba,
                           'labShadowRadios': ally.willing_to_offer_lab_shadowing,
-                          'connectingRadios': ally.interested_in_connecting_with_other_mentors,
+                          'connectingWithMentorsRadios': ally.interested_in_connecting_with_other_mentors,
                           'openingRadios': ally.openings_in_lab_serving_at,
-                          'mentoringFacultyRadios': ally.interested_in_mentoring,
-                          'trainingRadios': ally.interested_in_mentor_training,
+                          'mentoringRadios': ally.interested_in_mentoring,
+                          'undergradMentoringRadios': ally.interested_in_mentoring,
+                          'mentorTrainingRadios': ally.interested_in_mentor_training,
                           'volunteerRadios': ally.willing_to_volunteer_for_events,
-                          'interestRadios': ally.interested_in_joining_lab,
-                          'experienceRadios': ally.has_lab_experience,
+                          'interestLabRadios': ally.interested_in_joining_lab,
+                          'labExperienceRadios': ally.has_lab_experience,
                           'interestedRadios': ally.interested_in_mentoring,
                           'agreementRadios': ally.information_release,
                           'beingMentoredRadios': ally.interested_in_being_mentored}
@@ -136,9 +137,19 @@ class EditAllyProfile(View):
         except ObjectDoesNotExist:
             return HttpResponseNotFound()
 
+
+
+#{'csrfmiddlewaretoken': ['ex5Zuuyjk241FNEvxQoU4a4bnYbw4oI9gtHoblO2iG6EHhRhgAmvcerjUN9Wa6c9'],
+    # 'firstName': ['Alesia'], 'lastName': ['Larsen'], 'newUsername': ['alarsen'], 'username':
+    # ['alarsen'], 'email': ['alesia-larsen@uiowa.ed'], 'hawkID': ['alarsen'], 'password': [''],
+    # 'roleSelected': ['Undergraduate Student'], 'undergradYear': ['Freshman'], 'major': ['Human Physiolog'],
+    # 'intersetLabRadios': ['Yes'], 'labExperienceRadios': ['No'], 'undergradMentoringRadios': ['Yes'],
+    # 'beingMentoredRadios': ['No']}
+
     def post(self, request):
-        """Enter what this class/method does"""
+        """Updates profile details from edit_ally page"""
         post_dict = dict(request.POST)
+
         user_req = request.user
         message = ''
 
@@ -152,7 +163,7 @@ class EditAllyProfile(View):
                     ally.user_type = user_type
                     same = False
             except KeyError:
-                message += ' User type could not be updated!\n'
+                message += 'User type could not be updated!\n'
             try:
                 hawk_id = post_dict['hawkID'][0]
                 if hawk_id not in (ally.hawk_id, ''):
@@ -162,11 +173,11 @@ class EditAllyProfile(View):
                 message += " HawkID could not be updated!\n"
             if ally.user_type != "Undergraduate Student":
                 selections, same = self.set_boolean(
-                    ['studentsInterestedRadios', 'labShadowRadios', 'connectingRadios',
-                     'openingRadios', 'mentoringFacultyRadios',
-                     'trainingRadios', 'volunteerRadios'], post_dict, ally, same)
+                    ['studentsInterestedRadios', 'labShadowRadios', 'connectingWithMentorsRadios',
+                     'openingRadios', 'mentoringRadios',
+                     'mentorTrainingRadios', 'volunteerRadios'], post_dict, ally, same)
                 try:
-                    aor = ','.join(post_dict['stemGradCheckboxes'])
+                    aor = ','.join(post_dict['areaOfResearchCheckboxes'])
                 except KeyError:
                     aor = ""
                 try:
@@ -186,35 +197,35 @@ class EditAllyProfile(View):
                 ally.area_of_research = aor
 
                 ally.people_who_might_be_interested_in_iba = selections['studentsInterestedRadios']
-                ally.interested_in_mentoring = selections['mentoringFacultyRadios']
+                ally.interested_in_mentoring = selections['mentoringRadios']
                 ally.willing_to_offer_lab_shadowing = selections['labShadowRadios']
                 ally.openings_in_lab_serving_at = selections['openingRadios']
-                ally.interested_in_connecting_with_other_mentors = selections['connectingRadios']
+                ally.interested_in_connecting_with_other_mentors = selections['connectingWithMentorsRadios']
                 ally.willing_to_volunteer_for_events = selections['volunteerRadios']
-                ally.interested_in_mentor_training = selections['trainingRadios']
+                ally.interested_in_mentor_training = selections['mentorTrainingRadios']
                 ally.save()
             else:
                 if user_req.is_staff:
                     selections, same = self.set_boolean(
-                        ['interestRadios', 'experienceRadios', 'interestedRadios', 'beingMentoredRadios'],
+                        ['interestLabRadios', 'labExperienceRadios', 'undergradMentoringRadios', 'beingMentoredRadios'],
                         post_dict, ally, same)
                 else:
                     selections, same = self.set_boolean(
-                        ['interestRadios', 'experienceRadios', 'beingMentoredRadios',
-                         'interestedRadios', 'agreementRadios'],
+                        ['interestLabRadios', 'labExperienceRadios', 'beingMentoredRadios',
+                         'undergradMentoringRadios', 'agreementRadios'],
                         post_dict, ally, same)
 
-                year = post_dict['undergradRadios'][0]
+                year = post_dict['undergradYear'][0]
                 major = post_dict['major'][0]
                 if not (year == ally.year and major == ally.major):
                     same = False
                 ally.year = year
                 ally.major = major
 
-                ally.interested_in_joining_lab = selections['interestRadios']
-                ally.has_lab_experience = selections['experienceRadios']
+                ally.interested_in_joining_lab = selections['interestLabRadios']
+                ally.has_lab_experience = selections['labExperienceRadios']
                 ally.interested_in_being_mentored = selections['beingMentoredRadios']
-                ally.interested_in_mentoring = selections['interestedRadios']
+                ally.interested_in_mentoring = selections['undergradMentoringRadios']
                 if not user_req.is_staff:
                     ally.information_release = selections['agreementRadios']
                 ally.save()
@@ -643,7 +654,7 @@ class MentorsListView(generic.ListView):
 
 
 class AnalyticsView(AccessMixin, TemplateView):
-    """Enter what this class/method does"""
+    """takes in input from other methods and returns the seperate years and numbers"""
     template_name = "sap/analytics.html"
 
     @staticmethod
@@ -659,7 +670,7 @@ class AnalyticsView(AccessMixin, TemplateView):
 
     @staticmethod
     def clean_other_dic(other_dic):
-        """Enter what this class/method does"""
+        """takes in input from other methods and returns the seperate years and numbers"""
         years = []
         numbers = [[], [], []]
         if other_dic != {}:
@@ -671,7 +682,7 @@ class AnalyticsView(AccessMixin, TemplateView):
 
     @staticmethod
     def year_helper(ally):
-        """Enter what this class/method does"""
+        """turns datetime object into a string (just the year)"""
         user = ally.user
         joined = user.date_joined
         joined = datetime.datetime.strftime(joined, '%Y')
@@ -679,7 +690,7 @@ class AnalyticsView(AccessMixin, TemplateView):
 
     @staticmethod
     def find_years(allies):
-        """Enter what this class/method does"""
+        """get the years that each user type signed up for"""
         year_and_number = {}
         undergrad_number = {}
         for ally in allies:
@@ -692,7 +703,7 @@ class AnalyticsView(AccessMixin, TemplateView):
 
     @staticmethod
     def user_type_per_year(allies, year_and_number, undergrad_number):
-        """Enter what this class/method does"""
+        """Finds the number of each type of ally that signup per year"""
         for ally in allies:
             joined = AnalyticsView.year_helper(ally)
             if ally.user_type == 'Staff':
@@ -707,7 +718,7 @@ class AnalyticsView(AccessMixin, TemplateView):
 
     @staticmethod
     def find_the_categories(allies, relation, categories):
-        """Enter what this class/method does"""
+        """finds all categories and appends them to a list"""
         categories_list = []
         for ally in allies:
             category_relation = relation.filter(ally_id=ally.id)
@@ -720,7 +731,7 @@ class AnalyticsView(AccessMixin, TemplateView):
     @staticmethod
     def determine_num_per_category(category_list):
         """
-        Docstring here
+        Gets the number per category of allies
         """
         per_category = [0, 0, 0, 0, 0, 0, 0]  # lbtq,minorities,rural,disabled,firstGen,transfer,lowIncome
         for category in category_list:
@@ -743,8 +754,7 @@ class AnalyticsView(AccessMixin, TemplateView):
     @staticmethod
     def undergrad_per_year(allies):
         """
-        @param allies:
-        @return:
+        gets number of students per year
         """
         per_category = [0, 0, 0, 0]  # Freshman,Sophmore,Junior,Senior
         for ally in allies:
@@ -760,7 +770,7 @@ class AnalyticsView(AccessMixin, TemplateView):
         return per_category
 
     def get(self, request):
-        """Enter what this class/method does"""
+        """gets analytics view"""
         allies = Ally.objects.all()
 
         if len(allies) != 0:
