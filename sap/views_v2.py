@@ -23,12 +23,13 @@ from django.http import HttpResponse, HttpResponseForbidden
 from django.shortcuts import render, redirect
 from django.template.loader import render_to_string
 from django.urls import reverse
+from django.core.exceptions import ObjectDoesNotExist
 from django.utils.encoding import force_bytes, force_text
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
-from django.views.generic import TemplateView
+from django.views.generic import TemplateView, View
 
 from sap.forms import UserResetForgotPasswordForm
-from sap.models import StudentCategories, Ally, AllyStudentCategoryRelation
+from sap.models import StudentCategories, Ally, AllyStudentCategoryRelation, Event
 from sap.tokens import account_activation_token, password_reset_token
 from sap.views import User, AccessMixin
 
@@ -76,7 +77,6 @@ def set_boolean(_list, post_dict):
 
 def make_categories(student_categories):
     """Enter what this class/method does"""
-
     categories = StudentCategories.objects.create()
     for category_id in student_categories:
         if category_id == 'First generation college-student':
@@ -99,85 +99,54 @@ def create_new_user(post_dict):
     """
     Create new user and associated ally based on what user inputs in sign-up page
     """
+    print(post_dict)
     user = User.objects.create_user(username=post_dict["new_username"][0],
                                     password=post_dict["new_password"][0],
                                     email=post_dict["new_email"][0],
                                     first_name=post_dict["firstName"][0],
                                     last_name=post_dict["lastName"][0],
-                                    is_active=False  # Important! Set to False until user verify via email
-                                    )
+                                    is_active=False)  # Set to False until user verify via email
 
-    if post_dict['roleSelected'][0] == 'Staff':
-        selections = set_boolean(['studentsInterestedRadios'], post_dict)
+    if post_dict['roleSelected'][0] != "Undergraduate Student":
+        selections = set_boolean(['studentsInterestedRadios', 'labShadowRadios', 'connectingWithMentorsRadios',
+                                  'openingRadios', 'mentoringRadios', 'trainingRadios', 'volunteerRadios'],
+                                 post_dict)
+        try:
+            stem_fields = ','.join(post_dict['areaOfResearchCheckboxes'])
+        except KeyError:
+            stem_fields = None
+        ally = Ally.objects.create(user=user, user_type=post_dict['roleSelected'][0], hawk_id=user.username,
+                                   people_who_might_be_interested_in_iba=selections['studentsInterestedRadios'],
+                                   how_can_science_ally_serve_you=post_dict['howCanWeHelp'][0],
+                                   area_of_research=stem_fields, openings_in_lab_serving_at=selections['openingRadios'],
+                                   willing_to_offer_lab_shadowing=selections['labShadowRadios'],
+                                   interested_in_mentor_training=selections['trainingRadios'],
+                                   willing_to_volunteer_for_events=selections['volunteerRadios'],
+                                   interested_in_mentoring=selections['mentoringRadios'],
+                                   interested_in_connecting_with_other_mentors=selections['connectingWithMentorsRadios'],
+                                   description_of_research_done_at_lab=post_dict['research-des'][0])
+        try:
+            categories = make_categories(post_dict["mentorCheckboxes"])
+        except KeyError:
+            categories = StudentCategories.objects.create()
+    else:
+        selections = set_boolean(['interestLabRadios', 'labExperienceRadios', 'beingMentoredRadios',
+                                  'undergradMentoringRadios', 'agreementRadios'], post_dict)
         ally = Ally.objects.create(user=user,
                                    user_type=post_dict['roleSelected'][0],
                                    hawk_id=user.username,
-                                   people_who_might_be_interested_in_iba=selections['studentsInterestedRadios'],
-                                   how_can_science_ally_serve_you=post_dict['howCanWeHelp'])
-    else:
-        if post_dict['roleSelected'][0] == 'Undergraduate Student':
-            try:
-                categories = make_categories(post_dict["idUnderGradCheckboxes"])
-            except KeyError:
-                categories = StudentCategories.objects.create()
-            undergrad_list = ['interestRadios', 'experienceRadios', 'interestedRadios',
-                              'agreementRadios', 'beingMentoredRadios']
-            selections = set_boolean(undergrad_list, post_dict)
-            ally = Ally.objects.create(user=user,
-                                       user_type=post_dict['roleSelected'][0],
-                                       hawk_id=user.username,
-                                       major=post_dict['major'][0],
-                                       year=post_dict['undergradRadios'][0],
-                                       interested_in_joining_lab=selections['interestRadios'],
-                                       has_lab_experience=selections['experienceRadios'],
-                                       interested_in_mentoring=selections['interestedRadios'],
-                                       information_release=selections['agreementRadios'])
-        elif post_dict['roleSelected'][0] == 'Graduate Student':
-            try:
-                stem_fields = ','.join(post_dict['stemGradCheckboxes'])
-            except KeyError:
-                stem_fields = None
-            try:
-                categories = make_categories(post_dict['mentoringGradCheckboxes'])
-            except KeyError:
-                categories = StudentCategories.objects.create()
-
-            grad_list = ['mentoringGradRadios', 'labShadowRadios', 'connectingRadios', 'volunteerGradRadios',
-                         'gradTrainingRadios']
-            selections = set_boolean(grad_list, post_dict)
-            ally = Ally.objects.create(user=user,
-                                       user_type=post_dict['roleSelected'][0],
-                                       hawk_id=user.username,
-                                       area_of_research=stem_fields,
-                                       interested_in_mentoring=selections['mentoringGradRadios'],
-                                       willing_to_offer_lab_shadowing=selections['labShadowRadios'],
-                                       interested_in_connecting_with_other_mentors=selections['connectingRadios'],
-                                       willing_to_volunteer_for_events=selections['volunteerGradRadios'],
-                                       interested_in_mentor_training=selections['gradTrainingRadios'])
-
-        elif post_dict['roleSelected'][0] == 'Faculty':
-            try:
-                stem_fields = ','.join(post_dict['stemCheckboxes'])
-            except KeyError:
-                stem_fields = None
-            faculty_list = ['openingRadios', 'volunteerRadios', 'trainingRadios', 'mentoringFacultyRadios']
-            selections = set_boolean(faculty_list, post_dict)
-            try:
-                categories = make_categories(post_dict['mentoringCheckboxes'])
-            except KeyError:
-                categories = StudentCategories.objects.create()
-            ally = Ally.objects.create(user=user,
-                                       user_type=post_dict['roleSelected'][0],
-                                       hawk_id=user.username,
-                                       area_of_research=stem_fields,
-                                       openings_in_lab_serving_at=selections['openingRadios'],
-                                       description_of_research_done_at_lab=post_dict['research-des'][0],
-                                       interested_in_mentoring=selections['mentoringFacultyRadios'],
-                                       willing_to_volunteer_for_events=selections['volunteerRadios'],
-                                       interested_in_mentor_training=selections['trainingRadios'])
-
-        AllyStudentCategoryRelation.objects.create(student_category_id=categories.id, ally_id=ally.id)
-
+                                   major=post_dict['major'][0],
+                                   year=post_dict['undergradYear'][0],
+                                   interested_in_joining_lab=selections['interestLabRadios'],
+                                   has_lab_experience=selections['labExperienceRadios'],
+                                   interested_in_mentoring=selections['undergradMentoringRadios'],
+                                   information_release=selections['agreementRadios'],
+                                   interested_in_being_mentored=selections['beingMentoredRadios'])
+        try:
+            categories = make_categories(post_dict["identityCheckboxes"])
+        except KeyError:
+            categories = StudentCategories.objects.create()
+    AllyStudentCategoryRelation.objects.create(student_category_id=categories.id, ally_id=ally.id)
     return user, ally
 
 
@@ -267,8 +236,7 @@ class SignUpView(TemplateView):
                 self.send_verification_email(user=user, site=site, entered_email=post_dict["new_email"][0])
 
                 return redirect("sap:sign-up-done")
-
-        elif not User.objects.filter(email=post_dict["new_email"][0]).exists():
+        else:
             if User.objects.filter(username=post_dict["new_username"][0]).exists():
                 messages.warning(request,
                                  'Account can not be created because username already exists!')
@@ -529,11 +497,11 @@ categoryFields = ['under_represented_racial_ethnic', 'first_gen_college_student'
 
 
 class DownloadAllies(AccessMixin, HttpResponse):
-    """Enter what this class/method does"""
+    """Downloads allies in the database"""
 
     @staticmethod
     def fields_helper(model, columns):
-        """Enter what this class/method does"""
+        """only gets relevant fields from each database entry"""
         for field in model._meta.get_fields():
             fields = str(field).split(".")[-1]
             if fields in userFields or fields in allyFields or fields in categoryFields:
@@ -542,7 +510,7 @@ class DownloadAllies(AccessMixin, HttpResponse):
 
     @staticmethod
     def cleanup(dictionary):
-        """Enter what this class/method does"""
+        """outputs nicely formatted list of data"""
         ar_list = []
         for item in dictionary.items():
             if item[0] in userFields or item[0] in allyFields or item[0] in categoryFields:
@@ -554,7 +522,7 @@ class DownloadAllies(AccessMixin, HttpResponse):
 
     @staticmethod
     def get_data():
-        """Enter what this class/method does"""
+        """Make pandas dataframe of ally data"""
         users = User.objects.all()
         allies = Ally.objects.all()
         categories = StudentCategories.objects.all()
@@ -564,7 +532,6 @@ class DownloadAllies(AccessMixin, HttpResponse):
         for ally in allies:
             user_id = ally.user_id
             ally_id = ally.id
-
             category = category_relation.filter(ally_id=ally_id)
             if category.exists():
                 category_id = category[0].student_category_id
@@ -578,7 +545,7 @@ class DownloadAllies(AccessMixin, HttpResponse):
 
     @staticmethod
     def allies_download(request):
-        """Enter what this class/method does"""
+        """Takes request and outputs allies csv as HttpResponse"""
         if request.user.is_staff:
             response = HttpResponse(content_type='text/csv')
             today = date.today()
@@ -771,18 +738,17 @@ class UploadAllies(AccessMixin, HttpResponse):
                                                     people_who_might_be_interested_in_iba=ally[1]['people_who_might_be_interested_in_iba'],
                                                     how_can_science_ally_serve_you=ally[1]['how_can_science_ally_serve_you'],
                                                     works_at=ally[1]['works_at'])
-                        if not ally[1]['user_type'] == "Staff":
-                            category = category_data[ally[0]]
-                            categories = StudentCategories.objects.create(rural=category['rural'],
-                                                                          transfer_student=category['transfer_student'],
-                                                                          lgbtq=category['lgbtq'],
-                                                                          low_income=category['low_income'],
-                                                                          first_gen_college_student=category['first_gen_college_student'],
-                                                                          under_represented_racial_ethnic=category
-                                                                          ['under_represented_racial_ethnic'],
-                                                                          disabled=category['disabled'])
-                            AllyStudentCategoryRelation.objects.create(ally_id=ally1.id,
-                                                                       student_category_id=categories.id)
+                        category = category_data[ally[0]]
+                        categories = StudentCategories.objects.create(rural=category['rural'],
+                                                                      transfer_student=category['transfer_student'],
+                                                                      lgbtq=category['lgbtq'],
+                                                                      low_income=category['low_income'],
+                                                                      first_gen_college_student=category['first_gen_college_student'],
+                                                                      under_represented_racial_ethnic=category
+                                                                      ['under_represented_racial_ethnic'],
+                                                                      disabled=category['disabled'])
+                        AllyStudentCategoryRelation.objects.create(ally_id=ally1.id,
+                                                                   student_category_id=categories.id)
                     except IntegrityError:
                         error_log[ally[0]] = "Ally already exists in the database"
 
@@ -868,3 +834,21 @@ class UploadAllies(AccessMixin, HttpResponse):
             return redirect('sap:sap-dashboard')
 
         return HttpResponseForbidden()
+
+class DeleteEventView(AccessMixin, View):
+    """
+    Delete event from calendar view
+    """
+    def get(self, request):
+        """
+        Method to get event which needs to be deleted
+        """
+        event_id = request.GET['event_id']
+        try:
+            event = Event.objects.get(pk=event_id)
+            event.delete()
+            messages.success(request, 'Event deleted successfully!')
+            return redirect(reverse('sap:calendar'))
+        except ObjectDoesNotExist:
+            messages.warning(request, "Event doesn't exist!")
+        return redirect(reverse('sap:calendar'))
