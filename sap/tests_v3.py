@@ -633,9 +633,6 @@ class LoginRedirectTests(TestCase):
         response = self.client.get(reverse("sap:login_success"))
         url = response.url
         self.assertEqual(url, '/dashboard/')
-        self.assertContains(response, 'IBA - Dashboard',
-                            # html=True,
-                            )
         self.assertEqual(response.status_code, 302)
 
     def test_login_for_admin_fail(self):
@@ -668,9 +665,6 @@ class LoginRedirectTests(TestCase):
         response = self.client.get(reverse("sap:login_success"))
         url = response.url
         self.assertEqual(url, '/ally-dashboard/')
-        self.assertContains(response, 'IBA - Dashboard',
-                            # html=True,
-                            )
         self.assertEqual(response.status_code, 302)
 
 
