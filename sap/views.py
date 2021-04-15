@@ -55,10 +55,18 @@ def logout_request(request):
 class CustomLoginView(LoginView):
 
     def get(self, request):
+
+        if request.user.is_authenticated():
+            if request.user.is_staff:
+                return redirect('sap:sap-dashboard')
+            else:
+                return redirect('sap:ally-dashboard')
+        else:
+            return redirect('sap:home')
         pass
 
-    def post(self, request):
-        pass
+    # def post(self, request):
+    #     pass
 
 
 class AccessMixin(LoginRequiredMixin):
