@@ -474,10 +474,12 @@ class AlliesListView(AccessMixin, TemplateView):
     def get(self, request):
         """Enter what this class/method does"""
         allies_list = Ally.objects.order_by('-id')
+        categories = StudentCategories.objects.all()
         for ally in allies_list:
             if not ally.user.is_active:
                 allies_list = allies_list.exclude(id=ally.id)
-        return render(request, 'sap/dashboard.html', {'allies_list': allies_list})
+        return render(request, 'sap/dashboard.html', {'allies_list': allies_list,
+                                                      'categories': categories})
 
     def post(self, request):
         """Enter what this class/method does"""
