@@ -630,9 +630,12 @@ class LoginRedirectTests(TestCase):
         self.user.save()
         self.client.login(username=self.username, password=self.password)
 
-        response = self.client.get(reverse("sap:home"))
+        response = self.client.get(reverse("sap:login_success"))
         url = response.url
-        self.assertEqual(url, '/login_success')
+        self.assertEqual(url, '/dashboard/')
+        self.assertContains(response, 'IBA - Dashboard',
+                            # html=True,
+                            )
         self.assertEqual(response.status_code, 302)
 
     def test_login_for_admin_fail(self):
@@ -662,10 +665,12 @@ class LoginRedirectTests(TestCase):
         self.user.save()
         self.client.login(username=self.username, password=self.password)
 
-        response = self.client.get(reverse("sap:home"))
+        response = self.client.get(reverse("sap:login_success"))
         url = response.url
-        self.assertEqual(url, '/login_success')
-        self.assertContains(response, 'Science Alliance Portal')
+        self.assertEqual(url, '/ally-dashboard/')
+        self.assertContains(response, 'IBA - Dashboard',
+                            # html=True,
+                            )
         self.assertEqual(response.status_code, 302)
 
 
