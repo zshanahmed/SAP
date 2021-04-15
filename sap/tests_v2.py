@@ -363,15 +363,6 @@ class SignUpTests(TestCase):
         Test signup feature using a grad user
         """
 
-        dict = {'csrfmiddlewaretoken': ['zIrbVOLRSVhayjaqOEqx0TGDAvEnXWMfqj2ehrkcLSD0BidNlFaOpbXVoPwebqm1'],
-                'firstName': ['big'], 'lastName': ['guy'], 'new_username': ['bigGuy123'],
-                'new_email': ['eshaeffer@uiowa.edu'], 'new_password': ['12345678'],
-                'repeat_password': ['12345678'], 'roleSelected': ['Graduate Student'],
-                'areaOfResearchCheckboxes': ['Bioinformatics'], 'research-des': ['research'],
-                'openingRadios': ['No'], 'mentoringRadios': ['No'], 'connectingWithMentorsRadios': ['Yes'],
-                'studentsInterestedRadios': ['No'], 'mentorCheckboxes': ['Low-income'], 'labShadowRadios': ['Yes'],
-                'volunteerRadios': ['Yes'], 'trainingRadios': ['Yes'], 'howCanWeHelp': ['no']}
-
         response = self.client.post(
             '/sign-up/',
             {
