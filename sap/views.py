@@ -54,35 +54,47 @@ def logout_request(request):
     return redirect('sap:home')
 
 
-class CustomLoginView(auth_views.LoginView):
-    redirect_field_name = REDIRECT_FIELD_NAME
-    template_name = 'registration/login.html'
-    redirect_authenticated_user = False
-
-    def dispatch(self, request, *args, **kwargs):
-        if self.redirect_authenticated_user and self.request.user.is_authenticated:
-            redirect_to = self.get_success_url()
-            if redirect_to == self.request.path:
-                raise ValueError(
-                    "Redirection loop for authenticated user detected. Check that "
-                    "your LOGIN_REDIRECT_URL doesn't point to a login page."
-                )
-            return HttpResponseRedirect(redirect_to)
-        return super().dispatch(request, *args, **kwargs)
-
-    def get(self, request):
-
-        if request.user.is_authenticated():
-            if request.user.is_staff:
-                return redirect('sap:sap-dashboard')
-            else:
-                return redirect('sap:ally-dashboard')
-        else:
-            return redirect('sap:home')
-        pass
-
-    # def post(self, request):
-    #     pass
+# class CustomLoginView(auth_views.LoginView):
+#     # redirect_field_name = REDIRECT_FIELD_NAME
+#     template_name='sap/login.html'
+#     redirect_authenticated_user = True
+#
+#     # def get(self, request):
+#     #     # if request.user is not None:
+#     #     #     if request.user.is_authenticated:
+#     #     #         if request.user.is_staff:
+#     #     #             return redirect('sap:sap-dashboard')
+#     #     #         else:
+#     #     #             return redirect('sap:ally-dashboard')
+#     #     #     else:
+#     #     #         return redirect('sap:home')
+#     #     # else:
+#     #     #     return render(request, self.template_name)
+#     #     if request.user.is_authenticated:
+#     #         if request.user.is_staff:
+#     #             return redirect('sap:sap-dashboard')
+#     #         else:
+#     #             return redirect('sap:ally-dashboard')
+#     #     else:
+#     #         return redirect('sap:home')
+#
+#     def dispatch(self, request, *args, **kwargs):
+#         if self.request.user.is_authenticated:
+#             redirect_to = self.get_success_url()
+#             if redirect_to == self.request.path:
+#                 raise ValueError(
+#                     "Redirection loop for authenticated user detected. Check that "
+#                     "your LOGIN_REDIRECT_URL doesn't point to a login page."
+#                 )
+#             return HttpResponseRedirect(redirect_to)
+#         else:
+#             return redirect('sap:home')
+#             break
+#         # return super().dispatch(request, *args, **kwargs)
+#
+#
+#     # def post(self, request):
+#     #     pass
 
 
 class AccessMixin(LoginRequiredMixin):
