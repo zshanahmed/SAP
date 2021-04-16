@@ -27,9 +27,10 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.utils.encoding import force_bytes, force_text
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.views.generic import TemplateView, View
+import dateutil.parser as parser
 
 from sap.forms import UserResetForgotPasswordForm
-from sap.models import StudentCategories, Ally, AllyStudentCategoryRelation, Event
+from sap.models import StudentCategories, Ally, AllyStudentCategoryRelation, Event, EventInviteeRelation
 from sap.tokens import account_activation_token, password_reset_token
 from sap.views import User, AccessMixin
 
@@ -852,3 +853,37 @@ class DeleteEventView(AccessMixin, View):
         except ObjectDoesNotExist:
             messages.warning(request, "Event doesn't exist!")
         return redirect(reverse('sap:calendar'))
+
+class EditEventView(View):
+    """
+    View enabling admins to edit events
+    """
+    def get(self, request):
+        """
+        Get details of event selected on calendar
+        """
+        allies = []
+        categories = []
+        info = {'roles': [], 'years': [], 'mentorship_status': {'mentors': [], 'mentees': []}, 'categories':[], 'area_of_research': [] }
+        event_id = request.GET['event_id']
+        event = Event.objects.get(pk=event_id)
+        event.start_time = parser.parse(str(event.start_time)).isoformat().split("+")[0]
+        event.end_time = parser.parse(str(event.end_time)).isoformat().split("+")[0]
+        event.save()
+        event_attendee = EventInviteeRelation.objects.filter(event_id=event.id)
+        for rel_event in event_attendee:
+            rel_ally = Ally.objects.get(pk=rel_event.ally_id)
+            allies.append(rel_ally)
+            category_id = AllyStudentCategoryRelation.objects.get(ally_id=rel_ally.id)
+            info['categories'].append(StudentCategories.objects.get(pk=category_id.student_category_id))
+        for ally in allies:
+            info['roles'].append(ally.user_type) if ally.user_type and ally.user_type not in info['roles'] else info['roles']
+            info['years'].append(ally.year) if ally.year and ally.year not in info['years'] else info['years']
+            info['mentorship_status']['mentors'].append(ally.interested_in_mentoring) if ally.interested_in_mentoring and ally.interested_in_mentoring not in info['mentorship_status']['mentors'] else info['mentorship_status']['mentors']
+            info['mentorship_status']['mentees'].append(ally.interested_in_being_mentored) if ally.interested_in_being_mentored and ally.interested_in_being_mentored not in info['mentorship_status']['mentees'] else info['mentorship_status']['mentees']
+            info['area_of_research'].append(ally.area_of_research) if ally.area_of_research and ally.area_of_research not in info['area_of_research'] else info['area_of_research']
+        print(info)
+        return render(request, template_name="sap/edit_event.html", context={
+            'event': event,
+            'allies': allies
+        })
