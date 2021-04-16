@@ -49,3 +49,4 @@ zipp==3.4.0
 pylint==2.7.4
 pylint-django==2.4.2
 pylint-plugin-utils==0.6
+azure-storage-blob==12.8.0
