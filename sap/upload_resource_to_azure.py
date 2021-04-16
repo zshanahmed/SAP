@@ -2,50 +2,38 @@
 This file contains the code for uploading resources to azure and returning the resource url
 """
 
-import os, uuid
+import os
+import time
 from azure.storage.blob import BlobServiceClient
 
-try:
+
+def upload_file_to_azure(upload_file_name):
+    """
+    @param upload_file_name: the file to upload must be inside /tmp/
+    @return: returns the url of the resource on the cloud
+    """
     connect_str = os.getenv('AZURE_STORAGE_CONNECTION_STRING')
-    print(connect_str)
 
     # Create the BlobServiceClient object which will be used to create a container client
     blob_service_client = BlobServiceClient.from_connection_string(connect_str)
 
     # Create a unique name for the container
-    container_name = "quickstart" + str(uuid.uuid4())
+    container_name = "sepibacontainer"
 
-    # Create the container
-    container_client = blob_service_client.create_container(container_name)
-
-    # Create a file in local data directory to upload and download
-    local_path = "./data"
-    local_file_name = "quickstart" + str(uuid.uuid4()) + ".txt"
-    upload_file_path = os.path.join(local_path, local_file_name)
-
-    # Write text to the file
-    file = open(upload_file_path, 'w')
-    file.write("Hello, World!")
-    file.close()
+    # File to upload
+    local_file_name = upload_file_name
+    # if a file of the same name is already on azure, the upload will fail
+    # adding timestamp to filename to overcome the duplicate issue
+    curr_timestamp = str(time.time()).split('.')[0]
+    file_name_on_cloud = curr_timestamp + local_file_name
+    upload_file_path = os.path.join('/tmp', local_file_name)
 
     # Create a blob client using the local file name as the name for the blob
-    blob_client = blob_service_client.get_blob_client(container=container_name, blob=local_file_name)
-
-    print("\nUploading to Azure Storage as blob:\n\t" + local_file_name)
+    blob_client = blob_service_client.get_blob_client(container=container_name, blob=file_name_on_cloud)
 
     # Upload the created file
     with open(upload_file_path, "rb") as data:
         blob_client.upload_blob(data)
 
-    print("\nListing blobs...")
-
-    # List the blobs in the container
-    blob_list = container_client.list_blobs()
-    for blob in blob_list:
-        print("\t" + blob.name)
-
     os.remove(upload_file_path)
-
-except Exception as ex:
-    print('Exception:')
-    print(ex)
+    return "https://sepibafiles.blob.core.windows.net/sepibacontainer/" + upload_file_name
