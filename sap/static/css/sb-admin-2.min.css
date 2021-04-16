@@ -3023,6 +3023,8 @@ input[type='submit'].btn-block {
 }
 .dropdown-menu.show {
   display: block;
+}
+.dropdown-menu-filters.show {
   position: relative !important;
   top: -50px !important;
 }
@@ -4067,7 +4069,7 @@ input[type='submit'].btn-block {
   flex-direction: row;
 }
 .navbar-expand .navbar-nav .dropdown-menu {
-  position: absolute;
+  position: absolute !important;
 }
 .navbar-expand .navbar-nav .nav-link {
   padding-right: 0.5rem;
