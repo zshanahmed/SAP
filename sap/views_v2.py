@@ -446,7 +446,7 @@ class ForgotPasswordConfirmView(TemplateView):
         messages.error(request, 'Password reset link is invalid. Please request a new password reset.')
         return redirect('sap:home')
 
-    def post(self, request):
+    def post(self, request, *args, **kwargs):
         """Enter what this class/method does"""
         path = request.path
         path_1, token = os.path.split(path)
