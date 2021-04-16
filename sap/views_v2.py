@@ -372,7 +372,6 @@ class ForgotPasswordView(TemplateView):
                     html_content=message_body)
 
                 try:
-                    # TODO: Change API key and invalidate the old one
                     sendgrid_obj = SendGridAPIClient(os.environ.get('SENDGRID_API_KEY'))
                     sendgrid_obj.send(email_content)
                 except Exception:
@@ -447,7 +446,7 @@ class ForgotPasswordConfirmView(TemplateView):
         messages.error(request, 'Password reset link is invalid. Please request a new password reset.')
         return redirect('sap:home')
 
-    def post(self, request, *args, **kwargs):
+    def post(self, request):
         """Enter what this class/method does"""
         path = request.path
         path_1, token = os.path.split(path)
