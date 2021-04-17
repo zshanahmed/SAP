@@ -459,10 +459,6 @@ class Announcements(TemplateView):
         else:
             role = "ally"
         for announcment in announcments_list:
-            utc_now = announcment.created_at
-            central = timezone('US/Central')
-
-            announcment.created_at = utc_now.astimezone(central)
             announcment.created_at = announcment.created_at.strftime(
                 "%m/%d/%Y, %I:%M %p")
         return render(request, 'sap/announcements.html', {'announcments_list': announcments_list, 'role': role})
