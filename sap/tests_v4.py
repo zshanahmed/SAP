@@ -114,7 +114,7 @@ class TestUploadFileAzure(TestCase):
         file.write("Hello, World!")
         file.close()
 
-        uploaded_resource_url_in_cloud =  upload_file_to_azure(local_file_name)
+        uploaded_resource_url_in_cloud = upload_file_to_azure(local_file_name, called_by_test_function=True)
         expected_resource_url_in_cloud = "https://sepibafiles.blob.core.windows.net/sepibacontainer/" + local_file_name
 
         self.assertEqual(uploaded_resource_url_in_cloud, expected_resource_url_in_cloud)

@@ -7,8 +7,9 @@ import time
 from azure.storage.blob import BlobServiceClient
 
 
-def upload_file_to_azure(upload_file_name):
+def upload_file_to_azure(upload_file_name, called_by_test_function=False):
     """
+    @param called_by_test_function: Set this to true when calling from unit test function
     @param upload_file_name: the file to upload must be present inside /tmp/
     @return: returns the url of the resource on the cloud
     """
@@ -35,6 +36,11 @@ def upload_file_to_azure(upload_file_name):
     with open(upload_file_path, "rb") as data:
         blob_client.upload_blob(data)
 
-    # delte the file from server once uploaded to azure
+    # delete the file from server once uploaded to azure
     os.remove(upload_file_path)
+
+    # if the test function calls the function, delete the blob on cloud. We don't want to have unwanted resources on cloud
+    if called_by_test_function:
+        blob_client.delete_blob()
+
     return "https://sepibafiles.blob.core.windows.net/sepibacontainer/" + upload_file_name
