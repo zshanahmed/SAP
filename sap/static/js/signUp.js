@@ -28,26 +28,27 @@ function addCheckBoxes(div_id, field_list)
     }
 }
 
-addRadioOptions('studentsInterestedRadios', ['Yes', 'No'])
-addRadioOptions('undergradRadios', ['Freshman', 'Sophomore', 'Junior', 'Senior'])
-addRadioOptions('interestRadios', ['Yes', 'No'])
-addRadioOptions('experienceRadios', ['Yes', 'No'])
-addRadioOptions('interestedRadios', ['Yes', 'No'])
+//Undergrad
+addRadioOptions('undergradMentoringRadios', ['Yes', 'No'])
+addCheckBoxes('identityCheckboxes',['First generation college-student','Rural', 'Low-income','Underrepresented racial/ethnic minority', 'Disabled', 'Transfer student', 'LGBTQ'])
+addRadioOptions('undergradYear', ['Freshman', 'Sophomore', 'Junior', 'Senior'])
+addRadioOptions('interestLabRadios', ['Yes', 'No'])
+addRadioOptions('labExperienceRadios', ['Yes', 'No'])
 addRadioOptions('beingMentoredRadios', ['Yes', 'No'])
-
-addRadioOptions('openingRadios', ['Yes', 'No'])
-addCheckBoxes('stemCheckboxes',['Biochemistry', 'Bioinformatics', 'Biology', 'Biomedical Engineering','Chemical Engineering','Chemistry','Computer Science and Engineering','Environmental Science','Health and Human Physiology','Mathematics','Microbiology','Neuroscience','Nursing','Physics','Psychology'])
-addCheckBoxes('idUnderGradCheckboxes',['First generation college-student','Rural', 'Low-income','Underrepresented racial/ethnic minority', 'Disabled', 'Transfer student', 'LGBTQ'])
-addCheckBoxes('mentoringCheckboxes',['First generation college-student','Rural','Underrepresented racial/ethnic minority', 'Disabled', 'Transfer student', 'LGBTQ'])
-addRadioOptions('volunteerRadios',['Yes','No'])
-addRadioOptions('trainingRadios',['Yes','No'])
 addRadioOptions('agreementRadios',['Yes','No'])
 
-addCheckBoxes('stemGradCheckboxes',['Biochemistry', 'Bioinformatics', 'Biology', 'Biomedical Engineering','Chemical Engineering','Chemistry','Computer Science and Engineering','Environmental Science','Health and Human Physiology','Mathematics','Microbiology','Neuroscience','Nursing','Physics','Psychology'])
-addRadioOptions('mentoringGradRadios',['Yes','No'])
-addRadioOptions('mentoringFacultyRadios',['Yes','No'])
-addCheckBoxes('mentoringGradCheckboxes',['First generation college-student', 'Low-income','Rural','Underrepresented racial/ethnic minority', 'Disabled', 'Transfer student', 'LGBTQ'])
-addRadioOptions('connectingRadios',['Yes','No'])
+//Staff-Facul   faculty-Grad
+addRadioOptions('connectingWithMentorsRadios', ['Yes', 'No'])
+addRadioOptions('studentsInterestedRadios', ['Yes', 'No'])
+addRadioOptions('mentoringRadios', ['Yes', 'No'])
+addCheckBoxes('mentorCheckboxes',['First generation college-student','Rural', 'Low-income','Underrepresented racial/ethnic minority', 'Disabled', 'Transfer student', 'LGBTQ'])
+addRadioOptions('trainingRadios',['Yes','No'])
 addRadioOptions('labShadowRadios',['Yes','No'])
-addRadioOptions('volunteerGradRadios',['Yes','No'])
-addRadioOptions('gradTrainingRadios',['Yes','No'])
+addRadioOptions('volunteerRadios',['Yes','No'])
+addCheckBoxes('areaOfResearchCheckboxes',
+    ['Biochemistry', 'Bioinformatics', 'Biology', 'Biomedical Engineering','Chemical Engineering',
+        'Chemistry','Computer Science and Engineering', 'Computer Science',
+        'Environmental Science','Health and Human Physiology',
+        'Mathematics','Microbiology','Neuroscience','Nursing','Physics','Psychology'])
+addRadioOptions('openingRadios', ['Yes', 'No'])
+addRadioOptions('mentorTrainingRadios',['Yes','No'])

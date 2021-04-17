@@ -9,7 +9,7 @@ from azure.storage.blob import BlobServiceClient
 
 def upload_file_to_azure(upload_file_name):
     """
-    @param upload_file_name: the file to upload must be inside /tmp/
+    @param upload_file_name: the file to upload must be present inside /tmp/
     @return: returns the url of the resource on the cloud
     """
     connect_str = os.getenv('AZURE_STORAGE_CONNECTION_STRING')
@@ -35,5 +35,6 @@ def upload_file_to_azure(upload_file_name):
     with open(upload_file_path, "rb") as data:
         blob_client.upload_blob(data)
 
+    # delte the file from server once uploaded to azure
     os.remove(upload_file_path)
     return "https://sepibafiles.blob.core.windows.net/sepibacontainer/" + upload_file_name

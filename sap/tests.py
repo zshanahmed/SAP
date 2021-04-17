@@ -377,9 +377,9 @@ class AdminAllyTableFeatureTests(TestCase):
          'newUsername': self.ally_user.username,'username': self.ally_user.username,
          'email': self.ally_user.email, 'hawkID': self.ally.hawk_id,
          'password': [''], 'roleSelected': self.ally.user_type,
-         'stemGradCheckboxes': ['Biochemistry', 'Bioinformatics', 'Chemical Engineering', 'Chemistry'],
-         'research-des': [''], 'openingRadios': ['Yes'], 'labShadowRadios': ['Yes'], 'mentoringFacultyRadios': ['Yes'],
-         'volunteerRadios': ['Yes'], 'trainingRadios': ['Yes'], 'connectingRadios': ['Yes'],
+         'areaOfResearchCheckboxes': ['Biochemistry', 'Bioinformatics', 'Chemical Engineering', 'Chemistry'],
+         'research-des': [''], 'openingRadios': ['Yes'], 'labShadowRadios': ['Yes'], 'mentoringRadios': ['Yes'],
+         'volunteerRadios': ['Yes'], 'mentorTrainingRadios': ['Yes'], 'connectingWithMentorsRadios': ['Yes'],
          'studentsInterestedRadios': ['Yes'], 'howCanWeHelp': ['']}
 
         response = self.client.post('/edit_allies/', dictionary, follow=True)
@@ -397,8 +397,8 @@ class AdminAllyTableFeatureTests(TestCase):
             '/edit_allies/', {
                 'csrfmiddlewaretoken': ['XdNiZpT3jpCeRzd2kq8bbRPUmc0tKFP7dsxNaQNTUhblQPK7lne9sX0mrE5khfHH'],
                 'username': [self.ally_user.username],
-                'undergradRadios': ['Freshman'], 'major': ['Psychology'],
-                'interestRadios': ['No'], 'experienceRadios': ['Yes'], 'interestedRadios': ['No'],
+                'undergradYear': ['Freshman'], 'major': ['Psychology'],
+                'interestLabRadios': ['No'], 'labExperienceRadios': ['Yes'], 'undergradMentoringRadios': ['No'],
                 'agreementRadios': ['Yes'], 'beingMentoredRadios': ['Yes']
             }, follow=True
         )
@@ -414,9 +414,9 @@ class AdminAllyTableFeatureTests(TestCase):
          'newUsername': 'bigUsername', 'username': self.ally_user.username,
          'email': 'bigEmail', 'hawkID': 'bigHawk',
          'password': [''], 'roleSelected': 'Faculty',
-         'stemGradCheckboxes': "",
-         'research-des': [''], 'openingRadios': ['Yes'], 'labShadowRadios': ['Yes'], 'mentoringFacultyRadios': ['Yes'],
-         'volunteerRadios': ['Yes'], 'trainingRadios': ['Yes'], 'connectingRadios': ['Yes'],
+         'areaOfResearchCheckboxes': "",
+         'research-des': [''], 'openingRadios': ['Yes'], 'labShadowRadios': ['Yes'], 'mentoringRadios': ['Yes'],
+         'volunteerRadios': ['Yes'], 'mentorTrainingRadios': ['Yes'], 'connectingWithMentorsRadios': ['Yes'],
          'studentsInterestedRadios': ['Yes'], 'howCanWeHelp': ['']}
 
         response = self.client.post('/edit_allies/', dictionary, follow=True)
@@ -432,8 +432,8 @@ class AdminAllyTableFeatureTests(TestCase):
          'newUsername': self.user.username, 'username': 'bigUsername',
          'email': self.user.email, 'hawkID': 'bigHawk2',
          'password': ['thebiggestPassword'], 'roleSelected': 'Faculty',
-         'openingRadios': ['Yes'], 'labShadowRadios': ['Yes'], 'mentoringFacultyRadios': ['Yes'],
-         'volunteerRadios': ['Yes'], 'trainingRadios': ['Yes'], 'connectingRadios': ['Yes'],
+         'openingRadios': ['Yes'], 'labShadowRadios': ['Yes'], 'mentoringRadios': ['Yes'],
+         'volunteerRadios': ['Yes'], 'mentorTrainingRadios': ['Yes'], 'connectingWithMentorsRadios': ['Yes'],
          'studentsInterestedRadios': ['Yes']}
 
         response = self.client.post('/edit_allies/', dictionary, follow=True)
@@ -678,34 +678,19 @@ class AllyDashboardTests(TestCase):
         self.assertContains(
             response, "Science Alliance Portal", html=True
         )
+
         response = self.client.get('/update_ally_profile/', {'username': self.username}, follow=True)
         self.assertEqual(response.status_code, HTTPStatus.OK)
 
         dictionary = {'csrfmiddlewaretoken': ['YXW4Ib9TNmwod6ZETztHgp3ouwbg09sbAYibaXHc5RMKbAECHTZKHIsdJrvzvvP5'],
-         'firstName': 'firstName', 'lastName': 'lastName',
-         'newUsername': ['bigUsername'], 'username': [self.username],
-         'email': 'bigEmail', 'hawkID': 'bigHawk',
-         'password': [''], 'roleSelected': 'Staff',
-         'stemGradCheckboxes': "",
-         'research-des': [''], 'openingRadios': ['Yes'], 'labShadowRadios': ['Yes'], 'mentoringFacultyRadios': ['Yes'],
-         'volunteerRadios': ['Yes'], 'trainingRadios': ['Yes'], 'connectingRadios': ['Yes'],
-         'studentsInterestedRadios': ['Yes'], 'howCanWeHelp': ['']}
+         'firstName': 'big guy', 'lastName': 'giga', 'newUsername': 'bigusername1234', 'username': self.username,
+        'hawkID': ['bigHawk2'], 'password': ['thebiggestPassword'], 'roleSelected': 'Graduate Student',
+         'openingRadios': ['Yes'], 'labShadowRadios': ['No'], 'mentoringRadios': ['Yes'], 'research-des': [''],
+        'howCanWeHelp': ['no'], 'volunteerRadios': ['Yes'], 'mentorTrainingRadios': ['Yes'],
+        'connectingWithMentorsRadios': ['Yes'], 'studentsInterestedRadios': ['no']}
 
         response = self.client.post('/update_ally_profile/', dictionary, follow=True)
-        self.assertContains(
-            response, "Science Alliance Portal", html=True
-        )
-        message = list(response.context['messages'])[0]
-        self.assertIn("Profile updated!", message.message)
 
-        dictionary = {'csrfmiddlewaretoken': ['1bX0e878XH7kUZ5WlWHKw9rpyxiSRK2rFFWPI94oIKoonkArrQk2PTMLbI8eXZPW'],
-                'firstName': ['bigName'], 'lastName': ['bigLastName'], 'newUsername': ['biggerUsername'],
-                'username': ['bigUsername'], 'hawkID': ['bigHawkID'], 'password': ['123456789'],
-                'roleSelected': ['Undergraduate Student'], 'undergradRadios': ['Senior'],
-                'major': ['Neuroscience'], 'interestRadios': ['Yes'], 'experienceRadios': ['Yes'],
-                'interestedRadios': ['Yes'], 'beingMentoredRadios': ['No'], 'agreementRadios': ['No']}
-
-        response = self.client.post('/update_ally_profile/', dictionary, follow=True)
         message = list(response.context['messages'])[0]
         self.assertIn("Profile updated!", message.message)
 
