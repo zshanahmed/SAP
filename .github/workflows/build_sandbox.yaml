@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - sandbox
-      - 210_upload_images_to_azure
 
 env:
   WEBAPP_NAME: 'sep-team1-iba'  # Replace with the name of your Azure web app
