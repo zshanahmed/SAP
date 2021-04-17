@@ -622,6 +622,19 @@ class LoginRedirectTests(TestCase):
         response = self.client.get(reverse("sap:login_success"))
         self.assertEqual(response.status_code, HTTPStatus.FOUND)
 
+    def test_access_login_already_loggedin_as_admin(self):
+        """
+        Admin users are redirected to Dashboard after logging in
+        """
+        self.user.is_staff = True
+        self.user.save()
+        self.client.login(username=self.username, password=self.password)
+
+        response = self.client.get(reverse("sap:login_success"))
+        url = response.url
+        self.assertEqual(url, '/dashboard/')
+        self.assertEqual(response.status_code, 302)
+
     def test_login_for_admin_fail(self):
         """
         Invalid password error for admin
@@ -640,6 +653,19 @@ class LoginRedirectTests(TestCase):
 
         response = self.client.get(reverse("sap:login_success"))
         self.assertEqual(response.status_code, HTTPStatus.FOUND)
+
+    def test_access_login_already_loggedin_as_nonadmin(self):
+        """
+        Admin users are redirected to Dashboard after logging in
+        """
+        self.user.is_staff = False
+        self.user.save()
+        self.client.login(username=self.username, password=self.password)
+
+        response = self.client.get(reverse("sap:login_success"))
+        url = response.url
+        self.assertEqual(url, '/ally-dashboard/')
+        self.assertEqual(response.status_code, 302)
 
 
 class LogoutRedirectTests(TestCase):
