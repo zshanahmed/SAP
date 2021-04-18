@@ -566,6 +566,10 @@ class AllyDashboardTests(TestCase):
             openings_in_lab_serving_at=True,
         )
 
+        category = StudentCategories.objects.create()
+        self.ally_user_student_category_relation = AllyStudentCategoryRelation.objects.create(ally_id=self.user_ally.id,
+                                                                                        student_category_id=category.id)
+
         self.ally = Ally.objects.create(
             user=self.ally_user,
             hawk_id='johndoe1', user_type='Staff', works_at='College of Engineering',
@@ -608,13 +612,8 @@ class AllyDashboardTests(TestCase):
             openings_in_lab_serving_at=True,
         )
 
-
         category = StudentCategories.objects.create()
-        AllyStudentCategoryRelation.objects.create(ally_id=self.user_ally.id,
-                                                   student_category_id=category.id)
-
-        category = StudentCategories.objects.create()
-        AllyStudentCategoryRelation.objects.create(ally_id=self.ally_2.id,
+        self.category_relation = AllyStudentCategoryRelation.objects.create(ally_id=self.ally_2.id,
                                                    student_category_id=category.id)
         category = StudentCategories.objects.create()
         AllyStudentCategoryRelation.objects.create(ally_id=self.ally.id,
@@ -679,12 +678,15 @@ class AllyDashboardTests(TestCase):
         self.assertContains(
             response, "Science Alliance Portal", html=True
         )
+        url = reverse('sap:admin_edit_ally', args=[self.ally_user.username,
+                                                   self.ally_user_student_category_relation.id])
 
-        response = self.client.get('/update_ally_profile/', {'username': self.username}, follow=True)
-        self.assertEqual(response.status_code, HTTPStatus.OK)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
 
         dictionary = {'csrfmiddlewaretoken': ['YXW4Ib9TNmwod6ZETztHgp3ouwbg09sbAYibaXHc5RMKbAECHTZKHIsdJrvzvvP5'],
-         'firstName': 'big guy', 'lastName': 'giga', 'newUsername': 'bigusername1234', 'username': self.username,
+         'firstName': 'big guy', 'lastName': 'giga', 'newUsername': 'bigusername1234',
+         'username': self.ally_user.username, 'category_id': self.category_relation.id,
         'hawkID': ['bigHawk2'], 'password': ['thebiggestPassword'], 'roleSelected': 'Graduate Student',
          'openingRadios': ['Yes'], 'labShadowRadios': ['No'], 'mentoringRadios': ['Yes'], 'research-des': [''],
         'howCanWeHelp': ['no'], 'volunteerRadios': ['Yes'], 'mentorTrainingRadios': ['Yes'],

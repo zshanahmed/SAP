@@ -192,7 +192,7 @@ class EditAllyProfile(View):
     # 'intersetLabRadios': ['Yes'], 'labExperienceRadios': ['No'], 'undergradMentoringRadios': ['Yes'],
     # 'beingMentoredRadios': ['No']}
 
-    def post(self, request, username='', category_relation_id=''):
+    def post(self, request, username='', category_relation_id=0):
         """Updates profile details from edit_ally page"""
         post_dict = dict(request.POST)
 
@@ -208,6 +208,9 @@ class EditAllyProfile(View):
             user = user[0]
             category = category[0]
             ally = Ally.objects.get(user=user)
+            if ally.id != category_relation_id:
+                messages.warning(request, 'Access Denied!')
+                return redirect('sap:ally-dashboard')
             try:
                 user_type = post_dict['roleSelected'][0]
                 if user_type != ally.user_type:
