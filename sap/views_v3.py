@@ -44,7 +44,7 @@ class EditAllyProfile(View):
             'Low-income': ally_categories.low_income,
             'Underrepresented racial/ethnic minority': ally_categories.under_represented_racial_ethnic,
             'LGBTQ': ally_categories.lgbtq,
-            'Transfer Student': ally_categories.lgbtq,
+            'Transfer Student': ally_categories.transfer_student,
             'Rural': ally_categories.rural,
             'Disabled':  ally_categories.disabled
         }

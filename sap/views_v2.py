@@ -86,7 +86,7 @@ def make_categories(student_categories):
             categories.under_represented_racial_ethnic = True
         elif category_id == 'LGBTQ':
             categories.lgbtq = True
-        elif category_id == 'Transfer Student':
+        elif category_id == 'Transfer student':
             categories.transfer_student = True
         elif category_id == 'Rural':
             categories.rural = True
