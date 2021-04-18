@@ -590,14 +590,12 @@ class AlliesListView(AccessMixin, TemplateView):
                     if exclude_from_aor and exclude_from_year and exclude_from_sc and exclude_from_ut \
                             and exclude_from_ms_major:
                         allies_list = allies_list.exclude(id=ally.id)
-
             category_ally = {}
             for ally in allies_list:
                 if ally.user.is_active:
                     allies_list = allies_list.exclude(id=ally.id)
                     this_category_relation = category_relation.filter(ally_id=ally.id)[0]
                     category_ally[this_category_relation.student_category_id] = ally
-                    print(category_ally)
             return render(request, 'sap/dashboard.html', {'category_ally': category_ally})
 
         return HttpResponse()
@@ -609,15 +607,19 @@ class MentorsListView(generic.ListView):
     context_object_name = 'allies_list'
 
     def get(self, request):
-        """Enter what this class/method does"""
+        """Returns a view of allies"""
         allies_list = Ally.objects.order_by('-id')
+        category_relation = AllyStudentCategoryRelation.objects.order_by('-id')
+        category_ally = {}
         for ally in allies_list:
-            if not ally.user.is_active:
-                allies_list = allies_list.exclude(id=ally.id)
-        return render(request, 'sap/dashboard_ally.html', {'allies_list': allies_list})
+            if ally.user.is_active:
+                this_category_relation = category_relation.filter(ally_id=ally.id)[0]
+                category_ally[this_category_relation.student_category_id] = ally
+        return render(request, 'sap/dashboard_ally.html', {'category_ally': category_ally})
 
     def post(self, request):
-        """Enter what this class/method does"""
+        """Returns filtered version of allies on the dashboard"""
+        category_relation = AllyStudentCategoryRelation.objects.order_by('-id')
         if request.POST.get("form_type") == 'filters':
             post_dict = dict(request.POST)
             if 'stemGradCheckboxes' in post_dict:
@@ -651,11 +653,12 @@ class MentorsListView(generic.ListView):
                     if exclude_from_aor and exclude_from_year:
                         allies_list = allies_list.exclude(id=ally.id)
 
+            category_ally = {}
             for ally in allies_list:
-                if not ally.user.is_active:
-                    allies_list = allies_list.exclude(id=ally.id)
-
-            return render(request, 'sap/dashboard_ally.html', {'allies_list': allies_list})
+                if ally.user.is_active:
+                    this_category_relation = category_relation.filter(ally_id=ally.id)[0]
+                    category_ally[this_category_relation.student_category_id] = ally
+            return render(request, 'sap/dashboard_ally.html', {'category_ally': category_ally})
 
         return HttpResponse()
 

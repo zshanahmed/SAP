@@ -9,8 +9,13 @@ from django.contrib.auth.forms import PasswordChangeForm
 from .forms import UpdateAdminProfileForm
 from .models import Ally, AllyStudentCategoryRelation, StudentCategories
 
+
 User = get_user_model()
 
+def make_category(ally):
+    category = StudentCategories.objects.create()
+    AllyStudentCategoryRelation.objects.create(ally_id=ally.id,
+                                               student_category_id=category.id)
 
 def create_ally(username, hawk_id):
     """
@@ -163,7 +168,7 @@ class AdminAllyTableFeatureTests(TestCase):
         )
 
         self.assertContains(
-            response, self.ally_user.first_name + ' ' + self.ally_user.last_name, html=True
+            response, 'John' + ' ' + 'Doe', html=True
         )
 
 
@@ -536,60 +541,37 @@ class AllyDashboardTests(TestCase):
         self.user = User.objects.create_user(
             self.username, self.email, self.password)
 
-        self.ally_user = User.objects.create_user(username='johndoe1',
-                                                  email='johndoe1@uiowa.edu',
-                                                  password='johndoe1',
-                                                  first_name='John1',
-                                                  last_name='Doe1')
+        self.ally_user = User.objects.create_user(username='johndoe1',email='johndoe1@uiowa.edu',
+                                                  password='johndoe1',first_name='John1', last_name='Doe1')
 
-        self.ally_user1 = User.objects.create_user(username='johndoe2',
-                                                   email='johndoe2@uiowa.edu',
-                                                   password='johndoe2',
-                                                   first_name='John2',
-                                                   last_name='Doe2')
+        self.ally_user1 = User.objects.create_user(username='johndoe2', email='johndoe2@uiowa.edu',
+                                                   password='johndoe2', first_name='John2', last_name='Doe2')
 
         self.user_ally = Ally.objects.create(
-            user=self.user,
-            hawk_id='johndoe2',
-            user_type='Staff',
-            works_at='College of Engineering',
+            user=self.user, hawk_id='johndoe2', user_type='Staff', works_at='College of Engineering',
             area_of_research='Computer Science and Engineering,Health and Human Physiology,Physics',
             description_of_research_done_at_lab='Created tools to fight fingerprinting',
             people_who_might_be_interested_in_iba=True,
             how_can_science_ally_serve_you='Help in connecting with like minded people',
-            year='Senior',
-            major='Electical Engineering',
-            willing_to_offer_lab_shadowing=True,
-            willing_to_volunteer_for_events=True,
-            interested_in_mentoring=True,
-            interested_in_connecting_with_other_mentors=True,
-            interested_in_mentor_training=True,
-            interested_in_joining_lab=True,
-            has_lab_experience=True,
-            information_release=True,
+            year='Senior', major='Electical Engineering', willing_to_offer_lab_shadowing=True,
+            willing_to_volunteer_for_events=True,  interested_in_mentoring=True,
+            interested_in_connecting_with_other_mentors=True, interested_in_mentor_training=True,
+            interested_in_joining_lab=True, has_lab_experience=True, information_release=True,
             openings_in_lab_serving_at=True,
         )
 
         self.ally = Ally.objects.create(
             user=self.ally_user,
-            hawk_id='johndoe1',
-            user_type='Staff',
-            works_at='College of Engineering',
+            hawk_id='johndoe1', user_type='Staff', works_at='College of Engineering',
             area_of_research='Computer Science and Engineering,Health and Human Physiology,Physics',
             description_of_research_done_at_lab='Created tools to fight fingerprinting',
             people_who_might_be_interested_in_iba=True,
             how_can_science_ally_serve_you='Help in connecting with like minded people',
-            year='Senior',
-            major='Electical Engineering',
-            willing_to_offer_lab_shadowing=True,
-            willing_to_volunteer_for_events=True,
-            interested_in_mentoring=True,
+            year='Senior', major='Electical Engineering', willing_to_offer_lab_shadowing=True,
+            willing_to_volunteer_for_events=True, interested_in_mentoring=True,
             interested_in_connecting_with_other_mentors=True,
-            interested_in_mentor_training=True,
-            interested_in_joining_lab=True,
-            has_lab_experience=True,
-            information_release=True,
-            openings_in_lab_serving_at=True,
+            interested_in_mentor_training=True, interested_in_joining_lab=True,
+            has_lab_experience=True, information_release=True, openings_in_lab_serving_at=True,
         )
 
         self.ally_user_2 = User.objects.create_user(username='johndoe_3',
@@ -620,6 +602,19 @@ class AllyDashboardTests(TestCase):
             openings_in_lab_serving_at=True,
         )
 
+
+        category = StudentCategories.objects.create()
+        AllyStudentCategoryRelation.objects.create(ally_id=self.user_ally.id,
+                                                   student_category_id=category.id)
+
+        category = StudentCategories.objects.create()
+        AllyStudentCategoryRelation.objects.create(ally_id=self.ally_2.id,
+                                                   student_category_id=category.id)
+        category = StudentCategories.objects.create()
+        AllyStudentCategoryRelation.objects.create(ally_id=self.ally.id,
+                                                   student_category_id=category.id)
+
+
     def test_dasbhoard_access_for_nonadmin(self):
         """
         Display non admin dashboard page for allies
@@ -631,6 +626,7 @@ class AllyDashboardTests(TestCase):
 
         response = self.client.get(reverse("sap:ally-dashboard"))
         self.assertEqual(response.status_code, HTTPStatus.OK)
+        self.assertContains(response, 'John1' + ' ' + 'Doe1', html=True)
 
     def test_year_filter_for_nonadmin(self):
         """
@@ -663,7 +659,7 @@ class AllyDashboardTests(TestCase):
             }, follow=True
         )
         self.assertContains(
-            response, self.ally_user.first_name + ' ' + self.ally_user.last_name, html=True
+            response, 'John1 Doe1', html=True
         )
 
     def test_update_profile_for_nonadmin(self):

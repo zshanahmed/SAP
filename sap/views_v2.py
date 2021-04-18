@@ -99,7 +99,6 @@ def create_new_user(post_dict):
     """
     Create new user and associated ally based on what user inputs in sign-up page
     """
-    print(post_dict)
     user = User.objects.create_user(username=post_dict["new_username"][0],
                                     password=post_dict["new_password"][0],
                                     email=post_dict["new_email"][0],
