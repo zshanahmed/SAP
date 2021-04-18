@@ -149,5 +149,26 @@ class ResponseEventInvitationTests(TestCase):
             event_id=self.event.id,
         )
 
+    def test_successfully_signup_event(self):
+        """
+        Successfully sign up for event if haven't done so
+        """
+        pass
 
+    def test_already_signup_event(self):
+        """
+        Already sign up for event, cannot sign up again
+        """
+        pass
 
+    def test_not_invited_signup_event(self):
+        """
+        Cannot sign up if not invited
+        """
+        pass
+
+    def test_signup_event_ally_not_found(self):
+        """
+        Cannot sign up when there is no ally model
+        """
+        pass
