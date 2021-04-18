@@ -86,8 +86,52 @@ class ViewAllyProfileFromAdminDashboard(View):
 
 class EditAllyProfile(View):
     """
-    Enter what this class/method does
+    allows admins/ allies to edit profiles/ their own profile
     """
+
+    @staticmethod
+    def set_category(ally_categories, category_id, boolean_value):
+        """ sets ally category based on what the category is called and a boolean value"""
+        if category_id == 'First generation college-student':
+            ally_categories.first_gen_college_student = boolean_value
+        elif category_id == 'Low-income':
+            ally_categories.low_income = boolean_value
+        elif category_id == 'Underrepresented racial/ethnic minority':
+            ally_categories.under_represented_racial_ethnic = boolean_value
+        elif category_id == 'LGBTQ':
+            ally_categories.lgbtq = boolean_value
+        elif category_id == 'Transfer Student':
+            ally_categories.transfer_student = boolean_value
+        elif category_id == 'Rural':
+            ally_categories.rural = boolean_value
+        elif category_id == 'Disabled':
+            ally_categories.disabled = boolean_value
+        return ally_categories
+
+    @staticmethod
+    def set_categories(student_categories, ally_categories, same):
+        """creates a categories object and then sets them, returning wether or not they were the same as well"""
+        categoriesDict = {
+            'First generation college-student': ally_categories.first_gen_college_student,
+            'Low-income': ally_categories.low_income,
+            'Underrepresented racial/ethnic minority': ally_categories.under_represented_racial_ethnic,
+            'LGBTQ': ally_categories.lgbtq,
+            'Transfer Student': ally_categories.lgbtq,
+            'Rural': ally_categories.rural,
+            'Disabled':  ally_categories.disabled
+        }
+        for category, is_category in categoriesDict.items():
+            try:
+                category_id = student_categories[category]
+                if not is_category:
+                    same = False
+                    EditAllyProfile.set_category(ally_categories, category_id, True)
+            except KeyError:
+                if is_category:
+                    same = False
+                    EditAllyProfile.set_category(ally_categories, category, False)
+        ally_categories.save()
+        return same
 
     @staticmethod
     def set_boolean(_list, post_dict, ally, same):
