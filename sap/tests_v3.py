@@ -731,32 +731,6 @@ class NonAdminAccessTests(TestCase):
         response = self.client.get(reverse('sap:sap-analytics'))
         self.assertEqual(response.status_code, HTTPStatus.FORBIDDEN)
 
-
-class AlliesIndexViewTests(TestCase):
-    """
-    Unit tests for the dashboard an admin views
-    """
-
-    def setUp(self):
-        self.username = 'admin'
-        self.password = 'admin_password1'
-        self.client = Client()
-
-        user = User.objects.create_user(self.username, 'email@test.com', self.password)
-        user.is_staff = True
-        user.save()
-
-    def test_no_ally(self):
-        """
-        If no allies exist, an appropriate message is displayed.
-        """
-        self.client.login(username=self.username, password=self.password)
-        response = self.client.get(reverse('sap:sap-dashboard'))
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "No allies are available.")
-        self.assertQuerysetEqual(response.context['allies_list'], {})
-
-
 class CalendarViewTests(TestCase):
     """
     Unit tests for calendar view
