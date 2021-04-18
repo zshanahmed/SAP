@@ -369,7 +369,8 @@ class AdminAllyTableFeatureTests(TestCase):
         self.client.login(username=self.username, password=self.password)
 
         # Testing for Staff user type
-        response = self.client.get('/edit_allies/', {'username': self.ally_user.username})
+        response = self.client.get('/edit_allies/', {'username': self.ally_user.username,
+                                                     'category_relation_id': 0})
         self.assertEqual(response.status_code, HTTPStatus.OK)
 
         dictionary = {'csrfmiddlewaretoken': ['YXW4Ib9TNmwod6ZETztHgp3ouwbg09sbAYibaXHc5RMKbAECHTZKHIsdJrvzvvP5'],
@@ -396,7 +397,7 @@ class AdminAllyTableFeatureTests(TestCase):
         response = self.client.post(
             '/edit_allies/', {
                 'csrfmiddlewaretoken': ['XdNiZpT3jpCeRzd2kq8bbRPUmc0tKFP7dsxNaQNTUhblQPK7lne9sX0mrE5khfHH'],
-                'username': [self.ally_user.username],
+                'username': [self.ally_user.username], 'category_relation_id': 0,
                 'undergradYear': ['Freshman'], 'major': ['Psychology'],
                 'interestLabRadios': ['No'], 'labExperienceRadios': ['Yes'], 'undergradMentoringRadios': ['No'],
                 'agreementRadios': ['Yes'], 'beingMentoredRadios': ['Yes']
@@ -411,7 +412,7 @@ class AdminAllyTableFeatureTests(TestCase):
 
         dictionary = {'csrfmiddlewaretoken': ['YXW4Ib9TNmwod6ZETztHgp3ouwbg09sbAYibaXHc5RMKbAECHTZKHIsdJrvzvvP5'],
          'firstName': 'firstName', 'lastName': 'lastName',
-         'newUsername': 'bigUsername', 'username': self.ally_user.username,
+         'newUsername': 'bigUsername', 'username': self.ally_user.username, 'category_relation_id': 0,
          'email': 'bigEmail', 'hawkID': 'bigHawk',
          'password': [''], 'roleSelected': 'Faculty',
          'areaOfResearchCheckboxes': "",
@@ -429,7 +430,7 @@ class AdminAllyTableFeatureTests(TestCase):
 
         dictionary = {'csrfmiddlewaretoken': ['YXW4Ib9TNmwod6ZETztHgp3ouwbg09sbAYibaXHc5RMKbAECHTZKHIsdJrvzvvP5'],
          'firstName': 'firstName',
-         'newUsername': self.user.username, 'username': 'bigUsername',
+         'newUsername': self.user.username, 'username': 'bigUsername', 'category_relation_id': 0,
          'email': self.user.email, 'hawkID': 'bigHawk2',
          'password': ['thebiggestPassword'], 'roleSelected': 'Faculty',
          'openingRadios': ['Yes'], 'labShadowRadios': ['Yes'], 'mentoringRadios': ['Yes'],
@@ -437,7 +438,6 @@ class AdminAllyTableFeatureTests(TestCase):
          'studentsInterestedRadios': ['Yes']}
 
         response = self.client.post('/edit_allies/', dictionary, follow=True)
-
 
 
     def test_edit_non_ally_page_for_admin(self):
@@ -455,7 +455,7 @@ class AdminAllyTableFeatureTests(TestCase):
         response = self.client.post(
             '/edit_allies/', {
                 'csrfmiddlewaretoken': ['XdNiZpT3jpCeRzd2kq8bbRPUmc0tKFP7dsxNaQNTUhblQPK7lne9sX0mrE5khfHH'],
-                'username': ['somthing'],
+                'username': ['somthing'], 'category_relation_id': 0,
                 'studentsInterestedRadios': [str(self.ally.people_who_might_be_interested_in_iba)],
                 'howCanWeHelp': ['Finding Jobs']
             }, follow=True
@@ -662,7 +662,6 @@ class AllyDashboardTests(TestCase):
                 'form_type': 'filters'
             }, follow=True
         )
-
         self.assertContains(
             response, self.ally_user.first_name + ' ' + self.ally_user.last_name, html=True
         )

@@ -754,32 +754,8 @@ class AlliesIndexViewTests(TestCase):
         response = self.client.get(reverse('sap:sap-dashboard'))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "No allies are available.")
-        self.assertQuerysetEqual(response.context['allies_list'], [])
+        self.assertQuerysetEqual(response.context['allies_list'], {})
 
-    def test_one_ally(self):
-        """
-        Only one ally should be displayed on the home page
-        """
-        self.client.login(username=self.username, password=self.password)
-        create_ally('username_1', 'hawk_id_1')
-        response = self.client.get(reverse('sap:sap-dashboard'))
-        self.assertQuerysetEqual(
-            response.context['allies_list'],
-            ['<Ally: hawk_id_1>']
-        )
-
-    def test_two_allies(self):
-        """
-        Only two allies should be displayed on the home page
-        """
-        self.client.login(username=self.username, password=self.password)
-        create_ally('username_1', 'hawk_id_1')
-        create_ally('username_2', 'hawk_id_2')
-        response = self.client.get(reverse('sap:sap-dashboard'))
-        self.assertQuerysetEqual(
-            response.context['allies_list'],
-            ['<Ally: hawk_id_2>', '<Ally: hawk_id_1>']  # Need to return in the descending order
-        )
 
 class CalendarViewTests(TestCase):
     """

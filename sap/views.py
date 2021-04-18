@@ -479,10 +479,11 @@ class AlliesListView(AccessMixin, TemplateView):
             if ally.user.is_active:
                 this_category_relation = category_relation.filter(ally_id=ally.id)[0]
                 category_ally[this_category_relation.student_category_id] = ally
-        return render(request, 'sap/dashboard.html', {'category_ally':  category_ally})
+        return render(request, 'sap/dashboard.html', {'category_ally': category_ally})
 
     def post(self, request):
-        """Enter what this class/method does"""
+        """Filters and returns allies based on selected criteria"""
+        category_relation = AllyStudentCategoryRelation.objects.order_by('-id')
         if request.POST.get("form_type") == 'filters':
             post_dict = dict(request.POST)
             if 'stemGradCheckboxes' in post_dict:
@@ -590,10 +591,14 @@ class AlliesListView(AccessMixin, TemplateView):
                             and exclude_from_ms_major:
                         allies_list = allies_list.exclude(id=ally.id)
 
+            category_ally = {}
             for ally in allies_list:
-                if not ally.user.is_active:
+                if ally.user.is_active:
                     allies_list = allies_list.exclude(id=ally.id)
-            return render(request, 'sap/dashboard.html', {'allies_list': allies_list})
+                    this_category_relation = category_relation.filter(ally_id=ally.id)[0]
+                    category_ally[this_category_relation.student_category_id] = ally
+                    print(category_ally)
+            return render(request, 'sap/dashboard.html', {'category_ally': category_ally})
 
         return HttpResponse()
 
