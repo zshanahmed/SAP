@@ -45,21 +45,34 @@ class SignUpEventView(View):
         """
 
         user_current = request.user
-        ally_current = Ally.objects.get(user=user_current)
+        ally_current = Ally.objects.filter(user=user_current)
         event_id = request.GET['event_id']
 
-        if ally_current is not None and user_current.is_active:
-            event_invitee_rel = EventInviteeRelation.objects.filter(event=3, ally=ally_current)
-            
-            if not event_invitee_rel.exists():
-                EventAttendeeRelation.objects.create(event_id=event_id,
-                                                    ally_id=ally_current.id)
-                messages.success(request,
-                             'You have successfully register for this event!')
+        if ally_current.exists() and user_current.is_active:
+
+            event_invitee_rel = EventInviteeRelation.objects.filter(event=event_id, ally=ally_current[0])
+
+            if event_invitee_rel.exists(): # Check if user is invited
+                event_attend_rel = EventAttendeeRelation.objects.filter(event=event_id, ally=ally_current[0])
+
+                if not event_attend_rel.exists():  # Check if user is invited
+                    EventAttendeeRelation.objects.create(event_id=event_id,
+                                                         ally_id=ally_current[0].id)
+                    messages.success(request,
+                                     'You have successfully signed up for this event!')
+                else:
+                    messages.success(request,
+                                     'You have already signed up for this event!')
+
+            else:
+                messages.warning(request,
+                                 'You cannot sign up for this event since you are not invited.')
 
         else:
-            messages.warning(request,
-                             'You cannot register for this event.')
+            messages.error(request,
+                           'You are not registered in our system.')
+
+        return redirect(reverse('sap:calendar'))
 
 
 class DeregisterEventView(TemplateView):
