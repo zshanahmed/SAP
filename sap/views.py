@@ -128,6 +128,9 @@ class EditAllyProfile(View):
             category_relation = AllyStudentCategoryRelation.objects.get(id=category_relation_id)
             category = StudentCategories.objects.get(id=category_relation.student_category_id)
             ally = Ally.objects.get(user=user)
+            if category_relation.ally_id != ally.id:
+                messages.warning(request, 'Access Denied!')
+                return redirect('sap:ally-dashboard')
 
             return render(request, 'sap/admin_ally_table/edit_ally.html', {
                 'ally': ally,
