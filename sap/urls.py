@@ -7,6 +7,7 @@ from django.conf.urls import url
 from django.contrib.auth.decorators import login_required
 
 import sap.views_v2
+import sap.views_v3
 from . import views
 
 app_name = 'sap'
@@ -26,8 +27,6 @@ urlpatterns = [
         name='change_password'),
     url(r'^update_profile/$', login_required(views.EditAdminProfile.as_view()),
         name='sap-admin_profile'),
-    url(r'^update_ally_profile/$', login_required(views.EditAllyProfile.as_view()),
-        name='sap-ally_profile'),
 
     url(r'^dashboard/$',
         login_required(views.AlliesListView.as_view()),
@@ -67,11 +66,8 @@ urlpatterns = [
     url(r'^allies/$', login_required(views.ViewAllyProfileFromAdminDashboard.as_view()),
         name='admin_view_ally'),
 
-    url(r'^edit_allies/(?P<username>[\w-]+)/(?P<category_relation_id>[\w-]+)/$', login_required(views.EditAllyProfile.as_view()),
-        name='admin_edit_ally'),
-
-    url(r'^edit_allies/(?P<username>[\w-]+)/$',
-        login_required(views.EditAllyProfile.as_view()),
+    url(r'^edit_allies/(?P<username>[\w-]+)/(?P<category_relation_id>[\w-]+)/$',
+        login_required(sap.views_v3.EditAllyProfile.as_view()),
         name='admin_edit_ally'),
 
     url(r'^delete/$', login_required(views.DeleteAllyProfileFromAdminDashboard.as_view()),

@@ -12,12 +12,6 @@ from .models import Ally, AllyStudentCategoryRelation, StudentCategories
 
 User = get_user_model()
 
-def make_category(ally):
-    category = StudentCategories.objects.create()
-    relation = AllyStudentCategoryRelation.objects.create(ally_id=ally.id,
-                                                          student_category_id=category.id)
-    return relation.id
-
 def create_ally(username, hawk_id):
     """
     Create a question with the given `question_text` and published the
@@ -718,7 +712,9 @@ class AllyDashboardTests(TestCase):
         self.assertContains(
             response, "Science Alliance Portal", html=True
         )
-        response = self.client.get('/update_ally_profile/', {'username': self.ally_user}, follow=True)
+        url = reverse('sap:admin_edit_ally', args=[self.ally_user_2,
+                                                   self.ally_user_student_category_relation.id])
+        response = self.client.get(url, follow=True)
         self.assertEqual(response.status_code, HTTPStatus.OK)
         self.assertContains(
             response, "Science Alliance Portal", html=True

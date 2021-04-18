@@ -41,7 +41,6 @@ class RegisterEventView(TemplateView):
 
     def get(self, request, *args, **kwargs):
         """Enter what this class/method does"""
-        # # TODO: Update this function once frontend gets done
         # user_current = request.user
         # ally_current = Ally.objects.get(user=user_current)
         # event_id = 1
@@ -98,7 +97,6 @@ def make_categories(student_categories):
 
 
 def create_new_user(post_dict):
-    print(post_dict)
     """
     Create new user and associated ally based on what user inputs in sign-up page
     """
@@ -189,7 +187,7 @@ class SignUpView(TemplateView):
         logout(request)
         return render(request, self.template_name)
 
-    def post(self, request):
+    def post(self, request, *args, **kwargs):
         """
         If user/ally is in the db but is_active=False, that user/ally is deemed "replaceable", meaning new account can
         be created with its email address.
@@ -206,38 +204,35 @@ class SignUpView(TemplateView):
                 messages.warning(request,
                                  'Account can not be created because an account associated with this email address already exists!')
                 return redirect('/sign-up')
+            # If user is not active, delete user_temp and create new user on db with is_active=False
 
-            else:  # If user is not active, delete user_temp and create new user on db with is_active=False
+            ally_temp = Ally.objects.filter(user=user_temp)
+            if ally_temp.exists():
+                ally_temp[0].delete()
+            user_temp.delete()
 
-                ally_temp = Ally.objects.filter(user=user_temp)
-                if ally_temp.exists():
-                    ally_temp[0].delete()
-                user_temp.delete()
+            # print(request.POST)
+            if User.objects.filter(username=post_dict["new_username"][0]).exists():
+                messages.warning(request,
+                                 'Account can not be created because username already exists!')
+                return redirect('/sign-up')
+            # elif User.objects.filter(email=postDict["new_email"][0]).exists():
+            #     messages.add_message(request, messages.WARNING,
+            #                          'Account can not be created because email already exists')
+            #     return redirect('/sign-up')
+            if post_dict["new_password"][0] != post_dict["repeat_password"][0]:
+                messages.warning(request,
+                                 "Repeated password is not the same as the inputted password!", )
+                return redirect("/sign-up")
 
-                # print(request.POST)
-                if User.objects.filter(username=post_dict["new_username"][0]).exists():
-                    messages.warning(request,
-                                     'Account can not be created because username already exists!')
-                    return redirect('/sign-up')
-                # elif User.objects.filter(email=postDict["new_email"][0]).exists():
-                #     messages.add_message(request, messages.WARNING,
-                #                          'Account can not be created because email already exists')
-                #     return redirect('/sign-up')
-                if post_dict["new_password"][0] != post_dict["repeat_password"][0]:
-                    messages.warning(request,
-                                     "Repeated password is not the same as the inputted password!", )
-                    return redirect("/sign-up")
+            if len(post_dict["new_password"][0]) < min_length:
+                messages.warning(request,
+                                 "Password must be at least {0} characters long".format(min_length), )
+                return redirect("/sign-up")
 
-                if len(post_dict["new_password"][0]) < min_length:
-                    messages.warning(request,
-                                     "Password must be at least {0} characters long".format(min_length), )
-                    return redirect("/sign-up")
-
-                user, _ = create_new_user(post_dict=post_dict)
-                site = get_current_site(request)
-                self.send_verification_email(user=user, site=site, entered_email=post_dict["new_email"][0])
-
-                return redirect("sap:sign-up-done")
+            user, _ = create_new_user(post_dict=post_dict)
+            site = get_current_site(request)
+            self.send_verification_email(user=user, site=site, entered_email=post_dict["new_email"][0])
         else:
             if User.objects.filter(username=post_dict["new_username"][0]).exists():
                 messages.warning(request,
@@ -247,20 +242,18 @@ class SignUpView(TemplateView):
             #     messages.add_message(request, messages.WARNING,
             #                          'Account can not be created because email already exists')
             #     return redirect('/sign-up')
-            elif post_dict["new_password"][0] != post_dict["repeat_password"][0]:
+            if post_dict["new_password"][0] != post_dict["repeat_password"][0]:
                 messages.warning(request,
                                  "Repeated password is not the same as the inputted password!")
                 return redirect("/sign-up")
-            elif len(post_dict["new_password"][0]) < min_length:
+            if len(post_dict["new_password"][0]) < min_length:
                 messages.warning(request,
                                  "Password must be at least {0} characters long".format(min_length))
                 return redirect("/sign-up")
-            else:
-                user, _ = create_new_user(post_dict=post_dict)
-                site = get_current_site(request)
-                self.send_verification_email(user=user, site=site, entered_email=post_dict["new_email"][0])
-
-                return redirect("sap:sign-up-done")
+            user, _ = create_new_user(post_dict=post_dict)
+            site = get_current_site(request)
+            self.send_verification_email(user=user, site=site, entered_email=post_dict["new_email"][0])
+        return redirect("sap:sign-up-done")
 
 
 class SignUpDoneView(TemplateView):

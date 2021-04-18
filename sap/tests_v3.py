@@ -14,7 +14,6 @@ import numpy as np
 import sap.views as views
 import sap.views_v2 as views_v2
 from .models import Ally, StudentCategories, AllyStudentCategoryRelation, Event, EventInviteeRelation
-from .tests import create_ally
 
 User = get_user_model()
 
@@ -130,19 +129,6 @@ class DownloadAlliesTest(TestCase):
 
         return columns
 
-    @staticmethod
-    def cleanup(dictionary):
-        """
-        function to facilitate cleanup of data
-        """
-        ar_list = []
-        for item in dictionary.items():
-            if item[0] in userFields or item[0] in allyFields or item[0] in categoryFields:
-                if item[0] == 'date_joined':
-                    ar_list.append(item[1].strftime("%b-%d-%Y"))
-                else:
-                    ar_list.append(item[1])
-        return ar_list
 
     def setUp(self):
         wack_test_db()
@@ -211,15 +197,15 @@ class DownloadAlliesTest(TestCase):
         columns = DownloadAlliesTest.fields_helper(StudentCategories, columns)
 
         data = []
-        user1 = DownloadAlliesTest.cleanup(self.user1.__dict__) + \
-                DownloadAlliesTest.cleanup(self.ally1.__dict__) + DownloadAlliesTest.cleanup(self.categories1.__dict__)
-        user2 = DownloadAlliesTest.cleanup(self.user2.__dict__) + \
-                DownloadAlliesTest.cleanup(self.ally2.__dict__) + DownloadAlliesTest.cleanup(self.categories2.__dict__)
+        user1 = views_v2.DownloadAllies.cleanup(self.user1.__dict__) + \
+                views_v2.DownloadAllies.cleanup(self.ally1.__dict__) + views_v2.DownloadAllies.cleanup(self.categories1.__dict__)
+        user2 = views_v2.DownloadAllies.cleanup(self.user2.__dict__) + \
+                views_v2.DownloadAllies.cleanup(self.ally2.__dict__) + views_v2.DownloadAllies.cleanup(self.categories2.__dict__)
 
-        user3 = DownloadAlliesTest.cleanup(self.user3.__dict__) + \
-                DownloadAlliesTest.cleanup(self.ally3.__dict__) + DownloadAlliesTest.cleanup(self.categories3.__dict__)
-        user4 = DownloadAlliesTest.cleanup(self.user4.__dict__) + \
-                DownloadAlliesTest.cleanup(self.ally4.__dict__) + DownloadAlliesTest.cleanup(self.categories4.__dict__)
+        user3 = views_v2.DownloadAllies.cleanup(self.user3.__dict__) + \
+                views_v2.DownloadAllies.cleanup(self.ally3.__dict__) + views_v2.DownloadAllies.cleanup(self.categories3.__dict__)
+        user4 = views_v2.DownloadAllies.cleanup(self.user4.__dict__) + \
+                views_v2.DownloadAllies.cleanup(self.ally4.__dict__) + views_v2.DownloadAllies.cleanup(self.categories4.__dict__)
 
         data.append(user1)
         data.append(user2)
@@ -273,8 +259,8 @@ class UploadFileTest(TestCase):
         for user in allies:
             categories = StudentCategories.objects.filter(
                 id=AllyStudentCategoryRelation.objects.filter(ally_id=user.id)[0].student_category_id)[0]
-            data.append(DownloadAlliesTest.cleanup(User.objects.filter(id=user.user_id)[0].__dict__) +
-                        DownloadAlliesTest.cleanup(user.__dict__) + DownloadAlliesTest.cleanup(categories.__dict__))
+            data.append(views_v2.DownloadAllies.cleanup(User.objects.filter(id=user.user_id)[0].__dict__) +
+                        views_v2.DownloadAllies.cleanup(user.__dict__) + views_v2.DownloadAllies.cleanup(categories.__dict__))
 
         data_frame = pd.DataFrame(columns=columns, data=data)
         data_frame = data_frame.replace(0, False)
