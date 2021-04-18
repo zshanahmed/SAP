@@ -4,6 +4,8 @@ contains unit tests for sap app
 from django.contrib.auth import get_user_model
 from django.test import TestCase, Client  # tests file
 
+from sap.models import EventInviteeRelation, AllyStudentCategoryRelation, StudentCategories, Ally, Event, EventAttendeeRelation
+
 User = get_user_model()
 
 class AdminAnnoucementFeatureTests(TestCase):
@@ -90,3 +92,53 @@ class AdminAnnoucementFeatureTests(TestCase):
 
         response = self.client.get('/announcements/')
         self.assertEqual(response.status_code, 200)
+
+
+class SignupEventTest(TestCase):
+    """
+    Unit tests for calendar view
+    """
+    def setUp(self):
+        self.username = 'admin'
+        self.password = 'admin_password1'
+        self.client = Client()
+
+        self.user = User.objects.create_user(username=self.username,
+                                             email='email@test.com',
+                                             password=self.password,
+                                             )
+        self.event = Event.objects.create(title='Internship',
+                                          description='Internship',
+                                          start_time='2021-04-20 21:05:00',
+                                          end_time='2021-04-26 21:05:00',
+                                          location='MacLean',
+                                          num_invited=30,
+                                          num_attending=10,
+                                          )
+
+        self.ally_user = User.objects.create_user(username='allytesting',
+                                                  email='allyemail@test.com',
+                                                  password='ally_password1',
+                                                  )
+        self.ally_user.is_staff = False
+
+        self.ally = Ally.objects.create(
+            user=self.ally_user,
+            hawk_id='johndoe2',
+            user_type='Graduate Student',
+            works_at='College of Engineering',
+            area_of_research='Biochemistry',
+            major='Electrical Engineering',
+            willing_to_volunteer_for_events=True
+        )
+
+        self.category = StudentCategories.objects.create(lgbtq=True)
+        self.student_ally_rel = AllyStudentCategoryRelation.objects.create(
+            ally=self.ally,
+            student_category=self.category
+        )
+
+        self.user.is_staff = True
+        self.user.save()
+
+        self.event_ally_rel = EventInviteeRelation.objects.create(ally_id=self.ally.id, event_id=self.event.id)
