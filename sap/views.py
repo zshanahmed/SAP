@@ -208,7 +208,7 @@ class EditAllyProfile(View):
             user = user[0]
             category = category[0]
             ally = Ally.objects.get(user=user)
-            if ally.id != category_relation_id:
+            if ally.id != category_relation[0].ally_id:
                 messages.warning(request, 'Access Denied!')
                 return redirect('sap:ally-dashboard')
             try:

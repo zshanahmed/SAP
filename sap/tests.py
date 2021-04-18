@@ -377,14 +377,16 @@ class AdminAllyTableFeatureTests(TestCase):
         # Testing for Staff user type
         #response = self.client.get('/edit_allies/', {'username': self.ally_user.username,
         #                                             'category_relation_id': self.ally_2_student_category_relation.id})
-        response = self.client.get(reverse('sap:admin_edit_ally', args=[self.ally_user.username,
-                                                                        self.ally_2_student_category_relation.id]))
+
+        url = reverse('sap:admin_edit_ally', args=[self.ally_user.username,
+                                                   self.ally_student_category_relation.id])
+        response = self.client.get(url)
         self.assertEqual(response.status_code, HTTPStatus.OK)
 
         dictionary = {'csrfmiddlewaretoken': ['YXW4Ib9TNmwod6ZETztHgp3ouwbg09sbAYibaXHc5RMKbAECHTZKHIsdJrvzvvP5'],
          'firstName': self.ally_user.first_name, 'lastName': self.ally_user.last_name,
          'newUsername': self.ally_user.username,'username': self.ally_user.username,
-         'category_id': self.ally_2_student_category.id,
+         'category_id': self.ally_student_category_relation.id,
          'email': self.ally_user.email, 'hawkID': self.ally.hawk_id,
          'password': [''], 'roleSelected': self.ally.user_type,
          'areaOfResearchCheckboxes': ['Biochemistry', 'Bioinformatics', 'Chemical Engineering', 'Chemistry'],
@@ -392,7 +394,7 @@ class AdminAllyTableFeatureTests(TestCase):
          'volunteerRadios': ['Yes'], 'mentorTrainingRadios': ['Yes'], 'connectingWithMentorsRadios': ['Yes'],
          'studentsInterestedRadios': ['Yes'], 'howCanWeHelp': ['']}
 
-        response = self.client.post('/edit_allies/', dictionary, follow=True)
+        response = self.client.post(url, dictionary, follow=True)
 
         self.assertContains(
             response, "Science Alliance Portal", html=True
@@ -403,10 +405,12 @@ class AdminAllyTableFeatureTests(TestCase):
         # Testing for UnderGrad Student user type
         self.ally.user_type = "Undergraduate Student"
         self.ally.save()
+        url = reverse('sap:admin_edit_ally', args=[self.ally_user.username,
+                                                   self.ally_student_category_relation.id])
         response = self.client.post(
-            '/edit_allies/', {
+            url, {
                 'csrfmiddlewaretoken': ['XdNiZpT3jpCeRzd2kq8bbRPUmc0tKFP7dsxNaQNTUhblQPK7lne9sX0mrE5khfHH'],
-                'username': [self.ally_user.username], 'category_id': self.ally_2_student_category.id,
+                'username': [self.ally_user.username], 'category_id': [self.ally_student_category_relation.id],
                 'undergradYear': ['Freshman'], 'major': ['Psychology'],
                 'interestLabRadios': ['No'], 'labExperienceRadios': ['Yes'], 'undergradMentoringRadios': ['No'],
                 'agreementRadios': ['Yes'], 'beingMentoredRadios': ['Yes']
@@ -418,11 +422,12 @@ class AdminAllyTableFeatureTests(TestCase):
         message = list(response.context['messages'])[0]
         assert "Ally updated!" in str(message)
 
-
+        url = reverse('sap:admin_edit_ally', args=[self.ally_user.username,
+                                                   self.ally_student_category_relation.id])
         dictionary = {'csrfmiddlewaretoken': ['YXW4Ib9TNmwod6ZETztHgp3ouwbg09sbAYibaXHc5RMKbAECHTZKHIsdJrvzvvP5'],
          'firstName': 'firstName', 'lastName': 'lastName',
          'newUsername': 'bigUsername', 'username': self.ally_user.username,
-         'category_id': self.ally_2_student_category.id,
+         'category_id': self.ally_student_category_relation.id,
          'email': 'bigEmail', 'hawkID': 'bigHawk',
          'password': [''], 'roleSelected': 'Faculty',
          'areaOfResearchCheckboxes': "",
@@ -430,7 +435,7 @@ class AdminAllyTableFeatureTests(TestCase):
          'volunteerRadios': ['Yes'], 'mentorTrainingRadios': ['Yes'], 'connectingWithMentorsRadios': ['Yes'],
          'studentsInterestedRadios': ['Yes'], 'howCanWeHelp': ['']}
 
-        response = self.client.post('/edit_allies/', dictionary, follow=True)
+        response = self.client.post(url, dictionary, follow=True)
 
         self.assertContains(
             response, "Science Alliance Portal", html=True
@@ -438,17 +443,20 @@ class AdminAllyTableFeatureTests(TestCase):
         message = list(response.context['messages'])[0]
         assert "Ally updated!" in str(message)
 
+        url = reverse('sap:admin_edit_ally', args=[self.ally_user.username,
+                                                   self.ally_student_category_relation.id])
+
         dictionary = {'csrfmiddlewaretoken': ['YXW4Ib9TNmwod6ZETztHgp3ouwbg09sbAYibaXHc5RMKbAECHTZKHIsdJrvzvvP5'],
          'firstName': 'firstName',
-         'newUsername': self.user.username, 'username': 'bigUsername',
-         'category_id': self.ally_2_student_category.id,
+         'newUsername': self.ally_user.username, 'username': 'bigUsername',
+         'category_id': self.ally_student_category_relation.id,
          'email': self.user.email, 'hawkID': 'bigHawk2',
          'password': ['thebiggestPassword'], 'roleSelected': 'Faculty',
          'openingRadios': ['Yes'], 'labShadowRadios': ['Yes'], 'mentoringRadios': ['Yes'],
          'volunteerRadios': ['Yes'], 'mentorTrainingRadios': ['Yes'], 'connectingWithMentorsRadios': ['Yes'],
          'studentsInterestedRadios': ['Yes']}
 
-        response = self.client.post('/edit_allies/', dictionary, follow=True)
+        response = self.client.post(url, dictionary, follow=True)
 
 
     def test_edit_non_ally_page_for_admin(self):
@@ -459,14 +467,15 @@ class AdminAllyTableFeatureTests(TestCase):
         self.user.is_staff = True
         self.user.save()
         self.client.login(username=self.username, password=self.password)
-        response = self.client.get(
-            '/edit_allies/', {'username': 'something'})
+        url = reverse('sap:admin_edit_ally', args=['junk',
+                                                   self.ally_student_category_relation.id])
+        response = self.client.get(url)
         self.assertEqual(response.status_code, HTTPStatus.NOT_FOUND)
 
         response = self.client.post(
-            '/edit_allies/', {
+            url, {
                 'csrfmiddlewaretoken': ['XdNiZpT3jpCeRzd2kq8bbRPUmc0tKFP7dsxNaQNTUhblQPK7lne9sX0mrE5khfHH'],
-                'username': ['somthing'], 'category_relation_id': 0,
+                'username': ['somthing'], 'category_id': 0,
                 'studentsInterestedRadios': [str(self.ally.people_who_might_be_interested_in_iba)],
                 'howCanWeHelp': ['Finding Jobs']
             }, follow=True
@@ -566,10 +575,6 @@ class AllyDashboardTests(TestCase):
             openings_in_lab_serving_at=True,
         )
 
-        category = StudentCategories.objects.create()
-        self.ally_user_student_category_relation = AllyStudentCategoryRelation.objects.create(ally_id=self.user_ally.id,
-                                                                                        student_category_id=category.id)
-
         self.ally = Ally.objects.create(
             user=self.ally_user,
             hawk_id='johndoe1', user_type='Staff', works_at='College of Engineering',
@@ -613,11 +618,13 @@ class AllyDashboardTests(TestCase):
         )
 
         category = StudentCategories.objects.create()
+        self.ally_user_student_category_relation =AllyStudentCategoryRelation.objects.create(ally_id=self.user_ally.id,
+                                                                                             student_category_id=category.id)
+        category = StudentCategories.objects.create()
         self.category_relation = AllyStudentCategoryRelation.objects.create(ally_id=self.ally_2.id,
                                                    student_category_id=category.id)
         category = StudentCategories.objects.create()
-        AllyStudentCategoryRelation.objects.create(ally_id=self.ally.id,
-                                                   student_category_id=category.id)
+        AllyStudentCategoryRelation.objects.create(ally_id=self.ally.id, student_category_id=category.id)
 
 
     def test_dasbhoard_access_for_nonadmin(self):
@@ -678,21 +685,21 @@ class AllyDashboardTests(TestCase):
         self.assertContains(
             response, "Science Alliance Portal", html=True
         )
-        url = reverse('sap:admin_edit_ally', args=[self.ally_user.username,
+        url = reverse('sap:admin_edit_ally', args=[self.user.username,
                                                    self.ally_user_student_category_relation.id])
 
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
 
         dictionary = {'csrfmiddlewaretoken': ['YXW4Ib9TNmwod6ZETztHgp3ouwbg09sbAYibaXHc5RMKbAECHTZKHIsdJrvzvvP5'],
-         'firstName': 'big guy', 'lastName': 'giga', 'newUsername': 'bigusername1234',
-         'username': self.ally_user.username, 'category_id': self.category_relation.id,
+         'firstName': 'big guy', 'lastName': 'giga', 'newUsername': 'bigusername1234', 'username': self.user.username,
+         'category_id': self.ally_user_student_category_relation.id,
         'hawkID': ['bigHawk2'], 'password': ['thebiggestPassword'], 'roleSelected': 'Graduate Student',
          'openingRadios': ['Yes'], 'labShadowRadios': ['No'], 'mentoringRadios': ['Yes'], 'research-des': [''],
         'howCanWeHelp': ['no'], 'volunteerRadios': ['Yes'], 'mentorTrainingRadios': ['Yes'],
         'connectingWithMentorsRadios': ['Yes'], 'studentsInterestedRadios': ['no']}
 
-        response = self.client.post('/update_ally_profile/', dictionary, follow=True)
+        response = self.client.post(url, dictionary, follow=True)
 
         message = list(response.context['messages'])[0]
         self.assertIn("Profile updated!", message.message)
