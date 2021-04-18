@@ -121,12 +121,11 @@ class EditAllyProfile(View):
             'Disabled':  ally_categories.disabled
         }
         for category, is_category in categoriesDict.items():
-            try:
-                category_id = student_categories[category]
+            if category in student_categories:
                 if not is_category:
                     same = False
-                    EditAllyProfile.set_category(ally_categories, category_id, True)
-            except KeyError:
+                    EditAllyProfile.set_category(ally_categories, category, True)
+            else:
                 if is_category:
                     same = False
                     EditAllyProfile.set_category(ally_categories, category, False)
@@ -229,6 +228,10 @@ class EditAllyProfile(View):
                      'openingRadios', 'mentoringRadios',
                      'mentorTrainingRadios', 'volunteerRadios'], post_dict, ally, same)
                 try:
+                    same = EditAllyProfile.set_categories(post_dict['mentorCheckboxes'], category, same)
+                except KeyError:
+                    same = EditAllyProfile.set_categories([], category, same)
+                try:
                     aor = ','.join(post_dict['areaOfResearchCheckboxes'])
                 except KeyError:
                     aor = ""
@@ -244,6 +247,7 @@ class EditAllyProfile(View):
                         how_can_we_help == ally.how_can_science_ally_serve_you and
                         aor == ally.area_of_research):
                     same = False
+
                 ally.description_of_research_done_at_lab = description
                 ally.how_can_science_ally_serve_you = how_can_we_help
                 ally.area_of_research = aor
@@ -266,6 +270,11 @@ class EditAllyProfile(View):
                         ['interestLabRadios', 'labExperienceRadios', 'beingMentoredRadios',
                          'undergradMentoringRadios', 'agreementRadios'],
                         post_dict, ally, same)
+
+                try:
+                    same = EditAllyProfile.set_categories(post_dict['identityCheckboxes'], category, same)
+                except KeyError:
+                    same = EditAllyProfile.set_categories([], category, same)
 
                 year = post_dict['undergradYear'][0]
                 major = post_dict['major'][0]
