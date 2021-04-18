@@ -1,6 +1,8 @@
 """
 contains unit tests for sap app
 """
+from http import HTTPStatus
+
 from django.contrib.auth import get_user_model
 from django.test import TestCase, Client  # tests file
 
@@ -99,8 +101,10 @@ class ResponseEventInvitationTests(TestCase):
     Unit tests for calendar view
     """
     def setUp(self):
-        self.username = 'admin'
-        self.password = 'admin_password1'
+        self.admin_username = 'admin'
+        self.admin_password = 'admin_password1'
+        self.ally_username = 'ally'
+        self.ally_password = 'ally_password1'
         self.client = Client()
 
         self.event = Event.objects.create(
@@ -114,16 +118,16 @@ class ResponseEventInvitationTests(TestCase):
         )
 
         self.admin_user = User.objects.create_user(
-            username=self.username,
+            username=self.admin_username,
             email='email@test.com',
-            password=self.password,
+            password=self.admin_password,
             is_staff=True,
         )
 
         self.ally_user = User.objects.create_user(
-            username='ally',
+            username=self.ally_username,
             email='allyemail@test.com',
-            password='ally_password1',
+            password=self.ally_password,
             is_staff=False,
         )
 
@@ -153,13 +157,22 @@ class ResponseEventInvitationTests(TestCase):
         """
         Successfully sign up for event if haven't done so
         """
-        pass
+        self.client.login(username=self.ally_username, password=self.ally_password)
+        response = self.client.get('/signup_event/', {'event_id': self.event.id}, follow=True)
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        message = list(response.context['messages'])[0]
+        self.assertEqual(message.message, "You have successfully signed up for this event!")
 
     def test_already_signup_event(self):
         """
         Already sign up for event, cannot sign up again
         """
-        pass
+        self.client.login(username=self.ally_username, password=self.ally_password)
+        self.client.get('/signup_event/', {'event_id': self.event.id}, follow=True)
+        response = self.client.get('/signup_event/', {'event_id': self.event.id}, follow=True)
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        message = list(response.context['messages'])[0]
+        self.assertEqual(message.message, "You have already signed up for this event!")
 
     def test_not_invited_signup_event(self):
         """
