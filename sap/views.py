@@ -8,8 +8,7 @@ from pytz import timezone
 from django.core import serializers
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponseForbidden, HttpResponse
-from django.contrib.auth import logout
-from django.contrib.auth import authenticate
+from django.contrib.auth import logout, authenticate, get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse
 from django.db.models import Q
@@ -18,7 +17,6 @@ from django.views.generic import TemplateView, View
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.forms import PasswordChangeForm
 from django.shortcuts import render, redirect
-from django.contrib.auth import get_user_model
 from django.contrib import messages
 from django.http import HttpResponseNotFound
 from django.utils.dateparse import parse_datetime
@@ -29,7 +27,6 @@ from .models import Announcement, EventInviteeRelation, EventAttendeeRelation, A
 # Create your views here.
 
 User = get_user_model()
-
 
 def login_success(request):
     """
@@ -523,10 +520,6 @@ class Announcements(TemplateView):
         else:
             role = "ally"
         for announcment in announcments_list:
-            utc_now = announcment.created_at
-            central = timezone('US/Central')
-
-            announcment.created_at = utc_now.astimezone(central)
             announcment.created_at = announcment.created_at.strftime(
                 "%m/%d/%Y, %I:%M %p")
         return render(request, 'sap/announcements.html', {'announcments_list': announcments_list, 'role': role})
@@ -1019,7 +1012,6 @@ class CreateEventView(AccessMixin, TemplateView):
 
         if invite_all_selected:
             # If all allies are invited
-            # TODO: only invite active allies
             allies_to_be_invited = allies_list
 
         else:

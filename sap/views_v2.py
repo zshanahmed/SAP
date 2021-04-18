@@ -374,7 +374,6 @@ class ForgotPasswordView(TemplateView):
                     html_content=message_body)
 
                 try:
-                    # TODO: Change API key and invalidate the old one
                     sendgrid_obj = SendGridAPIClient(os.environ.get('SENDGRID_API_KEY'))
                     sendgrid_obj.send(email_content)
                 except Exception:
@@ -836,6 +835,7 @@ class UploadAllies(AccessMixin, HttpResponse):
             return redirect('sap:sap-dashboard')
 
         return HttpResponseForbidden()
+
 
 class DeleteEventView(AccessMixin, View):
     """
