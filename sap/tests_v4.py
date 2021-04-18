@@ -178,7 +178,14 @@ class ResponseEventInvitationTests(TestCase):
         """
         Cannot sign up if not invited
         """
-        pass
+        event = Event.objects.get(pk=self.event_ally_rel.event_id)
+        event.delete()
+        self.client.login(username=self.ally_username, password=self.ally_password)
+        response = self.client.get('/signup_event/', {'event_id': self.event.id}, follow=True)
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        message = list(response.context['messages'])[0]
+        self.assertEqual(message.message, 'You cannot sign up for this event since you are not invited.')
+
 
     def test_signup_event_ally_not_found(self):
         """
