@@ -2,7 +2,6 @@
 contains unit tests for sap app
 """
 import os
-import time
 from django.contrib.auth import get_user_model
 from django.test import TestCase, Client  # tests file
 from .upload_resource_to_azure import upload_file_to_azure
@@ -105,8 +104,7 @@ class TestUploadFileAzure(TestCase):
         @return:  True if succeeds
         """
         local_path = "/tmp"
-        curr_timestamp = str(time.time()).split('.')[0]
-        local_file_name = "quickstart" + curr_timestamp + ".txt"
+        local_file_name = "quickstart" + ".txt"
         upload_file_path = os.path.join(local_path, local_file_name)
 
         # Write text to the file
@@ -115,6 +113,7 @@ class TestUploadFileAzure(TestCase):
         file.close()
 
         uploaded_resource_url_in_cloud = upload_file_to_azure(local_file_name, called_by_test_function=True)
-        expected_resource_url_in_cloud = "https://sepibafiles.blob.core.windows.net/sepibacontainer/" + local_file_name
 
-        self.assertEqual(uploaded_resource_url_in_cloud, expected_resource_url_in_cloud)
+        self.assertIn(
+            "https://sepibafiles.blob.core.windows.net/sepibacontainer/", uploaded_resource_url_in_cloud
+        )
