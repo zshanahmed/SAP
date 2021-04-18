@@ -150,7 +150,7 @@ class EditAllyProfile(View):
         """Updates profile details from edit_ally page"""
         post_dict = dict(request.POST)
 
-        user = User.objects.filter(username=post_dict["username"][0])
+        user = User.objects.filter(username=username)
         category = StudentCategories.objects.filter(id=post_dict['category_id'][0])
         category_relation = AllyStudentCategoryRelation.objects.filter(id=category_relation_id)
 

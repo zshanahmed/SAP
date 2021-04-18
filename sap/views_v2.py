@@ -87,6 +87,8 @@ def make_categories(student_categories):
             categories.under_represented_racial_ethnic = True
         elif category_id == 'LGBTQ':
             categories.lgbtq = True
+        elif category_id == 'Transfer Student':
+            categories.transfer_student = True
         elif category_id == 'Rural':
             categories.rural = True
         elif category_id == 'Disabled':
@@ -96,6 +98,7 @@ def make_categories(student_categories):
 
 
 def create_new_user(post_dict):
+    print(post_dict)
     """
     Create new user and associated ally based on what user inputs in sign-up page
     """
@@ -677,7 +680,7 @@ class UploadAllies(AccessMixin, HttpResponse):
                                  'of the following (check all that may apply)'][i]
                 if 'First generation college-student' in tmp:
                     data_frame['first_gen_college_student'][i] = True
-                if 'LGBTQ' in tmp:
+                if 'LBGTQ' in tmp:
                     data_frame['lgbtq'][i] = True
                 if 'Transfer student' in tmp:
                     data_frame['transfer_student'][i] = True

@@ -161,8 +161,8 @@
 <!--    Staff, Faculty, Graduate Student content   -->
 
     <div id='gradStaffFac' style="display: none">
-                <div class="py-1">
-            <strong>STEM Area of Research:</strong>
+       <strong>STEM Area of Research:</strong>
+        <div class="py-1">
             <div class="form-check" id="areaOfResearchCheckboxes">
                 {% if 'Biochemistry' in ally.area_of_research|split:"," %}
                     <input type="checkbox" value="Biochemistry" name="areaOfResearchCheckboxes" id="biochemistry" checked>
@@ -371,6 +371,60 @@
                 {% endif %}
             </div>
          </div>
+        <strong>Are you interested in serving as a mentor to students who identify as any of the following? (check all that apply)</strong>
+            <div class="py-1">
+                <div class="form-check" id="mentorCheckboxes">
+                    {% if category.first_gen_college_student %}
+                        <input type="checkbox" value="First generation college-student" name="mentorCheckboxes" id="firstGen" checked>
+                    {% else %}
+                        <input type="checkbox" value="First generation college-student" name="mentorCheckboxes" id="firstGen">
+                    {% endif %}
+                    <label class="form-check-label" for="mentorCheckboxes">First generation college-student</label>
+                    <br>
+                {% if category.rural %}
+                    <input type="checkbox" value="Rural" name="mentorCheckboxes" id="rural" checked>
+                {% else %}
+                    <input type="checkbox" value="Rural" name="mentorCheckboxes" id="rural">
+                {% endif %}
+                <label class="form-check-label" for="mentorCheckboxes">Rural</label>
+                <br>
+                {% if category.low_income %}
+                    <input type="checkbox" value="Low-income" name="mentorCheckboxes" id="low_income" checked>
+                {% else %}
+                    <input type="checkbox" value="Low-income" name="mentorCheckboxes" id="low_income">
+                {% endif %}
+                <label class="form-check-label" for="mentorCheckboxes">Low-income</label>
+                <br>
+                {% if category.under_represented_racial_ethnic %}
+                    <input type="checkbox" value="Underrepresented racial/ethnic minority" name="mentorCheckboxes" id="underrepresented" checked>
+                {% else %}
+                    <input type="checkbox" value="Underrepresented racial/ethnic minority" name="mentorCheckboxes" id="underrepresented">
+                {% endif %}
+                <label class="form-check-label" for="mentorCheckboxes">Underrepresented racial/ethnic minority</label>
+                <br>
+                {% if category.disabled %}
+                    <input type="checkbox" value="Disabled" name="mentorCheckboxes" id="disabled" checked>
+                {% else %}
+                    <input type="checkbox" value="Disabled" name="mentorCheckboxes" id="disabled">
+                {% endif %}
+                <label class="form-check-label" for="mentorCheckboxes">Disabled</label>
+                <br>
+                {% if category.transfer_student %}
+                    <input type="checkbox" value="Transfer Student" name="mentorCheckboxes" id="transfer" checked>
+                {% else %}
+                    <input type="checkbox" value="Transfer Student" name="mentorCheckboxes" id="transfer">
+                {% endif %}
+                <label class="form-check-label" for="mentorCheckboxes">Transfer Student</label>
+                <br>
+                {% if category.lgbtq %}
+                    <input type="checkbox" value="LGBTQ" name="mentorCheckboxes" id="lgbtq" checked>
+                {% else %}
+                    <input type="checkbox" value="LGBTQ" name="mentorCheckboxes" id="lgbtq">
+                {% endif %}
+                <label class="form-check-label" for="mentorCheckboxes">LGBTQ</label>
+                <br>
+            </div>
+        </div>
          <!-- <div class="py-1">
             <strong>Are you interested in serving as a mentor to students who identify as any of the following? (check all that apply)</strong>
             <div class="form-check" id="mentoringCheckboxes"><input type="checkbox" value="First generation college-student" name="mentoringCheckboxes" id="firstgenerationcollege-student">         <label class="form-check-label" for="mentoringCheckboxes">First generation college-student</label><br><input type="checkbox" value="Rural" name="mentoringCheckboxes" id="rural">         <label class="form-check-label" for="mentoringCheckboxes">Rural</label><br><input type="checkbox" value="Underrepresented racial/ethnic minority" name="mentoringCheckboxes" id="underrepresentedracial/ethnicminority">         <label class="form-check-label" for="mentoringCheckboxes">Underrepresented racial/ethnic minority</label><br><input type="checkbox" value="Transfer student" name="mentoringCheckboxes" id="transferstudent">         <label class="form-check-label" for="mentoringCheckboxes">Transfer student</label><br><input type="checkbox" value="LGBTQ" name="mentoringCheckboxes" id="lgbtq">         <label class="form-check-label" for="mentoringCheckboxes">LGBTQ</label><br></div>
