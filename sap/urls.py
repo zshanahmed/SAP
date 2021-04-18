@@ -70,6 +70,10 @@ urlpatterns = [
     url(r'^edit_allies/(?P<username>[\w-]+)/(?P<category_relation_id>[\w-]+)/$', login_required(views.EditAllyProfile.as_view()),
         name='admin_edit_ally'),
 
+    url(r'^edit_allies/(?P<username>[\w-]+)/$',
+        login_required(views.EditAllyProfile.as_view()),
+        name='admin_edit_ally'),
+
     url(r'^delete/$', login_required(views.DeleteAllyProfileFromAdminDashboard.as_view()),
         name='admin_delete_ally'),
 

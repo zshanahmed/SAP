@@ -412,6 +412,9 @@ class AdminAllyTableFeatureTests(TestCase):
                 'csrfmiddlewaretoken': ['XdNiZpT3jpCeRzd2kq8bbRPUmc0tKFP7dsxNaQNTUhblQPK7lne9sX0mrE5khfHH'],
                 'username': [self.ally_user.username], 'category_id': [self.ally_student_category_relation.id],
                 'undergradYear': ['Freshman'], 'major': ['Psychology'],
+                'identityCheckboxes': ['First generation college-student', 'Low-income',
+                                          'Underrepresented racial/ethnic minority',
+                                          'LGBTQ', 'Rural', 'Disabled', 'Transfer Student'],
                 'interestLabRadios': ['No'], 'labExperienceRadios': ['Yes'], 'undergradMentoringRadios': ['No'],
                 'agreementRadios': ['Yes'], 'beingMentoredRadios': ['Yes']
             }, follow=True

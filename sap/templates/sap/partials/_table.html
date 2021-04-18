@@ -78,6 +78,13 @@
                                                         <i class="fa fa-trash"></i>
                                                     </a>
                                                 </li>
+                                            {% else %}
+                                                {% if ally.user == user %}
+                                                    <li class="list-inline-item">
+                                                    <a href="/edit_allies/{{ ally.user.username }}/{{ categoryRelation }}" class="btn btn-success btn-sm" type="button" data-toggle="tooltip" data-placement="top"
+                                                        title="Edit"><i class="fa fa-edit"></i></a>
+                                                    </li>
+                                                {% endif %}
                                             {% endif %}
                                         </ul>
                                     </td>

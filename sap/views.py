@@ -165,9 +165,9 @@ class EditAllyProfile(View):
             return redirect('sap:ally-dashboard')
         try:
             user = User.objects.get(username=username)
-            category_relation = AllyStudentCategoryRelation.objects.get(id=category_relation_id)
-            category = StudentCategories.objects.get(id=category_relation.student_category_id)
             ally = Ally.objects.get(user=user)
+            category_relation = AllyStudentCategoryRelation.objects.get(ally_id=ally.id)
+            category = StudentCategories.objects.get(id=category_relation.student_category_id)
             if category_relation.ally_id != ally.id:
                 messages.warning(request, 'Access Denied!')
                 return redirect('sap:ally-dashboard')
