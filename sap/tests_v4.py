@@ -94,7 +94,7 @@ class AdminAnnoucementFeatureTests(TestCase):
         self.assertEqual(response.status_code, 200)
 
 
-class SignupEventTest(TestCase):
+class ResponseEventInvitationTests(TestCase):
     """
     Unit tests for calendar view
     """
@@ -103,24 +103,29 @@ class SignupEventTest(TestCase):
         self.password = 'admin_password1'
         self.client = Client()
 
-        self.user = User.objects.create_user(username=self.username,
-                                             email='email@test.com',
-                                             password=self.password,
-                                             )
-        self.event = Event.objects.create(title='Internship',
-                                          description='Internship',
-                                          start_time='2021-04-20 21:05:00',
-                                          end_time='2021-04-26 21:05:00',
-                                          location='MacLean',
-                                          num_invited=30,
-                                          num_attending=10,
-                                          )
+        self.event = Event.objects.create(
+            title='Internship',
+            description='Internship',
+            start_time='2021-04-20 21:05:00',
+            end_time='2021-04-26 21:05:00',
+            location='MacLean',
+            num_invited=30,
+            num_attending=10,
+        )
 
-        self.ally_user = User.objects.create_user(username='allytesting',
-                                                  email='allyemail@test.com',
-                                                  password='ally_password1',
-                                                  )
-        self.ally_user.is_staff = False
+        self.admin_user = User.objects.create_user(
+            username=self.username,
+            email='email@test.com',
+            password=self.password,
+            is_staff=True,
+        )
+
+        self.ally_user = User.objects.create_user(
+            username='ally',
+            email='allyemail@test.com',
+            password='ally_password1',
+            is_staff=False,
+        )
 
         self.ally = Ally.objects.create(
             user=self.ally_user,
@@ -129,16 +134,20 @@ class SignupEventTest(TestCase):
             works_at='College of Engineering',
             area_of_research='Biochemistry',
             major='Electrical Engineering',
-            willing_to_volunteer_for_events=True
+            willing_to_volunteer_for_events=True,
         )
 
         self.category = StudentCategories.objects.create(lgbtq=True)
         self.student_ally_rel = AllyStudentCategoryRelation.objects.create(
             ally=self.ally,
-            student_category=self.category
+            student_category=self.category,
         )
 
-        self.user.is_staff = True
-        self.user.save()
 
-        self.event_ally_rel = EventInviteeRelation.objects.create(ally_id=self.ally.id, event_id=self.event.id)
+        self.event_ally_rel = EventInviteeRelation.objects.create(
+            ally_id=self.ally.id,
+            event_id=self.event.id,
+        )
+
+
+
