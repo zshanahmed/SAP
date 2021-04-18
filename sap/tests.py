@@ -14,8 +14,9 @@ User = get_user_model()
 
 def make_category(ally):
     category = StudentCategories.objects.create()
-    AllyStudentCategoryRelation.objects.create(ally_id=ally.id,
-                                               student_category_id=category.id)
+    relation = AllyStudentCategoryRelation.objects.create(ally_id=ally.id,
+                                                          student_category_id=category.id)
+    return relation.id
 
 def create_ally(username, hawk_id):
     """
@@ -39,6 +40,7 @@ class AdminAllyTableFeatureTests(TestCase):
     """
 
     def setUp(self):
+
         self.username = 'Admin_1'
         self.password = 'admin_password1'
         self.email = 'email@test.com'
@@ -372,15 +374,17 @@ class AdminAllyTableFeatureTests(TestCase):
         self.user.is_staff = True
         self.user.save()
         self.client.login(username=self.username, password=self.password)
-
         # Testing for Staff user type
-        response = self.client.get('/edit_allies/', {'username': self.ally_user.username,
-                                                     'category_relation_id': 0})
+        #response = self.client.get('/edit_allies/', {'username': self.ally_user.username,
+        #                                             'category_relation_id': self.ally_2_student_category_relation.id})
+        response = self.client.get(reverse('sap:admin_edit_ally', args=[self.ally_user.username,
+                                                                        self.ally_2_student_category_relation.id]))
         self.assertEqual(response.status_code, HTTPStatus.OK)
 
         dictionary = {'csrfmiddlewaretoken': ['YXW4Ib9TNmwod6ZETztHgp3ouwbg09sbAYibaXHc5RMKbAECHTZKHIsdJrvzvvP5'],
          'firstName': self.ally_user.first_name, 'lastName': self.ally_user.last_name,
          'newUsername': self.ally_user.username,'username': self.ally_user.username,
+         'category_id': self.ally_2_student_category.id,
          'email': self.ally_user.email, 'hawkID': self.ally.hawk_id,
          'password': [''], 'roleSelected': self.ally.user_type,
          'areaOfResearchCheckboxes': ['Biochemistry', 'Bioinformatics', 'Chemical Engineering', 'Chemistry'],
@@ -402,7 +406,7 @@ class AdminAllyTableFeatureTests(TestCase):
         response = self.client.post(
             '/edit_allies/', {
                 'csrfmiddlewaretoken': ['XdNiZpT3jpCeRzd2kq8bbRPUmc0tKFP7dsxNaQNTUhblQPK7lne9sX0mrE5khfHH'],
-                'username': [self.ally_user.username], 'category_relation_id': 0,
+                'username': [self.ally_user.username], 'category_id': self.ally_2_student_category.id,
                 'undergradYear': ['Freshman'], 'major': ['Psychology'],
                 'interestLabRadios': ['No'], 'labExperienceRadios': ['Yes'], 'undergradMentoringRadios': ['No'],
                 'agreementRadios': ['Yes'], 'beingMentoredRadios': ['Yes']
@@ -417,7 +421,8 @@ class AdminAllyTableFeatureTests(TestCase):
 
         dictionary = {'csrfmiddlewaretoken': ['YXW4Ib9TNmwod6ZETztHgp3ouwbg09sbAYibaXHc5RMKbAECHTZKHIsdJrvzvvP5'],
          'firstName': 'firstName', 'lastName': 'lastName',
-         'newUsername': 'bigUsername', 'username': self.ally_user.username, 'category_relation_id': 0,
+         'newUsername': 'bigUsername', 'username': self.ally_user.username,
+         'category_id': self.ally_2_student_category.id,
          'email': 'bigEmail', 'hawkID': 'bigHawk',
          'password': [''], 'roleSelected': 'Faculty',
          'areaOfResearchCheckboxes': "",
@@ -435,7 +440,8 @@ class AdminAllyTableFeatureTests(TestCase):
 
         dictionary = {'csrfmiddlewaretoken': ['YXW4Ib9TNmwod6ZETztHgp3ouwbg09sbAYibaXHc5RMKbAECHTZKHIsdJrvzvvP5'],
          'firstName': 'firstName',
-         'newUsername': self.user.username, 'username': 'bigUsername', 'category_relation_id': 0,
+         'newUsername': self.user.username, 'username': 'bigUsername',
+         'category_id': self.ally_2_student_category.id,
          'email': self.user.email, 'hawkID': 'bigHawk2',
          'password': ['thebiggestPassword'], 'roleSelected': 'Faculty',
          'openingRadios': ['Yes'], 'labShadowRadios': ['Yes'], 'mentoringRadios': ['Yes'],

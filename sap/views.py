@@ -119,6 +119,7 @@ class EditAllyProfile(View):
     def get(request, username='', category_relation_id=0):
         """Enter what this class/method does"""
         user_req = request.user
+
         if (username != user_req.username) and not user_req.is_staff:
             messages.warning(request, 'Access Denied!')
             return redirect('sap:ally-dashboard')
@@ -145,16 +146,21 @@ class EditAllyProfile(View):
     # 'intersetLabRadios': ['Yes'], 'labExperienceRadios': ['No'], 'undergradMentoringRadios': ['Yes'],
     # 'beingMentoredRadios': ['No']}
 
-    def post(self, request):
+    def post(self, request, username='', category_relation_id=''):
         """Updates profile details from edit_ally page"""
         post_dict = dict(request.POST)
+
+        user = User.objects.filter(username=post_dict["username"][0])
+        category = StudentCategories.objects.filter(id=post_dict['category_id'][0])
+        category_relation = AllyStudentCategoryRelation.objects.filter(id=category_relation_id)
 
         user_req = request.user
         message = ''
 
-        if User.objects.filter(username=post_dict["username"][0]).exists():
+        if user.exists() and category.exists() and category_relation.exists():
             same = True
-            user = User.objects.get(username=post_dict["username"][0])
+            user = user[0]
+            category = category[0]
             ally = Ally.objects.get(user=user)
             try:
                 user_type = post_dict['roleSelected'][0]
@@ -285,11 +291,11 @@ class EditAllyProfile(View):
                 else:
                     messages.add_message(request, messages.WARNING,
                                          'No Changes Detected!' + message)
-                return redirect(reverse('sap:admin_edit_ally', args=[post_dict['username'][0]]))
+                return redirect(reverse('sap:admin_edit_ally', args=[user.username, category_relation_id]))
             if same:
                 messages.add_message(request, messages.WARNING,
                                      'No Changes Detected!' + message)
-                return redirect(reverse('sap:admin_edit_ally', args=[post_dict['username'][0]]))
+                return redirect(reverse('sap:admin_edit_ally', args=[user.username, category_relation_id]))
 
             if not user_req.is_staff:
                 messages.add_message(request, messages.SUCCESS,
