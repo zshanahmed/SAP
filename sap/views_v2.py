@@ -29,32 +29,37 @@ from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.views.generic import TemplateView, View
 
 from sap.forms import UserResetForgotPasswordForm
-from sap.models import StudentCategories, Ally, AllyStudentCategoryRelation, Event
+from sap.models import StudentCategories, Ally, AllyStudentCategoryRelation, Event, EventInviteeRelation, EventAttendeeRelation
 from sap.tokens import account_activation_token, password_reset_token
 from sap.views import User, AccessMixin
 
 
-class RegisterEventView(TemplateView):
+class SignUpEventView(View):
     """
     Register for event.
     """
 
     def get(self, request, *args, **kwargs):
-        """Enter what this class/method does"""
-        # # TODO: Update this function once frontend gets done
-        # user_current = request.user
-        # ally_current = Ally.objects.get(user=user_current)
-        # event_id = 1
-        #
-        # if ally_current is not None and user_current.is_active:
-        #     AllyStudentCategoryRelation.objects.create(event_id=event.id,
-        #                                                ally_id=ally_current.id)
-        #     messages.success(request,
-        #                      'You have successfully register for this event!')
-        #
-        # else:
-        #     messages.warning(request,
-        #                      'You cannot register for this event.')
+        """
+        Invitees can register for event
+        """
+
+        user_current = request.user
+        ally_current = Ally.objects.get(user=user_current)
+        event_id = request.GET['event_id']
+
+        if ally_current is not None and user_current.is_active:
+            event_invitee_rel = EventInviteeRelation.objects.filter(event=3, ally=ally_current)
+            
+            if not event_invitee_rel.exists():
+                EventAttendeeRelation.objects.create(event_id=event_id,
+                                                    ally_id=ally_current.id)
+                messages.success(request,
+                             'You have successfully register for this event!')
+
+        else:
+            messages.warning(request,
+                             'You cannot register for this event.')
 
 
 class DeregisterEventView(TemplateView):
