@@ -555,8 +555,6 @@ class ForgotPasswordTest(TestCase):
         """
         Can access if user is not logged in.
         """
-        # self.user.save()
-        # self.client.login(username=self.username, password=self.password)
         self.client.logout()
         response = self.client.get(reverse('sap:password-forgot'))
         self.assertEqual(response.status_code, HTTPStatus.OK)
@@ -568,14 +566,9 @@ class ForgotPasswordTest(TestCase):
         """
         Cannot access if user is not logged in.
         """
-        # self.user.save()
-        # self.client.login(username=self.username, password=self.password)
-        self.client.logout()
+        self.client.login(username=self.username, password=self.password)
         response = self.client.get(reverse('sap:password-forgot'))
-        self.assertEqual(response.status_code, HTTPStatus.OK)
-        self.assertContains(
-            response, "Send me instructions!", html=True
-        )
+        self.assertEqual(response.status_code, HTTPStatus.FOUND)
 
     def test_enter_valid_reset_email_address(self):
         """
