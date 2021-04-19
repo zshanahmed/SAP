@@ -6,9 +6,8 @@ from http import HTTPStatus
 
 from django.contrib.auth import get_user_model
 from django.test import TestCase, Client  # tests file
-from .upload_resource_to_azure import upload_file_to_azure
-
 from sap.models import EventInviteeRelation, AllyStudentCategoryRelation, StudentCategories, Ally, Event
+from .upload_resource_to_azure import upload_file_to_azure
 
 User = get_user_model()
 
