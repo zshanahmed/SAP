@@ -6,7 +6,7 @@ from http import HTTPStatus
 from django.contrib.auth import get_user_model
 from django.test import TestCase, Client  # tests file
 
-from sap.models import EventInviteeRelation, AllyStudentCategoryRelation, StudentCategories, Ally, Event, EventAttendeeRelation
+from sap.models import EventInviteeRelation, AllyStudentCategoryRelation, StudentCategories, Ally, Event
 
 User = get_user_model()
 
@@ -133,11 +133,11 @@ class ResponseEventInvitationTests(TestCase):
 
         self.ally = Ally.objects.create(
             user=self.ally_user,
-            hawk_id='johndoe2',
+            hawk_id='john',
             user_type='Graduate Student',
             works_at='College of Engineering',
-            area_of_research='Biochemistry',
-            major='Electrical Engineering',
+            area_of_research='Biology',
+            major='Biomedical Engineering',
             willing_to_volunteer_for_events=True,
         )
 

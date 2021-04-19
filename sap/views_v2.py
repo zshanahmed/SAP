@@ -39,7 +39,7 @@ class SignUpEventView(View):
     Register for event.
     """
 
-    def get(self, request, *args, **kwargs):
+    def get(self, request):
         """
         Invitees can register for event
         """
