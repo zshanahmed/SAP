@@ -3,7 +3,6 @@ views has functions that are mapped to the urls in urls.py
 """
 import datetime
 from fuzzywuzzy import fuzz
-from pytz import timezone
 
 from django.core import serializers
 from django.core.exceptions import ObjectDoesNotExist
