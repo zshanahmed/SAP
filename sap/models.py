@@ -85,6 +85,12 @@ class Event(models.Model):
     location = models.CharField(max_length=500, null=True)
     num_invited = models.IntegerField(default=0)
     num_attending = models.IntegerField(default=0)
+    role_selected = models.CharField(max_length=500, null=True)
+    school_year_selected = models.CharField(max_length=500, null=True)
+    mentor_status = models.CharField(max_length=500, null=True)
+    research_field = models.CharField(max_length=500, null=True)
+    invite_all = models.BooleanField(default=True)
+    special_category = models.CharField(max_length=500, null=True)
 
 
 class EventInviteeRelation(models.Model):

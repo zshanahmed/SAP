@@ -32,6 +32,7 @@ from sap.forms import UserResetForgotPasswordForm
 from sap.models import StudentCategories, Ally, AllyStudentCategoryRelation, Event, EventInviteeRelation, EventAttendeeRelation
 from sap.tokens import account_activation_token, password_reset_token
 from sap.views import User, AccessMixin
+import dateutil.parser as parser
 
 
 class SignUpEventView(View):
@@ -896,33 +897,6 @@ class EditEventView(View, AccessMixin):
         event.start_time = parser.parse(str(event.start_time)).isoformat().split("+")[0]
         event.end_time = parser.parse(str(event.end_time)).isoformat().split("+")[0]
         event.save()
-        event_attendee = EventInviteeRelation.objects.filter(event_id=event.id)
-        for rel_event in event_attendee:
-            rel_ally = Ally.objects.get(pk=rel_event.ally_id)
-            allies.append(rel_ally)
-            category_id = AllyStudentCategoryRelation.objects.get(ally_id=rel_ally.id)
-            category = StudentCategories.objects.get(pk=category_id.student_category_id)
-            if category.under_represented_racial_ethnic:
-                append_uniq(info['categories'], 'Underrepresented racial/ethnic minority')
-            if category.first_gen_college_student:
-                append_uniq(info['categories'], 'First generation college-student')
-            if category.transfer_student:
-                append_uniq(info['categories'], 'Transfer Student')
-            if category.lgbtq:
-                append_uniq(info['categories'],'LGBTQ')
-            if category.disabled:
-                append_uniq(info['categories'], 'Disabled')
-            if category.low_income:
-                append_uniq(info['categories'], 'Low-income')
-
-        for ally in allies:
-            append_uniq(info['roles'], ally.user_type)
-            append_uniq(info['years'], ally.year)
-            append_uniq(info['mentorship_status']['mentors'], ally.interested_in_mentoring)
-            append_uniq(info['mentorship_status']['mentees'], ally.interested_in_being_mentored)
-            append_uniq(info['area_of_research'], ally.area_of_research)
-        print(info)
         return render(request, template_name="sap/edit_event.html", context={
             'event': event,
-            'allies': allies
         })

@@ -8,11 +8,17 @@
 
     <script type= "text/javascript">
 
+        window.onload = function() {
+          if ("{{event.invite_all}}" === "True") {
+            invite_all_click();
+          }
+        };
+
         // function that checks all the checkboxes when invite all  checkbox is clicked
         function toggle_invite_all(){
-            invite_all_checkbox = document.getElementById("invite_all")
-            var allInputs = document.getElementsByTagName("input");
-            var num_of_unchecked_boxes
+            const invite_all_checkbox = document.getElementById("invite_all");
+            const allInputs = document.getElementsByTagName("input");
+            let num_of_unchecked_boxes;
             for (var i = 0, max = allInputs.length; i < max; i++){
 
                 if (allInputs[i].name == 'invite_all') continue;
@@ -30,15 +36,11 @@
 
         // function that unchecks invite all  checkbox when some other checkbox is unchecked
         function invite_all_click() {
-            invite_all_checkbox = document.getElementById("invite_all")
-            if (invite_all_checkbox.checked == true){
-                value = true
-            }
-            else{
-                value = false
-            }
+            const invite_all_checkbox = document.getElementById("invite_all");
+            const value = invite_all_checkbox.checked === true;
 
-            var allInputs = document.getElementsByTagName("input");
+            const allInputs = document.getElementsByTagName("input");
+            console.log("here");
             for (var i = 0, max = allInputs.length; i < max; i++){
                 if (allInputs[i].type === 'checkbox')
                     allInputs[i].checked = value;
@@ -87,7 +89,11 @@
                                     <strong>All day event:</strong>
                                     <div class="form-check form-check-inline" >
                                         <div class="px-2">
-                                            <input type="checkbox" name="event_allday" id="event_allday" value="{{event.allday}}" checked="{str(event.allday)}">
+                                            {% if event.allday%}
+                                                <input type="checkbox" name="event_allday" id="event_allday" value="{{event.allday}}" checked>
+                                            {% else %}
+                                                <input type="checkbox" name="event_allday" id="event_allday" value="{{event.allday}}">
+                                            {% endif %}
                                             <label class="form-check-label" for="event_allday">All day</label>
                                         </div>
                                     </div>
@@ -108,7 +114,11 @@
                                     <strong>Invite all allies:</strong>
                                     <div class="form-check form-check-inline" >
                                         <div class="px-2">
-                                            <input type="checkbox" name="invite_all" id="invite_all" value="invite_all" onclick="invite_all_click();">
+                                            {% if event.invite_all %}
+                                                <input type="checkbox" name="invite_all" id="invite_all" value="{{event.invite_all}}" onclick="invite_all_click();" checked>
+                                            {% else %}
+                                                 <input type="checkbox" name="invite_all" id="invite_all" value="{{event.invite_all}}" onclick="invite_all_click();">
+                                            {% endif %}
                                             <label class="form-check-label" for="invite_all">Invite all</label>
                                         </div>
                                     </div>
