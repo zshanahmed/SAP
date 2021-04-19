@@ -72,7 +72,7 @@
       .find(".modal-title")
       .text("Are you sure you want to delete this user (" + recipient + ")");
     modal
-      .find(".modal-footer a #btn-del")
+      .find(".modal-footer a")
       .attr("href", "/delete/?username=" + recipient);
   });
 
@@ -113,9 +113,7 @@
     modal
       .find(".modal-body")
       .html(footer_content);
-    // modal
-    //   .find(".modal-footer a #btn-del")
-    //   .attr("href", "/delete_event/?event_id=" + id);
+    $("#btn-signup").attr("href", "/signup_event/?event_id=" + id)
     $("#btn-del").attr("href", "/delete_event/?event_id=" + id)
     $("#btn-edit").attr("href", "/edit_event/?event_id=" + id)
   });
