@@ -184,8 +184,10 @@ class SignUpView(TemplateView):
         """
         First log current user out
         """
-        logout(request)
-        return render(request, self.template_name)
+        if not request.user.is_authenticated:
+            return render(request, self.template_name)
+        else:
+            return redirect('sap:home')
 
     def post(self, request):
         """
