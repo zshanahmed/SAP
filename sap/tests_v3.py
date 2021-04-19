@@ -4,16 +4,16 @@ contains unit tests for sap app
 import os
 import io
 from datetime import datetime
-from django.db.models import Q
 from http import HTTPStatus
+from django.db.models import Q
 from django.urls import reverse
 from django.contrib.auth import get_user_model
 from django.test import TestCase, Client  # tests file
 import pandas as pd
 import numpy as np
 import sap.views as views
+import sap.views_v2 as views_v2
 from .models import Ally, StudentCategories, AllyStudentCategoryRelation, Event, EventInviteeRelation
-from .tests import create_ally
 
 User = get_user_model()
 
@@ -28,88 +28,89 @@ def wack_test_db():
     AllyStudentCategoryRelation.objects.all().delete()
 
 
-userFields = ['last_login', 'username', 'first_name', 'last_name', 'email', 'is_active', 'date_joined']
-allyFields = ['user_type', 'area_of_research', 'openings_in_lab_serving_at', 'description_of_research_done_at_lab',
-              'interested_in_mentoring', 'interested_in_mentor_training', 'willing_to_offer_lab_shadowing',
-              'interested_in_connecting_with_other_mentors', 'willing_to_volunteer_for_events', 'works_at',
-              'people_who_might_be_interested_in_iba', 'how_can_science_ally_serve_you', 'year', 'major',
-              'information_release', 'interested_in_being_mentored', 'interested_in_joining_lab',
-              'has_lab_experience']
-categoryFields = ['under_represented_racial_ethnic', 'first_gen_college_student',
-                  'transfer_student', 'lgbtq', 'low_income', 'rural', 'disabled']
+userFields = views_v2.userFields
+allyFields = views_v2.allyFields
+categoryFields = views_v2.categoryFields
 
 
-def make_big_user():
-
-    bigUser = User.objects.create_user(username="bigUser", password="bigPassword", email="bigEmail@uiowa.edu")
-    bigAlly = Ally.objects.create(user=bigUser, user_id=bigUser.id, user_type='Undergraduate Student',
-                                  hawk_id=bigUser.username, major='biomedical engineering', year='Freshman',
+def make_big_undergrad():
+    """
+    Makes 4 undergrads - one of each type (fresh, soph, jun, sen)
+    """
+    big_user = User.objects.create_user(username="big_user", password="bigPassword", email="bigEmail@uiowa.edu")
+    big_ally = Ally.objects.create(user=big_user, user_id=big_user.id, user_type='Undergraduate Student',
+                                  hawk_id=big_user.username, major='biomedical engineering', year='Freshman',
                                   interested_in_joining_lab=True, has_lab_experience=False,
                                   interested_in_mentoring=False, information_release=True)
-    bigCategory = StudentCategories.objects.create(rural=True, first_gen_college_student=True,
+    big_category = StudentCategories.objects.create(rural=True, first_gen_college_student=True,
                                                    under_represented_racial_ethnic=True, transfer_student=False,
                                                    lgbtq=True, low_income=False, disabled=True)
-    AllyStudentCategoryRelation.objects.create(ally_id=bigAlly.id, student_category_id=bigCategory.id)
+    AllyStudentCategoryRelation.objects.create(ally_id=big_ally.id, student_category_id=big_category.id)
 
-    bigUser1 = User.objects.create_user(username="bigUser1", password="bigPassword", email="bigEmail1@uiowa.edu")
-    bigAlly1 = Ally.objects.create(user=bigUser1, user_id=bigUser1.id, user_type='Undergraduate Student',
-                                  hawk_id=bigUser1.username, major='biomedical engineering', year='Sophomore',
+    big_user1 = User.objects.create_user(username="big_user1", password="bigPassword", email="bigEmail1@uiowa.edu")
+    big_ally1 = Ally.objects.create(user=big_user1, user_id=big_user1.id, user_type='Undergraduate Student',
+                                  hawk_id=big_user1.username, major='biomedical engineering', year='Sophomore',
                                   interested_in_joining_lab=True, has_lab_experience=False,
                                   interested_in_mentoring=False, information_release=True)
-    bigCategory1 = StudentCategories.objects.create(rural=False, first_gen_college_student=True,
+    big_category1 = StudentCategories.objects.create(rural=False, first_gen_college_student=True,
                                                    under_represented_racial_ethnic=True, transfer_student=False,
                                                    lgbtq=True, low_income=False, disabled=True)
-    AllyStudentCategoryRelation.objects.create(ally_id=bigAlly1.id, student_category_id=bigCategory1.id)
+    AllyStudentCategoryRelation.objects.create(ally_id=big_ally1.id, student_category_id=big_category1.id)
 
-    bigUser2 = User.objects.create_user(username="bigUser2", password="bigPassword", email="bigEmail2@uiowa.edu")
-    bigAlly2 = Ally.objects.create(user=bigUser2, user_id=bigUser2.id, user_type='Undergraduate Student',
-                                  hawk_id=bigUser2.username, major='biomedical engineering', year='Junior',
+    big_user2 = User.objects.create_user(username="big_user2", password="bigPassword", email="bigEmail2@uiowa.edu")
+    big_ally2 = Ally.objects.create(user=big_user2, user_id=big_user2.id, user_type='Undergraduate Student',
+                                  hawk_id=big_user2.username, major='biomedical engineering', year='Junior',
                                   interested_in_joining_lab=True, has_lab_experience=False,
                                   interested_in_mentoring=False, information_release=True)
-    bigCategory2 = StudentCategories.objects.create(rural=True, first_gen_college_student=True,
+    big_category2 = StudentCategories.objects.create(rural=True, first_gen_college_student=True,
                                                    under_represented_racial_ethnic=True, transfer_student=False,
                                                    lgbtq=True, low_income=False, disabled=True)
-    AllyStudentCategoryRelation.objects.create(ally_id=bigAlly2.id, student_category_id=bigCategory2.id)
+    AllyStudentCategoryRelation.objects.create(ally_id=big_ally2.id, student_category_id=big_category2.id)
 
-    bigUser3 = User.objects.create_user(username="bigUser3", password="bigPassword", email="bigEmail3@uiowa.edu")
-    bigAlly3 = Ally.objects.create(user=bigUser3, user_id=bigUser3.id, user_type='Undergraduate Student',
-                                  hawk_id=bigUser3.username, major='biomedical engineering', year='Senior',
+    big_user3 = User.objects.create_user(username="big_user3", password="bigPassword", email="bigEmail3@uiowa.edu")
+    big_ally3 = Ally.objects.create(user=big_user3, user_id=big_user3.id, user_type='Undergraduate Student',
+                                  hawk_id=big_user3.username, major='biomedical engineering', year='Senior',
                                   interested_in_joining_lab=True, has_lab_experience=False,
                                   interested_in_mentoring=False, information_release=True)
-    bigCategory3 = StudentCategories.objects.create(rural=True, first_gen_college_student=True,
+    big_category3 = StudentCategories.objects.create(rural=True, first_gen_college_student=True,
                                                    under_represented_racial_ethnic=True, transfer_student=False,
                                                    lgbtq=True, low_income=False, disabled=True)
-    AllyStudentCategoryRelation.objects.create(ally_id=bigAlly3.id, student_category_id=bigCategory3.id)
+    AllyStudentCategoryRelation.objects.create(ally_id=big_ally3.id, student_category_id=big_category3.id)
 
-    bigUser4 = User.objects.create_user(username="bigUser4", password="bigPassword", email="bigEmail4@uiowa.edu")
-    bigAlly4 = Ally.objects.create(user=bigUser4, user_id=bigUser4.id, user_type='Staff',
-                                  hawk_id=bigUser4.username, major='biomedical engineering', year='Senior',
+
+def make_big_other():
+    """
+    Makes 3 of the other type of user (staff, grad, faculty)
+    """
+    big_user4 = User.objects.create_user(username="big_user4", password="bigPassword", email="bigEmail4@uiowa.edu")
+    big_ally4 = Ally.objects.create(user=big_user4, user_id=big_user4.id, user_type='Staff',
+                                  hawk_id=big_user4.username, major='biomedical engineering', year='Senior',
                                   interested_in_joining_lab=True, has_lab_experience=False,
                                   interested_in_mentoring=False, information_release=True)
-    bigCategory4 = StudentCategories.objects.create(rural=True, first_gen_college_student=True,
+    big_category4 = StudentCategories.objects.create(rural=True, first_gen_college_student=True,
                                                    under_represented_racial_ethnic=True, transfer_student=False,
                                                    lgbtq=True, low_income=False, disabled=True)
-    AllyStudentCategoryRelation.objects.create(ally_id=bigAlly4.id, student_category_id=bigCategory4.id)
+    AllyStudentCategoryRelation.objects.create(ally_id=big_ally4.id, student_category_id=big_category4.id)
 
-    bigUser5 = User.objects.create_user(username="bigUser5", password="bigPassword", email="bigEmail5@uiowa.edu")
-    bigAlly5 = Ally.objects.create(user=bigUser5, user_id=bigUser5.id, user_type='Faculty',
-                                  hawk_id=bigUser5.username, major='biomedical engineering', year='Senior',
+    big_user5 = User.objects.create_user(username="big_user5", password="bigPassword", email="bigEmail5@uiowa.edu")
+    big_ally5 = Ally.objects.create(user=big_user5, user_id=big_user5.id, user_type='Faculty',
+                                  hawk_id=big_user5.username, major='biomedical engineering', year='Senior',
                                   interested_in_joining_lab=True, has_lab_experience=False,
                                   interested_in_mentoring=False, information_release=True)
-    bigCategory5 = StudentCategories.objects.create(rural=True, first_gen_college_student=True,
+    big_category5 = StudentCategories.objects.create(rural=True, first_gen_college_student=True,
                                                    under_represented_racial_ethnic=True, transfer_student=False,
                                                    lgbtq=True, low_income=False, disabled=True)
-    AllyStudentCategoryRelation.objects.create(ally_id=bigAlly5.id, student_category_id=bigCategory5.id)
+    AllyStudentCategoryRelation.objects.create(ally_id=big_ally5.id, student_category_id=big_category5.id)
 
-    bigUser6 = User.objects.create_user(username="bigUser6", password="bigPassword", email="bigEmail6@uiowa.edu")
-    bigAlly6 = Ally.objects.create(user=bigUser6, user_id=bigUser6.id, user_type='Graduate Student',
-                                  hawk_id=bigUser6.username, major='biomedical engineering', year='Senior',
+    big_user6 = User.objects.create_user(username="big_user6", password="bigPassword", email="bigEmail6@uiowa.edu")
+    big_ally6 = Ally.objects.create(user=big_user6, user_id=big_user6.id, user_type='Graduate Student',
+                                  hawk_id=big_user6.username, major='biomedical engineering', year='Senior',
                                   interested_in_joining_lab=True, has_lab_experience=False,
                                   interested_in_mentoring=False, information_release=True)
-    bigCategory6 = StudentCategories.objects.create(rural=True, first_gen_college_student=True,
+    big_category6 = StudentCategories.objects.create(rural=True, first_gen_college_student=True,
                                                    under_represented_racial_ethnic=True, transfer_student=False,
                                                    lgbtq=True, low_income=False, disabled=True)
-    AllyStudentCategoryRelation.objects.create(ally_id=bigAlly6.id, student_category_id=bigCategory6.id)
+    AllyStudentCategoryRelation.objects.create(ally_id=big_ally6.id, student_category_id=big_category6.id)
 
 class DownloadAlliesTest(TestCase):
     """
@@ -128,19 +129,6 @@ class DownloadAlliesTest(TestCase):
 
         return columns
 
-    @staticmethod
-    def cleanup(dictionary):
-        """
-        function to facilitate cleanup of data
-        """
-        ar_list = []
-        for item in dictionary.items():
-            if item[0] in userFields or item[0] in allyFields or item[0] in categoryFields:
-                if item[0] == 'date_joined':
-                    ar_list.append(item[1].strftime("%b-%d-%Y"))
-                else:
-                    ar_list.append(item[1])
-        return ar_list
 
     def setUp(self):
         wack_test_db()
@@ -194,10 +182,14 @@ class DownloadAlliesTest(TestCase):
         self.categories4 = StudentCategories.objects.create(rural=True, first_gen_college_student=False,
                                                             under_represented_racial_ethnic=True, transfer_student=False,
                                                             lgbtq=True, low_income=False, disabled=True)
+        self.categories1 = StudentCategories.objects.create(rural=True, first_gen_college_student=False,
+                                                            under_represented_racial_ethnic=True, transfer_student=False,
+                                                            lgbtq=True, low_income=True, disabled=True)
 
         AllyStudentCategoryRelation.objects.create(ally_id=self.ally2.id, student_category_id=self.categories2.id)
         AllyStudentCategoryRelation.objects.create(ally_id=self.ally3.id, student_category_id=self.categories3.id)
         AllyStudentCategoryRelation.objects.create(ally_id=self.ally4.id, student_category_id=self.categories4.id)
+        AllyStudentCategoryRelation.objects.create(ally_id=self.ally1.id, student_category_id=self.categories1.id)
 
         columns = []
         columns = DownloadAlliesTest.fields_helper(User, columns)
@@ -205,15 +197,15 @@ class DownloadAlliesTest(TestCase):
         columns = DownloadAlliesTest.fields_helper(StudentCategories, columns)
 
         data = []
-        user1 = DownloadAlliesTest.cleanup(self.user1.__dict__) + \
-                DownloadAlliesTest.cleanup(self.ally1.__dict__) + [None, None, None, None, None, None, None]
-        user2 = DownloadAlliesTest.cleanup(self.user2.__dict__) + \
-                DownloadAlliesTest.cleanup(self.ally2.__dict__) + DownloadAlliesTest.cleanup(self.categories2.__dict__)
+        user1 = views_v2.DownloadAllies.cleanup(self.user1.__dict__) + \
+                views_v2.DownloadAllies.cleanup(self.ally1.__dict__) + views_v2.DownloadAllies.cleanup(self.categories1.__dict__)
+        user2 = views_v2.DownloadAllies.cleanup(self.user2.__dict__) + \
+                views_v2.DownloadAllies.cleanup(self.ally2.__dict__) + views_v2.DownloadAllies.cleanup(self.categories2.__dict__)
 
-        user3 = DownloadAlliesTest.cleanup(self.user3.__dict__) + \
-                DownloadAlliesTest.cleanup(self.ally3.__dict__) + DownloadAlliesTest.cleanup(self.categories3.__dict__)
-        user4 = DownloadAlliesTest.cleanup(self.user4.__dict__) + \
-                DownloadAlliesTest.cleanup(self.ally4.__dict__) + DownloadAlliesTest.cleanup(self.categories4.__dict__)
+        user3 = views_v2.DownloadAllies.cleanup(self.user3.__dict__) + \
+                views_v2.DownloadAllies.cleanup(self.ally3.__dict__) + views_v2.DownloadAllies.cleanup(self.categories3.__dict__)
+        user4 = views_v2.DownloadAllies.cleanup(self.user4.__dict__) + \
+                views_v2.DownloadAllies.cleanup(self.ally4.__dict__) + views_v2.DownloadAllies.cleanup(self.categories4.__dict__)
 
         data.append(user1)
         data.append(user2)
@@ -265,14 +257,10 @@ class UploadFileTest(TestCase):
         allies = Ally.objects.all()
         data = []
         for user in allies:
-            if user.user_type != "Staff":
-                categories = StudentCategories.objects.filter(
-                    id=AllyStudentCategoryRelation.objects.filter(ally_id=user.id)[0].student_category_id)[0]
-                data.append(DownloadAlliesTest.cleanup(User.objects.filter(id=user.user_id)[0].__dict__) +
-                            DownloadAlliesTest.cleanup(user.__dict__) + DownloadAlliesTest.cleanup(categories.__dict__))
-            else:
-                data.append(DownloadAlliesTest.cleanup(User.objects.filter(id=user.user_id)[0].__dict__) +
-                            DownloadAlliesTest.cleanup(user.__dict__) + [None, None, None, None, None, None])
+            categories = StudentCategories.objects.filter(
+                id=AllyStudentCategoryRelation.objects.filter(ally_id=user.id)[0].student_category_id)[0]
+            data.append(views_v2.DownloadAllies.cleanup(User.objects.filter(id=user.user_id)[0].__dict__) +
+                        views_v2.DownloadAllies.cleanup(user.__dict__) + views_v2.DownloadAllies.cleanup(categories.__dict__))
 
         data_frame = pd.DataFrame(columns=columns, data=data)
         data_frame = data_frame.replace(0, False)
@@ -347,7 +335,7 @@ class UploadFileTest(TestCase):
         self.assertEqual(response.status_code, 200)
 
         local_df = UploadFileTest.make_frame()
-        local_df1, _ = views.UploadAllies.cleanupFrame(self.data_frame_1)
+        local_df1, _ = views_v2.UploadAllies.cleanup_frame(self.data_frame_1, {})
         local_df1 = local_df1[userFields + allyFields + categoryFields]
         local_df['last_login'] = ''
         for category in categoryFields:
@@ -476,6 +464,9 @@ class CreateEventTests(TestCase):
         assert EventInviteeRelation.objects.filter(event=event[0], ally=self.ally).exists()
 
     def test_end_date_less_than_start_date(self):
+        """
+        Checks if the post function validates that start time < end time
+        """
         response = self.client.post('/create_event/',
             {'csrfmiddlewaretoken': ['nhfQKKeiz3GSWp10SsXcVciNJiIm50yLc5vX81YXodQNB8ynsI6aeVFeF70b0580'],
              'event_title': ['Hackathon UIOWA'],
@@ -487,8 +478,14 @@ class CreateEventTests(TestCase):
              'invite_all': ['invite_all'],
              'role_selected': ['Staff', 'Graduate Student', 'Undergraduate Student', 'Faculty'],
              'mentor_status': ['Mentors', 'Mentees'],
-             'special_category': ['First generation college-student', 'Rural', 'Low-income', 'Underrepresented racial/ethnic minority', 'Disabled', 'Transfer Student', 'LGBTQ'],
-             'research_area': ['Biochemistry', 'Bioinformatics', 'Biology', 'Biomedical Engineering', 'Chemical Engineering', 'Chemistry', 'Computer Science and Engineering', 'Environmental Science', 'Health and Human Physiology', 'Mathematics', 'Microbiology', 'Neuroscience', 'Nursing', 'Physics', 'Psychology']
+             'special_category': ['First generation college-student', 'Rural', 'Low-income',
+                                  'Underrepresented racial/ethnic minority',
+                                  'Disabled', 'Transfer Student', 'LGBTQ'],
+             'research_area': ['Biochemistry', 'Bioinformatics', 'Biology',
+                               'Biomedical Engineering', 'Chemical Engineering', 'Chemistry',
+                               'Computer Science and Engineering', 'Environmental Science',
+                               'Health and Human Physiology', 'Mathematics', 'Microbiology',
+                               'Neuroscience', 'Nursing', 'Physics', 'Psychology']
              }, follow= True)
         self.assertContains(
             response, "End time cannot be less than start time!", html=True
@@ -611,6 +608,19 @@ class LoginRedirectTests(TestCase):
         response = self.client.get(reverse("sap:login_success"))
         self.assertEqual(response.status_code, HTTPStatus.FOUND)
 
+    def test_access_login_already_loggedin_as_admin(self):
+        """
+        Admin users are redirected to Dashboard after logging in
+        """
+        self.user.is_staff = True
+        self.user.save()
+        self.client.login(username=self.username, password=self.password)
+
+        response = self.client.get(reverse("sap:login_success"))
+        url = response.url
+        self.assertEqual(url, '/dashboard/')
+        self.assertEqual(response.status_code, 302)
+
     def test_login_for_admin_fail(self):
         """
         Invalid password error for admin
@@ -629,6 +639,19 @@ class LoginRedirectTests(TestCase):
 
         response = self.client.get(reverse("sap:login_success"))
         self.assertEqual(response.status_code, HTTPStatus.FOUND)
+
+    def test_access_login_already_loggedin_as_nonadmin(self):
+        """
+        Admin users are redirected to Dashboard after logging in
+        """
+        self.user.is_staff = False
+        self.user.save()
+        self.client.login(username=self.username, password=self.password)
+
+        response = self.client.get(reverse("sap:login_success"))
+        url = response.url
+        self.assertEqual(url, '/ally-dashboard/')
+        self.assertEqual(response.status_code, 302)
 
 
 class LogoutRedirectTests(TestCase):
@@ -720,56 +743,6 @@ class NonAdminAccessTests(TestCase):
         response = self.client.get(reverse('sap:sap-analytics'))
         self.assertEqual(response.status_code, HTTPStatus.FORBIDDEN)
 
-
-class AlliesIndexViewTests(TestCase):
-    """
-    Unit tests for the dashboard an admin views
-    """
-
-    def setUp(self):
-        self.username = 'admin'
-        self.password = 'admin_password1'
-        self.client = Client()
-
-        user = User.objects.create_user(self.username, 'email@test.com', self.password)
-        user.is_staff = True
-        user.save()
-
-    def test_no_ally(self):
-        """
-        If no allies exist, an appropriate message is displayed.
-        """
-        self.client.login(username=self.username, password=self.password)
-        response = self.client.get(reverse('sap:sap-dashboard'))
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "No allies are available.")
-        self.assertQuerysetEqual(response.context['allies_list'], [])
-
-    def test_one_ally(self):
-        """
-        Only one ally should be displayed on the home page
-        """
-        self.client.login(username=self.username, password=self.password)
-        create_ally('username_1', 'hawk_id_1')
-        response = self.client.get(reverse('sap:sap-dashboard'))
-        self.assertQuerysetEqual(
-            response.context['allies_list'],
-            ['<Ally: hawk_id_1>']
-        )
-
-    def test_two_allies(self):
-        """
-        Only two allies should be displayed on the home page
-        """
-        self.client.login(username=self.username, password=self.password)
-        create_ally('username_1', 'hawk_id_1')
-        create_ally('username_2', 'hawk_id_2')
-        response = self.client.get(reverse('sap:sap-dashboard'))
-        self.assertQuerysetEqual(
-            response.context['allies_list'],
-            ['<Ally: hawk_id_2>', '<Ally: hawk_id_1>']  # Need to return in the descending order
-        )
-
 class CalendarViewTests(TestCase):
     """
     Unit tests for calendar view
@@ -780,7 +753,10 @@ class CalendarViewTests(TestCase):
         self.client = Client()
 
         self.user = User.objects.create_user(self.username, 'email@test.com', self.password)
-        self.event = Event.objects.create(title='Internship', description='Internship', start_time='2021-04-20 21:05:00', end_time='2021-04-26 21:05:00', location='MacLean')
+        self.event = Event.objects.create(title='Internship', description='Internship',
+                                          start_time='2021-04-20 21:05:00',
+                                          end_time='2021-04-26 21:05:00', location='MacLean',
+                                          num_invited=30, num_attending=10)
 
         self.ally_user = User.objects.create_user('allytesting', 'allyemail@test.com', 'ally_password1')
         self.ally_user.is_staff = False
@@ -823,77 +799,126 @@ class CalendarViewTests(TestCase):
         self.assertContains(response, "Calendar")
         self.assertContains(response, self.event.title)
 
+    def test_delete_event_admin(self):
+        """
+        Unit tests for admin to delete event
+        """
+        self.client.login(username=self.username, password=self.password)
+        response = self.client.get('/delete_event/', {'event_id': self.event.id}, follow=True)
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        self.assertNotContains(response, self.event.title, html=True)
+        message = list(response.context['messages'])[0]
+        self.assertEqual(message.message, "Event deleted successfully!")
+
+    def test_delete_event_admin_fail(self):
+        """
+        Unit tests for admin to delete event that doesnt exist
+        """
+        self.client.login(username=self.username, password=self.password)
+        response = self.client.get('/delete_event/', {'event_id': -1}, follow=True)
+        message = list(response.context['messages'])[0]
+        self.assertEqual(message.message, "Event doesn't exist!")
+
+
 class TestAnalyticsPage(TestCase):
+    """
+    Test the analytics page methods/get function
+    """
     def setUp(self):
         self.client = Client()
-        self.client.login(username='admin', password='admin_password1')
-        self.bigCategory = StudentCategories.objects.create(rural=True, first_gen_college_student=True,
+        User.objects.create_user(username="admin1", password='12345678', is_staff=True)
+        self.client.login(username='admin1', password='12345678')
+        self.big_category = StudentCategories.objects.create(rural=True, first_gen_college_student=True,
                                                    under_represented_racial_ethnic=True, transfer_student=True,
                                                    lgbtq=True, low_income=True, disabled=True)
-        make_big_user()
-        self.undergrads = [Ally.objects.filter(hawk_id="bigUser")[0],
-                           Ally.objects.filter(hawk_id="bigUser1")[0],
-                           Ally.objects.filter(hawk_id="bigUser2")[0],
-                           Ally.objects.filter(hawk_id="bigUser3")[0],]
+        make_big_undergrad()
+        make_big_other()
+        self.undergrads = [Ally.objects.filter(hawk_id="big_user")[0],
+                           Ally.objects.filter(hawk_id="big_user1")[0],
+                           Ally.objects.filter(hawk_id="big_user2")[0],
+                           Ally.objects.filter(hawk_id="big_user3")[0],]
 
-        self.bigUsers = Ally.objects.filter(Q(hawk_id__startswith='bigUser'))
+        self.big_users = Ally.objects.filter(Q(hawk_id__startswith='big_user'))
 
     def test_get_analytics(self):
         """
-        Test good respone from the Analytics page.
+        Test good response from the Analytics page.
         """
+
         response = self.client.get(reverse('sap:sap-analytics'))
-        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.status_code, 200)
 
-    def test_num_per_Category(self):
-        categoryList = [self.bigCategory]
+    def test_num_per_category(self):
+        """
+        Test ability of determine num per category to get the number of people per ally category
+        """
+        category_list = [self.big_category]
 
-        categoryList = views.AnalyticsView.determineNumPerCategory(categoryList)
+        category_list = views.AnalyticsView.determine_num_per_category(category_list)
 
-        self.assertEqual(categoryList, [1, 1, 1, 1, 1, 1, 1])
+        self.assertEqual(category_list, [1, 1, 1, 1, 1, 1, 1])
 
     def test_find_category(self):
-        ally = [Ally.objects.filter(hawk_id="bigUser")[0]]
+        """
+        Checks if the category appended to the list of find categories coressponds to correct user
+        """
+        ally = [Ally.objects.filter(hawk_id="big_user")[0]]
         relation = AllyStudentCategoryRelation.objects.all()
         categories = StudentCategories.objects.all()
-        categoryRelation = relation.filter(ally_id=ally[0].id)
-        category = categories.filter(id=categoryRelation[0].student_category_id)
-        categories = views.AnalyticsView.findTheCategories(ally, relation, categories)
+        category_relation = relation.filter(ally_id=ally[0].id)
+        category = categories.filter(id=category_relation[0].student_category_id)
+        categories = views.AnalyticsView.find_the_categories(ally, relation, categories)
 
         self.assertEqual(category[0].id, categories[0].id)
 
-    def test_numUndergrad(self):
-        numPerYear = views.AnalyticsView.undergradPerYear(self.undergrads)
-        self.assertEqual(numPerYear, [1, 1, 1, 1])
+    def test_num_undergrad(self):
+        """
+        Looks if the undergrad per year function is returning the right number per year in school
+        """
+        num_per_year = views.AnalyticsView.undergrad_per_year(self.undergrads)
+        self.assertEqual(num_per_year, [1, 1, 1, 1])
 
-    def test_getYear(self):
-        years, yearsUndergrad = views.AnalyticsView.findYears(self.bigUsers)
-        yearDict = {datetime.strftime(datetime.now(), "%Y"): [0, 0, 0]}
-        yearDict1 = {datetime.strftime(datetime.now(), "%Y"): 0}
-        self.assertEqual(years, yearDict)
-        self.assertEqual(yearsUndergrad, yearDict1)
+    def test_get_year(self):
+        """
+        Checks if the function that makes the inital dict is working correctly
+        """
+        years, years_undergrad = views.AnalyticsView.find_years(self.big_users)
+        year_dict = {datetime.strftime(datetime.now(), "%Y"): [0, 0, 0]}
+        year_dict1 = {datetime.strftime(datetime.now(), "%Y"): 0}
+        self.assertEqual(years, year_dict)
+        self.assertEqual(years_undergrad, year_dict1)
 
-    def test_userTypePerYear(self):
-        yearDict = {datetime.strftime(datetime.now(), "%Y"): [0, 0, 0]}
-        yearDict1 = {datetime.strftime(datetime.now(), "%Y"): 0}
-        years, undergradYears = views.AnalyticsView.userTypePerYear(self.bigUsers, yearDict, yearDict1)
-        yearDict = {datetime.strftime(datetime.now(), "%Y"): [1, 1, 1]}
-        yearDict1 = {datetime.strftime(datetime.now(), "%Y"): 4}
-        self.assertEqual(years, yearDict)
-        self.assertEqual(undergradYears, yearDict1)
+    def test_user_type_per_year(self):
+        """
+        Checks if the function is getting the correct number who signed up per year
+        """
+        year_dict = {datetime.strftime(datetime.now(), "%Y"): [0, 0, 0]}
+        year_dict1 = {datetime.strftime(datetime.now(), "%Y"): 0}
+        years, undergrad_years = views.AnalyticsView.user_type_per_year(self.big_users, year_dict, year_dict1)
+        year_dict = {datetime.strftime(datetime.now(), "%Y"): [1, 1, 1]}
+        year_dict1 = {datetime.strftime(datetime.now(), "%Y"): 4}
+        self.assertEqual(years, year_dict)
+        self.assertEqual(undergrad_years, year_dict1)
 
-    def test_cleanUndergradDic(self):
-        yearDict = {datetime.strftime(datetime.now(), "%Y"): [0, 0, 0]}
-        yearDict1 = {datetime.strftime(datetime.now(), "%Y"): 0}
-        years, undergradYears = views.AnalyticsView.userTypePerYear(self.undergrads, yearDict, yearDict1)
-        years, numbers = views.AnalyticsView.cleanUndergradDic(undergradYears)
+    def test_clean_undergrad_dic(self):
+        """
+        Checks if the dict being cleaned is returned correctly (yearsignedup: numbersigned up that year) for undergrad
+        """
+        year_dict = {datetime.strftime(datetime.now(), "%Y"): [0, 0, 0]}
+        year_dict1 = {datetime.strftime(datetime.now(), "%Y"): 0}
+        years, undergrad_years = views.AnalyticsView.user_type_per_year(self.undergrads, year_dict, year_dict1)
+        years, numbers = views.AnalyticsView.clean_undergrad_dic(undergrad_years)
         self.assertEqual(years, [int(datetime.strftime(datetime.now(), "%Y"))])
         self.assertEqual(numbers, [4])
 
-    def test_cleanOtherDic(self):
-        yearDict = {datetime.strftime(datetime.now(), "%Y"): [0, 0, 0]}
-        yearDict1 = {datetime.strftime(datetime.now(), "%Y"): 0}
-        years, undergradYears = views.AnalyticsView.userTypePerYear(self.bigUsers, yearDict, yearDict1)
-        cleanedYears, cleanedOther = views.AnalyticsView.cleanOtherDic(years)
-        self.assertEqual(cleanedYears, [int(datetime.strftime(datetime.now(), "%Y"))])
-        self.assertEqual(cleanedOther, [[1], [1], [1]])
+    def test_clean_other_dic(self):
+        """
+        Checks if the dict being cleaned is returned correctly (yearsignedup: numbersigned up that year) for other user
+        """
+        year_dict = {datetime.strftime(datetime.now(), "%Y"): [0, 0, 0]}
+        year_dict1 = {datetime.strftime(datetime.now(), "%Y"): 0}
+        years, undergrad_years = views.AnalyticsView.user_type_per_year(self.big_users, year_dict, year_dict1)
+        self.assertEqual(undergrad_years, {datetime.strftime(datetime.now(), "%Y"): 4})
+        cleaned_years, cleaned_other = views.AnalyticsView.clean_other_dic(years)
+        self.assertEqual(cleaned_years, [int(datetime.strftime(datetime.now(), "%Y"))])
+        self.assertEqual(cleaned_other, [[1], [1], [1]])

@@ -5,14 +5,20 @@ from django.urls import path
 from django.contrib.auth import views as auth_views
 from django.conf.urls import url
 from django.contrib.auth.decorators import login_required
+
+import sap.views_v2
+import sap.views_v3
 from . import views
 
 app_name = 'sap'
 urlpatterns = [
-    path('', auth_views.LoginView.as_view(
-        template_name='sap/login.html'), name='home'),
+    path('',
+         auth_views.LoginView.as_view(template_name='sap/login.html',
+                                      redirect_authenticated_user=True),
+         name='home'),
 
-    path('logout/', views.logout_request, name='logout'),
+    path('logout/', views.logout_request,
+         name='logout'),
 
     url(r'login_success/$', views.login_success,
         name='login_success'),
@@ -21,8 +27,6 @@ urlpatterns = [
         name='change_password'),
     url(r'^update_profile/$', login_required(views.EditAdminProfile.as_view()),
         name='sap-admin_profile'),
-    url(r'^update_ally_profile/$', login_required(views.EditAllyProfile.as_view()),
-        name='sap-ally_profile'),
 
     url(r'^dashboard/$',
         login_required(views.AlliesListView.as_view()),
@@ -36,6 +40,9 @@ urlpatterns = [
         login_required(views.CalendarView.as_view()),
         name='calendar'),
 
+    url(r'^delete_event/$', login_required(sap.views_v2.DeleteEventView.as_view()),
+        name='admin_delete_event'),
+
     url('analytics/',
         login_required(views.AnalyticsView.as_view()),
         name='sap-analytics'),
@@ -44,24 +51,23 @@ urlpatterns = [
         login_required(views.ResourcesView.as_view()),
         name='resources'),
 
-    url(r'password-forgot/$', views.ForgotPasswordView.as_view(),
+    url(r'password-forgot/$', sap.views_v2.ForgotPasswordView.as_view(),
         name='password-forgot'),
 
-    url(r'password-forgot-done/$', views.ForgotPasswordDoneView.as_view(),
+    url(r'password-forgot-done/$', sap.views_v2.ForgotPasswordDoneView.as_view(),
         name='password-forgot-done'),
 
     # path(r'^password-forgot-confirm/(<slug:uidb64>/<slug:token>/$', auth_views.PasswordResetConfirmView.as_view(),
     #      name='password-forgot-confirm'),
 
-    url(r'password-forgot-confirm/(?P<uidb64>[\w-]+)/(?P<token>[\w-]+)$', views.ForgotPasswordConfirmView.as_view(),
+    url(r'password-forgot-confirm/(?P<uidb64>[\w-]+)/(?P<token>[\w-]+)$', sap.views_v2.ForgotPasswordConfirmView.as_view(),
         name='password-forgot-confirm'),
 
     url(r'^allies/$', login_required(views.ViewAllyProfileFromAdminDashboard.as_view()),
         name='admin_view_ally'),
 
-    url(r'^edit_allies/(?P<username>[\w-]+)/$', login_required(views.EditAllyProfile.as_view()),
-        name='admin_edit_ally'),
-    url(r'^edit_allies/$', login_required(views.EditAllyProfile.as_view()),
+    url(r'^edit_allies/(?P<username>[\w-]+)/(?P<category_relation_id>[\w-]+)/$',
+        login_required(sap.views_v3.EditAllyProfile.as_view()),
         name='admin_edit_ally'),
 
     url(r'^delete/$', login_required(views.DeleteAllyProfileFromAdminDashboard.as_view()),
@@ -75,6 +81,10 @@ urlpatterns = [
         login_required(views.CreateEventView.as_view()),
         name='create_event'),
 
+    url(r'^signup_event/$',
+        login_required(sap.views_v2.SignUpEventView.as_view()),
+        name='signup_event'),
+
     url(r'^announcements/$',
         login_required(views.Announcements.as_view()),
         name='announcements'),
@@ -83,18 +93,18 @@ urlpatterns = [
         login_required(views.AboutPageView.as_view()),
         name='sap-about'),
 
-    url('sign-up/', views.SignUpView.as_view(),
+    url('sign-up/', sap.views_v2.SignUpView.as_view(),
         name='sign-up'),
 
-    url(r'sign-up-done/$', views.SignUpDoneView.as_view(),
+    url(r'sign-up-done/$', sap.views_v2.SignUpDoneView.as_view(),
         name='sign-up-done'),
 
-    url(r'sign-up-confirm/(?P<uidb64>[\w-]+)/(?P<token>[\w-]+)$', views.SignUpConfirmView.as_view(),
+    url(r'sign-up-confirm/(?P<uidb64>[\w-]+)/(?P<token>[\w-]+)$', sap.views_v2.SignUpConfirmView.as_view(),
         name='sign-up-confirm'),
 
-    url(r'^download_allies/$', login_required(views.DownloadAllies.allies_download), name='download_allies'),
+    url(r'^download_allies/$', login_required(sap.views_v2.DownloadAllies.allies_download), name='download_allies'),
     url(r'^create_announcements/$',
         login_required(views.CreateAnnouncement.create_announcement), name='create_announcement'),
 
-    url(r'^upload_allies/$', login_required(views.UploadAllies.upload_allies), name='upload_allies'),
+    url(r'^upload_allies/$', login_required(sap.views_v2.UploadAllies.upload_allies), name='upload_allies'),
 ]

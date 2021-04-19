@@ -83,6 +83,8 @@ class Event(models.Model):
     end_time = models.DateTimeField(default=None, null=True)
     allday = models.BooleanField(default=False)
     location = models.CharField(max_length=500, null=True)
+    num_invited = models.IntegerField(default=0)
+    num_attending = models.IntegerField(default=0)
 
 
 class EventInviteeRelation(models.Model):
@@ -106,6 +108,8 @@ class Announcement(models.Model):
     title = models.CharField(max_length=200, null=True)
     description = models.CharField(max_length=1000, null=True)
     created_at = models.DateTimeField()
+
+
 class EventAttendeeRelation(models.Model):
     """
     EventAttendeeRelation table contains information about the Event ally mappings

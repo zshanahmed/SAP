@@ -2,4 +2,12 @@
 max-line-length=140
 
 [DESIGN]
-max-attributes=20
+max-attributes=50
+max-locals=50
+max-branches=50
+max-statements=150
+max-parents=15
+max-nested-blocks=7
+
+[MESSAGES CONTROL]
+disable=W0221, R0911

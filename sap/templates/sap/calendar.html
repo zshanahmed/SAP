@@ -54,10 +54,11 @@
                                 <div class="modal-body">Event body.</div>
                                 <div class="modal-footer">
                                     {% if user.is_staff %}
-                                        <button class="btn btn-primary" type="button" href="#">Edit</button>
-                                        <button class="btn btn-danger" type="button" href="#">Delete</button>
+                                        <button id="btn-edit" class="btn btn-primary" type="button" href="#">Edit</button>
+                                        <a class="btn btn-danger" href="#">Delete</a>
                                     {% else %}
-                                        <button class="btn btn-success" type="button" href="#">Sign Up</button>
+                                        <a id="btn-signup" class="btn btn-success" type="button" href="signup_event/">Yes, I'll attend</a>
+                                        <a id="btn-deregister" class="btn btn-danger" type="button" href="signup_event/">I won't attend</a>
                                     {% endif %}
                                     <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
                                 </div>
@@ -96,7 +97,7 @@
                     quo : '"'
                 }[b];
             }));
-
+    const isAdmin = "{{user.is_staff}}"
     myData = JSON.parse( myJSONList );
 </script>
 {% endblock content %}
