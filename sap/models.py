@@ -108,6 +108,8 @@ class Announcement(models.Model):
     title = models.CharField(max_length=200, null=True)
     description = models.CharField(max_length=1000, null=True)
     created_at = models.DateTimeField()
+
+
 class EventAttendeeRelation(models.Model):
     """
     EventAttendeeRelation table contains information about the Event ally mappings

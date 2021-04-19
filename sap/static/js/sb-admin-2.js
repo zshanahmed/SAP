@@ -116,6 +116,7 @@
     modal
       .find(".modal-footer a")
       .attr("href", "/delete_event/?event_id=" + id);
+    $("#btn-signup").attr("href", "/signup_event/?event_id=" + id)
   });
 
   $('input[type="file"]').change(function(e){
