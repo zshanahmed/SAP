@@ -12,6 +12,7 @@ from sap.models import EventInviteeRelation, AllyStudentCategoryRelation, Studen
 
 User = get_user_model()
 
+
 class AdminAnnoucementFeatureTests(TestCase):
     """
     Unit tests for features on the Admin dashboard
