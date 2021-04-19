@@ -854,10 +854,19 @@ class DeleteEventView(AccessMixin, View):
             messages.warning(request, "Event doesn't exist!")
         return redirect(reverse('sap:calendar'))
 
-class EditEventView(View):
+
+def append_uniq(target, dest):
+    """
+    Appending if element not already in list and not empty
+    """
+    return target.append(dest) if dest and dest not in target else target
+
+
+class EditEventView(View, AccessMixin):
     """
     View enabling admins to edit events
     """
+
     def get(self, request):
         """
         Get details of event selected on calendar
@@ -875,13 +884,26 @@ class EditEventView(View):
             rel_ally = Ally.objects.get(pk=rel_event.ally_id)
             allies.append(rel_ally)
             category_id = AllyStudentCategoryRelation.objects.get(ally_id=rel_ally.id)
-            info['categories'].append(StudentCategories.objects.get(pk=category_id.student_category_id))
+            category = StudentCategories.objects.get(pk=category_id.student_category_id)
+            if category.under_represented_racial_ethnic:
+                append_uniq(info['categories'], 'Underrepresented racial/ethnic minority')
+            if category.first_gen_college_student:
+                append_uniq(info['categories'], 'First generation college-student')
+            if category.transfer_student:
+                append_uniq(info['categories'], 'Transfer Student')
+            if category.lgbtq:
+                append_uniq(info['categories'],'LGBTQ')
+            if category.disabled:
+                append_uniq(info['categories'], 'Disabled')
+            if category.low_income:
+                append_uniq(info['categories'], 'Low-income')
+
         for ally in allies:
-            info['roles'].append(ally.user_type) if ally.user_type and ally.user_type not in info['roles'] else info['roles']
-            info['years'].append(ally.year) if ally.year and ally.year not in info['years'] else info['years']
-            info['mentorship_status']['mentors'].append(ally.interested_in_mentoring) if ally.interested_in_mentoring and ally.interested_in_mentoring not in info['mentorship_status']['mentors'] else info['mentorship_status']['mentors']
-            info['mentorship_status']['mentees'].append(ally.interested_in_being_mentored) if ally.interested_in_being_mentored and ally.interested_in_being_mentored not in info['mentorship_status']['mentees'] else info['mentorship_status']['mentees']
-            info['area_of_research'].append(ally.area_of_research) if ally.area_of_research and ally.area_of_research not in info['area_of_research'] else info['area_of_research']
+            append_uniq(info['roles'], ally.user_type)
+            append_uniq(info['years'], ally.year)
+            append_uniq(info['mentorship_status']['mentors'], ally.interested_in_mentoring)
+            append_uniq(info['mentorship_status']['mentees'], ally.interested_in_being_mentored)
+            append_uniq(info['area_of_research'], ally.area_of_research)
         print(info)
         return render(request, template_name="sap/edit_event.html", context={
             'event': event,

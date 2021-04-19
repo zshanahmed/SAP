@@ -884,6 +884,7 @@ class CreateEventView(AccessMixin, TemplateView):
     def post(self, request):
         """Enter what this class/method does"""
         new_event_dict = dict(request.POST)
+        print(new_event_dict)
         event_title = new_event_dict['event_title'][0]
         event_description = new_event_dict['event_description'][0]
         event_start_time = new_event_dict['event_start_time'][0]
