@@ -9,7 +9,6 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponseForbidden, HttpResponse
 from django.contrib.auth import logout, authenticate, get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.urls import reverse
 from django.db.models import Q
 from django.views import generic
 from django.views.generic import TemplateView, View
@@ -78,229 +77,6 @@ class ViewAllyProfileFromAdminDashboard(View):
             })
         except ObjectDoesNotExist:
             return HttpResponseNotFound()
-
-
-class EditAllyProfile(View):
-    """
-    Enter what this class/method does
-    """
-
-    @staticmethod
-    def set_boolean(_list, post_dict, ally, same):
-        """Enter what this class/method does"""
-        selection_dict = {'studentsInterestedRadios': ally.people_who_might_be_interested_in_iba,
-                          'labShadowRadios': ally.willing_to_offer_lab_shadowing,
-                          'connectingWithMentorsRadios': ally.interested_in_connecting_with_other_mentors,
-                          'openingRadios': ally.openings_in_lab_serving_at,
-                          'mentoringRadios': ally.interested_in_mentoring,
-                          'undergradMentoringRadios': ally.interested_in_mentoring,
-                          'mentorTrainingRadios': ally.interested_in_mentor_training,
-                          'volunteerRadios': ally.willing_to_volunteer_for_events,
-                          'interestLabRadios': ally.interested_in_joining_lab,
-                          'labExperienceRadios': ally.has_lab_experience,
-                          'interestedRadios': ally.interested_in_mentoring,
-                          'agreementRadios': ally.information_release,
-                          'beingMentoredRadios': ally.interested_in_being_mentored}
-        dictionary = {}
-        for selection in _list:
-            if post_dict[selection][0] == 'Yes':
-                dictionary[selection] = True
-                same = same and (dictionary[selection] == selection_dict[selection])
-            else:
-                dictionary[selection] = False
-                same = same and (dictionary[selection] == selection_dict[selection])
-        return dictionary, same
-
-    @staticmethod
-    def get(request, username=''):
-        """Enter what this class/method does"""
-        try:
-            username = request.GET['username']
-        except KeyError:
-            username = request.path.split('/')[-2]
-        user_req = request.user
-        if (username != user_req.username) and not user_req.is_staff:
-            messages.warning(request, 'Access Denied!')
-            return redirect('sap:ally-dashboard')
-
-        try:
-            user = User.objects.get(username=username)
-            ally = Ally.objects.get(user=user)
-            return render(request, 'sap/admin_ally_table/edit_ally.html', {
-                'ally': ally,
-                'req': request.user,
-            })
-        except ObjectDoesNotExist:
-            return HttpResponseNotFound()
-
-
-
-#{'csrfmiddlewaretoken': ['ex5Zuuyjk241FNEvxQoU4a4bnYbw4oI9gtHoblO2iG6EHhRhgAmvcerjUN9Wa6c9'],
-    # 'firstName': ['Alesia'], 'lastName': ['Larsen'], 'newUsername': ['alarsen'], 'username':
-    # ['alarsen'], 'email': ['alesia-larsen@uiowa.ed'], 'hawkID': ['alarsen'], 'password': [''],
-    # 'roleSelected': ['Undergraduate Student'], 'undergradYear': ['Freshman'], 'major': ['Human Physiolog'],
-    # 'intersetLabRadios': ['Yes'], 'labExperienceRadios': ['No'], 'undergradMentoringRadios': ['Yes'],
-    # 'beingMentoredRadios': ['No']}
-
-    def post(self, request):
-        """Updates profile details from edit_ally page"""
-        post_dict = dict(request.POST)
-
-        user_req = request.user
-        message = ''
-
-        if User.objects.filter(username=post_dict["username"][0]).exists():
-            same = True
-            user = User.objects.get(username=post_dict["username"][0])
-            ally = Ally.objects.get(user=user)
-            try:
-                user_type = post_dict['roleSelected'][0]
-                if user_type != ally.user_type:
-                    ally.user_type = user_type
-                    same = False
-            except KeyError:
-                message += 'User type could not be updated!\n'
-            try:
-                hawk_id = post_dict['hawkID'][0]
-                if hawk_id not in (ally.hawk_id, ''):
-                    ally.hawk_id = hawk_id
-                    same = False
-            except KeyError:
-                message += " HawkID could not be updated!\n"
-            if ally.user_type != "Undergraduate Student":
-                selections, same = self.set_boolean(
-                    ['studentsInterestedRadios', 'labShadowRadios', 'connectingWithMentorsRadios',
-                     'openingRadios', 'mentoringRadios',
-                     'mentorTrainingRadios', 'volunteerRadios'], post_dict, ally, same)
-                try:
-                    aor = ','.join(post_dict['areaOfResearchCheckboxes'])
-                except KeyError:
-                    aor = ""
-                try:
-                    how_can_we_help = post_dict["howCanWeHelp"][0]
-                except KeyError:
-                    how_can_we_help = ""
-                try:
-                    description = post_dict['research-des'][0]
-                except KeyError:
-                    description = ""
-                if not (description == ally.description_of_research_done_at_lab and
-                        how_can_we_help == ally.how_can_science_ally_serve_you and
-                        aor == ally.area_of_research):
-                    same = False
-                ally.description_of_research_done_at_lab = description
-                ally.how_can_science_ally_serve_you = how_can_we_help
-                ally.area_of_research = aor
-
-                ally.people_who_might_be_interested_in_iba = selections['studentsInterestedRadios']
-                ally.interested_in_mentoring = selections['mentoringRadios']
-                ally.willing_to_offer_lab_shadowing = selections['labShadowRadios']
-                ally.openings_in_lab_serving_at = selections['openingRadios']
-                ally.interested_in_connecting_with_other_mentors = selections['connectingWithMentorsRadios']
-                ally.willing_to_volunteer_for_events = selections['volunteerRadios']
-                ally.interested_in_mentor_training = selections['mentorTrainingRadios']
-                ally.save()
-            else:
-                if user_req.is_staff:
-                    selections, same = self.set_boolean(
-                        ['interestLabRadios', 'labExperienceRadios', 'undergradMentoringRadios', 'beingMentoredRadios'],
-                        post_dict, ally, same)
-                else:
-                    selections, same = self.set_boolean(
-                        ['interestLabRadios', 'labExperienceRadios', 'beingMentoredRadios',
-                         'undergradMentoringRadios', 'agreementRadios'],
-                        post_dict, ally, same)
-
-                year = post_dict['undergradYear'][0]
-                major = post_dict['major'][0]
-                if not (year == ally.year and major == ally.major):
-                    same = False
-                ally.year = year
-                ally.major = major
-
-                ally.interested_in_joining_lab = selections['interestLabRadios']
-                ally.has_lab_experience = selections['labExperienceRadios']
-                ally.interested_in_being_mentored = selections['beingMentoredRadios']
-                ally.interested_in_mentoring = selections['undergradMentoringRadios']
-                if not user_req.is_staff:
-                    ally.information_release = selections['agreementRadios']
-                ally.save()
-
-            bad_user = False
-            bad_email = False
-            bad_password = False
-
-            try:
-                new_username = post_dict['newUsername'][0]
-                if new_username not in ('', user.username):
-                    if not User.objects.filter(username=new_username):
-                        user.username = new_username
-                        same = False
-                    else:
-                        bad_user = True
-                        message += " Username not updated - Username already exists!\n"
-            except KeyError:
-                message += ' Username could not be updated!\n'
-            try:
-                new_password = post_dict['password'][0]
-                if new_password != '':
-                    if not len(new_password) < 8:
-                        user.set_password(new_password)
-                        same = False
-                    else:
-                        bad_password = True
-                        message += " Password could not be set because it is less than 8 characters long!"
-            except KeyError:
-                message += ' Password could not be updated!\n'
-            try:
-                first_name = post_dict['firstName'][0]
-                last_name = post_dict['lastName'][0]
-                if first_name not in ('', user.first_name):
-                    user.first_name = first_name
-                    same = False
-                if last_name not in ('', user.last_name):
-                    user.last_name = last_name
-                    same = False
-            except KeyError:
-                message += ' First name or last name could not be updated!\n'
-            if user_req.is_staff:
-                try:
-                    email = post_dict['email'][0]
-                    if email not in ('', user.email):
-                        if not User.objects.filter(email=email).exists():
-                            user.email = email
-                            same = False
-                        else:
-                            message += " Email could not be updated - Email already exists!\n"
-                            bad_email = True
-                except KeyError:
-                    message += ' Email could not be updated!\n'
-            user.save()
-            if bad_password or bad_email or bad_password or bad_user:
-                if same:
-                    messages.add_message(request, messages.WARNING, message)
-                else:
-                    messages.add_message(request, messages.WARNING,
-                                         'No Changes Detected!' + message)
-                return redirect(reverse('sap:admin_edit_ally', args=[post_dict['username'][0]]))
-            if same:
-                messages.add_message(request, messages.WARNING,
-                                     'No Changes Detected!' + message)
-                return redirect(reverse('sap:admin_edit_ally', args=[post_dict['username'][0]]))
-
-            if not user_req.is_staff:
-                messages.add_message(request, messages.SUCCESS,
-                                     'Profile updated!\n' + message)
-            else:
-                messages.add_message(request, messages.SUCCESS,
-                                     'Ally updated!\n' + message)
-        else:
-            messages.add_message(request, messages.WARNING,
-                                 'Ally does not exist!')
-        if user_req.is_staff:
-            return redirect('sap:sap-dashboard')
-
-        return redirect('sap:ally-dashboard')
 
 
 class CreateAnnouncement(AccessMixin, HttpResponse):
@@ -464,15 +240,19 @@ class AlliesListView(AccessMixin, TemplateView):
     """Enter what this class/method does"""
 
     def get(self, request):
-        """Enter what this class/method does"""
+        """Renders the dashboard with the allies and categories as django template variables."""
         allies_list = Ally.objects.order_by('-id')
+        category_relation = AllyStudentCategoryRelation.objects.order_by('-id')
+        category_ally = {}
         for ally in allies_list:
-            if not ally.user.is_active:
-                allies_list = allies_list.exclude(id=ally.id)
-        return render(request, 'sap/dashboard.html', {'allies_list': allies_list})
+            if ally.user.is_active:
+                this_category_relation = category_relation.filter(ally_id=ally.id)[0]
+                category_ally[this_category_relation.student_category_id] = ally
+        return render(request, 'sap/dashboard.html', {'category_ally': category_ally})
 
     def post(self, request):
-        """Enter what this class/method does"""
+        """Filters and returns allies based on selected criteria"""
+        category_relation = AllyStudentCategoryRelation.objects.order_by('-id')
         if request.POST.get("form_type") == 'filters':
             post_dict = dict(request.POST)
             if 'stemGradCheckboxes' in post_dict:
@@ -549,7 +329,7 @@ class AlliesListView(AccessMixin, TemplateView):
                             ally_id=ally.id).values()[0]
                         categories = StudentCategories.objects.filter(
                             id=categories['student_category_id'])[0]
-                    except:
+                    except KeyError:
                         student_categories = []
 
                     if student_categories:
@@ -579,11 +359,13 @@ class AlliesListView(AccessMixin, TemplateView):
                     if exclude_from_aor and exclude_from_year and exclude_from_sc and exclude_from_ut \
                             and exclude_from_ms_major:
                         allies_list = allies_list.exclude(id=ally.id)
-
+            category_ally = {}
             for ally in allies_list:
-                if not ally.user.is_active:
+                if ally.user.is_active:
                     allies_list = allies_list.exclude(id=ally.id)
-            return render(request, 'sap/dashboard.html', {'allies_list': allies_list})
+                    this_category_relation = category_relation.filter(ally_id=ally.id)[0]
+                    category_ally[this_category_relation.student_category_id] = ally
+            return render(request, 'sap/dashboard.html', {'category_ally': category_ally})
 
         return HttpResponse()
 
@@ -594,15 +376,19 @@ class MentorsListView(generic.ListView):
     context_object_name = 'allies_list'
 
     def get(self, request):
-        """Enter what this class/method does"""
+        """Returns a view of allies"""
         allies_list = Ally.objects.order_by('-id')
+        category_relation = AllyStudentCategoryRelation.objects.order_by('-id')
+        category_ally = {}
         for ally in allies_list:
-            if not ally.user.is_active:
-                allies_list = allies_list.exclude(id=ally.id)
-        return render(request, 'sap/dashboard_ally.html', {'allies_list': allies_list})
+            if ally.user.is_active:
+                this_category_relation = category_relation.filter(ally_id=ally.id)[0]
+                category_ally[this_category_relation.student_category_id] = ally
+        return render(request, 'sap/dashboard_ally.html', {'category_ally': category_ally})
 
     def post(self, request):
-        """Enter what this class/method does"""
+        """Returns filtered version of allies on the dashboard"""
+        category_relation = AllyStudentCategoryRelation.objects.order_by('-id')
         if request.POST.get("form_type") == 'filters':
             post_dict = dict(request.POST)
             if 'stemGradCheckboxes' in post_dict:
@@ -636,11 +422,12 @@ class MentorsListView(generic.ListView):
                     if exclude_from_aor and exclude_from_year:
                         allies_list = allies_list.exclude(id=ally.id)
 
+            category_ally = {}
             for ally in allies_list:
-                if not ally.user.is_active:
-                    allies_list = allies_list.exclude(id=ally.id)
-
-            return render(request, 'sap/dashboard_ally.html', {'allies_list': allies_list})
+                if ally.user.is_active:
+                    this_category_relation = category_relation.filter(ally_id=ally.id)[0]
+                    category_ally[this_category_relation.student_category_id] = ally
+            return render(request, 'sap/dashboard_ally.html', {'category_ally': category_ally})
 
         return HttpResponse()
 
