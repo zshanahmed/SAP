@@ -1,10 +1,12 @@
 """
 contains unit tests for sap app
 """
+import os
 from http import HTTPStatus
 
 from django.contrib.auth import get_user_model
 from django.test import TestCase, Client  # tests file
+from .upload_resource_to_azure import upload_file_to_azure
 
 from sap.models import EventInviteeRelation, AllyStudentCategoryRelation, StudentCategories, Ally, Event
 
@@ -94,6 +96,31 @@ class AdminAnnoucementFeatureTests(TestCase):
 
         response = self.client.get('/announcements/')
         self.assertEqual(response.status_code, 200)
+
+
+class TestUploadFileAzure(TestCase):
+    """
+    Test upload file to azure functionality
+    """
+    def test_upload_file(self):
+        """
+        Tests uploading resource to azure functionality
+        @return:  True if succeeds
+        """
+        local_path = "/tmp"
+        local_file_name = "quickstart" + ".txt"
+        upload_file_path = os.path.join(local_path, local_file_name)
+
+        # Write text to the file
+        file = open(upload_file_path, 'w')
+        file.write("Hello, World!")
+        file.close()
+
+        uploaded_resource_url_in_cloud = upload_file_to_azure(local_file_name, called_by_test_function=True)
+
+        self.assertIn(
+            "https://sepibafiles.blob.core.windows.net/sepibacontainer/", uploaded_resource_url_in_cloud
+        )
 
 
 class ResponseEventInvitationTests(TestCase):
