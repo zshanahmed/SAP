@@ -70,7 +70,7 @@ class SignUpEventView(View):
 
         else:
             messages.error(request,
-                           'You are not registered in our system.')
+                           'Access denied. You are not registered in our system.')
 
         return redirect(reverse('sap:calendar'))
 
