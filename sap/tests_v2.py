@@ -36,12 +36,21 @@ class SignUpTests(TestCase):
         self.another_username = 'another_username'
         self.another_email = 'another_email@uiowa.edu'
 
-    def test_get(self):
+    def test_get_success(self):
+        """
+        Can access if user is not logged in.
+        """
+        self.client.logout()
+        response = self.client.get('/sign-up/')
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+
+    def test_get_fail(self):
         """
         Sign-up page exists.
         """
+        self.client.login(username=self.username, password=self.password)
         response = self.client.get('/sign-up/')
-        self.assertEqual(response.status_code, HTTPStatus.OK)
+        self.assertEqual(response.status_code, HTTPStatus.FOUND)
 
     def test_entered_existing_active_emailaddress(self):
         """
@@ -542,12 +551,26 @@ class ForgotPasswordTest(TestCase):
         self.client = Client()
         self.user = User.objects.create_user(self.username, self.email, self.password)
 
-    def test_get(self):
+    def test_get_success(self):
         """
-        The view is valid
+        Can access if user is not logged in.
         """
         # self.user.save()
         # self.client.login(username=self.username, password=self.password)
+        self.client.logout()
+        response = self.client.get(reverse('sap:password-forgot'))
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        self.assertContains(
+            response, "Send me instructions!", html=True
+        )
+
+    def test_get_fail(self):
+        """
+        Cannot access if user is not logged in.
+        """
+        # self.user.save()
+        # self.client.login(username=self.username, password=self.password)
+        self.client.logout()
         response = self.client.get(reverse('sap:password-forgot'))
         self.assertEqual(response.status_code, HTTPStatus.OK)
         self.assertContains(

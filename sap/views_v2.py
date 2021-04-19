@@ -335,8 +335,11 @@ class ForgotPasswordView(TemplateView):
 
     def get(self, request, *args, **kwargs):
         """Enter what this class/method does"""
-        form = PasswordResetForm(request.GET)
-        return render(request, 'sap/password-forgot.html', {'form': form})
+        if not request.user.is_authenticated:
+            form = PasswordResetForm(request.GET)
+            return render(request, 'sap/password-forgot.html', {'form': form})
+        else:
+            return redirect('sap:home')
 
     def post(self, request):
         """Enter what this class/method does"""
