@@ -81,6 +81,10 @@ urlpatterns = [
         login_required(views.CreateEventView.as_view()),
         name='create_event'),
 
+    url(r'^signup_event/$',
+        login_required(sap.views_v2.SignUpEventView.as_view()),
+        name='signup_event'),
+
     url(r'^announcements/$',
         login_required(views.Announcements.as_view()),
         name='announcements'),
