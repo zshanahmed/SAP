@@ -196,7 +196,7 @@ class SignUpView(TemplateView):
             sendgrid_obj = SendGridAPIClient(os.environ.get('SENDGRID_API_KEY'))
             sendgrid_obj.send(email_content)
 
-        except (TypeError, ValueError, OverflowError) as exception:
+        except Exception as exception:
             messages.warning(self.request, str(exception))
 
     def get(self, request):
@@ -388,9 +388,10 @@ class ForgotPasswordView(TemplateView):
                 try:
                     sendgrid_obj = SendGridAPIClient(os.environ.get('SENDGRID_API_KEY'))
                     sendgrid_obj.send(email_content)
-                except Exception:
-                    # print(e)
-                    pass
+
+                except Exception as exception:
+                    messages.warning(self.request, str(exception))
+
 
                 return redirect('/password-forgot-done')
 
