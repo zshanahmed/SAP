@@ -62,12 +62,12 @@
                                     <td>
                                         <ul class="list-inline m-0" style="text-align: center">
                                             <li class="list-inline-item">
-                                                <a href="/allies/?username={{ ally.user.username }}" class="btn btn-primary btn-sm" type="button" data-toggle="tooltip" data-placement="top"
+                                                <a href="{% url 'sap:admin_view_ally' ally.user.username %}" class="btn btn-primary btn-sm" type="button" data-toggle="tooltip" data-placement="top"
                                                     title="View"><i class="fa fa-eye"></i></a>
                                             </li>
                                             {% if role == "admin" %}
                                                 <li class="list-inline-item">
-                                                    <a href="/edit_allies/{{ ally.user.username }}/{{ categoryRelation }}" class="btn btn-success btn-sm" type="button" data-toggle="tooltip" data-placement="top"
+                                                    <a href="{% url 'sap:admin_edit_ally' ally.user.username categoryRelation %}" class="btn btn-success btn-sm" type="button" data-toggle="tooltip" data-placement="top"
                                                         title="Edit"><i class="fa fa-edit"></i></a>
                                                 </li>
                                                 <li class="list-inline-item">
@@ -81,7 +81,7 @@
                                             {% else %}
                                                 {% if ally.user == user %}
                                                     <li class="list-inline-item">
-                                                    <a href="/edit_allies/{{ ally.user.username }}/{{ categoryRelation }}" class="btn btn-success btn-sm" type="button" data-toggle="tooltip" data-placement="top"
+                                                    <a href="{% url 'sap:admin_edit_ally' ally.user.username categoryRelation %}" class="btn btn-success btn-sm" type="button" data-toggle="tooltip" data-placement="top"
                                                         title="Edit"><i class="fa fa-edit"></i></a>
                                                     </li>
                                                 {% endif %}

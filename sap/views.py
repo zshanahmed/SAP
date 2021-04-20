@@ -63,14 +63,13 @@ class ViewAllyProfileFromAdminDashboard(View):
     """
     Class that contains admin dashboard view
     """
-
-    def get(self, request):
+    @staticmethod
+    def get(request, ally_username=''):
         """
         method to retrieve all ally information
         """
-        username = request.GET['username']
         try:
-            user = User.objects.get(username=username)
+            user = User.objects.get(username=ally_username)
             ally = Ally.objects.get(user=user)
             return render(request, 'sap/admin_ally_table/view_ally.html', {
                 'ally': ally

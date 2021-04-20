@@ -245,11 +245,14 @@
           </div>
           {% endif %}
           <hr/>
+          <div class = "row mt-2"></div>
+          <a href="{% url 'sap:view_ally_event_information' ally.user.username %}" class="btn btn-primary btn-user"> View Ally Event Information </a>
           {% if user.is_staff %}
-            <a href="/dashboard" class="btn btn-primary btn-user"> Back </a>
+            <a href="/dashboard" class="btn btn-primary btn-user"> Back to Dashboard</a>
           {% else %}
-            <a href="/ally-dashboard" class="btn btn-primary btn-user"> Back </a>
+            <a href="/ally-dashboard" class="btn btn-primary btn-user"> Back to Dashboard</a>
           {% endif %}
+          <br>
         </div>
       </div>
     </div>
