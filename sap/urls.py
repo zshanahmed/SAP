@@ -70,6 +70,9 @@ urlpatterns = [
         login_required(sap.views_v3.EditAllyProfile.as_view()),
         name='admin_edit_ally'),
 
+    url(r'^edit_allies/(?P<username>[\w-]+)/$', login_required(sap.views_v3.AllyEventInformation.as_view()),
+        name='view_ally_event_information'),
+
     url(r'^delete/$', login_required(views.DeleteAllyProfileFromAdminDashboard.as_view()),
         name='admin_delete_ally'),
 
