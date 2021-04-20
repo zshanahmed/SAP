@@ -246,8 +246,12 @@ class AlliesListView(AccessMixin, TemplateView):
         category_ally = {}
         for ally in allies_list:
             if ally.user.is_active:
-                this_category_relation = category_relation.filter(ally_id=ally.id)[0]
-                category_ally[this_category_relation.student_category_id] = ally
+                this_category_relation = category_relation.filter(ally_id=ally.id)
+                if this_category_relation.exists():
+                    category_id = category_relation.filter(ally_id=ally.id)[0].student_category_id
+                else:
+                    category_id = 0
+                category_ally[category_id] = ally
         return render(request, 'sap/dashboard.html', {'category_ally': category_ally})
 
     def post(self, request):
