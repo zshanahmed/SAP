@@ -239,3 +239,8 @@ class AllyEventInformation(TestCase):
         self.client.login(username='eventAdmin', password='123456789')
         response = self.client.get(reverse('sap:view_ally_event_information', args=['ally']))
         self.assertEqual(response.status_code, 200)
+
+    def test_redirect_bad_username(self):
+        self.client.login(username='eventAdmin', password='123456789')
+        response = self.client.get(reverse('sap:view_ally_event_information', args=['junkjunkjunk']))
+        self.assertEqual(response.status_code, 302)
