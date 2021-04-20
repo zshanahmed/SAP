@@ -9,9 +9,53 @@
     <script type= "text/javascript">
 
         window.onload = function() {
-          if ("{{event.invite_all}}" === "True") {
-            invite_all_click();
-          }
+            const roles = "{{event.role_selected}}".split(',');
+            const school_year = "{{event.school_year_selected}}".split(',');
+            const mentor_status = "{{event.mentor_status}}".split(',');
+            const categories = "{{event.special_category}}".split(',');
+            const research_area = "{{event.research_field}}".split(',');
+
+            if("{{event.allday}}" === "True") {
+                $("#event_allday")[0].checked = true
+            }
+
+            if("{{event.invite_all}}" === "True") {
+                $("#invite_all")[0].checked = true
+            }
+
+            if ("{{event.invite_all}}" === "True") {
+                invite_all_click();
+            } else {
+                const cat_ids = {
+                    "First generation college-student": "first_gen_coll_stu",
+                    "Rural": "rural",
+                    "Underrepresented racial/ethnic minority": "under_represented",
+                    "Low-income": "low_income",
+                    "Disabled": "disabled",
+                    "Transfer Student": "transfer_student",
+                    "LGBTQ": "lgbtq"
+                };
+                for (let i = 0; i < roles.length; i++) {
+                    const role_id = "#" + roles[i].split(" ")[0].toLowerCase() + "Check";
+                    $(role_id)[0].checked = true;
+                }
+                for (let i = 0; i < school_year.length; i++) {
+                    const year_id = "#" + school_year[i].split(" ")[0].toLowerCase();
+                    $(year_id)[0].checked = true;
+                }
+                for (let i = 0; i < mentor_status.length; i++) {
+                    const mentor_id = "#" + mentor_status[i].split(" ")[0].toLowerCase();
+                    $(mentor_id)[0].checked = true;
+                }
+                for (let i = 0; i < categories.length; i++) {
+                    const category_id = "#" + cat_ids[categories[i]];
+                    $(category_id)[0].checked = true;
+                }
+                for (let i = 0; i < research_area.length; i++) {
+                    const area_id = "#" + research_area[i].replace(/\s+/g, '').toLowerCase();
+                    $(area_id)[0].checked = true;
+                }
+            }
         };
 
         // function that checks all the checkboxes when invite all  checkbox is clicked
@@ -40,7 +84,6 @@
             const value = invite_all_checkbox.checked === true;
 
             const allInputs = document.getElementsByTagName("input");
-            console.log("here");
             for (var i = 0, max = allInputs.length; i < max; i++){
                 if (allInputs[i].type === 'checkbox')
                     allInputs[i].checked = value;
@@ -70,30 +113,26 @@
                             <form method="post" class="user">{% csrf_token %}
 
                                 <div class="form-group">
-                                    <input name="event_title" type="text" class="form-control form-control-user" id="event_title" placeholder="Title of the Event" value="{{event.title}}" required>
+                                    <input name="title" type="text" class="form-control form-control-user" id="event_title" placeholder="Title of the Event" value="{{event.title}}" required>
                                 </div>
                                 <div class="form-group">
-                                    <input name="event_description" type="text" class="form-control form-control-user" id="event_description" placeholder="Description of the Event" value="{{event.description}}" required>
+                                    <input name="description" type="text" class="form-control form-control-user" id="event_description" placeholder="Description of the Event" value="{{event.description}}" required>
                                 </div>
                                 <div class="form-group">
                                     <p style="font-size: 12px;margin-left: 20px;margin-bottom: 0px;">*Enter start time of the event in central time</p>
-                                    <input name="event_start_time" type="datetime-local" class="form-control form-control-user" id="event_start_time"
+                                    <input name="start_time" type="datetime-local" class="form-control form-control-user" id="event_start_time"
                                            placeholder="Start time of the event in mm/dd/yyyy, hh/mm (AM or PM)" value="{{event.start_time}}" required>
                                 </div>
                                 <div class="form-group">
                                     <p style="font-size: 12px;margin-left: 20px;margin-bottom: 0px;">*Enter end time of the event in central time</p>
-                                    <input name="event_end_time" type="datetime-local" class="form-control form-control-user" id="event_end_time"
+                                    <input name="end_time" type="datetime-local" class="form-control form-control-user" id="event_end_time"
                                            placeholder="End time of the event in mm/dd/yyyy, hh/mm (AM or PM)" value="{{event.end_time}}" required>
                                 </div>
                                 <div class="py-2">
                                     <strong>All day event:</strong>
                                     <div class="form-check form-check-inline" >
                                         <div class="px-2">
-                                            {% if event.allday%}
-                                                <input type="checkbox" name="event_allday" id="event_allday" value="{{event.allday}}" checked>
-                                            {% else %}
-                                                <input type="checkbox" name="event_allday" id="event_allday" value="{{event.allday}}">
-                                            {% endif %}
+                                            <input type="checkbox" name="allday" id="event_allday" value="{{event.allday}}">
                                             <label class="form-check-label" for="event_allday">All day</label>
                                         </div>
                                     </div>
@@ -105,7 +144,7 @@
 <!--                                           placeholder="Date and Time of the Event in mm/dd/yyyy, hh/mm (AM or PM)" required>-->
 <!--                                </div>-->
                                 <div class="form-group">
-                                    <input name="event_location" type="text" class="form-control form-control-user" id="event_location"
+                                    <input name="location" type="text" class="form-control form-control-user" id="event_location"
                                            placeholder="Location of the event (meeting link or address)" value="{{event.location}}" required>
                                 </div>
 
@@ -114,11 +153,7 @@
                                     <strong>Invite all allies:</strong>
                                     <div class="form-check form-check-inline" >
                                         <div class="px-2">
-                                            {% if event.invite_all %}
-                                                <input type="checkbox" name="invite_all" id="invite_all" value="{{event.invite_all}}" onclick="invite_all_click();" checked>
-                                            {% else %}
-                                                 <input type="checkbox" name="invite_all" id="invite_all" value="{{event.invite_all}}" onclick="invite_all_click();">
-                                            {% endif %}
+                                            <input type="checkbox" name="invite_all" id="invite_all" value="{{event.invite_all}}" onclick="invite_all_click();">
                                             <label class="form-check-label" for="invite_all">Invite all</label>
                                         </div>
                                     </div>
@@ -133,12 +168,12 @@
                                             <label class="form-check-label" for="staffCheck">Staff</label>
                                         </div>
                                         <div class="px-2">
-                                            <input type="checkbox" onclick="toggle_invite_all();" name="role_selected" id="gradCheck" value="Graduate Student">
-                                            <label class="form-check-label" for="gradCheck">Grad</label>
+                                            <input type="checkbox" onclick="toggle_invite_all();" name="role_selected" id="graduateCheck" value="Graduate Student">
+                                            <label class="form-check-label" for="graduateCheck">Grad</label>
                                         </div>
                                         <div class="px-2">
-                                            <input type="checkbox" onclick="toggle_invite_all();" name="role_selected" id="undergradCheck" value="Undergraduate Student">
-                                            <label class="form-check-label" for="undergradCheck">Undergrad</label>
+                                            <input type="checkbox" onclick="toggle_invite_all();" name="role_selected" id="undergraduateCheck" value="Undergraduate Student">
+                                            <label class="form-check-label" for="undergraduateCheck">Undergrad</label>
                                         </div>
                                         <div class="px-2">
                                             <input type="checkbox" onclick="toggle_invite_all();" name="role_selected" id="facultyCheck" value="Faculty">
@@ -162,12 +197,12 @@
                                             <label class="form-check-label" for="sophomore">Sophomore</label>
                                         </div>
                                         <div class="px-2">
-                                            <input type="checkbox" onclick="toggle_invite_all();" name="school_year_selected" id="junior" value="Juniors">
-                                            <label class="form-check-label" for="junior">Junior</label>
+                                            <input type="checkbox" onclick="toggle_invite_all();" name="school_year_selected" id="juniors" value="Juniors">
+                                            <label class="form-check-label" for="juniors">Junior</label>
                                         </div>
                                         <div class="px-2">
-                                            <input type="checkbox" onclick="toggle_invite_all();" name="school_year_selected" id="senior" value="Faculty">
-                                            <label class="form-check-label" for="senior">Senior</label>
+                                            <input type="checkbox" onclick="toggle_invite_all();" name="school_year_selected" id="faculty" value="Faculty">
+                                            <label class="form-check-label" for="faculty">Senior</label>
                                         </div>
 
                                     </div>
@@ -228,35 +263,35 @@
                                 <div class="py-2">
                                     <div><strong>Area of research:</strong></div>
                                     <div class="form-check" id="stemGradCheckboxes">
-                                          <input type="checkbox" onclick="toggle_invite_all();" value="Biochemistry" name="research_area" id="biochemistry">
+                                          <input type="checkbox" onclick="toggle_invite_all();" value="Biochemistry" name="research_field" id="biochemistry">
                                           <label class="form-check-label" for="biochemistry">Biochemistry</label><br>
-                                          <input type="checkbox" onclick="toggle_invite_all();" value="Bioinformatics" name="research_area" id="bioinformatics">
+                                          <input type="checkbox" onclick="toggle_invite_all();" value="Bioinformatics" name="research_field" id="bioinformatics">
                                           <label class="form-check-label" for="bioinformatics">Bioinformatics</label><br>
-                                          <input type="checkbox" onclick="toggle_invite_all();" value="Biology" name="research_area" id="biology">
+                                          <input type="checkbox" onclick="toggle_invite_all();" value="Biology" name="research_field" id="biology">
                                           <label class="form-check-label" for="biology">Biology</label><br>
-                                          <input type="checkbox" onclick="toggle_invite_all();" value="Biomedical Engineering" name="research_area" id="biomedicalengineering">
+                                          <input type="checkbox" onclick="toggle_invite_all();" value="Biomedical Engineering" name="research_field" id="biomedicalengineering">
                                           <label class="form-check-label" for="biomedicalengineering">Biomedical Engineering</label><br>
-                                          <input type="checkbox" onclick="toggle_invite_all();" value="Chemical Engineering" name="research_area" id="chemicalengineering">
+                                          <input type="checkbox" onclick="toggle_invite_all();" value="Chemical Engineering" name="research_field" id="chemicalengineering">
                                           <label class="form-check-label" for="chemicalengineering">Chemical Engineering</label><br>
-                                          <input type="checkbox" onclick="toggle_invite_all();" value="Chemistry" name="research_area" id="chemistry">
+                                          <input type="checkbox" onclick="toggle_invite_all();" value="Chemistry" name="research_field" id="chemistry">
                                           <label class="form-check-label" for="chemistry">Chemistry</label><br>
-                                          <input type="checkbox" onclick="toggle_invite_all();" value="Computer Science and Engineering" name="research_area" id="computerscienceandengineering">
+                                          <input type="checkbox" onclick="toggle_invite_all();" value="Computer Science and Engineering" name="research_field" id="computerscienceandengineering">
                                           <label class="form-check-label" for="computerscienceandengineering">Computer Science and Engineering</label><br>
-                                          <input type="checkbox" onclick="toggle_invite_all();" value="Environmental Science" name="research_area" id="environmentalscience">
+                                          <input type="checkbox" onclick="toggle_invite_all();" value="Environmental Science" name="research_field" id="environmentalscience">
                                           <label class="form-check-label" for="environmentalscience">Environmental Science</label><br>
-                                          <input type="checkbox" onclick="toggle_invite_all();" value="Health and Human Physiology" name="research_area" id="healthandhumanphysiology">
+                                          <input type="checkbox" onclick="toggle_invite_all();" value="Health and Human Physiology" name="research_field" id="healthandhumanphysiology">
                                           <label class="form-check-label" for="healthandhumanphysiology">Health and Human Physiology</label><br>
-                                          <input type="checkbox" onclick="toggle_invite_all();" value="Mathematics" name="research_area" id="mathematics">
+                                          <input type="checkbox" onclick="toggle_invite_all();" value="Mathematics" name="research_field" id="mathematics">
                                           <label class="form-check-label" for="mathematics">Mathematics</label><br>
-                                          <input type="checkbox" onclick="toggle_invite_all();" value="Microbiology" name="research_area" id="microbiology">
+                                          <input type="checkbox" onclick="toggle_invite_all();" value="Microbiology" name="research_field" id="microbiology">
                                           <label class="form-check-label" for="microbiology">Microbiology</label><br>
-                                          <input type="checkbox" onclick="toggle_invite_all();" value="Neuroscience" name="research_area" id="neuroscience">
+                                          <input type="checkbox" onclick="toggle_invite_all();" value="Neuroscience" name="research_field" id="neuroscience">
                                           <label class="form-check-label" for="neuroscience">Neuroscience</label><br>
-                                          <input type="checkbox" onclick="toggle_invite_all();" value="Nursing" name="research_area" id="nursing">
+                                          <input type="checkbox" onclick="toggle_invite_all();" value="Nursing" name="research_field" id="nursing">
                                           <label class="form-check-label" for="nursing">Nursing</label><br>
-                                          <input type="checkbox" onclick="toggle_invite_all();" value="Physics" name="research_area" id="physics">
+                                          <input type="checkbox" onclick="toggle_invite_all();" value="Physics" name="research_field" id="physics">
                                           <label class="form-check-label" for="physics">Physics</label><br>
-                                          <input type="checkbox" onclick="toggle_invite_all();" value="Psychology" name="research_area" id="psychology">
+                                          <input type="checkbox" onclick="toggle_invite_all();" value="Psychology" name="research_field" id="psychology">
                                           <label class="form-check-label" for="psychology">Psychology</label><br>
                                     </div>
 

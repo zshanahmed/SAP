@@ -7,6 +7,7 @@ import io
 import os
 import uuid
 from datetime import date
+from django.utils.dateparse import parse_datetime
 
 import pandas as pd
 from pandas.errors import ParserError, EmptyDataError
@@ -889,14 +890,30 @@ class EditEventView(View, AccessMixin):
         """
         Get details of event selected on calendar
         """
-        allies = []
-        categories = []
-        info = {'roles': [], 'years': [], 'mentorship_status': {'mentors': [], 'mentees': []}, 'categories':[], 'area_of_research': [] }
         event_id = request.GET['event_id']
         event = Event.objects.get(pk=event_id)
+        print(event.end_time)
         event.start_time = parser.parse(str(event.start_time)).isoformat().split("+")[0]
         event.end_time = parser.parse(str(event.end_time)).isoformat().split("+")[0]
+        print(event.end_time)
         event.save()
         return render(request, template_name="sap/edit_event.html", context={
             'event': event,
         })
+
+    def post(self, request):
+        """
+        Method for implementation of POST request of the form
+        """
+        event_id = request.GET['event_id']
+        event = Event.objects.get(pk=event_id)
+        post_dict = dict(request.POST)
+        post_dict.pop('csrfmiddlewaretoken')
+        for key, item in post_dict.items():
+            new_value = ','.join(item)
+            if key == "start_time" or key == "end_time":
+                new_value = parse_datetime(new_value + '-0500')
+            setattr(event, key, new_value)
+        event.save()
+        messages.success(request, 'Event Updated Successfully')
+        return redirect('/calendar')
