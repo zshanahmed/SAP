@@ -8,7 +8,8 @@ from django.contrib.auth import get_user_model
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.http import HttpResponseNotFound
-from .models import Ally, StudentCategories, AllyStudentCategoryRelation
+from .models import Ally, StudentCategories, AllyStudentCategoryRelation, Event, \
+    EventInviteeRelation, EventAttendeeRelation
 
 User = get_user_model()
 
@@ -301,7 +302,30 @@ class EditAllyProfile(View):
 class AllyEventInformation(View):
     @staticmethod
     def get(request, ally_username=''):
-        if request.user.is_staff:
-            return redirect('sap:sap-dashboard')
-        else:
-            return redirect('sap:ally-dashboard')
+        try:
+            user = User.objects.get(username=ally_username)
+            ally = Ally.objects.get(user=user)
+        except ObjectDoesNotExist:
+            messages.warning(request, 'Ally Does not Exist!')
+            if request.user.is_staff:
+                return redirect('sap:sap-dashboard')
+            else:
+                return redirect('sap:ally-dashboard')
+
+        events = Event.objects.all()
+
+        events_invited_to = EventInviteeRelation.objects.filter(ally_id=ally.id)
+        events_signed_up = EventAttendeeRelation.objects.filter(ally_id=ally.id)
+
+        event_invited = []
+        event_signed_up_id = []
+        for event in events_invited_to:
+            event_invited.append(events.filter(id=event.event_id)[0])
+        for event in events_signed_up:
+            event_signed_up_id.append(events.filter(id=event.event_id)[0].event_id)
+
+        return render(request, 'sap/admin_ally_table/view_ally_event_information.html', {
+            'ally': ally,
+            'invited_events': event_invited,
+            'signed-up_events': event_signed_up_id,
+        })
