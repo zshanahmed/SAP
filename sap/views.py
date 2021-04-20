@@ -383,9 +383,10 @@ class MentorsListView(generic.ListView):
         category_relation = AllyStudentCategoryRelation.objects.order_by('-id')
         category_ally = {}
         for ally in allies_list:
+            this_category_relation = category_relation.filter(ally_id=ally.id)
             if ally.user.is_active:
-                this_category_relation = category_relation.filter(ally_id=ally.id)[0]
-                category_ally[this_category_relation.student_category_id] = ally
+                if this_category_relation.exists():
+                    category_ally[this_category_relation[0].student_category_id] = ally
         return render(request, 'sap/dashboard_ally.html', {'category_ally': category_ally})
 
     def post(self, request):
@@ -427,8 +428,9 @@ class MentorsListView(generic.ListView):
             category_ally = {}
             for ally in allies_list:
                 if ally.user.is_active:
-                    this_category_relation = category_relation.filter(ally_id=ally.id)[0]
-                    category_ally[this_category_relation.student_category_id] = ally
+                    this_category_relation = category_relation.filter(ally_id=ally.id)
+                    if this_category_relation.exists():
+                        category_ally[this_category_relation[0].student_category_id] = ally
             return render(request, 'sap/dashboard_ally.html', {'category_ally': category_ally})
 
         return HttpResponse()
