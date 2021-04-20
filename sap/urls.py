@@ -63,14 +63,14 @@ urlpatterns = [
     url(r'password-forgot-confirm/(?P<uidb64>[\w-]+)/(?P<token>[\w-]+)$', sap.views_v2.ForgotPasswordConfirmView.as_view(),
         name='password-forgot-confirm'),
 
-    url(r'^allies/(?P<ally_username>[\w-]+)/$', login_required(views.ViewAllyProfileFromAdminDashboard.as_view()),
+    url(r'^allies/(?P<ally_username>[\s\w-]+)/$', login_required(views.ViewAllyProfileFromAdminDashboard.as_view()),
         name='admin_view_ally'),
 
-    url(r'^edit_allies/(?P<username>[\w-]+)/(?P<category_relation_id>[\w-]+)/$',
+    url(r'^edit_allies/(?P<username>[\s\w-]+)/(?P<category_relation_id>[\w-]+)/$',
         login_required(sap.views_v3.EditAllyProfile.as_view()),
         name='admin_edit_ally'),
 
-    url(r'^view-ally-event-info/(?P<ally_username>[\w-]+)/$', login_required(sap.views_v3.AllyEventInformation.as_view()),
+    url(r'^view-ally-event-info/(?P<ally_username>[\s\w-]+)/$', login_required(sap.views_v3.AllyEventInformation.as_view()),
         name='view_ally_event_information'),
 
     url(r'^delete/$', login_required(views.DeleteAllyProfileFromAdminDashboard.as_view()),
