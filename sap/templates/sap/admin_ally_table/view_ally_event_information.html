@@ -9,241 +9,35 @@
     <div class="container">
       <div class="card o-hidden border-0 shadow-lg my-5">
         <div class="card-body p-5">
-          <h1 class="h3 mb-0 text-gray-800">Ally Profile</h1>
+          <h1 class="h3 mb-0 text-gray-800">View {{ally.user.username}} Events</h1>
           <hr />
-          <div class="row">
-            <div class="col-md-5">
-              <h5 class="m-0 font-weight-bold text-primary">Name:</h5>
-            </div>
-            <div class="col-md-6">
-              {{ ally.user.first_name }} {{ally.user.last_name}}
-            </div>
-          </div>
-          <div class = "row mt-2"></div>
-          {% if user.is_staff or user == ally.user%}
-            <div class="row">
-              <div class="col-md-5">
-                <h5 class="m-0 font-weight-bold text-primary">Username:</h5>
-              </div>
-              <div class="col-md-6">{{ ally.user.username }}</div>
-            </div>
-            <div class = "row mt-2"></div>
-          {% endif %}
-          <div class="row">
-            <div class="col-md-5">
-              <h5 class="m-0 font-weight-bold text-primary">Email:</h5>
-            </div>
-            <div class="col-md-6">{{ ally.user.email }}</div>
-          </div>
-          <hr />
-          <div class="row">
-            <div class="col-md-5">
-              <h5 class="m-0 font-weight-bold text-primary">Hawk ID:</h5>
-            </div>
-            <div class="col-md-6">{{ ally.hawk_id }}</div>
-          </div>
-          <div class = "row mt-2"></div>
-          <div class="row">
-            <div class="col-md-5">
-              <h5 class="m-0 font-weight-bold text-primary">User Type:</h5>
-            </div>
-            <div class="col-md-6">{{ ally.user_type }}</div>
-          </div>
-          <div class = "row mt-2"></div>
-          {% if ally.user_type != 'Undergraduate Student' %}
-            {% if user.is_staff or user == ally.user %}
-              <div class="row">
-                <div class="col-md-5">
-                  <h5 class="m-0 font-weight-bold text-primary">
-                    Knows possibly interested students:
-                  </h5>
-                </div>
-                <div class="col-md-6">
-                  {% if ally.people_who_might_be_interested_in_iba %}
-                    <i class="fa fa-check" style="color: green"></i>
-                  {% else %}
-                    <i class="fa fa-times" style="color: red"></i>
-                  {% endif %}
-                </div>
-              </div>
-              <div class = "row mt-2"></div>
-              <div class="row">
-                <div class="col-md-5">
-                  <h5 class="m-0 font-weight-bold text-primary">
-                    Science Alliance can serve me by:
-                  </h5>
-                </div>
-                <div class="col-md-6">
-                  {{ ally.how_can_science_ally_serve_you }}
-                </div>
-              </div>
-              <div class = "row mt-2"></div>
-            {% endif %}
-          <div class="row">
-            <div class="col-md-5">
-              <h5 class="m-0 font-weight-bold text-primary">
-                STEM Area of Research:
-              </h5>
-            </div>
-            <div class="col-md-6">{{ ally.area_of_research }}</div>
-          </div>
-          <div class = "row mt-2"></div>
-          <div class="row">
-            <div class="col-md-5">
-              <h5 class="m-0 font-weight-bold text-primary">
-                Lab Research Description:
-              </h5>
-            </div>
-            <div class="col-md-6">
-              {{ ally.description_of_research_done_at_lab }}
-            </div>
-          </div>
-          <div class = "row mt-2"></div>
-          <div class="row">
-            <div class="col-md-5">
-              <h5 class="m-0 font-weight-bold text-primary">Openings for Undergraduates in Lab:</h5>
-            </div>
-            <div class="col-md-6">
-              {% if ally.openings_in_lab_serving_at %}
-              <i class="fa fa-check" style="color: green"></i>
-              {% else %}
-              <i class="fa fa-times" style="color: red"></i>
-              {% endif %}
-            </div>
-          </div>
-          <div class = "row mt-2"></div>
-          <div class="row">
-            <div class="col-md-5">
-              <h5 class="m-0 font-weight-bold text-primary">
-                Interested in Mentoring:
-              </h5>
-            </div>
-            <div class="col-md-6">
-              {% if ally.interested_in_mentoring %}
-              <i class="fa fa-check" style="color: green"></i>
-              {% else %}
-              <i class="fa fa-times" style="color: red"></i>
-              {% endif %}
-            </div>
-          </div>
-          <div class = "row mt-2"></div>
-          {% if user.is_staff or user == ally.user %}
-            <div class="row">
-              <div class="col-md-5">
-                <h5 class="m-0 font-weight-bold text-primary">
-                  Interested in Mentor Training:
-                </h5>
-              </div>
-              <div class="col-md-6">
-                {% if ally.interested_in_mentor_training %}
-                <i class="fa fa-check" style="color: green"></i>
+            <div class="table-responsive">
+                {% if invited_events %}
+                    <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Date</th>
+                                <th>Start Time</th>
+                                <th>End Time</th>
+                                <th>Signed up</th>
+                             </tr>
+                        </thead>
+                        <tfoot>
+                            <tr>
+                                <th>Title</th>
+                                <th>Date</th>
+                                <th>Start Time</th>
+                                <th>End Time</th>
+                                <th>Signed up</th>
+                            </tr>
+                        </tfoot>
+                      <tbody>
+                      </tbody>
+                    </table>
                 {% else %}
-                <i class="fa fa-times" style="color: red"></i>
+                <strong> No Events to Display </strong>
                 {% endif %}
-              </div>
-            </div>
-            <div class = "row mt-2"></div>
-          {% endif %}
-          <div class="row">
-            <div class="col-md-5">
-              <h5 class="m-0 font-weight-bold text-primary">Available to Shadow Their Lab:</h5>
-            </div>
-            <div class="col-md-6">
-              {% if ally.willing_to_offer_lab_shadowing %}
-              <i class="fa fa-check" style="color: green"></i>
-              {% else %}
-              <i class="fa fa-times" style="color: red"></i>
-              {% endif %}
-            </div>
-          </div>
-          <div class = "row mt-2"></div>
-          <div class="row">
-            <div class="col-md-5">
-              <h5 class="m-0 font-weight-bold text-primary">
-                Want to Connect with other Mentors:
-              </h5>
-            </div>
-            <div class="col-md-6">
-              {% if ally.willing_to_offer_lab_shadowing %}
-              <i class="fa fa-check" style="color: green"></i>
-              {% else %}
-              <i class="fa fa-times" style="color: red"></i>
-              {% endif %}
-            </div>
-          </div>
-          <div class = "row mt-2"></div>
-          <div class="row">
-            <div class="col-md-5">
-              <h5 class="m-0 font-weight-bold text-primary">
-                Willing to Volunteer for Events:
-              </h5>
-            </div>
-            <div class="col-md-6">
-              {% if ally.willing_to_volunteer_for_events %}
-              <i class="fa fa-check" style="color: green"></i>
-              {% else %}
-              <i class="fa fa-times" style="color: red"></i>
-              {% endif %}
-            </div>
-          </div>
-          {% else %}
-          <div class="row">
-            <div class="col-md-5">
-              <h5 class="m-0 font-weight-bold text-primary">Year:</h5>
-            </div>
-            <div class="col-md-6">{{ ally.year }}</div>
-          </div>
-          <div class = "row mt-2"></div>
-          <div class="row">
-            <div class="col-md-5">
-              <h5 class="m-0 font-weight-bold text-primary">Major:</h5>
-            </div>
-            <div class="col-md-6">{{ ally.major }}</div>
-          </div>
-          <div class = "row mt-2"></div>
-          {% if user.is_staff or user == ally.user %}
-            <div class="row">
-              <div class="col-md-5">
-                <h5 class="m-0 font-weight-bold text-primary">
-                  Agreed to Release Information:
-                </h5>
-              </div>
-              <div class="col-md-6">
-                {% if ally.information_release %}
-                <i class="fa fa-check" style="color: green"></i>
-                {% else %}
-                <i class="fa fa-times" style="color: red"></i>
-                {% endif %}
-              </div>
-            </div>
-            <div class = "row mt-2"></div>
-          {% endif %}
-          <div class="row">
-            <div class="col-md-5">
-              <h5 class="m-0 font-weight-bold text-primary">Interested in Being Mentored:</h5>
-            </div>
-            <div class="col-md-6">
-              {% if ally.interested_in_being_mentored %}
-              <i class="fa fa-check" style="color: green"></i>
-              {% else %}
-              <i class="fa fa-times" style="color: red"></i>
-              {% endif %}
-            </div>
-          </div>
-          <div class = "row mt-2"></div>
-          <div class="row">
-            <div class="col-md-5">
-              <h5 class="m-0 font-weight-bold text-primary">Interested in Joining Lab:</h5>
-            </div>
-            <div class="col-md-6">
-              {% if ally.interested_in_joining_lab %}
-              <i class="fa fa-check" style="color: green"></i>
-              {% else %}
-              <i class="fa fa-times" style="color: red"></i>
-              {% endif %}
-            </div>
-          </div>
-          {% endif %}
           <hr/>
           <div class = "row mt-2"></div>
           <a href="{% url 'sap:admin_view_ally' ally.user.username %}" class="btn btn-primary btn-user">Back to View Profile</a>
@@ -256,5 +50,4 @@
         </div>
       </div>
     </div>
-
   {% endblock content %}
