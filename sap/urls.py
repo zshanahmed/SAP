@@ -63,7 +63,7 @@ urlpatterns = [
     url(r'password-forgot-confirm/(?P<uidb64>[\w-]+)/(?P<token>[\w-]+)$', sap.views_v2.ForgotPasswordConfirmView.as_view(),
         name='password-forgot-confirm'),
 
-    url(r'^allies/$', login_required(views.ViewAllyProfileFromAdminDashboard.as_view()),
+    url(r'^allies/(?P<ally_username>[\w-]+)/$', login_required(views.ViewAllyProfileFromAdminDashboard.as_view()),
         name='admin_view_ally'),
 
     url(r'^edit_allies/(?P<username>[\w-]+)/(?P<category_relation_id>[\w-]+)/$',
