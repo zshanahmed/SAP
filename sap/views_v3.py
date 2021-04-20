@@ -297,3 +297,11 @@ class EditAllyProfile(View):
             return redirect('sap:sap-dashboard')
 
         return redirect('sap:ally-dashboard')
+
+class AllyEventInformation(View):
+    @staticmethod
+    def get(request, ally_username=''):
+        if request.user.is_staff:
+            return redirect('sap:sap-dashboard')
+        else:
+            return redirect('sap:ally-dashboard')
