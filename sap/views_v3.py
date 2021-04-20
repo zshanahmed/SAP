@@ -322,7 +322,7 @@ class AllyEventInformation(View):
         for event in events_invited_to:
             event_invited.append(events.filter(id=event.event_id)[0])
         for event in events_signed_up:
-            event_signed_up_id.append(events.filter(id=event.event_id)[0].event_id)
+            event_signed_up_id.append(event.event_id)
 
         return render(request, 'sap/admin_ally_table/view_ally_event_information.html', {
             'ally': ally,
