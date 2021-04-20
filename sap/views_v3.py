@@ -327,5 +327,5 @@ class AllyEventInformation(View):
         return render(request, 'sap/admin_ally_table/view_ally_event_information.html', {
             'ally': ally,
             'invited_events': event_invited,
-            'signed-up_events': event_signed_up_id,
+            'signed_up_events': event_signed_up_id,
         })

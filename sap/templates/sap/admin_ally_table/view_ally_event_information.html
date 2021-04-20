@@ -17,7 +17,7 @@
                         <thead>
                             <tr>
                                 <th>Title</th>
-                                <th>Date</th>
+                                <th>Location</th>
                                 <th>Start Time</th>
                                 <th>End Time</th>
                                 <th>Signed up</th>
@@ -26,13 +26,28 @@
                         <tfoot>
                             <tr>
                                 <th>Title</th>
-                                <th>Date</th>
+                                <th>Location</th>
                                 <th>Start Time</th>
                                 <th>End Time</th>
                                 <th>Signed up</th>
                             </tr>
                         </tfoot>
                       <tbody>
+                      {% for event in invited_events %}
+                        <tr>
+                          <td>{{event.title}}</td>
+                          <td>{{event.location}}</td>
+                          <td>{{event.start_time}}</td>
+                          <td>{{event.end_time}}</td>
+                          <td>
+                            {% if event.id in signed_up_events %}
+                              Yes
+                            {% else %}
+                              No
+                            {% endif %}
+                          </td>
+                        </tr>
+                      {% endfor %}
                       </tbody>
                     </table>
                 {% else %}
