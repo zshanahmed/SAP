@@ -245,10 +245,12 @@
           </div>
           {% endif %}
           <hr/>
+          <div class = "row mt-2"></div>
+          <a href="{% url 'sap:admin_view_ally' ally.user.username %}" class="btn btn-primary btn-user">Back to View Profile</a>
           {% if user.is_staff %}
-            <a href="/dashboard" class="btn btn-primary btn-user"> Back </a>
+            <a href="/dashboard" class="btn btn-primary btn-user"> Back to Dashboard</a>
           {% else %}
-            <a href="/ally-dashboard" class="btn btn-primary btn-user"> Back </a>
+            <a href="/ally-dashboard" class="btn btn-primary btn-user"> Back to Dashboard</a>
           {% endif %}
           <br>
         </div>
