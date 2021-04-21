@@ -123,11 +123,11 @@ class EditAllyProfile(View):
     # 'intersetLabRadios': ['Yes'], 'labExperienceRadios': ['No'], 'undergradMentoringRadios': ['Yes'],
     # 'beingMentoredRadios': ['No']}
 
-    def post(self, request, username='', category_id=0):
+    def post(self, request, username='', category_id='0'):
         """Updates profile details from edit_ally page"""
         post_dict = dict(request.POST)
         user_req = request.user
-
+        category_id = int(category_id)
 
         try:
             user = User.objects.get(username=username)
@@ -141,7 +141,7 @@ class EditAllyProfile(View):
                 return redirect('sap:sap-dashboard')
             return redirect('sap:ally-dashboard')
 
-        if int(category_id) != category_relation.student_category_id:
+        if category_id != category_relation.student_category_id:
             messages.add_message(request, messages.WARNING, 'Access Denied!')
             if user_req.is_staff:
                 return redirect('sap:sap-dashboard')
