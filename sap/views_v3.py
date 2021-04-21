@@ -128,8 +128,6 @@ class EditAllyProfile(View):
         post_dict = dict(request.POST)
         user_req = request.user
 
-        print(category_id)
-
         try:
             user = User.objects.get(username=username)
             ally = Ally.objects.get(user=user)
