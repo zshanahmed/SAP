@@ -912,7 +912,8 @@ class EditEventView(View, AccessMixin):
         for key, item in post_dict.items():
             new_value = ','.join(item)
             if key == "start_time" or key == "end_time":
-                new_value = parse_datetime(new_value + '-0500')
+                new_value = parse_datetime(new_value)
+                print(new_value)
             setattr(event, key, new_value)
         event.save()
         messages.success(request, 'Event Updated Successfully')
