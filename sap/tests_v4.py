@@ -307,3 +307,25 @@ class EditEventTests(TestCase):
         )
 
         self.assertEqual(response.status_code, HTTPStatus.OK)
+
+    def test_end_time_less_than_start_time(self):
+        """
+        Testing whether admin can edit an event or not
+        """
+        self.user.is_staff = True
+        self.user.is_active = True
+        self.user.save()
+
+        self.client.login(username=self.username, password=self.password)
+        response = self.client.post(
+            '/edit_event/?event_id={0}'.format(self.event.id),
+            {'csrfmiddlewaretoken': ['6soMcEK3d6JkcDRRnOu6XcdeVETyLibPQCZAuk1yHPHjjpSgxH2pUdQcOusmiiHG'],
+             'location': ['Seamans Center'],
+             'start_time': ['2021-04-21T14:52'],
+             'end_time': ['2021-04-20T18:52'],
+             }, follow=True
+        )
+
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        message = list(response.context['messages'])[0]
+        self.assertEqual(message.message, "End time cannot be less than start-time")
