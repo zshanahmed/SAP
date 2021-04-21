@@ -903,13 +903,16 @@ class EditEventView(View, AccessMixin):
         event_id = request.GET['event_id']
         event = Event.objects.get(pk=event_id)
         post_dict = dict(request.POST)
-        print(post_dict)
-        post_dict.pop('csrfmiddlewaretoken')
-        for key, item in post_dict.items():
-            new_value = ','.join(item)
-            if key in ("start_time", "end_time"):
-                new_value = parse_datetime(new_value + '-0500')
-            setattr(event, key, new_value)
-        event.save()
-        messages.success(request, 'Event Updated Successfully')
-        return redirect('/calendar')
+        if post_dict['end_time'] < post_dict['start_time']:
+            messages.warning(request, 'End time cannot be less than start-time')
+            return redirect('/edit_event/?event_id='+event_id)
+        else:
+            post_dict.pop('csrfmiddlewaretoken')
+            for key, item in post_dict.items():
+                new_value = ','.join(item)
+                if key in ("start_time", "end_time"):
+                    new_value = parse_datetime(new_value + '-0500')
+                setattr(event, key, new_value)
+            event.save()
+            messages.success(request, 'Event Updated Successfully')
+            return redirect('/calendar')
