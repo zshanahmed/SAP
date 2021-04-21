@@ -99,13 +99,7 @@ class EditAllyProfile(View):
             user = User.objects.get(username=username)
             ally = Ally.objects.get(user=user)
             category_relation = AllyStudentCategoryRelation.objects.get(ally_id=ally.id)
-            category = StudentCategories.objects.get(id=category_id)
-            if category_relation.ally_id != ally.id:
-                messages.warning(request, 'Access Denied!')
-                if user_req.is_staff:
-                    return redirect('sap:sap-dashboard')
-                return redirect('sap:ally-dashboard')
-
+            category = StudentCategories.objects.get(id=category_relation.student_category_id)
             return render(request, 'sap/admin_ally_table/edit_ally.html', {
                 'ally': ally,
                 'category': category,
@@ -132,8 +126,8 @@ class EditAllyProfile(View):
         try:
             user = User.objects.get(username=username)
             ally = Ally.objects.get(user=user)
-            category = StudentCategories.objects.get(id=category_id)
-            category_relation = AllyStudentCategoryRelation.objects.get(student_category_id=ally.id)
+            category_relation = AllyStudentCategoryRelation.objects.get(ally_id=ally.id)
+            category = StudentCategories.objects.get(id=category_relation.student_category_id)
         except ObjectDoesNotExist:
             messages.add_message(request, messages.WARNING,
                                  'Ally does not exist!')
@@ -141,11 +135,11 @@ class EditAllyProfile(View):
                 return redirect('sap:sap-dashboard')
             return redirect('sap:ally-dashboard')
 
-        if category_id != category_relation.student_category_id:
-            messages.add_message(request, messages.WARNING, 'Access Denied!')
-            if user_req.is_staff:
-                return redirect('sap:sap-dashboard')
-            return redirect('sap:ally-dashboard')
+        # if category_id != category_relation.student_category_id:
+        #     messages.add_message(request, messages.WARNING, 'Access Denied!')
+        #     if user_req.is_staff:
+        #         return redirect('sap:sap-dashboard')
+        #     return redirect('sap:ally-dashboard')
 
         if (not user_req.is_staff) and user_req.username != username:
             messages.add_message(request, messages.WARNING, 'Access Denied!')
