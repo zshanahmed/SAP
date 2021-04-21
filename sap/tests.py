@@ -491,7 +491,7 @@ class AdminAllyTableFeatureTests(TestCase):
         self.user.is_staff = True
         self.user.save()
         self.client.login(username=self.username, password=self.password)
-        response = self.client.get('/allies/', {'username': self.ally_user.username})
+        response = self.client.get(reverse('sap:admin_view_ally', args=[self.ally_user.username]))
         self.assertEqual(response.status_code, HTTPStatus.OK)
         self.assertContains(
             response, "Ally Profile", html=True
