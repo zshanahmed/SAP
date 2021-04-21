@@ -27,7 +27,6 @@ class AdminAnnoucementFeatureTests(TestCase):
         self.user = User.objects.create_user(
             self.username, self.email, self.password)
 
-
     def test_create_announcement_for_admin(self):
         """
         Test creation of annoucement for admin
@@ -103,6 +102,7 @@ class TestUploadFileAzure(TestCase):
     """
     Test upload file to azure functionality
     """
+
     def test_upload_file(self):
         """
         Tests uploading resource to azure functionality
@@ -128,6 +128,7 @@ class ResponseEventInvitationTests(TestCase):
     """
     Unit tests for calendar view
     """
+
     def setUp(self):
         self.admin_username = 'admin'
         self.admin_password = 'admin_password1'
@@ -175,7 +176,6 @@ class ResponseEventInvitationTests(TestCase):
             student_category=self.category,
         )
 
-
         self.event_ally_rel = EventInviteeRelation.objects.create(
             ally_id=self.ally.id,
             event_id=self.event.id,
@@ -214,7 +214,6 @@ class ResponseEventInvitationTests(TestCase):
         message = list(response.context['messages'])[0]
         self.assertEqual(message.message, 'You cannot sign up for this event since you are not invited.')
 
-
     # def test_signup_event_ally_not_found(self):
     #     """
     #     Cannot sign up when there is no ally model
@@ -226,6 +225,7 @@ class ResponseEventInvitationTests(TestCase):
     #     self.assertEqual(response.status_code, HTTPStatus.OK)
     #     message = list(response.context['messages'])[0]
     #     self.assertEqual(message.message, 'Access denied. You are not registered in our system.')
+
 
 class AllyEventInformation(TestCase):
     def setUp(self):
@@ -244,3 +244,66 @@ class AllyEventInformation(TestCase):
         self.client.login(username='eventAdmin', password='123456789')
         response = self.client.get(reverse('sap:view_ally_event_information', args=['junkjunkjunk']))
         self.assertEqual(response.status_code, 302)
+
+
+class EditEventTests(TestCase):
+
+    def setUp(self):
+        """
+        Setting up event and creating it for edit event
+        """
+        self.username = 'iba_test_admin'
+        self.password = 'ibatestadminpass'
+        self.email = 'ibaadmin@test.com'
+        self.client = Client()
+
+        self.user = User.objects.create_user(
+            self.username, self.email, self.password)
+
+        self.event = Event.objects.create(title='Mock Interview',
+                                          description='Workshop for mock interviews',
+                                          location='MacLean Hall',
+                                          allday=0,
+                                          end_time='2021-04-22 01:57:00',
+                                          start_time='2021-04-22 00:57:00',
+                                          num_attending=0,
+                                          num_invited=5,
+                                          mentor_status='Mentors,Mentees',
+                                          research_field='Biochemistry,Bioinformatics',
+                                          role_selected='Freshman,Sophomore,Juniors,Faculty',
+                                          invite_all=1,
+                                          special_category='First generation college-student,Rural'
+                                          )
+
+    def test_view_edit_event(self):
+        """
+        Admin can view the edit event page
+        """
+        self.user.is_staff = True
+        self.user.is_active = True
+        self.user.save()
+
+        self.client.login(username=self.username, password=self.password)
+        response = self.client.get(
+            '/edit_event/', {'event_id': self.event.id})
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+
+    def test_edit_event(self):
+        """
+        Testing whether admin can edit an event or not
+        """
+        self.user.is_staff = True
+        self.user.is_active = True
+        self.user.save()
+
+        self.client.login(username=self.username, password=self.password)
+        response = self.client.post(
+            '/edit_event/?event_id={0}'.format(self.event.id),
+            {'csrfmiddlewaretoken': ['6soMcEK3d6JkcDRRnOu6XcdeVETyLibPQCZAuk1yHPHjjpSgxH2pUdQcOusmiiHG'],
+             'location': ['Seamans Center'],
+             'start_time': ['2021-04-21T14:52'],
+             'end_time': ['2021-04-21T18:52'],
+             }, follow=True
+        )
+
+        self.assertEqual(response.status_code, HTTPStatus.OK)

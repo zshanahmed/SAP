@@ -6,7 +6,7 @@ import datetime
 import io
 import os
 import uuid
-from datetime import date, datetime
+from datetime import date
 from django.utils.dateparse import parse_datetime
 
 import pandas as pd
@@ -898,11 +898,12 @@ class EditEventView(View, AccessMixin):
 
     def post(self, request):
         """
-        Method for implementation of POST request of the form
+        Updating the details in the database with information obtained from the form
         """
         event_id = request.GET['event_id']
         event = Event.objects.get(pk=event_id)
         post_dict = dict(request.POST)
+        print(post_dict)
         post_dict.pop('csrfmiddlewaretoken')
         for key, item in post_dict.items():
             new_value = ','.join(item)
