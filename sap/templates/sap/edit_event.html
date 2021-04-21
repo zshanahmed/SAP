@@ -9,11 +9,6 @@
     <script type= "text/javascript">
 
         window.onload = function() {
-            // const utcStart = moment.utc("{{start_time}}").format();
-            // const start_local = moment.utc(utcStart).local().format().slice(0,-9);
-            // const utcEnd = moment.utc("{{end_time}}").format();
-            // const end_local = moment.utc(utcEnd).local().format().slice(0,-9);
-
             $("#event_start_time").val("{{event.start_time}}");
             $("#event_end_time").val("{{event.end_time}}");
 

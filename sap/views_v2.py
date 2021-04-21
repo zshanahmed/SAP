@@ -6,7 +6,6 @@ import datetime
 import io
 import os
 import uuid
-import pytz
 from datetime import date, datetime
 from django.utils.dateparse import parse_datetime
 
@@ -34,7 +33,6 @@ from sap.forms import UserResetForgotPasswordForm
 from sap.models import StudentCategories, Ally, AllyStudentCategoryRelation, Event, EventInviteeRelation, EventAttendeeRelation
 from sap.tokens import account_activation_token, password_reset_token
 from sap.views import User, AccessMixin
-import dateutil.parser as parser
 
 
 class SignUpEventView(View):
@@ -908,7 +906,7 @@ class EditEventView(View, AccessMixin):
         post_dict.pop('csrfmiddlewaretoken')
         for key, item in post_dict.items():
             new_value = ','.join(item)
-            if key == "start_time" or key == "end_time":
+            if key in ("start_time", "end_time"):
                 new_value = parse_datetime(new_value + '-0500')
             setattr(event, key, new_value)
         event.save()
