@@ -6,7 +6,8 @@ import datetime
 import io
 import os
 import uuid
-from datetime import date
+import pytz
+from datetime import date, datetime
 from django.utils.dateparse import parse_datetime
 
 import pandas as pd
@@ -892,13 +893,9 @@ class EditEventView(View, AccessMixin):
         """
         event_id = request.GET['event_id']
         event = Event.objects.get(pk=event_id)
-        print(event.end_time)
-        event.start_time = parser.parse(str(event.start_time)).isoformat().split("+")[0]
-        event.end_time = parser.parse(str(event.end_time)).isoformat().split("+")[0]
-        print(event.end_time)
-        event.save()
+
         return render(request, template_name="sap/edit_event.html", context={
-            'event': event,
+            'event': event
         })
 
     def post(self, request):
@@ -912,8 +909,7 @@ class EditEventView(View, AccessMixin):
         for key, item in post_dict.items():
             new_value = ','.join(item)
             if key == "start_time" or key == "end_time":
-                new_value = parse_datetime(new_value)
-                print(new_value)
+                new_value = parse_datetime(new_value + '-0500')
             setattr(event, key, new_value)
         event.save()
         messages.success(request, 'Event Updated Successfully')

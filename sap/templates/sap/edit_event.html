@@ -9,6 +9,14 @@
     <script type= "text/javascript">
 
         window.onload = function() {
+            // const utcStart = moment.utc("{{start_time}}").format();
+            // const start_local = moment.utc(utcStart).local().format().slice(0,-9);
+            // const utcEnd = moment.utc("{{end_time}}").format();
+            // const end_local = moment.utc(utcEnd).local().format().slice(0,-9);
+
+            $("#event_start_time").val("{{event.start_time}}");
+            $("#event_end_time").val("{{event.end_time}}");
+
             const roles = "{{event.role_selected}}".split(',');
             const school_year = "{{event.school_year_selected}}".split(',');
             const mentor_status = "{{event.mentor_status}}".split(',');
@@ -90,6 +98,8 @@
             }
         }
     </script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment.min.js"></script>
+
 <body class="bg-gradient-primary">
     <div class="container">
         {% if messages %}
@@ -121,12 +131,12 @@
                                 <div class="form-group">
                                     <p style="font-size: 12px;margin-left: 20px;margin-bottom: 0px;">*Enter start time of the event in central time</p>
                                     <input name="start_time" type="datetime-local" class="form-control form-control-user" id="event_start_time"
-                                           placeholder="Start time of the event in mm/dd/yyyy, hh/mm (AM or PM)" value="{{event.start_time}}" required>
+                                           placeholder="Start time of the event in mm/dd/yyyy, hh/mm (AM or PM)" value="" required>
                                 </div>
                                 <div class="form-group">
                                     <p style="font-size: 12px;margin-left: 20px;margin-bottom: 0px;">*Enter end time of the event in central time</p>
                                     <input name="end_time" type="datetime-local" class="form-control form-control-user" id="event_end_time"
-                                           placeholder="End time of the event in mm/dd/yyyy, hh/mm (AM or PM)" value="{{event.end_time}}" required>
+                                           placeholder="End time of the event in mm/dd/yyyy, hh/mm (AM or PM)" value="" required>
                                 </div>
                                 <div class="py-2">
                                     <strong>All day event:</strong>
