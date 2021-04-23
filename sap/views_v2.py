@@ -14,6 +14,7 @@ import xlsxwriter
 from xlrd import XLRDError
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
+from python_http_client.exceptions import HTTPError
 from django.contrib import messages
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.forms import PasswordResetForm
@@ -195,8 +196,7 @@ class SignUpView(TemplateView):
         try:
             sendgrid_obj = SendGridAPIClient(os.environ.get('SENDGRID_API_KEY'))
             sendgrid_obj.send(email_content)
-
-        except Exception as exception:
+        except HTTPError as exception:
             messages.warning(self.request, str(exception))
 
     def get(self, request):
@@ -207,7 +207,7 @@ class SignUpView(TemplateView):
             return render(request, self.template_name)
         return redirect('sap:home')
 
-    def post(self, request, *args, **kwargs):
+    def post(self, request):
         """
         If user/ally is in the db but is_active=False, that user/ally is deemed "replaceable", meaning new account can
         be created with its email address.
@@ -393,7 +393,7 @@ class ForgotPasswordView(TemplateView):
                     sendgrid_obj = SendGridAPIClient(os.environ.get('SENDGRID_API_KEY'))
                     sendgrid_obj.send(email_content)
 
-                except Exception as exception:
+                except HTTPError as exception:
                     messages.warning(self.request, str(exception))
 
 
@@ -441,11 +441,15 @@ class ForgotPasswordConfirmView(TemplateView):
     """
 
     # template_name = "sap/password-forgot-confirm.html"
-    def get(self, request, *args, **kwargs):
+    def get(self, request, **kwargs):
         """Enter what this class/method does"""
         path = request.path
         path_1, token = os.path.split(path)
-        _, uidb64 = os.path.split(path_1)
+
+        if 'uidb64' in kwargs:
+            uidb64 = kwargs['uidb64']
+        else:
+            _, uidb64 = os.path.split(path_1)
 
         try:
             uid = force_text(urlsafe_base64_decode(uidb64))
@@ -469,6 +473,7 @@ class ForgotPasswordConfirmView(TemplateView):
         """Enter what this class/method does"""
         path = request.path
         path_1, token = os.path.split(path)
+
         if 'uidb64' in kwargs:
             uidb64 = kwargs['uidb64']
         else:
