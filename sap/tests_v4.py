@@ -6,12 +6,11 @@ from http import HTTPStatus
 
 from django.contrib.auth import get_user_model
 from django.test import TestCase, Client  # tests file
+from django.urls import reverse
 from sap.models import EventInviteeRelation, AllyStudentCategoryRelation, StudentCategories, Ally, Event
 from .upload_resource_to_azure import upload_file_to_azure
-from django.urls import reverse
 
 User = get_user_model()
-
 
 class AdminAnnoucementFeatureTests(TestCase):
     """
@@ -228,6 +227,9 @@ class ResponseEventInvitationTests(TestCase):
     #     self.assertEqual(message.message, 'Access denied. You are not registered in our system.')
 
 class AllyEventInformation(TestCase):
+    """
+    Tests View Ally Event Information in views_v3
+    """
     def setUp(self):
         self.admin = User.objects.create_user(username='eventAdmin', password='123456789', is_staff=True)
         self.user = User.objects.create_user(username='ally', password='123456789', is_staff=False)
@@ -236,11 +238,17 @@ class AllyEventInformation(TestCase):
         self.client = Client()
 
     def test_get_event_info_page(self):
+        """
+        checks if page gets the event info page given good username
+        """
         self.client.login(username='eventAdmin', password='123456789')
         response = self.client.get(reverse('sap:view_ally_event_information', args=['ally']))
         self.assertEqual(response.status_code, 200)
 
     def test_redirect_bad_username(self):
+        """
+        checks if redirects given bad username
+        """
         self.client.login(username='eventAdmin', password='123456789')
         response = self.client.get(reverse('sap:view_ally_event_information', args=['junkjunkjunk']))
         self.assertEqual(response.status_code, 302)
