@@ -873,13 +873,6 @@ class DeleteEventView(AccessMixin, View):
         return redirect(reverse('sap:calendar'))
 
 
-def append_uniq(target, dest):
-    """
-    Appending if element not already in list and not empty
-    """
-    return target.append(dest) if dest and dest not in target else target
-
-
 class EditEventView(View, AccessMixin):
     """
     View enabling admins to edit events
@@ -903,6 +896,7 @@ class EditEventView(View, AccessMixin):
         event_id = request.GET['event_id']
         event = Event.objects.get(pk=event_id)
         post_dict = dict(request.POST)
+        print(post_dict)
         if post_dict['end_time'] < post_dict['start_time']:
             messages.warning(request, 'End time cannot be less than start-time')
             return redirect('/edit_event/?event_id='+event_id)
@@ -913,6 +907,11 @@ class EditEventView(View, AccessMixin):
                 if key in ("start_time", "end_time"):
                     new_value = parse_datetime(new_value + '-0500')
                 setattr(event, key, new_value)
+
+            event.invite_all = "invite_all" in post_dict
+            event.allday = "allday" in post_dict
             event.save()
+            EventInviteeRelation.objects.filter(event_id=event.id).delete()
+
             messages.success(request, 'Event Updated Successfully')
             return redirect('/calendar')

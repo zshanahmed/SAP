@@ -18,14 +18,6 @@
             const categories = "{{event.special_category}}".split(',');
             const research_area = "{{event.research_field}}".split(',');
 
-            if("{{event.allday}}" === "True") {
-                $("#event_allday")[0].checked = true
-            }
-
-            if("{{event.invite_all}}" === "True") {
-                $("#invite_all")[0].checked = true
-            }
-
             if ("{{event.invite_all}}" === "True") {
                 invite_all_click();
             } else {
@@ -88,7 +80,7 @@
 
             const allInputs = document.getElementsByTagName("input");
             for (var i = 0, max = allInputs.length; i < max; i++){
-                if (allInputs[i].type === 'checkbox')
+                if (allInputs[i].type === 'checkbox' && allInputs[i].name !== 'allday')
                     allInputs[i].checked = value;
             }
         }
@@ -130,14 +122,18 @@
                                 </div>
                                 <div class="form-group">
                                     <p style="font-size: 12px;margin-left: 20px;margin-bottom: 0px;">*Enter end time of the event in central time</p>
-                                    <input name="end_time" type="datetime-local" class="form-control form-control-user" id="event_end_time"
-                                           placeholder="End time of the event in mm/dd/yyyy, hh/mm (AM or PM)" value="" required>
+                                        <input name="end_time" type="datetime-local" class="form-control form-control-user" id="event_end_time"
+                                               placeholder="End time of the event in mm/dd/yyyy, hh/mm (AM or PM)" value="" required>
                                 </div>
                                 <div class="py-2">
                                     <strong>All day event:</strong>
                                     <div class="form-check form-check-inline" >
                                         <div class="px-2">
-                                            <input type="checkbox" name="allday" id="event_allday" value="{{event.allday}}">
+                                            {% if event.allday == "True" %}
+                                                <input type="checkbox" name="allday" id="event_allday" value="event_allday" checked>
+                                            {% else %}
+                                                <input type="checkbox" name="allday" id="event_allday" value="event_allday">
+                                            {% endif %}
                                             <label class="form-check-label" for="event_allday">All day</label>
                                         </div>
                                     </div>
@@ -158,7 +154,11 @@
                                     <strong>Invite all allies:</strong>
                                     <div class="form-check form-check-inline" >
                                         <div class="px-2">
-                                            <input type="checkbox" name="invite_all" id="invite_all" value="{{event.invite_all}}" onclick="invite_all_click();">
+                                            {% if event.invite_all == "True" %}
+                                                <input type="checkbox" name="invite_all" id="invite_all" value="invite_all" onclick="invite_all_click();" checked>
+                                            {% else %}
+                                                <input type="checkbox" name="invite_all" id="invite_all" value="invite_all" onclick="invite_all_click();">
+                                            {% endif %}
                                             <label class="form-check-label" for="invite_all">Invite all</label>
                                         </div>
                                     </div>
