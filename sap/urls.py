@@ -1,9 +1,10 @@
 """
 Url mappings with appropriate functions to handle them
 """
-from django.urls import path
+from django.urls import path, include
 from django.contrib.auth import views as auth_views
 from django.conf.urls import url
+import notifications.urls
 from django.contrib.auth.decorators import login_required
 
 import sap.views_v2
@@ -75,6 +76,8 @@ urlpatterns = [
 
     url(r'^delete/$', login_required(views.DeleteAllyProfileFromAdminDashboard.as_view()),
         name='admin_delete_ally'),
+
+    url('^inbox/notifications/', include(notifications.urls, namespace='notifications')),
 
     url('create_iba_admin/',
         login_required(views.CreateAdminView.as_view()),

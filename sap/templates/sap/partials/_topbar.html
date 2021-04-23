@@ -1,4 +1,6 @@
 {% load static %}
+{% load notifications_tags %}
+{% live_notify_badge %}
 <!-- Topbar -->
                 <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
 
@@ -14,17 +16,13 @@
                             </button>
                         {% else %}
                             <div class="dropdown-menu" aria-labelledby="dropdownMenu2">
-                                <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button">
-                                <img class="img-profile rounded-circle">
-                                    src="{% static '/img/undraw_profile.svg' %}">
-                                {% for notification in  user.notifications.unread %}
-                                  <div>
+                                {% for notification in user.notifications.unread %}
+                                    <div>
                                     Message from <b>{{ notification.actor }}</b>
                                     <button class="dropdown-item" type="button">{{ notification.description }}</button>
                                     </div>
                                     <div class="dropdown-divider"></div>
                                 {% endfor %}
-                                </a>
                             </div>
                         {% endif %}
                         
