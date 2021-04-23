@@ -12,6 +12,20 @@
                             <button class="btn btn-primary" type="button" style="margin-top: 15px; margin-bottom: 15px;" data-toggle="modal" data-target="#announcementModal"> Make Announcement
                                 <i style="margin-left: 5px;" class="fa fa-bullhorn fa-sm"></i>
                             </button>
+                        {% else %}
+                            <div class="dropdown-menu" aria-labelledby="dropdownMenu2">
+                                <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button">
+                                <img class="img-profile rounded-circle">
+                                    src="{% static '/img/undraw_profile.svg' %}">
+                                {% for notification in  user.notifications.unread %}
+                                  <div>
+                                    Message from <b>{{ notification.actor }}</b>
+                                    <button class="dropdown-item" type="button">{{ notification.description }}</button>
+                                    </div>
+                                    <div class="dropdown-divider"></div>
+                                {% endfor %}
+                                </a>
+                            </div>
                         {% endif %}
                         
                         <div class="topbar-divider d-none d-sm-block"></div>

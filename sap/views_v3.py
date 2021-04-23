@@ -88,7 +88,7 @@ class EditAllyProfile(View):
         return dictionary, same
 
     @staticmethod
-    def get(request, username='', category_id=0):
+    def get(request, username=''):
         """Enter what this class/method does"""
         user_req = request.user
 
@@ -117,11 +117,10 @@ class EditAllyProfile(View):
     # 'intersetLabRadios': ['Yes'], 'labExperienceRadios': ['No'], 'undergradMentoringRadios': ['Yes'],
     # 'beingMentoredRadios': ['No']}
 
-    def post(self, request, username='', category_id='0'):
+    def post(self, request, username=''):
         """Updates profile details from edit_ally page"""
         post_dict = dict(request.POST)
         user_req = request.user
-        category_id = int(category_id)
 
         try:
             user = User.objects.get(username=username)
@@ -134,12 +133,6 @@ class EditAllyProfile(View):
             if user_req.is_staff:
                 return redirect('sap:sap-dashboard')
             return redirect('sap:ally-dashboard')
-
-        # if category_id != category_relation.student_category_id:
-        #     messages.add_message(request, messages.WARNING, 'Access Denied!')
-        #     if user_req.is_staff:
-        #         return redirect('sap:sap-dashboard')
-        #     return redirect('sap:ally-dashboard')
 
         if (not user_req.is_staff) and user_req.username != username:
             messages.add_message(request, messages.WARNING, 'Access Denied!')
@@ -286,11 +279,11 @@ class EditAllyProfile(View):
             else:
                 messages.add_message(request, messages.WARNING,
                                      'No Changes Detected!' + message)
-            return redirect(reverse('sap:admin_edit_ally', args=[user.username, category_id]))
+            return redirect(reverse('sap:admin_edit_ally', args=[user.username]))
         if same:
             messages.add_message(request, messages.WARNING,
                                  'No Changes Detected!' + message)
-            return redirect(reverse('sap:admin_edit_ally', args=[user.username, category_id]))
+            return redirect(reverse('sap:admin_edit_ally', args=[user.username]))
 
         if not user_req.is_staff:
             messages.add_message(request, messages.SUCCESS,
