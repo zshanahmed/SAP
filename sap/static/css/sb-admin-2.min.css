@@ -10316,3 +10316,26 @@ input #file-upload-button {
   border: none;
   color: ;
 }
+
+.icon-wrapper{
+    position:relative;
+    float:left;
+}
+
+*.icon-blue {color: #0088cc}
+*.icon-grey {color: grey}
+i {
+    width:100px;
+    text-align:center;
+    vertical-align:middle;
+}
+.badge{
+    background: rgba(0,0,0,0.5);
+    width: auto;
+    height: auto;
+    margin: 0;
+    border-radius: 50%;
+    position:absolute;
+    top: 8px;
+    right: 30px;
+}

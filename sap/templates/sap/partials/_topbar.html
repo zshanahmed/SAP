@@ -1,6 +1,5 @@
 {% load static %}
 {% load notifications_tags %}
-{% live_notify_badge %}
 <!-- Topbar -->
                 <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
 
@@ -12,10 +11,25 @@
                         
                         {% if role == "admin" %}
                             <button class="btn btn-primary" type="button" style="margin-top: 15px; margin-bottom: 15px;" data-toggle="modal" data-target="#announcementModal"> Make Announcement
-                                <i style="margin-left: 5px;" class="fa fa-bullhorn fa-sm"></i>
+                                <i style="margin-left: 5px; font-size: 0.73em;" class="fa fa-bullhorn fa-sm"></i>
                             </button>
                         {% else %}
-                            <div class="dropdown-menu" aria-labelledby="dropdownMenu2">
+                            <li class="nav-item dropdown no-arrow">
+                                <a class="nav-link dropdown-toggle" href="#" id="notifyDropdown" role="button"
+                                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    <div id="icon-wrapper">
+                                        <i class="p3 fas fa-bell fa-2x" data-count="4b"></i>
+                                        <span class="badge">{% live_notify_badge %}</span>
+                                    </div>
+<!--                                    <div id="ex2">-->
+<!--                                        <span class="p1 fa-stack fa-2x has-badge" data-count="{% live_notify_badge %}">-->
+<!--                                            <i class="p2 fa fa-circle fa-stack-2x"></i>-->
+<!--                                            <i class="fas fa-bell text-black-50 fa-inverse" data-count="{% live_notify_badge %}"></i>-->
+<!--                                        </span>-->
+<!--                                    </div>-->
+                                </a>
+                                <div class="dropdown-menu" aria-labelledby="notifyDropdown">
+                                Notifications {% live_notify_badge %}
                                 {% for notification in user.notifications.unread %}
                                     <div>
                                     Message from <b>{{ notification.actor }}</b>
@@ -23,7 +37,8 @@
                                     </div>
                                     <div class="dropdown-divider"></div>
                                 {% endfor %}
-                            </div>
+                                </div>
+                            </li>
                         {% endif %}
                         
                         <div class="topbar-divider d-none d-sm-block"></div>
@@ -77,7 +92,6 @@
                         </li>
 
                     </ul>
-
                 </nav>
                 <!-- End of Topbar -->
 
