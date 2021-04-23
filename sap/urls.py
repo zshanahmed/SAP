@@ -66,7 +66,7 @@ urlpatterns = [
     url(r'^allies/(?P<ally_username>[\s\w-]+)/$', login_required(views.ViewAllyProfileFromAdminDashboard.as_view()),
         name='admin_view_ally'),
 
-    url(r'^edit_allies/(?P<username>[\s\w-]+)/(?P<category_id>[\w-]+)/$',
+    url(r'^edit_allies/(?P<username>[\s\w-]+)/$',
         login_required(sap.views_v3.EditAllyProfile.as_view()),
         name='admin_edit_ally'),
 

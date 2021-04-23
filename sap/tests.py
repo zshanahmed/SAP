@@ -372,8 +372,7 @@ class AdminAllyTableFeatureTests(TestCase):
         #response = self.client.get('/edit_allies/', {'username': self.ally_user.username,
         #                                             'category_relation_id': self.ally_2_student_category_relation.id})
 
-        url = reverse('sap:admin_edit_ally', args=[self.ally_user.username,
-                                                   self.ally_student_category_relation.id])
+        url = reverse('sap:admin_edit_ally', args=[self.ally_user.username])
         response = self.client.get(url)
         self.assertEqual(response.status_code, HTTPStatus.OK)
 
@@ -399,8 +398,7 @@ class AdminAllyTableFeatureTests(TestCase):
         # Testing for UnderGrad Student user type
         self.ally.user_type = "Undergraduate Student"
         self.ally.save()
-        url = reverse('sap:admin_edit_ally', args=[self.ally_user.username,
-                                                   self.ally_student_category_relation.id])
+        url = reverse('sap:admin_edit_ally', args=[self.ally_user.username])
         response = self.client.post(
             url, {
                 'csrfmiddlewaretoken': ['XdNiZpT3jpCeRzd2kq8bbRPUmc0tKFP7dsxNaQNTUhblQPK7lne9sX0mrE5khfHH'],
@@ -419,8 +417,7 @@ class AdminAllyTableFeatureTests(TestCase):
         message = list(response.context['messages'])[0]
         assert "Ally updated!" in str(message)
 
-        url = reverse('sap:admin_edit_ally', args=[self.ally_user.username,
-                                                   self.ally_student_category_relation.id])
+        url = reverse('sap:admin_edit_ally', args=[self.ally_user.username])
         dictionary = {'csrfmiddlewaretoken': ['YXW4Ib9TNmwod6ZETztHgp3ouwbg09sbAYibaXHc5RMKbAECHTZKHIsdJrvzvvP5'],
          'firstName': 'firstName', 'lastName': 'lastName',
          'newUsername': 'bigUsername', 'username': self.ally_user.username,
@@ -440,8 +437,7 @@ class AdminAllyTableFeatureTests(TestCase):
         message = list(response.context['messages'])[0]
         assert "Ally updated!" in str(message)
 
-        url = reverse('sap:admin_edit_ally', args=[self.ally_user.username,
-                                                   self.ally_student_category_relation.id])
+        url = reverse('sap:admin_edit_ally', args=[self.ally_user.username])
 
         dictionary = {'csrfmiddlewaretoken': ['YXW4Ib9TNmwod6ZETztHgp3ouwbg09sbAYibaXHc5RMKbAECHTZKHIsdJrvzvvP5'],
          'firstName': 'firstName',
@@ -464,8 +460,7 @@ class AdminAllyTableFeatureTests(TestCase):
         self.user.is_staff = True
         self.user.save()
         self.client.login(username=self.username, password=self.password)
-        url = reverse('sap:admin_edit_ally', args=['junk',
-                                                   self.ally_student_category_relation.id])
+        url = reverse('sap:admin_edit_ally', args=['junk'])
         response = self.client.get(url)
         self.assertEqual(response.status_code, HTTPStatus.NOT_FOUND)
 
@@ -682,8 +677,7 @@ class AllyDashboardTests(TestCase):
         self.assertContains(
             response, "Science Alliance Portal", html=True
         )
-        url = reverse('sap:admin_edit_ally', args=[self.user.username,
-                                                   self.ally_user_student_category_relation.id])
+        url = reverse('sap:admin_edit_ally', args=[self.user.username])
 
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
@@ -712,8 +706,7 @@ class AllyDashboardTests(TestCase):
         self.assertContains(
             response, "Science Alliance Portal", html=True
         )
-        url = reverse('sap:admin_edit_ally', args=[self.ally_user_2,
-                                                   self.ally_user_student_category_relation.id])
+        url = reverse('sap:admin_edit_ally', args=[self.ally_user_2])
         response = self.client.get(url, follow=True)
         self.assertEqual(response.status_code, HTTPStatus.OK)
         self.assertContains(

@@ -241,19 +241,13 @@ class AlliesListView(AccessMixin, TemplateView):
     def get(self, request):
         """Renders the dashboard with the allies and categories as django template variables."""
         allies_list = Ally.objects.order_by('-id')
-        category_relation = AllyStudentCategoryRelation.objects.order_by('-id')
-        category_ally = {}
         for ally in allies_list:
-            if ally.user.is_active:
-                this_category_relation = category_relation.filter(ally_id=ally.id)
-                if this_category_relation.exists():
-                    category_id = category_relation.filter(ally_id=ally.id)[0].student_category_id
-                    category_ally[category_id] = ally
-        return render(request, 'sap/dashboard.html', {'category_ally': category_ally})
+            if not ally.user.is_active:
+                allies_list = allies_list.exclude(id=ally.id)
+        return render(request, 'sap/dashboard.html', {'allies_list': allies_list})
 
     def post(self, request):
         """Filters and returns allies based on selected criteria"""
-        category_relation = AllyStudentCategoryRelation.objects.order_by('-id')
         if request.POST.get("form_type") == 'filters':
             post_dict = dict(request.POST)
             if 'stemGradCheckboxes' in post_dict:
@@ -360,13 +354,10 @@ class AlliesListView(AccessMixin, TemplateView):
                     if exclude_from_aor and exclude_from_year and exclude_from_sc and exclude_from_ut \
                             and exclude_from_ms_major:
                         allies_list = allies_list.exclude(id=ally.id)
-            category_ally = {}
             for ally in allies_list:
-                if ally.user.is_active:
+                if not ally.user.is_active:
                     allies_list = allies_list.exclude(id=ally.id)
-                    this_category_relation = category_relation.filter(ally_id=ally.id)[0]
-                    category_ally[this_category_relation.student_category_id] = ally
-            return render(request, 'sap/dashboard.html', {'category_ally': category_ally})
+            return render(request, 'sap/dashboard.html', {'allies_list': allies_list})
 
         return HttpResponse()
 
@@ -379,18 +370,14 @@ class MentorsListView(generic.ListView):
     def get(self, request):
         """Returns a view of allies"""
         allies_list = Ally.objects.order_by('-id')
-        category_relation = AllyStudentCategoryRelation.objects.order_by('-id')
-        category_ally = {}
         for ally in allies_list:
-            this_category_relation = category_relation.filter(ally_id=ally.id)
             if ally.user.is_active:
-                if this_category_relation.exists():
-                    category_ally[this_category_relation[0].student_category_id] = ally
-        return render(request, 'sap/dashboard_ally.html', {'category_ally': category_ally})
+                if not ally.user.is_active:
+                    allies_list = allies_list.exclude(id=ally.id)
+        return render(request, 'sap/dashboard_ally.html', {'allies_list': allies_list})
 
     def post(self, request):
         """Returns filtered version of allies on the dashboard"""
-        category_relation = AllyStudentCategoryRelation.objects.order_by('-id')
         if request.POST.get("form_type") == 'filters':
             post_dict = dict(request.POST)
             if 'stemGradCheckboxes' in post_dict:
@@ -424,13 +411,11 @@ class MentorsListView(generic.ListView):
                     if exclude_from_aor and exclude_from_year:
                         allies_list = allies_list.exclude(id=ally.id)
 
-            category_ally = {}
             for ally in allies_list:
                 if ally.user.is_active:
-                    this_category_relation = category_relation.filter(ally_id=ally.id)
-                    if this_category_relation.exists():
-                        category_ally[this_category_relation[0].student_category_id] = ally
-            return render(request, 'sap/dashboard_ally.html', {'category_ally': category_ally})
+                    if not ally.user.is_active:
+                        allies_list = allies_list.exclude(id=ally.id)
+            return render(request, 'sap/dashboard_ally.html', {'allies_list': allies_list})
 
         return HttpResponse()
 
