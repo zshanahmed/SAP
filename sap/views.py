@@ -18,6 +18,7 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.http import HttpResponseNotFound
 from django.utils.dateparse import parse_datetime
+from notifications.signals import notify
 
 from .forms import UpdateAdminProfileForm
 from .models import Announcement, EventInviteeRelation, EventAttendeeRelation, Ally, StudentCategories, AllyStudentCategoryRelation, Event
@@ -88,17 +89,23 @@ class CreateAnnouncement(AccessMixin, HttpResponse):
         """
         Enter what this class/method does
         """
+
+        users = User.objects.all()
         if request.user.is_staff:
             post_dict = dict(request.POST)
             curr_user = request.user
             title = post_dict['title'][0]
             description = post_dict['desc'][0]
-            Announcement.objects.create(
+            announcement = Announcement.objects.create(
                 username=curr_user.username,
                 title=title,
                 description=description,
                 created_at=datetime.datetime.utcnow()
             )
+
+            for user in users:
+                msg = 'Announcement: ' + announcement.title
+                notify.send(request.user, recipient=user, verb=msg)
 
             messages.success(request, 'Annoucement created successfully !!')
             return redirect('sap:sap-dashboard')

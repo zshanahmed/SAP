@@ -15,30 +15,24 @@
                             </button>
                         {% else %}
                             <li class="nav-item dropdown no-arrow">
-                                <a class="nav-link dropdown-toggle" href="#" id="notifyDropdown" role="button"
-                                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                    <div id="icon-wrapper">
-                                        <i class="p3 fas fa-bell fa-2x" data-count="4b"></i>
-                                        <span style="background: rgba(0,0,0,0.5); width: auto; height: auto;margin: 0; border-radius: 50%; position:absolute; top: 8px; right: -5px;"class="badge">
-                                            {% live_notify_badge %}
-                                        </span>
+                                <div class="btn-group dropleft">
+                                    <a class="nav-link dropdown-toggle" href="#" id="notifyDropdown" role="button"
+                                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        <div id="icon-wrapper">
+                                            <i class="p3 fas fa-bell fa-2x" data-count="4b"></i>
+                                            <span style="background: rgba(0,0,0,0.5); width: auto; height: auto;margin: 0; border-radius: 50%; position:absolute; top: 8px; right: -5px;"class="badge">
+                                                {% live_notify_badge %}
+                                            </span>
+                                        </div>
+                                    </a>
+                                    <div class="dropdown-menu" aria-labelledby="notifyDropdown">
+                                    {% for notification in user.notifications.unread %}
+                                        <div>
+                                        <a class="dropdown-item" type="button">{{ notification.verb }}</a>
+                                        </div>
+                                        <div class="dropdown-divider"></div>
+                                    {% endfor %}
                                     </div>
-<!--                                    <div id="ex2">-->
-<!--                                        <span class="p1 fa-stack fa-2x has-badge" data-count="{% live_notify_badge %}">-->
-<!--                                            <i class="p2 fa fa-circle fa-stack-2x"></i>-->
-<!--                                            <i class="fas fa-bell text-black-50 fa-inverse" data-count="{% live_notify_badge %}"></i>-->
-<!--                                        </span>-->
-<!--                                    </div>-->
-                                </a>
-                                <div class="dropdown-menu" aria-labelledby="notifyDropdown">
-                                Notifications {% live_notify_badge %}
-                                {% for notification in user.notifications.unread %}
-                                    <div>
-                                    Message from <b>{{ notification.actor }}</b>
-                                    <button class="dropdown-item" type="button">{{ notification.description }}</button>
-                                    </div>
-                                    <div class="dropdown-divider"></div>
-                                {% endfor %}
                                 </div>
                             </li>
                         {% endif %}
