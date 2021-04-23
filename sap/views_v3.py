@@ -297,8 +297,13 @@ class EditAllyProfile(View):
         return redirect('sap:ally-dashboard')
 
 class AllyEventInformation(View):
+    """View all ally event information."""
     @staticmethod
     def get(request, ally_username=''):
+        """
+        Gets the view ally event information Gets and returns events and events
+        that were signed up for
+        """
         try:
             user = User.objects.get(username=ally_username)
             ally = Ally.objects.get(user=user)
@@ -306,8 +311,7 @@ class AllyEventInformation(View):
             messages.warning(request, 'Ally Does not Exist!')
             if request.user.is_staff:
                 return redirect('sap:sap-dashboard')
-            else:
-                return redirect('sap:ally-dashboard')
+            return redirect('sap:ally-dashboard')
 
         events = Event.objects.all()
 

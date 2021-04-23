@@ -248,7 +248,6 @@ class AlliesListView(AccessMixin, TemplateView):
 
     def post(self, request):
         """Filters and returns allies based on selected criteria"""
-        category_relation = AllyStudentCategoryRelation.objects.order_by('-id')
         if request.POST.get("form_type") == 'filters':
             post_dict = dict(request.POST)
             if 'stemGradCheckboxes' in post_dict:
@@ -379,7 +378,6 @@ class MentorsListView(generic.ListView):
 
     def post(self, request):
         """Returns filtered version of allies on the dashboard"""
-        category_relation = AllyStudentCategoryRelation.objects.order_by('-id')
         if request.POST.get("form_type") == 'filters':
             post_dict = dict(request.POST)
             if 'stemGradCheckboxes' in post_dict:
