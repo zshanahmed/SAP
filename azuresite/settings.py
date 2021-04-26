@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django_nose',
     'crispy_forms',
+    'notifications'
 ]
 
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
