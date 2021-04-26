@@ -32,6 +32,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'notifications',
     'sap.apps.SapConfig',#'polls.apps.PollsConfig',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -41,7 +42,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django_nose',
     'crispy_forms',
-    # 'notifications' commenting this line because when I merged Elias's branch into my branch, this line was throwing error
 ]
 
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
@@ -63,6 +63,8 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'azuresite.urls'
+
+NOTIFICATION_URL_NAMESPACE = 'notifications'
 
 TEMPLATES = [
     {

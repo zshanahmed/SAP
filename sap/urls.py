@@ -79,6 +79,7 @@ urlpatterns = [
 
     url('^inbox/notifications/', include(notifications.urls, namespace='notifications')),
 
+
     url('create_iba_admin/',
         login_required(views.CreateAdminView.as_view()),
         name='create_iba_admin'),

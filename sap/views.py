@@ -19,6 +19,7 @@ from django.contrib import messages
 from django.http import HttpResponseNotFound
 from django.utils.dateparse import parse_datetime
 from notifications.signals import notify
+from notifications.models import Notification
 
 from .forms import UpdateAdminProfileForm
 from .models import Announcement, EventInviteeRelation, EventAttendeeRelation, Ally, StudentCategories, AllyStudentCategoryRelation, Event
