@@ -17,6 +17,7 @@
             const mentor_status = "{{event.mentor_status}}".split(',');
             const categories = "{{event.special_category}}".split(',');
             const research_area = "{{event.research_field}}".split(',');
+            console.log(research_area);
 
             if ("{{event.invite_all}}" === "True") {
                 invite_all_click();
@@ -30,25 +31,42 @@
                     "Transfer Student": "transfer_student",
                     "LGBTQ": "lgbtq"
                 };
-                for (let i = 0; i < roles.length; i++) {
+
+                if (roles) {
+                    for (let i = 0; i < roles.length; i++) {
                     const role_id = "#" + roles[i].split(" ")[0].toLowerCase() + "Check";
                     $(role_id)[0].checked = true;
+                    }
                 }
-                for (let i = 0; i < school_year.length; i++) {
+
+                if (school_year) {
+                    for (let i = 0; i < school_year.length; i++) {
                     const year_id = "#" + school_year[i].split(" ")[0].toLowerCase();
-                    $(year_id)[0].checked = true;
+                     $(year_id)[0].checked = true;
+                    }
                 }
-                for (let i = 0; i < mentor_status.length; i++) {
+
+                if (mentor_status) {
+                   for (let i = 0; i < mentor_status.length; i++) {
                     const mentor_id = "#" + mentor_status[i].split(" ")[0].toLowerCase();
                     $(mentor_id)[0].checked = true;
+                    }
                 }
-                for (let i = 0; i < categories.length; i++) {
+
+                if (categories) {
+                    for (let i = 0; i < categories.length; i++) {
                     const category_id = "#" + cat_ids[categories[i]];
                     $(category_id)[0].checked = true;
+                    }
                 }
-                for (let i = 0; i < research_area.length; i++) {
+
+                if (research_area) {
+                    for (let i = 0; i < research_area.length; i++) {
+                    console.log('here in loop')
                     const area_id = "#" + research_area[i].replace(/\s+/g, '').toLowerCase();
+                    console.log(research_area[i])
                     $(area_id)[0].checked = true;
+                    }
                 }
             }
         };
@@ -219,11 +237,19 @@
 
                                     <div class="form-check form-check-inline" id="invite_mentors">
                                         <div class="px-2">
-                                            <input type="checkbox" onclick="toggle_invite_all();" name="mentor_status" id="mentors" value="Mentors">
+                                            {% if 'Mentor' in event.mentor_status %}
+                                                <input type="checkbox" onclick="toggle_invite_all();" name="mentor_status" id="mentors" value="Mentors" checked>
+                                            {% else %}
+                                                <input type="checkbox" onclick="toggle_invite_all();" name="mentor_status" id="mentors" value="Mentors">
+                                            {% endif %}
                                             <label class="form-check-label" for="mentors">Mentors</label>
                                         </div>
                                         <div class="px-2">
-                                            <input type="checkbox" onclick="toggle_invite_all();" name="mentor_status" id="mentees" value="Mentees">
+                                            {% if 'Mentees' in event.mentor_status %}
+                                                <input type="checkbox" onclick="toggle_invite_all();" name="mentor_status" id="mentees" value="Mentees" checked>
+                                            {% else %}
+                                                <input type="checkbox" onclick="toggle_invite_all();" name="mentor_status" id="mentees" value="Mentees">
+                                            {% endif %}
                                             <label class="form-check-label" for="mentees">Mentees</label>
                                         </div>
 
