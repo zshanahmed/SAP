@@ -333,7 +333,17 @@ class AllyEventInformation(View):
         })
 
 class SapNotifications(View):
-    def get(self, request):
+    """
+    View for seeing notifications, get method returns the role of the request user and
+    a query set of notfications. dimsiss notificaiton deletes and recycles the get method
+    """
+
+    @staticmethod
+    def get(request):
+        """
+        Method for retrieving the notifications page. populates the template
+        with user_notify and role
+        """
         template_name = "sap/notifications.html"
 
         if request.user.is_staff:
@@ -347,3 +357,21 @@ class SapNotifications(View):
             'user_notify': user_notifications,
             'role': role,
         })
+
+    @staticmethod
+    def dismiss_notification(request, notification_id='0'):
+        """
+        Deletes the notification that the user clicks the button of.
+        """
+        try:
+            notification = Notification.objects.get(id=notification_id)
+            if notification.recipient == request.user:
+                notification.delete()
+                messages.add_message(request, messages.SUCCESS, 'Notification Dismissed!')
+            else:
+                messages.warning(request, 'Access Denied!')
+
+        except ObjectDoesNotExist:
+            messages.warning(request, 'Notification does not exist!')
+
+        return redirect('sap:notification_center')
