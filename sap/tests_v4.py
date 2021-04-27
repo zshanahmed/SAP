@@ -285,7 +285,10 @@ class EditEventTests(TestCase):
                                           research_field='Biochemistry,Bioinformatics',
                                           role_selected='Freshman,Sophomore,Juniors,Faculty',
                                           invite_all=True,
-                                          special_category='First generation college-student,Rural,Low-income,Underrepresented racial/ethnic minority,Disabled,Transfer Student,LGBTQ'
+                                          special_category='First generation college-student,'
+                                                           'Rural,Low-income,'
+                                                           'Underrepresented racial/ethnic minority,'
+                                                           'Disabled,Transfer Student,LGBTQ'
                                           )
 
         self.event2 = Event.objects.create(title='Mock Interview2',
@@ -297,10 +300,13 @@ class EditEventTests(TestCase):
                                           num_attending=0,
                                           num_invited=5,
                                           mentor_status='Mentors,Mentees',
-                                          research_field='Biochemistry,Bioinformatics',
+                                          research_field='Biochemistry,'
+                                                         'Bioinformatics',
                                           role_selected='Freshman,Sophomore,Juniors,Faculty',
                                           invite_all=False,
-                                          special_category='First generation college-student,Underrepresented racial/ethnic minority,Disabled,Transfer Student'
+                                          special_category='First generation college-student,'
+                                                           'Underrepresented racial/ethnic minority,'
+                                                           'Disabled,Transfer Student'
                                           )
 
         self.ally_user = User.objects.create_user(username='john2',
@@ -363,11 +369,24 @@ class EditEventTests(TestCase):
              'allday': ['allday'],
              'event_location': ['MacLean Hall'],
              'invite_all': ['invite_all'],
-             'role_selected': ['Staff', 'Graduate Student', 'Undergraduate Student', 'Faculty'],
-             'school_year_selected': ['Freshman', 'Sophomore', 'Juniors', 'Faculty'],
+             'role_selected': ['Staff', 'Graduate Student',
+                               'Undergraduate Student', 'Faculty'],
+             'school_year_selected': ['Freshman',
+                                      'Sophomore',
+                                      'Juniors',
+                                      'Faculty'],
              'mentor_status': ['Mentors', 'Mentees'],
-             'special_category': ['First generation college-student', 'Rural', 'Low-income', 'Underrepresented racial/ethnic minority', 'Disabled', 'Transfer Student', 'LGBTQ'],
-             'research_area': ['Biochemistry', 'Bioinformatics', 'Biology', 'Biomedical Engineering', 'Chemical Engineering', 'Chemistry', 'Computer Science and Engineering', 'Environmental Science', 'Health and Human Physiology', 'Mathematics', 'Microbiology', 'Neuroscience', 'Nursing', 'Physics', 'Psychology']
+             'special_category': ['First generation college-student', 'Rural',
+                                  'Low-income', 'Underrepresented racial/ethnic minority',
+                                  'Disabled', 'Transfer Student',
+                                  'LGBTQ'],
+             'research_area': ['Biochemistry', 'Bioinformatics',
+                               'Biology', 'Biomedical Engineering',
+                               'Chemical Engineering', 'Chemistry',
+                               'Computer Science and Engineering',
+                               'Environmental Science',
+                               'Health and Human Physiology', 'Mathematics', 'Microbiology',
+                               'Neuroscience', 'Nursing', 'Physics', 'Psychology']
              }, follow=True
         )
         event = Event.objects.filter(title=self.event.title)
@@ -395,8 +414,14 @@ class EditEventTests(TestCase):
              'role_selected': ['Staff', 'Graduate Student', 'Undergraduate Student', 'Faculty'],
              'school_year_selected': ['Freshman', 'Sophomore', 'Juniors', 'Faculty'],
              'mentor_status': ['Mentors', 'Mentees'],
-             'special_category': ['First generation college-student', 'Rural', 'Low-income', 'Underrepresented racial/ethnic minority', 'Disabled', 'Transfer Student', 'LGBTQ'],
-             'research_area': ['Biochemistry', 'Bioinformatics', 'Biology', 'Biomedical Engineering', 'Chemical Engineering', 'Chemistry', 'Computer Science and Engineering', 'Environmental Science', 'Health and Human Physiology', 'Mathematics', 'Microbiology', 'Neuroscience', 'Nursing', 'Physics', 'Psychology']
+             'special_category': ['First generation college-student', 'Rural',
+                                  'Low-income', 'Underrepresented racial/ethnic minority',
+                                  'Disabled', 'Transfer Student', 'LGBTQ'],
+             'research_area': ['Biochemistry', 'Bioinformatics', 'Biology',
+                               'Biomedical Engineering', 'Chemical Engineering',
+                               'Chemistry', 'Computer Science and Engineering', 'Environmental Science',
+                               'Health and Human Physiology', 'Mathematics', 'Microbiology',
+                               'Neuroscience', 'Nursing', 'Physics', 'Psychology']
              }
             , follow=True
         )
