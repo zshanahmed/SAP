@@ -193,6 +193,12 @@ class CalendarView(TemplateView):
         """
         This function gets all the events to be shown on Calendar
         """
+
+        if request.user.is_staff:
+            role = "admin"
+        else:
+            role = "ally"
+
         events_list = []
         curr_user = request.user
         if not curr_user.is_staff:
@@ -210,7 +216,8 @@ class CalendarView(TemplateView):
         return render(request, 'sap/calendar.html',
                       context={
                           "events": events,
-                          "user": curr_user
+                          "user": curr_user,
+                          "role": role,
                       })
 
 
@@ -566,6 +573,13 @@ class AnalyticsView(AccessMixin, TemplateView):
 
     def get(self, request):
         """gets analytics view"""
+
+        if request.user.is_staff:
+            role = "admin"
+        else:
+            role = "ally"
+
+
         allies = Ally.objects.all()
 
         if len(allies) != 0:
@@ -596,7 +610,8 @@ class AnalyticsView(AccessMixin, TemplateView):
                                                           "otherYears": other_years,
                                                           "staffNumbers": other_numbers[0],
                                                           "gradNumbers": other_numbers[1],
-                                                          "facultyNumbers": other_numbers[2], })
+                                                          "facultyNumbers": other_numbers[2],
+                                                          "role": role, })
 
         messages.error(request, "No allies to display!")
         return redirect('sap:sap-dashboard')

@@ -6,11 +6,7 @@
 {% block content %}
  <!-- Page Wrapper -->
     <div id="wrapper">
-        {% if user.is_staff %}
-            {% include './partials/_sidebar.html' with role='admin' %}
-        {% else %}
-            {% include './partials/_sidebar.html' with role='ally' %}
-        {% endif %}
+        {% include './partials/_sidebar.html' with role=role %}
         <!-- Content Wrapper -->
         <div id="content-wrapper" class="d-flex flex-column">
 
@@ -25,7 +21,7 @@
                     {% endfor %}
                 {% endif %}
 
-                {% include './partials/_topbar.html' with role="ally" %}
+                {% include './partials/_topbar.html' with role=role %}
 
                 <div class="container-fluid">
 
