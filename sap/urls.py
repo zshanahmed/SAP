@@ -1,10 +1,10 @@
 """
 Url mappings with appropriate functions to handle them
 """
+import notifications.urls
 from django.urls import path, include
 from django.contrib.auth import views as auth_views
 from django.conf.urls import url
-import notifications.urls
 from django.contrib.auth.decorators import login_required
 
 import sap.views_v2

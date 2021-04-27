@@ -1,6 +1,7 @@
 """
 views_v3 has functions that are mapped to the urls in urls.py
 """
+from notifications.models import Notification
 from django.core.exceptions import ObjectDoesNotExist
 from django.urls import reverse
 from django.views.generic import View
@@ -10,7 +11,7 @@ from django.contrib import messages
 from django.http import HttpResponseNotFound
 from .models import Ally, StudentCategories, AllyStudentCategoryRelation, Event, \
     EventInviteeRelation, EventAttendeeRelation
-from notifications.models import Notification
+
 
 User = get_user_model()
 

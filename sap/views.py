@@ -128,9 +128,9 @@ class CreateAnnouncement(AccessMixin, HttpResponse):
 
             for user in users:
                 if not user.is_staff:
-                    userNotifications = notifications.filter(recipient=user.id)
+                    user_notifications = notifications.filter(recipient=user.id)
                     msg = 'Announcement: ' + announcement.title
-                    make_notification(request, userNotifications, user, msg, action_object=announcement)
+                    make_notification(request, user_notifications, user, msg, action_object=announcement)
 
             messages.success(request, 'Annoucement created successfully !!')
             return redirect('sap:sap-dashboard')

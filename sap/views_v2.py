@@ -7,7 +7,7 @@ import io
 import os
 import uuid
 from datetime import date
-
+from notifications.signals import notify
 import pandas as pd
 from pandas.errors import ParserError, EmptyDataError
 import xlsxwriter
@@ -34,7 +34,7 @@ from sap.models import StudentCategories, Ally, AllyStudentCategoryRelation, Eve
 from sap.tokens import account_activation_token, password_reset_token
 from sap.views import User, AccessMixin
 
-from notifications.signals import notify
+
 
 
 class SignUpEventView(View):

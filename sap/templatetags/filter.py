@@ -1,9 +1,8 @@
 """
 Additional Django template methods can be defined here
 """
-from django import template
-
 from datetime import datetime
+from django import template
 
 register = template.Library()
 
@@ -24,8 +23,14 @@ def remove(value, key):
 
 @register.filter(name='get_class')
 def get_class(value):
-  return value._meta.verbose_name
+    """
+    returns the name of the django model from a django object
+    """
+    return value._meta.verbose_name
 
 @register.filter(name='format_date')
 def format_date(value):
+    """
+    Formats a python date time object in a way that moment can convert to local time.
+    """
     return datetime.strftime(value, "%Y/%m/%d %H:%M")
