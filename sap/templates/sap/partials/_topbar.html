@@ -20,12 +20,12 @@
                                         data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                         <div id="icon-wrapper">
                                             <i class="p3 fas fa-bell fa-2x" data-count="4b"></i>
-                                            <span style="background: rgba(0,0,0,0.5); width: auto; height: auto;margin: 0; border-radius: 50%; position:absolute; top: 8px; right: -5px;"class="badge">
+                                            <span style="background: rgba(0,0,0,0.5); width: auto; height: auto;margin: 0; border-radius: 50%; position:absolute; top: 8px; right: -5px;" class="badge">
                                                 {% live_notify_badge %}
                                             </span>
                                         </div>
                                     </a>
-                                    <div class="dropdown-menu" aria-labelledby="notifyDropdown">
+                                    <div class="dropdown-menu shadow animated--grow-in" style="right: 50px;" aria-labelledby="notifyDropdown">
                                     {% for notification in user.notifications.unread %}
                                         <div>
                                         <a class="dropdown-item" type="button">{{ notification.verb }}</a>
@@ -35,7 +35,6 @@
                                     </div>
                                 </div>
                             </li>
-                        {% live_notify_badge %}
                         {% endif %}
                         
                         <div class="topbar-divider d-none d-sm-block"></div>
