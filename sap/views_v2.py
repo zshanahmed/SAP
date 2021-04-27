@@ -34,6 +34,7 @@ from sap.models import StudentCategories, Ally, AllyStudentCategoryRelation, Eve
 from sap.tokens import account_activation_token, password_reset_token
 from sap.views import User, AccessMixin
 
+from notifications.signals import notify
 
 class SignUpEventView(View):
     """
@@ -166,6 +167,13 @@ def create_new_user(post_dict):
             categories = make_categories(post_dict["identityCheckboxes"])
         except KeyError:
             categories = StudentCategories.objects.create()
+
+    admins = User.objects.filter(is_staff=True)
+    msg = 'New ally has joined: ' + user.username
+    for admin in admins:
+        notify.send(user, recipient=admin, verb=msg)
+    notify.send(user, recipient=user, verb='Welcome to Science Alliance!')
+
     AllyStudentCategoryRelation.objects.create(student_category_id=categories.id, ally_id=ally.id)
     return user, ally
 
