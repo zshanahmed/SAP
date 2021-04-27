@@ -34,16 +34,37 @@
                         <div class="card-header py-3">
                             <h6 class="m-0 font-weight-bold text-primary">{{ notification.verb }}</h6>
                         </div>
+                        {% if notification.action_object %}
                         <div class="card-body">
                             <div class="table-responsive">
                                 <div class="form-group row">
                                     <div class="col-sm-6 mb-3 mb-sm-0">
-                                        <strong>Description: </strong> {{ notification.action_object }}
+                                        <strong>Description: </strong> {{ notification.action_object.description }}
                                     </div>
                                 </div>
                                 <div class="form-group row">
                                     <div class="col-sm-6 mb-3 mb-sm-0">
-                                        <strong>Created At: </strong><span class="datetime_to_be_adjusted">junk</span>
+                                        <strong>Event Start Time: </strong><span class="datetime_to_be_adjusted">{{notification.action_object.start_time}}</span>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <div class="col-sm-6 mb-3 mb-sm-0">
+                                        <strong>Event End Time: </strong><span>{{notification.action_object.end_time}}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <div class="form-group row">
+                                    <div class="col-sm-6 mb-3 mb-sm-0">
+                                        <strong>Description: </strong> junk
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <div class="col-sm-6 mb-3 mb-sm-0">
+                                        <strong>Created At: </strong><span>junk</span>
                                     </div>
                                 </div>
                                 <div class="form-group row">
@@ -53,6 +74,7 @@
                                 </div>
                             </div>
                         </div>
+                        {% endif %}
                     </div>
                 </div>
                 {% endfor %}
@@ -78,10 +100,12 @@
 window.onload = function() {
   // Get all the elements with the given class, and map through them
   document.querySelectorAll(".datetime_to_be_adjusted").forEach(function(el){
-    var utcTime = moment.utc(el.innerText);  // This is the time in UTC
-    console.log(utcTime)
-    utcTime.local();  // Switch to using the browser's local timezone
-    el.innerText = utcTime.format('MMMM Do YYYY, h:mm:ss a');  // Write the local time back to the element
+      const theDate = new Date(el.innerText)
+      console.log(theDate)
+        // var utcTime = moment.utc(el.innerText);  // This is the time in UTC
+        // console.log(utcTime)
+        // utcTime.local();  // Switch to using the browser's local timezone
+        // el.innerText = utcTime.format('MMMM Do YYYY, h:mm:ss a');  // Write the local time back to the element
   });
 }
 </script>

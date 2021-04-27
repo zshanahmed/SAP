@@ -12,3 +12,10 @@ def split(value, key):
     Returns the value turned into a list.
     """
     return value.split(key)
+
+@register.filter(name='remove')
+def remove(value, key):
+    """
+    returns the value without the key
+    """
+    return value.replace(key, '')
