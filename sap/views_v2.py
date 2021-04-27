@@ -36,6 +36,7 @@ from sap.views import User, AccessMixin
 
 from notifications.signals import notify
 
+
 class SignUpEventView(View):
     """
     Register for event.
@@ -45,6 +46,8 @@ class SignUpEventView(View):
         """
         Invitees can register for event
         """
+
+        previous_view = request.build_absolute_uri('?').split('/')[-2]
 
         user_current = request.user
         ally_current = Ally.objects.filter(user=user_current)
@@ -74,6 +77,8 @@ class SignUpEventView(View):
             messages.error(request,
                            'Access denied. You are not registered in our system.')
 
+        if previous_view == 'notification_center':
+            return redirect('sap:notification_center')
         return redirect(reverse('sap:calendar'))
 
 

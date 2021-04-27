@@ -1,6 +1,7 @@
 """Contains all the table definitions of the project."""
 from django.db import models
 from django.contrib.auth import get_user_model
+from notifications.base.models import AbstractNotification
 
 
 # Create your models here.

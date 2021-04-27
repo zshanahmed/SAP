@@ -263,4 +263,4 @@ class SapNotifications(TestCase):
     def test_get_page(self):
         self.client.login(username='eventAdmin', password='123456789')
         response = self.client.get(reverse('sap:notification_center'))
-        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.status_code, 200)

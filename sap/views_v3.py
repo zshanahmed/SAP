@@ -341,7 +341,7 @@ class SapNotifications(View):
         else:
             role = "ally"
 
-        user_notifications = Notification.objects.filter(request.user)
+        user_notifications = Notification.objects.filter(recipient=request.user)
 
         return render(request, template_name, {
             'user_notify': user_notifications,

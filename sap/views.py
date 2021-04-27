@@ -28,7 +28,7 @@ from .models import Announcement, EventInviteeRelation, EventAttendeeRelation, A
 
 User = get_user_model()
 
-def make_notification(request, notifications, user, msg):
+def make_notification(request, notifications, user, msg, action_object=''):
     """
     Makes notifications based on the request, the users existing notifications, the recipient user, and the message.
     Limiting notificaions to 10 based on database usage concerns.
@@ -36,13 +36,17 @@ def make_notification(request, notifications, user, msg):
     @param request: request that came from the client
     @param user: user notification being sent to
     @param msg: message to send
+    @action_object: django object (optional)
     """
     if notifications.exists():
         length = len(notifications)
         while length >= 10:
             notifications[length - 1].delete()
             length -= 1
-    notify.send(request.user, recipient=user, verb=msg)
+    if action_object == '':
+        notify.send(request.user, recipient=user, verb=msg)
+    else:
+        notify.send(request.user, recipient=user, verb=msg, action_object=action_object)
 
 
 def login_success(request):
@@ -812,7 +816,7 @@ class CreateEventView(AccessMixin, TemplateView):
                 user_notify = notifications.filter(recipient=ally_user.id)
                 if user_notify.exists():
                     msg = 'Event Invitation: ' + event_title
-                    make_notification(request, user_notify, ally_user, msg)
+                    make_notification(request, user_notify, ally_user, msg, event)
 
         EventInviteeRelation.objects.bulk_create(all_event_ally_objs)
 
