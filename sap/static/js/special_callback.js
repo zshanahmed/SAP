@@ -6,7 +6,7 @@ function custom_fill_notification_list(data) {
             if(typeof item.verb !== 'undefined'){
                 message = message + " " + item.verb;
             }
-            return '<a class="dropdown-item" type="button">' + message + '</a>';
+            return '<a class="dropdown-item" type="button">' + message + '</a> <hr/>';
         }).join('')
 
         for (var i = 0; i < menus.length; i++){
