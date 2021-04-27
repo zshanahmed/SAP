@@ -136,6 +136,8 @@ class ResponseEventInvitationTests(TestCase):
 
         self.event = Event.objects.create(
             title='Internship',
+            allday=0,
+            invite_all=0,
             description='Internship',
             start_time='2021-04-20 21:05:00',
             end_time='2021-04-26 21:05:00',

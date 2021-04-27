@@ -754,6 +754,8 @@ class CalendarViewTests(TestCase):
 
         self.user = User.objects.create_user(self.username, 'email@test.com', self.password)
         self.event = Event.objects.create(title='Internship', description='Internship',
+                                          allday=0,
+                                          invite_all=0,
                                           start_time='2021-04-20 21:05:00',
                                           end_time='2021-04-26 21:05:00', location='MacLean',
                                           num_invited=30, num_attending=10)
