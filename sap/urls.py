@@ -113,5 +113,8 @@ urlpatterns = [
     url(r'^create_announcements/$',
         login_required(views.CreateAnnouncement.create_announcement), name='create_announcement'),
 
+    url(r'^notification_center/$',
+        login_required(sap.views_v3.SapNotifications.as_view()), name='notification_center'),
+
     url(r'^upload_allies/$', login_required(sap.views_v2.UploadAllies.upload_allies), name='upload_allies'),
 ]

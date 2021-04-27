@@ -252,3 +252,15 @@ class AllyEventInformation(TestCase):
         self.client.login(username='eventAdmin', password='123456789')
         response = self.client.get(reverse('sap:view_ally_event_information', args=['junkjunkjunk']))
         self.assertEqual(response.status_code, 302)
+
+class SapNotifications(TestCase):
+    """
+    Test sap notification view
+    """
+    def setUp(self):
+        self.client = Client()
+
+    def test_get_page(self):
+        self.client.login(username='eventAdmin', password='123456789')
+        response = self.client.get(reverse('sap:notification_center'))
+        self.assertEqual(response.status_code, 302)

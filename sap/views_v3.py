@@ -10,6 +10,7 @@ from django.contrib import messages
 from django.http import HttpResponseNotFound
 from .models import Ally, StudentCategories, AllyStudentCategoryRelation, Event, \
     EventInviteeRelation, EventAttendeeRelation
+from notifications.models import Notification
 
 User = get_user_model()
 
@@ -329,4 +330,20 @@ class AllyEventInformation(View):
             'ally': ally,
             'invited_events': event_invited,
             'signed_up_events': event_signed_up_id,
+        })
+
+class SapNotifications(View):
+    def get(self, request):
+        template_name = "sap/notifications.html"
+
+        if request.user.is_staff:
+            role = "admin"
+        else:
+            role = "ally"
+
+        user_notifications = Notification.objects.filter(request.user)
+
+        return render(request, template_name, {
+            'user_notify': user_notifications,
+            'role': role,
         })
