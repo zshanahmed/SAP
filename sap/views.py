@@ -150,9 +150,6 @@ class DeleteAllyProfileFromAdminDashboard(AccessMixin, View):
         try:
             user = User.objects.get(username=username)
             ally = Ally.objects.get(user=user)
-            notifications = Notification.objects.all(action_object=ally)
-            if notifications.exists():
-                notifications.delete()
             ally.delete()
             user.delete()
             messages.success(request, 'Successfully deleted the user ' + username)
