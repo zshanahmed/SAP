@@ -20,12 +20,9 @@
                                     </div>
                                 </a>
                                 <div class="dropdown-menu shadow animated--grow-in" style="right: 50px;" aria-labelledby="notifyDropdown">
-                                {% for notification in user.notifications.unread %}
-                                    <div>
-                                    <a class="dropdown-item" type="button">{{ notification.verb }}</a>
-                                    </div>
-                                    <div class="dropdown-divider"></div>
-                                {% endfor %}
+                                    <a href="{% url 'notifications:unread' %}">
+                                        {% live_notify_list %}
+                                    </a>
                                 </div>
                             </div>
                         </li>
