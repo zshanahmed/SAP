@@ -100,4 +100,9 @@
     const isAdmin = "{{user.is_staff}}"
     myData = JSON.parse( myJSONList );
 </script>
+
+<script src="{% static 'notifications/notify.js' %}" type="text/javascript"></script>
+<script src="{% static 'js/special_callback.js' %}" type="text/javascript"></script>
+{% register_notify_callbacks callbacks='fill_notification_badge,custom_fill_notification_list' fetch=10 %}
+
 {% endblock content %}

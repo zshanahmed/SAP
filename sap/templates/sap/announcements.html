@@ -87,5 +87,7 @@ window.onload = function() {
 </script>
 
 <script src="{% static 'notifications/notify.js' %}" type="text/javascript"></script>
-    {% register_notify_callbacks callbacks='fill_notification_badge,fill_notification_list' fetch=10 %}
+<script src="{% static 'js/special_callback.js' %}" type="text/javascript"></script>
+{% register_notify_callbacks callbacks='fill_notification_badge,custom_fill_notification_list' fetch=10 %}
+
 {% endblock content %}
