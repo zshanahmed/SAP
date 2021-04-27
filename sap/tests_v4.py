@@ -5,10 +5,13 @@ import os
 from http import HTTPStatus
 
 from django.contrib.auth import get_user_model
+from django.core.exceptions import ObjectDoesNotExist
 from django.test import TestCase, Client  # tests file
 from django.urls import reverse
 from sap.models import EventInviteeRelation, AllyStudentCategoryRelation, StudentCategories, Ally, Event
 from .upload_resource_to_azure import upload_file_to_azure
+from notifications.signals import notify
+from notifications.models import Notification
 
 User = get_user_model()
 
@@ -258,9 +261,44 @@ class SapNotifications(TestCase):
     Test sap notification view
     """
     def setUp(self):
+        recipient = User.objects.create_user(username='recipient', password='12345678')
+        sender = User.objects.create_user(username='sender', password='12345678')
+        self.notification = notify.send(sender, recipient=recipient, verb='testing testing 123')[0][1][0]
+        self.other_notification = notify.send(recipient, recipient=sender, verb='not yo message')[0][1][0]
         self.client = Client()
 
     def test_get_page(self):
-        self.client.login(username='eventAdmin', password='123456789')
-        response = self.client.get(reverse('sap:notification_center'))
+        self.client.login(username='recipient', password='12345678')
+        response = self.client.get('/notification_center/')
         self.assertEqual(response.status_code, 200)
+
+    def test_dismiss_not_yours(self):
+        self.client.login(username='recipient', password='12345678')
+        response = self.client.get(reverse('sap:dismiss_notification', args=[self.other_notification.id]), follow=True)
+        self.assertEqual(response.status_code, 200)
+        message = list(response.context['messages'])[0]
+        self.assertEqual(message.message, 'Access Denied!')
+        try:
+            Notification.objects.get(id=self.other_notification.id)
+        except ObjectDoesNotExist:
+            assert False
+
+    def test_dismiss_not_existing(self):
+        self.client.login(username='recipient', password='12345678')
+        response = self.client.get(reverse('sap:dismiss_notification', args=[0]), follow=True)
+        self.assertEqual(response.status_code, 200)
+        print(response.context['messages'])
+        message = list(response.context['messages'])[0]
+        self.assertEqual(message.message, 'Notification does not exist!')
+
+    def test_dismiss(self):
+        self.client.login(username='recipient', password='12345678')
+        response = self.client.get(reverse('sap:dismiss_notification', args=[self.notification.id]), follow=True)
+        self.assertEqual(response.status_code, 200)
+        message = list(response.context['messages'])[0]
+        self.assertEqual(message.message, 'Notification Dismissed!')
+        try:
+            Notification.objects.get(id=self.notification.id)
+            assert False
+        except ObjectDoesNotExist:
+            pass

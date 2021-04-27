@@ -92,6 +92,10 @@ urlpatterns = [
         login_required(sap.views_v2.SignUpEventView.as_view()),
         name='signup_event'),
 
+    url(r'^signup_event/(?P<context>[\s\w-]+)/$',
+        login_required(sap.views_v2.SignUpEventView.as_view()),
+        name='signup_event'),
+
     url(r'^announcements/$',
         login_required(views.Announcements.as_view()),
         name='announcements'),

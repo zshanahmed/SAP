@@ -42,12 +42,10 @@ class SignUpEventView(View):
     Register for event.
     """
 
-    def get(self, request):
+    def get(self, request, context='calendar'):
         """
         Invitees can register for event
         """
-
-        previous_view = request.build_absolute_uri('?').split('/')[-2]
 
         user_current = request.user
         ally_current = Ally.objects.filter(user=user_current)
@@ -77,7 +75,7 @@ class SignUpEventView(View):
             messages.error(request,
                            'Access denied. You are not registered in our system.')
 
-        if previous_view == 'notification_center':
+        if context == 'notification':
             return redirect('sap:notification_center')
         return redirect(reverse('sap:calendar'))
 

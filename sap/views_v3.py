@@ -369,9 +369,9 @@ class SapNotifications(View):
                 notification.delete()
                 messages.add_message(request, messages.SUCCESS, 'Notification Dismissed!')
             else:
-                messages.warning(request, 'Access Denied!')
+                messages.add_message(request, messages.WARNING, 'Access Denied!')
 
         except ObjectDoesNotExist:
-            messages.warning(request, 'Notification does not exist!')
+            messages.add_message(request, messages.WARNING, 'Notification does not exist!')
 
         return redirect('sap:notification_center')
