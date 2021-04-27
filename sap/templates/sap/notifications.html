@@ -1,6 +1,7 @@
 {% extends 'sap/base.html' %}
 {% load static %}
 {% load notifications_tags %}
+{% load filter_tags %}
 {% block title %}IBA - Dashboard{% endblock title %}
 
 {% block content %}
@@ -35,43 +36,95 @@
                             <h6 class="m-0 font-weight-bold text-primary">{{ notification.verb }}</h6>
                         </div>
                         {% if notification.action_object %}
-                        <div class="card-body">
-                            <div class="table-responsive">
-                                <div class="form-group row">
-                                    <div class="col-sm-6 mb-3 mb-sm-0">
-                                        <strong>Description: </strong> {{ notification.action_object.description }}
+                            {% if notification.action_object|get_class == 'event'%}
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <div class="form-group row">
+                                            <div class="col-sm-6 mb-3 mb-sm-0">
+                                                <strong>Description: </strong> {{ notification.action_object.description }}
+                                            </div>
+                                        </div>
+                                        <div class="form-group row">
+                                            <div class="col-sm-6 mb-3 mb-sm-0">
+                                                <strong>Event Start Time: </strong><span>{{notification.action_object.start_time}}</span>
+                                            </div>
+                                        </div>
+                                        <div class="form-group row">
+                                            <div class="col-sm-6 mb-3 mb-sm-0">
+                                                <strong>Event End Time: </strong><span>{{notification.action_object.end_time}}</span>
+                                            </div>
+                                        </div>
+                                        <div class="form-group row">
+                                            <div class="col-sm-6 mb-3 mb-sm-0">
+                                                <strong>Event Location: </strong><span>{{notification.action_object.location}}</span>
+                                            </div>
+                                        </div>
+                                        <div class="form-group row">
+                                            <div class="col-sm-6 mb-3 mb-sm-0">
+                                                <a class="btn btn-success" href="/signup_event/?event_id={{notification.action_object.id}}">Yes, I'll attend</a>
+                                                <a class="btn btn-danger" href="">Dismiss</a>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="form-group row">
-                                    <div class="col-sm-6 mb-3 mb-sm-0">
-                                        <strong>Event Start Time: </strong><span class="datetime_to_be_adjusted">{{notification.action_object.start_time}}</span>
+                            {% elif notification.action_object|get_class == 'ally' %}
+                                <div class="card-body">
+                                        <div class="table-responsive">
+                                            <div class="form-group row">
+                                                <div class="col-sm-6 mb-3 mb-sm-0">
+                                                    <strong>Hawkid: </strong> {{ notification.action_object.hawk_id }}
+                                                </div>
+                                            </div>
+                                            <div class="form-group row">
+                                                <div class="col-sm-6 mb-3 mb-sm-0">
+                                                    <strong>User Type: </strong><span>{{notification.action_object.user_type}}</span>
+                                                </div>
+                                            </div>
+                                            <div class="form-group row">
+                                                <div class="col-sm-6 mb-3 mb-sm-0">
+                                                    <a class="btn btn-primary user" href="{% url 'sap:admin_view_ally' notification.action_object.user.username %}">View Profile</a>
+                                                </div>
+                                            </div>
+                                            <div class="form-group row">
+                                                <div class="col-sm-6 mb-3 mb-sm-0">
+                                                    <a class="btn btn-danger" href="">Dismiss</a>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="form-group row">
-                                    <div class="col-sm-6 mb-3 mb-sm-0">
-                                        <strong>Event End Time: </strong><span>{{notification.action_object.end_time}}</span>
+                            {% elif notification.action_object|get_class == 'announcement' %}
+                                    <div class="card-body">
+                                        <div class="table-responsive">
+                                            <div class="form-group row">
+                                                <div class="col-sm-6 mb-3 mb-sm-0">
+                                                    <strong>Description: </strong>{{ notification.action_object.description }}
+                                                </div>
+                                            </div>
+                                            <div class="form-group row">
+                                                <div class="col-sm-6 mb-3 mb-sm-0">
+                                                    <strong>Created At: </strong><span class="datetime_to_be_adjusted">{{ notification.action_object.created_at }}</span>
+                                                </div>
+                                            </div>
+                                            <div class="form-group row">
+                                                <div class="col-sm-6 mb-3 mb-sm-0">
+                                                    <strong>Created by: </strong>{{ notification.action_object.username }}
+                                                </div>
+                                            </div>
+                                            <div class="form-group row">
+                                                <div class="col-sm-6 mb-3 mb-sm-0">
+                                                    <a class="btn btn-danger" href="">Dismiss</a>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
-                            </div>
-                        </div>
+                            {% endif %}
                         {% else %}
                         <div class="card-body">
                             <div class="table-responsive">
                                 <div class="form-group row">
                                     <div class="col-sm-6 mb-3 mb-sm-0">
-                                        <strong>Description: </strong> junk
+                                        <a class="btn btn-danger" href="">Dismiss</a>
                                     </div>
-                                </div>
-                                <div class="form-group row">
-                                    <div class="col-sm-6 mb-3 mb-sm-0">
-                                        <strong>Created At: </strong><span>junk</span>
-                                    </div>
-                                </div>
-                                <div class="form-group row">
-                                    <div class="col-sm-6 mb-3 mb-sm-0">
-                                        <strong>Created by: </strong>junk
-                                    </div>
-                                </div>
                             </div>
                         </div>
                         {% endif %}
@@ -100,12 +153,10 @@
 window.onload = function() {
   // Get all the elements with the given class, and map through them
   document.querySelectorAll(".datetime_to_be_adjusted").forEach(function(el){
-      const theDate = new Date(el.innerText)
-      console.log(theDate)
-        // var utcTime = moment.utc(el.innerText);  // This is the time in UTC
-        // console.log(utcTime)
-        // utcTime.local();  // Switch to using the browser's local timezone
-        // el.innerText = utcTime.format('MMMM Do YYYY, h:mm:ss a');  // Write the local time back to the element
+    var utcTime = moment.utc(el.innerText);  // This is the time in UTC
+    console.log(utcTime)
+    utcTime.local();  // Switch to using the browser's local timezone
+    el.innerText = utcTime.format('MMMM Do YYYY, h:mm:ss a');  // Write the local time back to the element
   });
 }
 </script>

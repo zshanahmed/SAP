@@ -176,7 +176,7 @@ def create_new_user(post_dict):
     admins = User.objects.filter(is_staff=True)
     msg = 'New ally has joined: ' + user.username
     for admin in admins:
-        notify.send(user, recipient=admin, verb=msg)
+        notify.send(user, recipient=admin, verb=msg, action_object=ally)
     notify.send(user, recipient=user, verb='Welcome to Science Alliance!')
 
     AllyStudentCategoryRelation.objects.create(student_category_id=categories.id, ally_id=ally.id)

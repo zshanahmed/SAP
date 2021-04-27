@@ -19,3 +19,7 @@ def remove(value, key):
     returns the value without the key
     """
     return value.replace(key, '')
+
+@register.filter(name='get_class')
+def get_class(value):
+  return value._meta.verbose_name

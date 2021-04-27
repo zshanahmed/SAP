@@ -23,7 +23,7 @@ class Ally(models.Model):
         return self.hawk_id
 
     ##Grad and Faculty
-    area_of_research = models.CharField(max_length=200, null=True)
+    area_of_research = models.CharField(max_length=500, null=True)
     openings_in_lab_serving_at = models.BooleanField(default=False)
     description_of_research_done_at_lab = models.CharField(max_length=500, null=True)
     interested_in_mentoring = models.BooleanField(default=False)

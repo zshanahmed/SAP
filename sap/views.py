@@ -130,7 +130,7 @@ class CreateAnnouncement(AccessMixin, HttpResponse):
                 if not user.is_staff:
                     userNotifications = notifications.filter(recipient=user.id)
                     msg = 'Announcement: ' + announcement.title
-                    make_notification(request, userNotifications, user, msg)
+                    make_notification(request, userNotifications, user, msg, action_object=announcement)
 
             messages.success(request, 'Annoucement created successfully !!')
             return redirect('sap:sap-dashboard')
@@ -150,6 +150,9 @@ class DeleteAllyProfileFromAdminDashboard(AccessMixin, View):
         try:
             user = User.objects.get(username=username)
             ally = Ally.objects.get(user=user)
+            notifications = Notification.objects.all(action_object=ally)
+            if notifications.exists():
+                notifications.delete()
             ally.delete()
             user.delete()
             messages.success(request, 'Successfully deleted the user ' + username)
