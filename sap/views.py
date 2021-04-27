@@ -28,6 +28,23 @@ from .models import Announcement, EventInviteeRelation, EventAttendeeRelation, A
 
 User = get_user_model()
 
+def make_notification(request, notifications, user, msg):
+    """
+    Makes notifications based on the request, the users existing notifications, the recipient user, and the message.
+    Limiting notificaions to 10 based on database usage concerns.
+    @param notifications: notifications have recipient id = user.id
+    @param request: request that came from the client
+    @param user: user notification being sent to
+    @param msg: message to send
+    """
+    if notifications.exists():
+        length = len(notifications)
+        while length >= 10:
+            notifications[length - 1].delete()
+            length -= 1
+    notify.send(request.user, recipient=user, verb=msg)
+
+
 def login_success(request):
     """
     Redirects users based on whether they are staff or not
@@ -90,6 +107,7 @@ class CreateAnnouncement(AccessMixin, HttpResponse):
         """
         Enter what this class/method does
         """
+        notifications = Notification.objects.all()
 
         users = User.objects.all()
         if request.user.is_staff:
@@ -105,8 +123,10 @@ class CreateAnnouncement(AccessMixin, HttpResponse):
             )
 
             for user in users:
-                msg = 'Announcement: ' + announcement.title
-                notify.send(request.user, recipient=user, verb=msg)
+                if not user.is_staff:
+                    userNotifications = notifications.filter(recipient=user.id)
+                    msg = 'Announcement: ' + announcement.title
+                    make_notification(request, userNotifications, user, msg)
 
             messages.success(request, 'Annoucement created successfully !!')
             return redirect('sap:sap-dashboard')
