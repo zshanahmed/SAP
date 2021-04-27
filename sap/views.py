@@ -678,6 +678,8 @@ class CreateEventView(AccessMixin, TemplateView):
 
     def post(self, request):
         """Enter what this class/method does"""
+
+        notifications = Notification.objects.all()
         new_event_dict = dict(request.POST)
         event_title = new_event_dict['event_title'][0]
         event_description = new_event_dict['event_description'][0]
@@ -790,6 +792,12 @@ class CreateEventView(AccessMixin, TemplateView):
                 event_ally_rel_obj = EventInviteeRelation(event=event, ally=ally)
                 all_event_ally_objs.append(event_ally_rel_obj)
                 invited_allies.add(event_ally_rel_obj.ally)
+            ally_user = ally.user
+            if not ally_user.is_staff:
+                user_notify = notifications.filter(recipient=ally_user.id)
+                if user_notify.exists():
+                    msg = 'Event Invitation: ' + event_title
+                    make_notification(request, user_notify, ally_user, msg)
 
         EventInviteeRelation.objects.bulk_create(all_event_ally_objs)
 
