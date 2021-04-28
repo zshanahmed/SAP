@@ -17,7 +17,6 @@
             const mentor_status = "{{event.mentor_status}}".split(',');
             const categories = "{{event.special_category}}".split(',');
             const research_area = "{{event.research_field}}".split(',');
-            console.log(research_area);
 
             if ("{{event.invite_all}}" === "True") {
                 invite_all_click();
@@ -62,9 +61,7 @@
 
                 if (research_area) {
                     for (let i = 0; i < research_area.length; i++) {
-                    console.log('here in loop')
                     const area_id = "#" + research_area[i].replace(/\s+/g, '').toLowerCase();
-                    console.log(research_area[i])
                     $(area_id)[0].checked = true;
                     }
                 }
