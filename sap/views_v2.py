@@ -34,9 +34,6 @@ from sap.models import StudentCategories, Ally, AllyStudentCategoryRelation, Eve
 from sap.tokens import account_activation_token, password_reset_token
 from sap.views import User, AccessMixin
 
-
-
-
 class SignUpEventView(View):
     """
     Register for event.
