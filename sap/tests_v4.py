@@ -319,11 +319,11 @@ class EditEventTests(TestCase):
 
         self.ally = Ally.objects.create(
             user=self.ally_user,
-            hawk_id='johndoe2',
+            hawk_id='johndoe21',
             user_type='Graduate Student',
             works_at='College of Engineering',
-            area_of_research='Biochemistry',
-            major='Electrical Engineering',
+            area_of_research='Computer Science and Engineering',
+            major='Computer Science',
             willing_to_volunteer_for_events=True
         )
 
