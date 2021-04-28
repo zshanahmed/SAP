@@ -406,7 +406,8 @@ class MentorsListView(generic.ListView):
                     exclude_from_ms = exclude_from_ms_default
 
                     if mentorship_status != []:
-                        if (mentorship_status == 'Mentor') and (ally.interested_in_mentoring is False) and (ally.openings_in_lab_serving_at is False) and (ally.willing_to_offer_lab_shadowing is False):
+                        if (mentorship_status == 'Mentor') and (ally.interested_in_mentoring is False) \
+                             and (ally.openings_in_lab_serving_at is False) and (ally.willing_to_offer_lab_shadowing is False):
                             exclude_from_ms = True
                         elif (mentorship_status == 'Mentee') and (ally.interested_in_being_mentored is False):
                             exclude_from_ms = True
