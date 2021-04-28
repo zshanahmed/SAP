@@ -1,0 +1,349 @@
+{% extends 'sap/base.html' %}
+{% load static %}
+{% load filter_tags %}
+
+{% block title %}IBA - Edit Event{% endblock title %}
+
+{% block content %}
+
+    <script type= "text/javascript">
+
+        window.onload = function() {
+            $("#event_start_time").val("{{event.start_time}}");
+            $("#event_end_time").val("{{event.end_time}}");
+
+            const roles = "{{event.role_selected}}".split(',');
+            const school_year = "{{event.school_year_selected}}".split(',');
+            const mentor_status = "{{event.mentor_status}}".split(',');
+            const categories = "{{event.special_category}}".split(',');
+            const research_area = "{{event.research_field}}".split(',');
+
+            if ("{{event.invite_all}}" === "True") {
+                invite_all_click();
+            } else {
+                const cat_ids = {
+                    "First generation college-student": "first_gen_coll_stu",
+                    "Rural": "rural",
+                    "Underrepresented racial/ethnic minority": "under_represented",
+                    "Low-income": "low_income",
+                    "Disabled": "disabled",
+                    "Transfer Student": "transfer_student",
+                    "LGBTQ": "lgbtq"
+                };
+
+                if (roles) {
+                    for (let i = 0; i < roles.length; i++) {
+                    const role_id = "#" + roles[i].split(" ")[0].toLowerCase() + "Check";
+                    $(role_id)[0].checked = true;
+                    }
+                }
+
+                if (school_year) {
+                    for (let i = 0; i < school_year.length; i++) {
+                    const year_id = "#" + school_year[i].split(" ")[0].toLowerCase();
+                     $(year_id)[0].checked = true;
+                    }
+                }
+
+                if (mentor_status) {
+                   for (let i = 0; i < mentor_status.length; i++) {
+                    const mentor_id = "#" + mentor_status[i].split(" ")[0].toLowerCase();
+                    $(mentor_id)[0].checked = true;
+                    }
+                }
+
+                if (categories) {
+                    for (let i = 0; i < categories.length; i++) {
+                    const category_id = "#" + cat_ids[categories[i]];
+                    $(category_id)[0].checked = true;
+                    }
+                }
+
+                if (research_area) {
+                    for (let i = 0; i < research_area.length; i++) {
+                    const area_id = "#" + research_area[i].replace(/\s+/g, '').toLowerCase();
+                    $(area_id)[0].checked = true;
+                    }
+                }
+            }
+        };
+
+        // function that checks all the checkboxes when invite all  checkbox is clicked
+        function toggle_invite_all(){
+            const invite_all_checkbox = document.getElementById("invite_all");
+            const allInputs = document.getElementsByTagName("input");
+            let num_of_unchecked_boxes;
+            for (var i = 0, max = allInputs.length; i < max; i++){
+
+                if (allInputs[i].name == 'invite_all') continue;
+
+                if (allInputs[i].type === 'checkbox')
+
+                    if (allInputs[i].checked == false){
+                        invite_all_checkbox.checked = false;
+                        return;
+                    }
+            }
+
+            invite_all_checkbox.checked = true;
+        }
+
+        // function that unchecks invite all  checkbox when some other checkbox is unchecked
+        function invite_all_click() {
+            const invite_all_checkbox = document.getElementById("invite_all");
+            const value = invite_all_checkbox.checked === true;
+
+            const allInputs = document.getElementsByTagName("input");
+            for (var i = 0, max = allInputs.length; i < max; i++){
+                if (allInputs[i].type === 'checkbox' && allInputs[i].name !== 'allday')
+                    allInputs[i].checked = value;
+            }
+        }
+    </script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment.min.js"></script>
+
+<body class="bg-gradient-primary">
+    <div class="container">
+        {% if messages %}
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible text-center" role="alert">
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <strong>{{ message }} </strong>
+            </div>
+            {% endfor %}
+        {% endif %}
+        <div class="card o-hidden border-0 shadow-lg my-5">
+            <div class="card-body p-0">
+                <!-- Nested Row within Card Body -->
+                <div class="row">
+                    <a class="col-lg-5 d-none d-lg-block bg-register-image" href="{% url 'sap:calendar'%}"></a>
+                    <div class="col-lg-7">
+                        <div class="p-5">
+                            <div class="text-center">
+                                <h1 class="h4 text-gray-900 mb-4">Edit Event</h1>
+                            </div>
+                            <form method="post" class="user">{% csrf_token %}
+
+                                <div class="form-group">
+                                    <input name="title" type="text" class="form-control form-control-user" id="event_title" placeholder="Title of the Event" value="{{event.title}}" required>
+                                </div>
+                                <div class="form-group">
+                                    <input name="description" type="text" class="form-control form-control-user" id="event_description" placeholder="Description of the Event" value="{{event.description}}" required>
+                                </div>
+                                <div class="form-group">
+                                    <p style="font-size: 12px;margin-left: 20px;margin-bottom: 0px;">*Enter start time of the event in central time</p>
+                                    <input name="start_time" type="datetime-local" class="form-control form-control-user" id="event_start_time"
+                                           placeholder="Start time of the event in mm/dd/yyyy, hh/mm (AM or PM)" value="" required>
+                                </div>
+                                <div class="form-group">
+                                    <p style="font-size: 12px;margin-left: 20px;margin-bottom: 0px;">*Enter end time of the event in central time</p>
+                                        <input name="end_time" type="datetime-local" class="form-control form-control-user" id="event_end_time"
+                                               placeholder="End time of the event in mm/dd/yyyy, hh/mm (AM or PM)" value="" required>
+                                </div>
+                                <div class="py-2">
+                                    <strong>All day event:</strong>
+                                    <div class="form-check form-check-inline" >
+                                        <div class="px-2">
+                                            {% if event.allday == "True" %}
+                                                <input type="checkbox" name="allday" id="event_allday" value="event_allday" checked>
+                                            {% else %}
+                                                <input type="checkbox" name="allday" id="event_allday" value="event_allday">
+                                            {% endif %}
+                                            <label class="form-check-label" for="event_allday">All day</label>
+                                        </div>
+                                    </div>
+                                </div>
+
+<!--                                <div class="form-group">-->
+<!--                                    <p style="font-size: 12px;margin-left: 20px;margin-bottom: 0px;">*Enter end time of the event in central time</p>-->
+<!--                                    <input name="event_date_time" type="datetime-local" class="form-control form-control-user" id="event_endtime"-->
+<!--                                           placeholder="Date and Time of the Event in mm/dd/yyyy, hh/mm (AM or PM)" required>-->
+<!--                                </div>-->
+                                <div class="form-group">
+                                    <input name="location" type="text" class="form-control form-control-user" id="event_location"
+                                           placeholder="Location of the event (meeting link or address)" value="{{event.location}}" required>
+                                </div>
+
+
+                                <div class="py-2">
+                                    <strong>Invite all allies:</strong>
+                                    <div class="form-check form-check-inline" >
+                                        <div class="px-2">
+                                            {% if event.invite_all == "True" %}
+                                                <input type="checkbox" name="invite_all" id="invite_all" value="invite_all" onclick="invite_all_click();" checked>
+                                            {% else %}
+                                                <input type="checkbox" name="invite_all" id="invite_all" value="invite_all" onclick="invite_all_click();">
+                                            {% endif %}
+                                            <label class="form-check-label" for="invite_all">Invite all</label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="py-2">
+                                    <div><strong>User role in the university:</strong></div>
+
+                                    <div class="form-check form-check-inline" id="invite_ally_roles">
+                                        <div class="px-2">
+                                            <input type="checkbox" onclick="toggle_invite_all();" name="role_selected" id="staffCheck" value="Staff">
+                                            <label class="form-check-label" for="staffCheck">Staff</label>
+                                        </div>
+                                        <div class="px-2">
+                                            <input type="checkbox" onclick="toggle_invite_all();" name="role_selected" id="graduateCheck" value="Graduate Student">
+                                            <label class="form-check-label" for="graduateCheck">Grad</label>
+                                        </div>
+                                        <div class="px-2">
+                                            <input type="checkbox" onclick="toggle_invite_all();" name="role_selected" id="undergraduateCheck" value="Undergraduate Student">
+                                            <label class="form-check-label" for="undergraduateCheck">Undergrad</label>
+                                        </div>
+                                        <div class="px-2">
+                                            <input type="checkbox" onclick="toggle_invite_all();" name="role_selected" id="facultyCheck" value="Faculty">
+                                            <label class="form-check-label" for="facultyCheck">Faculty</label>
+                                        </div>
+
+                                    </div>
+                                </div>
+
+
+                                <div class="py-2">
+                                    <div><strong>School year:</strong></div>
+
+                                    <div class="form-check form-check-inline" id="invite_school_years">
+                                        <div class="px-2">
+                                            <input type="checkbox" onclick="toggle_invite_all();" name="school_year_selected" id="freshman" value="Freshman">
+                                            <label class="form-check-label" for="freshman">Freshman</label>
+                                        </div>
+                                        <div class="px-2">
+                                            <input type="checkbox" onclick="toggle_invite_all();" name="school_year_selected" id="sophomore" value="Sophomore">
+                                            <label class="form-check-label" for="sophomore">Sophomore</label>
+                                        </div>
+                                        <div class="px-2">
+                                            <input type="checkbox" onclick="toggle_invite_all();" name="school_year_selected" id="juniors" value="Juniors">
+                                            <label class="form-check-label" for="juniors">Junior</label>
+                                        </div>
+                                        <div class="px-2">
+                                            <input type="checkbox" onclick="toggle_invite_all();" name="school_year_selected" id="faculty" value="Faculty">
+                                            <label class="form-check-label" for="faculty">Senior</label>
+                                        </div>
+
+                                    </div>
+                                </div>
+
+
+                                <div class="py-2">
+                                    <div><strong>Mentorship status:</strong></div>
+
+                                    <div class="form-check form-check-inline" id="invite_mentors">
+                                        <div class="px-2">
+                                            {% if 'Mentor' in event.mentor_status %}
+                                                <input type="checkbox" onclick="toggle_invite_all();" name="mentor_status" id="mentors" value="Mentors" checked>
+                                            {% else %}
+                                                <input type="checkbox" onclick="toggle_invite_all();" name="mentor_status" id="mentors" value="Mentors">
+                                            {% endif %}
+                                            <label class="form-check-label" for="mentors">Mentors</label>
+                                        </div>
+                                        <div class="px-2">
+                                            {% if 'Mentees' in event.mentor_status %}
+                                                <input type="checkbox" onclick="toggle_invite_all();" name="mentor_status" id="mentees" value="Mentees" checked>
+                                            {% else %}
+                                                <input type="checkbox" onclick="toggle_invite_all();" name="mentor_status" id="mentees" value="Mentees">
+                                            {% endif %}
+                                            <label class="form-check-label" for="mentees">Mentees</label>
+                                        </div>
+
+                                    </div>
+                                </div>
+
+                                <div class="py-2">
+                                    <div><strong>Allies belonging to one of the following categories:</strong></div>
+                                    <div class="form-check">
+                                        <div class="px-2">
+                                            <input type="checkbox" onclick="toggle_invite_all();" name="special_category" id="first_gen_coll_stu" value="First generation college-student">
+                                            <label class="form-check-label" for="first_gen_coll_stu">First generation college-student</label>
+                                        </div>
+                                        <div class="px-2">
+                                            <input type="checkbox" onclick="toggle_invite_all();" name="special_category" id="rural" value="Rural">
+                                            <label class="form-check-label" for="rural">Rural</label>
+                                        </div>
+                                        <div class="px-2">
+                                            <input type="checkbox" onclick="toggle_invite_all();" name="special_category" id="low_income" value="Low-income">
+                                            <label class="form-check-label" for="low_income">Low-income</label>
+                                        </div>
+                                        <div class="px-2">
+                                            <input type="checkbox" onclick="toggle_invite_all();" name="special_category" id="under_represented" value="Underrepresented racial/ethnic minority">
+                                            <label class="form-check-label" for="under_represented">Underrepresented racial/ethnic minority</label>
+                                        </div>
+                                        <div class="px-2">
+                                            <input type="checkbox" onclick="toggle_invite_all();" name="special_category" id="disabled" value="Disabled">
+                                            <label class="form-check-label" for="disabled">Disabled</label>
+                                        </div>
+                                        <div class="px-2">
+                                            <input type="checkbox" onclick="toggle_invite_all();" name="special_category" id="transfer_student" value="Transfer Student">
+                                            <label class="form-check-label" for="transfer_student">Transfer Student</label>
+                                        </div>
+                                        <div class="px-2">
+                                            <input type="checkbox" onclick="toggle_invite_all();" name="special_category" id="lgbtq" value="LGBTQ">
+                                            <label class="form-check-label" for="lgbtq">LGBTQ</label>
+                                        </div>
+
+                                    </div>
+                                </div>
+
+                                <div class="py-2">
+                                    <div><strong>Area of research:</strong></div>
+                                    <div class="form-check" id="stemGradCheckboxes">
+                                          <input type="checkbox" onclick="toggle_invite_all();" value="Biochemistry" name="research_field" id="biochemistry">
+                                          <label class="form-check-label" for="biochemistry">Biochemistry</label><br>
+                                          <input type="checkbox" onclick="toggle_invite_all();" value="Bioinformatics" name="research_field" id="bioinformatics">
+                                          <label class="form-check-label" for="bioinformatics">Bioinformatics</label><br>
+                                          <input type="checkbox" onclick="toggle_invite_all();" value="Biology" name="research_field" id="biology">
+                                          <label class="form-check-label" for="biology">Biology</label><br>
+                                          <input type="checkbox" onclick="toggle_invite_all();" value="Biomedical Engineering" name="research_field" id="biomedicalengineering">
+                                          <label class="form-check-label" for="biomedicalengineering">Biomedical Engineering</label><br>
+                                          <input type="checkbox" onclick="toggle_invite_all();" value="Chemical Engineering" name="research_field" id="chemicalengineering">
+                                          <label class="form-check-label" for="chemicalengineering">Chemical Engineering</label><br>
+                                          <input type="checkbox" onclick="toggle_invite_all();" value="Chemistry" name="research_field" id="chemistry">
+                                          <label class="form-check-label" for="chemistry">Chemistry</label><br>
+                                          <input type="checkbox" onclick="toggle_invite_all();" value="Computer Science and Engineering" name="research_field" id="computerscienceandengineering">
+                                          <label class="form-check-label" for="computerscienceandengineering">Computer Science and Engineering</label><br>
+                                          <input type="checkbox" onclick="toggle_invite_all();" value="Environmental Science" name="research_field" id="environmentalscience">
+                                          <label class="form-check-label" for="environmentalscience">Environmental Science</label><br>
+                                          <input type="checkbox" onclick="toggle_invite_all();" value="Health and Human Physiology" name="research_field" id="healthandhumanphysiology">
+                                          <label class="form-check-label" for="healthandhumanphysiology">Health and Human Physiology</label><br>
+                                          <input type="checkbox" onclick="toggle_invite_all();" value="Mathematics" name="research_field" id="mathematics">
+                                          <label class="form-check-label" for="mathematics">Mathematics</label><br>
+                                          <input type="checkbox" onclick="toggle_invite_all();" value="Microbiology" name="research_field" id="microbiology">
+                                          <label class="form-check-label" for="microbiology">Microbiology</label><br>
+                                          <input type="checkbox" onclick="toggle_invite_all();" value="Neuroscience" name="research_field" id="neuroscience">
+                                          <label class="form-check-label" for="neuroscience">Neuroscience</label><br>
+                                          <input type="checkbox" onclick="toggle_invite_all();" value="Nursing" name="research_field" id="nursing">
+                                          <label class="form-check-label" for="nursing">Nursing</label><br>
+                                          <input type="checkbox" onclick="toggle_invite_all();" value="Physics" name="research_field" id="physics">
+                                          <label class="form-check-label" for="physics">Physics</label><br>
+                                          <input type="checkbox" onclick="toggle_invite_all();" value="Psychology" name="research_field" id="psychology">
+                                          <label class="form-check-label" for="psychology">Psychology</label><br>
+                                    </div>
+
+                                </div>
+                                <button type="submit" formmethod="post" class="btn btn-primary btn-user btn-block" id="submit_new_admin">
+                                    Update Event
+                                </button>
+                                <hr>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap core JavaScript-->
+    <script src="{% static 'vendor/jquery/jquery.min.js' %}"></script>
+    <script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+
+    <!-- Core plugin JavaScript-->
+    <script src="{% static 'vendor/jquery-easing/jquery.easing.min.js' %}"></script>
+
+    <!-- Custom scripts for all pages-->
+    <script src="{% static 'js/sb-admin-2.min.js' %}"></script>
+</body>
+{% endblock content %}
