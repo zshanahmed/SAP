@@ -392,11 +392,24 @@ class MentorsListView(generic.ListView):
             else:
                 exclude_from_year_default = True
                 undergrad_year = []
+            if 'mentorshipStatus' in post_dict:
+                mentorship_status = post_dict['mentorshipStatus'][0]
+                exclude_from_ms_default = False
+            else:
+                exclude_from_ms_default = True
+                mentorship_status = []
             allies_list = Ally.objects.order_by('-id')
-            if not (exclude_from_year_default and exclude_from_aor_default):
+            if not (exclude_from_year_default and exclude_from_aor_default and exclude_from_ms_default):
                 for ally in allies_list:
                     exclude_from_aor = exclude_from_aor_default
                     exclude_from_year = exclude_from_year_default
+                    exclude_from_ms = exclude_from_ms_default
+
+                    if mentorship_status != []:
+                        if (mentorship_status == 'Mentor') and (ally.interested_in_mentoring is False) and (ally.openings_in_lab_serving_at is False) and (ally.willing_to_offer_lab_shadowing is False):
+                            exclude_from_ms = True
+                        elif (mentorship_status == 'Mentee') and (ally.interested_in_being_mentored is False):
+                            exclude_from_ms = True
 
                     if ally.area_of_research:
                         aor = ally.area_of_research.split(',')
@@ -408,7 +421,7 @@ class MentorsListView(generic.ListView):
                     if (undergrad_year) and (ally.year not in undergrad_year):
                         exclude_from_year = True
 
-                    if exclude_from_aor and exclude_from_year:
+                    if exclude_from_aor and exclude_from_year and exclude_from_ms:
                         allies_list = allies_list.exclude(id=ally.id)
 
             for ally in allies_list:
