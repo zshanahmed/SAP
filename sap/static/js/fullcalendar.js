@@ -36,7 +36,7 @@ var defaults = {
 	//disableResizing: false,
 	
 	allDayDefault: true,
-	ignoreTimezone: true,
+	ignoreTimezone: false,
 	
 	// event ajax
 	lazyFetching: true,
@@ -3988,7 +3988,16 @@ function AgendaEventRenderer() {
 				skinCss +
 				"'" +
 			">" +
-			"<div class='fc-event-inner'>" +
+			"<div id='fc-event-inner' class='fc-event-inner' " +
+				"data-toggle='modal' data-target='#eventModal' " +
+				"data-title=\""+(event.title)+"\" " +
+				"data-description=\""+(event.description)+"\"  " +
+				"data-location=\""+(event.location)+"\"  " +
+				"data-id=\""+(event.id)+"\"  " +
+				"data-numinvited=\""+(event.num_invited)+"\"  " +
+				"data-numattending=\""+(event.num_attending)+"\"  " +
+				"data-end=\""+(event.end)+"\"  " +
+				"data-start=\""+(event.start)+"\">"+
 			"<div class='fc-event-time'>" +
 			htmlEscape(formatDates(event.start, event.end, opt('timeFormat'))) +
 			"</div>" +

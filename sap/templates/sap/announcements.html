@@ -78,11 +78,9 @@
 window.onload = function() {
   // Get all the elements with the given class, and map through them
   document.querySelectorAll(".datetime_to_be_adjusted").forEach(function(el){
-      console.log(el.innerText)
-     // var utcTime = moment.utc(el.innerText);  // This is the time in UTC
-     // console.log(utcTime)
-     // utcTime.local();  // Switch to using the browser's local timezone
-     // el.innerText = utcTime.format('MMMM Do YYYY, h:mm:ss a');  // Write the local time back to the element
+    var utcTime = moment.utc(el.innerText);  // This is the time in UTC
+    utcTime.local();  // Switch to using the browser's local timezone
+    el.innerText = utcTime.format('MMMM Do YYYY, h:mm:ss a');  // Write the local time back to the element
   });
 }
 </script>
