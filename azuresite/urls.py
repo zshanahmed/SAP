@@ -16,7 +16,11 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import include, path
 
+from django.conf.urls import url
+import notifications.urls
+
 urlpatterns = [
     path('', include('sap.urls')),
     path('admin/', admin.site.urls),
+    url('^inbox/notifications/', include(notifications.urls, namespace='notifications')),
 ]

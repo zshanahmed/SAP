@@ -18,6 +18,8 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.http import HttpResponseNotFound
 from django.utils.dateparse import parse_datetime
+from notifications.signals import notify
+from notifications.models import Notification
 
 from .forms import UpdateAdminProfileForm
 from .models import Announcement, EventInviteeRelation, EventAttendeeRelation, Ally, StudentCategories, AllyStudentCategoryRelation, Event
@@ -25,6 +27,27 @@ from .models import Announcement, EventInviteeRelation, EventAttendeeRelation, A
 # Create your views here.
 
 User = get_user_model()
+
+def make_notification(request, notifications, user, msg, action_object=''):
+    """
+    Makes notifications based on the request, the users existing notifications, the recipient user, and the message.
+    Limiting notificaions to 10 based on database usage concerns.
+    @param notifications: notifications have recipient id = user.id
+    @param request: request that came from the client
+    @param user: user notification being sent to
+    @param msg: message to send
+    @action_object: django object (optional)
+    """
+    if notifications.exists():
+        length = len(notifications)
+        while length >= 10:
+            notifications[length - 1].delete()
+            length -= 1
+    if action_object == '':
+        notify.send(request.user, recipient=user, verb=msg)
+    else:
+        notify.send(request.user, recipient=user, verb=msg, action_object=action_object)
+
 
 def login_success(request):
     """
@@ -88,17 +111,26 @@ class CreateAnnouncement(AccessMixin, HttpResponse):
         """
         Enter what this class/method does
         """
+        notifications = Notification.objects.all()
+
+        users = User.objects.all()
         if request.user.is_staff:
             post_dict = dict(request.POST)
             curr_user = request.user
             title = post_dict['title'][0]
             description = post_dict['desc'][0]
-            Announcement.objects.create(
+            announcement = Announcement.objects.create(
                 username=curr_user.username,
                 title=title,
                 description=description,
                 created_at=datetime.datetime.utcnow()
             )
+
+            for user in users:
+                if not user.is_staff:
+                    user_notifications = notifications.filter(recipient=user.id)
+                    msg = 'Announcement: ' + announcement.title
+                    make_notification(request, user_notifications, user, msg, action_object=announcement)
 
             messages.success(request, 'Annoucement created successfully !!')
             return redirect('sap:sap-dashboard')
@@ -120,6 +152,7 @@ class DeleteAllyProfileFromAdminDashboard(AccessMixin, View):
             ally = Ally.objects.get(user=user)
             ally.delete()
             user.delete()
+
             messages.success(request, 'Successfully deleted the user ' + username)
             return redirect('sap:sap-dashboard')
 
@@ -165,6 +198,12 @@ class CalendarView(TemplateView):
         """
         This function gets all the events to be shown on Calendar
         """
+
+        if request.user.is_staff:
+            role = "admin"
+        else:
+            role = "ally"
+
         events_list = []
         curr_user = request.user
         if not curr_user.is_staff:
@@ -182,7 +221,8 @@ class CalendarView(TemplateView):
         return render(request, 'sap/calendar.html',
                       context={
                           "events": events,
-                          "user": curr_user
+                          "user": curr_user,
+                          "role": role,
                       })
 
 
@@ -392,11 +432,25 @@ class MentorsListView(generic.ListView):
             else:
                 exclude_from_year_default = True
                 undergrad_year = []
+            if 'mentorshipStatus' in post_dict:
+                mentorship_status = post_dict['mentorshipStatus'][0]
+                exclude_from_ms_default = False
+            else:
+                exclude_from_ms_default = True
+                mentorship_status = []
             allies_list = Ally.objects.order_by('-id')
-            if not (exclude_from_year_default and exclude_from_aor_default):
+            if not (exclude_from_year_default and exclude_from_aor_default and exclude_from_ms_default):
                 for ally in allies_list:
                     exclude_from_aor = exclude_from_aor_default
                     exclude_from_year = exclude_from_year_default
+                    exclude_from_ms = exclude_from_ms_default
+
+                    if mentorship_status != []:
+                        if (mentorship_status == 'Mentor') and (ally.interested_in_mentoring is False) \
+                             and (ally.openings_in_lab_serving_at is False) and (ally.willing_to_offer_lab_shadowing is False):
+                            exclude_from_ms = True
+                        elif (mentorship_status == 'Mentee') and (ally.interested_in_being_mentored is False):
+                            exclude_from_ms = True
 
                     if ally.area_of_research:
                         aor = ally.area_of_research.split(',')
@@ -408,14 +462,70 @@ class MentorsListView(generic.ListView):
                     if (undergrad_year) and (ally.year not in undergrad_year):
                         exclude_from_year = True
 
-                    if exclude_from_aor and exclude_from_year:
+                    if exclude_from_aor and exclude_from_year and exclude_from_ms:
                         allies_list = allies_list.exclude(id=ally.id)
 
             for ally in allies_list:
                 if ally.user.is_active:
                     if not ally.user.is_active:
                         allies_list = allies_list.exclude(id=ally.id)
-            return render(request, 'sap/dashboard_ally.html', {'allies_list': allies_list})
+
+            user = request.user
+            ally = Ally.objects.get(user=user)
+            try:
+                categories = AllyStudentCategoryRelation.objects.filter(
+                    ally_id=ally.id).values()[0]
+                categories = StudentCategories.objects.filter(
+                    id=categories['student_category_id'])[0]
+            except KeyError:
+                categories = []
+
+            if (categories) and (exclude_from_ms_default is False):
+                identity_wise_list = []
+                curr_identity_list = []
+                if categories.first_gen_college_student is True:
+                    curr_identity_list.append('First generation college-student')
+                if categories.low_income is True:
+                    curr_identity_list.append('Low-income')
+                if categories.under_represented_racial_ethnic is True:
+                    curr_identity_list.append('Underrepresented racial/ethnic minority')
+                if categories.lgbtq is True:
+                    curr_identity_list.append('LGBTQ')
+                if categories.rural is True:
+                    curr_identity_list.append('Rural')
+                if categories.disabled is True:
+                    curr_identity_list.append('Disabled')
+                for ally in allies_list:
+                    try:
+                        categories_from_list = AllyStudentCategoryRelation.objects.filter(
+                            ally_id=ally.id).values()[0]
+                        categories_from_list = StudentCategories.objects.filter(
+                            id=categories_from_list['student_category_id'])[0]
+                    except KeyError:
+                        categories_from_list = []
+                    not_found = True
+                    if categories_from_list:
+                        if (categories_from_list.first_gen_college_student is True) and \
+                                ('First generation college-student' in curr_identity_list):
+                            not_found = False
+                        if (categories_from_list.low_income is True) and ('Low-income' in curr_identity_list):
+                            not_found = False
+                        if (categories_from_list.under_represented_racial_ethnic is True) and \
+                            ('Underrepresented racial/ethnic minority' in curr_identity_list):
+                            not_found = False
+                        if (categories_from_list.lgbtq is True) and ('LGBTQ' in curr_identity_list):
+                            not_found = False
+                        if (categories_from_list.rural is True) and ('Rural' in curr_identity_list):
+                            not_found = False
+                        if (categories_from_list.disabled is True) and ('Disabled' in curr_identity_list):
+                            not_found = False
+                    if not_found:
+                        identity_wise_list.append(ally)
+                    else:
+                        identity_wise_list.insert(0, ally)
+            else:
+                identity_wise_list = allies_list
+            return render(request, 'sap/dashboard_ally.html', {'allies_list': identity_wise_list})
 
         return HttpResponse()
 
@@ -538,6 +648,13 @@ class AnalyticsView(AccessMixin, TemplateView):
 
     def get(self, request):
         """gets analytics view"""
+
+        if request.user.is_staff:
+            role = "admin"
+        else:
+            role = "ally"
+
+
         allies = Ally.objects.all()
 
         if len(allies) != 0:
@@ -568,7 +685,8 @@ class AnalyticsView(AccessMixin, TemplateView):
                                                           "otherYears": other_years,
                                                           "staffNumbers": other_numbers[0],
                                                           "gradNumbers": other_numbers[1],
-                                                          "facultyNumbers": other_numbers[2], })
+                                                          "facultyNumbers": other_numbers[2],
+                                                          "role": role, })
 
         messages.error(request, "No allies to display!")
         return redirect('sap:sap-dashboard')
@@ -650,13 +768,21 @@ class CreateEventView(AccessMixin, TemplateView):
 
     def post(self, request):
         """Enter what this class/method does"""
+
+        notifications = Notification.objects.all()
         new_event_dict = dict(request.POST)
+        print(new_event_dict)
         event_title = new_event_dict['event_title'][0]
         event_description = new_event_dict['event_description'][0]
         event_start_time = new_event_dict['event_start_time'][0]
         event_end_time = new_event_dict['event_end_time'][0]
         event_location = new_event_dict['event_location'][0]
-
+        invite_all = True
+        mentor_status = None
+        special_category = None
+        research_field = None
+        school_year_selected = None
+        role_selected = None
         allies_list = Ally.objects.order_by('-id')
         for ally in allies_list:
             if not ally.user.is_active:
@@ -666,33 +792,40 @@ class CreateEventView(AccessMixin, TemplateView):
 
         if 'role_selected' in new_event_dict:
             invite_ally_user_types = new_event_dict['role_selected']
+            role_selected = ','.join(new_event_dict['role_selected'])
         else:
             invite_ally_user_types = []
 
         if 'school_year_selected' in new_event_dict:
             invite_ally_school_years = new_event_dict['school_year_selected']
+            school_year_selected = ','.join(new_event_dict['school_year_selected'])
         else:
             invite_ally_school_years = []
 
         if 'mentor_status' in new_event_dict:
             invite_mentor_mentee = new_event_dict['mentor_status']
+            mentor_status = ','.join(new_event_dict['mentor_status'])
         else:
             invite_mentor_mentee = []
 
         if 'special_category' in new_event_dict:
             invite_ally_belonging_to_special_categories = new_event_dict['special_category']
+            special_category = ','.join(new_event_dict['special_category'])
         else:
             invite_ally_belonging_to_special_categories = []
 
         if 'research_area' in new_event_dict:
             invite_ally_belonging_to_research_area = new_event_dict['research_area']
+            research_field = ','.join(new_event_dict['research_area'])
         else:
             invite_ally_belonging_to_research_area = []
 
         if 'invite_all' in new_event_dict:
             invite_all_selected = True
+            invite_all = new_event_dict['invite_all'][0] == 'invite_all'
         else:
             invite_all_selected = []
+            invite_all = False
 
         allday = 'event_allday' in new_event_dict
 
@@ -707,7 +840,12 @@ class CreateEventView(AccessMixin, TemplateView):
                                      end_time=parse_datetime(event_end_time + '-0500'),
                                      location=event_location,
                                      allday=allday,
-                                     )
+                                     invite_all=invite_all,
+                                     mentor_status=mentor_status,
+                                     special_category=special_category,
+                                     research_field=research_field,
+                                     school_year_selected=school_year_selected,
+                                     role_selected=role_selected)
 
         if invite_all_selected:
             # If all allies are invited
@@ -762,6 +900,12 @@ class CreateEventView(AccessMixin, TemplateView):
                 event_ally_rel_obj = EventInviteeRelation(event=event, ally=ally)
                 all_event_ally_objs.append(event_ally_rel_obj)
                 invited_allies.add(event_ally_rel_obj.ally)
+            ally_user = ally.user
+            if not ally_user.is_staff:
+                user_notify = notifications.filter(recipient=ally_user.id)
+                if user_notify.exists():
+                    msg = 'Event Invitation: ' + event_title
+                    make_notification(request, user_notify, ally_user, msg, event)
 
         EventInviteeRelation.objects.bulk_create(all_event_ally_objs)
 

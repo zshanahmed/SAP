@@ -5,8 +5,6 @@ from http import HTTPStatus
 from django.urls import reverse
 from django.contrib.auth import get_user_model
 from django.test import TestCase, Client  # tests file
-from django.contrib.auth.forms import PasswordChangeForm
-from .forms import UpdateAdminProfileForm
 from .models import Ally, AllyStudentCategoryRelation, StudentCategories
 
 
@@ -560,11 +558,11 @@ class AllyDashboardTests(TestCase):
             description_of_research_done_at_lab='Created tools to fight fingerprinting',
             people_who_might_be_interested_in_iba=True,
             how_can_science_ally_serve_you='Help in connecting with like minded people',
-            year='Senior', major='Electical Engineering', willing_to_offer_lab_shadowing=True,
-            willing_to_volunteer_for_events=True,  interested_in_mentoring=True,
+            year='Senior', major='Electical Engineering', willing_to_offer_lab_shadowing=False,
+            willing_to_volunteer_for_events=True,  interested_in_mentoring=False,
             interested_in_connecting_with_other_mentors=True, interested_in_mentor_training=True,
             interested_in_joining_lab=True, has_lab_experience=True, information_release=True,
-            openings_in_lab_serving_at=True,
+            openings_in_lab_serving_at=False,
         )
 
         self.ally = Ally.objects.create(
@@ -573,12 +571,13 @@ class AllyDashboardTests(TestCase):
             area_of_research='Computer Science and Engineering,Health and Human Physiology,Physics',
             description_of_research_done_at_lab='Created tools to fight fingerprinting',
             people_who_might_be_interested_in_iba=True,
+            interested_in_being_mentored=True,
             how_can_science_ally_serve_you='Help in connecting with like minded people',
             year='Senior', major='Electical Engineering', willing_to_offer_lab_shadowing=True,
-            willing_to_volunteer_for_events=True, interested_in_mentoring=True,
+            willing_to_volunteer_for_events=True, interested_in_mentoring=False,
             interested_in_connecting_with_other_mentors=True,
             interested_in_mentor_training=True, interested_in_joining_lab=True,
-            has_lab_experience=True, information_release=True, openings_in_lab_serving_at=True,
+            has_lab_experience=True, information_release=True, openings_in_lab_serving_at=False,
         )
 
         self.ally_user_2 = User.objects.create_user(username='johndoe_3',
@@ -598,26 +597,79 @@ class AllyDashboardTests(TestCase):
             how_can_science_ally_serve_you='Help in connecting with like minded people',
             year='Senior',
             major='Electical Engineering',
-            willing_to_offer_lab_shadowing=True,
+            willing_to_offer_lab_shadowing=False,
             willing_to_volunteer_for_events=True,
-            interested_in_mentoring=True,
+            interested_in_mentoring=False,
             interested_in_connecting_with_other_mentors=True,
             interested_in_mentor_training=True,
             interested_in_joining_lab=True,
             has_lab_experience=True,
             information_release=True,
-            openings_in_lab_serving_at=True,
+            openings_in_lab_serving_at=False,
         )
 
         category = StudentCategories.objects.create()
+        category.under_represented_racial_ethnic = True
+        category.first_gen_college_student = True
+        category.transfer_student = True
+        category.lgbtq = True
+        category.low_income = True
+        category.rural = True
+        category.disabled = True
+        category.save()
         self.ally_user_student_category_relation =AllyStudentCategoryRelation.objects.create(ally_id=self.user_ally.id,
                                                                                              student_category_id=category.id)
         category = StudentCategories.objects.create()
         self.category_relation = AllyStudentCategoryRelation.objects.create(ally_id=self.ally_2.id,
                                                    student_category_id=category.id)
         category = StudentCategories.objects.create()
+        category.under_represented_racial_ethnic = True
+        category.first_gen_college_student = True
+        category.transfer_student = True
+        category.lgbtq = True
+        category.low_income = True
+        category.rural = True
+        category.disabled = True
+        category.save()
         AllyStudentCategoryRelation.objects.create(ally_id=self.ally.id, student_category_id=category.id)
 
+    def test_mentorship_status_filter_for_ally(self):
+        """
+        Show all allies conforming to mentorship status filter for allies dashboard
+        """
+
+        self.ally_user.is_staff = False
+        self.ally_user.is_active = True
+        self.ally_user.save()
+        self.client.login(username=self.username, password=self.password)
+
+        # Should return no allies
+        response = self.client.post(
+            '/ally-dashboard/', {
+                'csrfmiddlewaretoken': ['XdNiZpT3jpCeRzd2kq8bbRPUmc0tKFP7dsxNaQNTUhblQPK7lne9sX0mrE5khfHH'],
+                'mentorshipStatus': ['Mentor'],
+                'major': '',
+                'form_type': 'filters'
+            }, follow=True
+        )
+
+        self.assertContains(
+            response, self.ally_user.first_name + ' ' + self.ally_user.last_name, html=True
+        )
+
+        # Should find our johndoe
+        response = self.client.post(
+            '/ally-dashboard/', {
+                'csrfmiddlewaretoken': ['XdNiZpT3jpCeRzd2kq8bbRPUmc0tKFP7dsxNaQNTUhblQPK7lne9sX0mrE5khfHH'],
+                'mentorshipStatus': ['Mentee'],
+                'major': '',
+                'form_type': 'filters'
+            }, follow=True
+        )
+
+        self.assertContains(
+            response, self.ally_user.first_name + ' ' + self.ally_user.last_name, html=True
+        )
 
     def test_dasbhoard_access_for_nonadmin(self):
         """
@@ -749,195 +801,3 @@ class AllyDashboardTests(TestCase):
         self.assertContains(
             response, self.ally_user.first_name + ' ' + self.ally_user.last_name, html=True
         )
-
-
-class AdminUpdateProfileAndPasswordTests(TestCase):
-    """
-    Unit test for update profile feature for admin and to reset their passwords
-    """
-
-    def setUp(self):
-        self.username = 'Admin_1'
-        self.password = 'admin_password1'
-        self.email = 'email@test.com'
-        self.client = Client()
-        self.user = User.objects.create_user(
-            self.username, self.email, self.password)
-
-    def test_change_password_page_for_admin(self):
-        """
-        Show Change Password page for Admin
-        """
-        self.user.is_staff = True
-        self.user.save()
-        self.client.login(username=self.username, password=self.password)
-        response = self.client.get(reverse('sap:change_password'))
-        self.assertEqual(response.status_code, HTTPStatus.OK)
-        self.assertContains(
-            response, "Change Password", html=True
-        )
-
-    def test_change_password_page_for_ally(self):
-        """
-        Show Change Password page for Ally
-        """
-        self.user.is_staff = False
-        self.user.save()
-        self.client.login(username=self.username, password=self.password)
-        response = self.client.get(reverse('sap:change_password'))
-        self.assertEqual(response.status_code, HTTPStatus.OK)
-
-    def test_update_profile_page_for_admin(self):
-        """
-        Show Change Password page for Admin
-        """
-        self.user.is_staff = True
-        self.user.save()
-        self.client.login(username=self.username, password=self.password)
-        response = self.client.get(reverse('sap:sap-admin_profile'))
-        self.assertEqual(response.status_code, HTTPStatus.OK)
-        self.assertContains(
-            response, "Update Admin Profile", html=True
-        )
-
-    def test_update_profile_page_for_ally(self):
-        """
-        Show Change Password page for Ally
-        """
-        self.user.is_staff = False
-        self.user.save()
-        self.client.login(username=self.username, password=self.password)
-        response = self.client.get(reverse('sap:sap-admin_profile'))
-        self.assertEqual(response.status_code, HTTPStatus.OK)
-
-    def test_failure_mismatched_new_pass_change_password(self):
-        """
-        If new passwords don't match, a failed message is displayed
-        """
-        self.user.is_staff = True
-        self.user.save()
-        self.client.login(username=self.username, password=self.password)
-        response = self.client.get(reverse('sap:change_password'))
-        self.assertEqual(response.status_code, HTTPStatus.OK)
-        self.assertContains(
-            response, "Change Password", html=True
-        )
-        data = {
-            "old_password": "admin_password1",
-            "new_password1": "something_random",
-            "new_password2": "admin_password2"
-        }
-        form = PasswordChangeForm(
-            user=self.user,
-            data=data
-        )
-        self.assertFalse(form.is_valid())
-
-        response = self.client.post(
-            reverse('sap:change_password'), data=data, follow=True)
-        self.assertEqual(response.status_code, HTTPStatus.OK)
-        message = list(response.context['messages'])[0]
-        self.assertEqual(message.message, "Could not Update Password !")
-
-    def test_failure_old_pass_wrong_change_password(self):
-        """
-        If old password is wrong, a failed message is displayed
-        """
-        self.user.is_staff = True
-        self.user.save()
-        self.client.login(username=self.username, password=self.password)
-        response = self.client.get(reverse('sap:change_password'))
-        self.assertEqual(response.status_code, HTTPStatus.OK)
-        self.assertContains(
-            response, "Change Password", html=True
-        )
-        data = {
-            "old_password": "something_random",
-            "new_password1": "admin_password2",
-            "new_password2": "admin_password2"
-        }
-        form = PasswordChangeForm(
-            user=self.user,
-            data=data
-        )
-        self.assertFalse(form.is_valid())
-        response = self.client.post(
-            reverse('sap:change_password'), data=data, follow=True)
-        self.assertEqual(response.status_code, HTTPStatus.OK)
-        message = list(response.context['messages'])[0]
-        self.assertEqual(message.message, "Could not Update Password !")
-
-    def test_success_change_password(self):
-        """
-        If old password is right and new password match then change password
-        is successfull and a success message is displayed
-        """
-        self.user.is_staff = True
-        self.user.save()
-        self.client.login(username=self.username, password=self.password)
-        response = self.client.get(reverse('sap:change_password'))
-        self.assertEqual(response.status_code, HTTPStatus.OK)
-        self.assertContains(
-            response, "Change Password", html=True
-        )
-        data = {
-            "old_password": "admin_password1",
-            "new_password1": "admin_password2",
-            "new_password2": "admin_password2"
-        }
-        form = PasswordChangeForm(
-            user=self.user,
-            data=data
-        )
-        self.assertTrue(form.is_valid())
-
-        response = self.client.post(
-            reverse('sap:change_password'), data=data, follow=True)
-        self.assertEqual(response.status_code, HTTPStatus.OK)
-        message = list(response.context['messages'])[0]
-        self.assertEqual(message.message, "Password Updated Successfully !")
-
-    def test_correct_update_profile(self):
-        """
-        If profile is updated, a success message is displayed
-        """
-        self.user.is_staff = True
-        self.user.save()
-        self.client.login(username=self.username, password=self.password)
-        response = self.client.get(reverse('sap:sap-admin_profile'))
-        self.assertEqual(response.status_code, HTTPStatus.OK)
-        self.assertContains(
-            response, "Update Admin Profile", html=True
-        )
-
-        form = UpdateAdminProfileForm(
-            data={"username": "Admin_2", "email": "admin@admin.com"})
-        self.assertTrue(form.is_valid())
-        response = self.client.post(
-            reverse('sap:sap-admin_profile'), data={"username": "Admin_2", "email": "admin@admin.com"}, follow=True)
-        self.assertEqual(response.status_code, HTTPStatus.OK)
-        message = list(response.context['messages'])[0]
-        self.assertEqual(message.message, "Profile Updated !")
-
-    def test_fail_update_profile(self):
-        """
-        If profile is not updated, a failed message is displayed
-        """
-        self.user.is_staff = True
-        self.user.save()
-        self.client.login(username=self.username, password=self.password)
-        response = self.client.get(reverse('sap:sap-admin_profile'))
-        self.assertEqual(response.status_code, HTTPStatus.OK)
-        self.assertContains(
-            response, "Update Admin Profile", html=True
-        )
-
-        form = UpdateAdminProfileForm(
-            data={"username": "Admin_1", "email": "admin@admin.com"})
-        self.assertFalse(form.is_valid())
-        response = self.client.post(
-            "/update_profile/", data={"username": "Admin_1", "email": "admin@admin.com"}, follow=True)
-        self.assertEqual(response.status_code, HTTPStatus.OK)
-        message = list(response.context['messages'])[0]
-        self.assertEqual(
-            message.message, "Could not Update Profile ! Username already exists")
