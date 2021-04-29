@@ -17,7 +17,6 @@ from .models import Ally, StudentCategories, AllyStudentCategoryRelation, Event,
 
 User = get_user_model()
 
-
 def wack_test_db():
     """
     Delete users/allies/categories from the database
