@@ -3,7 +3,7 @@ views_v3 has functions that are mapped to the urls in urls.py
 """
 from django.core.exceptions import ObjectDoesNotExist
 from django.urls import reverse
-from django.views.generic import View
+from django.views.generic import View, TemplateView
 from django.contrib.auth import get_user_model
 from django.shortcuts import render, redirect
 from django.contrib import messages
@@ -330,3 +330,44 @@ class AllyEventInformation(View):
             'invited_events': event_invited,
             'signed_up_events': event_signed_up_id,
         })
+
+
+class DeregisterEventView(TemplateView):
+    """
+    Undo register for event
+    """
+
+    def get(self, request):
+        """
+        Invitees can register for event
+        """
+
+        user_current = request.user
+        ally_current = Ally.objects.filter(user=user_current)
+        event_id = request.GET['event_id']
+
+        if ally_current.exists() and user_current.is_active:
+
+            event_invitee_rel = EventInviteeRelation.objects.filter(event=event_id, ally=ally_current[0])
+
+            if event_invitee_rel.exists(): # Check if user is invited
+                event_attend_rel = EventAttendeeRelation.objects.filter(event=event_id, ally=ally_current[0])
+
+                if not event_attend_rel.exists():  # Check if user is invited
+                    EventAttendeeRelation.objects.create(event_id=event_id,
+                                                         ally_id=ally_current[0].id)
+                    messages.success(request,
+                                     'You have successfully signed up for this event!')
+                else:
+                    messages.success(request,
+                                     'You have already signed up for this event!')
+
+            else:
+                messages.warning(request,
+                                 'You cannot sign up for this event since you are not invited.')
+
+        else:
+            messages.error(request,
+                           'Access denied. You are not registered in our system.')
+
+        return redirect(reverse('sap:calendar'))
