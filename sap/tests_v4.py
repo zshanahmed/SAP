@@ -4,9 +4,9 @@ contains unit tests for sap app
 import os
 from http import HTTPStatus
 
-from django.contrib.auth.forms import PasswordChangeForm
 from notifications.signals import notify
 from notifications.models import Notification
+from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ObjectDoesNotExist
 from django.test import TestCase, Client  # tests file
