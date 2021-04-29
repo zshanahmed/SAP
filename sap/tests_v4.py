@@ -6,12 +6,14 @@ from http import HTTPStatus
 
 from notifications.signals import notify
 from notifications.models import Notification
+from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ObjectDoesNotExist
 from django.test import TestCase, Client  # tests file
 from django.urls import reverse
 from sap.models import EventInviteeRelation, AllyStudentCategoryRelation, StudentCategories, Ally, Event
 from .upload_resource_to_azure import upload_file_to_azure
+from .forms import UpdateAdminProfileForm
 
 User = get_user_model()
 
@@ -259,6 +261,196 @@ class AllyEventInformation(TestCase):
         self.assertEqual(response.status_code, 302)
 
 
+class AdminUpdateProfileAndPasswordTests(TestCase):
+    """
+    Unit test for update profile feature for admin and to reset their passwords
+    """
+
+    def setUp(self):
+        self.username = 'Admin_1'
+        self.password = 'admin_password1'
+        self.email = 'email@test.com'
+        self.client = Client()
+        self.user = User.objects.create_user(
+            self.username, self.email, self.password)
+
+    def test_change_password_page_for_admin(self):
+        """
+        Show Change Password page for Admin
+        """
+        self.user.is_staff = True
+        self.user.save()
+        self.client.login(username=self.username, password=self.password)
+        response = self.client.get(reverse('sap:change_password'))
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        self.assertContains(
+            response, "Change Password", html=True
+        )
+
+    def test_change_password_page_for_ally(self):
+        """
+        Show Change Password page for Ally
+        """
+        self.user.is_staff = False
+        self.user.save()
+        self.client.login(username=self.username, password=self.password)
+        response = self.client.get(reverse('sap:change_password'))
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+
+    def test_update_profile_page_for_admin(self):
+        """
+        Show Change Password page for Admin
+        """
+        self.user.is_staff = True
+        self.user.save()
+        self.client.login(username=self.username, password=self.password)
+        response = self.client.get(reverse('sap:sap-admin_profile'))
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        self.assertContains(
+            response, "Update Admin Profile", html=True
+        )
+
+    def test_update_profile_page_for_ally(self):
+        """
+        Show Change Password page for Ally
+        """
+        self.user.is_staff = False
+        self.user.save()
+        self.client.login(username=self.username, password=self.password)
+        response = self.client.get(reverse('sap:sap-admin_profile'))
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+
+    def test_failure_mismatched_new_pass_change_password(self):
+        """
+        If new passwords don't match, a failed message is displayed
+        """
+        self.user.is_staff = True
+        self.user.save()
+        self.client.login(username=self.username, password=self.password)
+        response = self.client.get(reverse('sap:change_password'))
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        self.assertContains(
+            response, "Change Password", html=True
+        )
+        data = {
+            "old_password": "admin_password1",
+            "new_password1": "something_random",
+            "new_password2": "admin_password2"
+        }
+        form = PasswordChangeForm(
+            user=self.user,
+            data=data
+        )
+        self.assertFalse(form.is_valid())
+
+        response = self.client.post(
+            reverse('sap:change_password'), data=data, follow=True)
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        message = list(response.context['messages'])[0]
+        self.assertEqual(message.message, "Could not Update Password !")
+
+    def test_failure_old_pass_wrong_change_password(self):
+        """
+        If old password is wrong, a failed message is displayed
+        """
+        self.user.is_staff = True
+        self.user.save()
+        self.client.login(username=self.username, password=self.password)
+        response = self.client.get(reverse('sap:change_password'))
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        self.assertContains(
+            response, "Change Password", html=True
+        )
+        data = {
+            "old_password": "something_random",
+            "new_password1": "admin_password2",
+            "new_password2": "admin_password2"
+        }
+        form = PasswordChangeForm(
+            user=self.user,
+            data=data
+        )
+        self.assertFalse(form.is_valid())
+        response = self.client.post(
+            reverse('sap:change_password'), data=data, follow=True)
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        message = list(response.context['messages'])[0]
+        self.assertEqual(message.message, "Could not Update Password !")
+
+    def test_success_change_password(self):
+        """
+        If old password is right and new password match then change password
+        is successfull and a success message is displayed
+        """
+        self.user.is_staff = True
+        self.user.save()
+        self.client.login(username=self.username, password=self.password)
+        response = self.client.get(reverse('sap:change_password'))
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        self.assertContains(
+            response, "Change Password", html=True
+        )
+        data = {
+            "old_password": "admin_password1",
+            "new_password1": "admin_password2",
+            "new_password2": "admin_password2"
+        }
+        form = PasswordChangeForm(
+            user=self.user,
+            data=data
+        )
+        self.assertTrue(form.is_valid())
+
+        response = self.client.post(
+            reverse('sap:change_password'), data=data, follow=True)
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        message = list(response.context['messages'])[0]
+        self.assertEqual(message.message, "Password Updated Successfully !")
+
+    def test_correct_update_profile(self):
+        """
+        If profile is updated, a success message is displayed
+        """
+        self.user.is_staff = True
+        self.user.save()
+        self.client.login(username=self.username, password=self.password)
+        response = self.client.get(reverse('sap:sap-admin_profile'))
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        self.assertContains(
+            response, "Update Admin Profile", html=True
+        )
+
+        form = UpdateAdminProfileForm(
+            data={"username": "Admin_2", "email": "admin@admin.com"})
+        self.assertTrue(form.is_valid())
+        response = self.client.post(
+            reverse('sap:sap-admin_profile'), data={"username": "Admin_2", "email": "admin@admin.com"}, follow=True)
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        message = list(response.context['messages'])[0]
+        self.assertEqual(message.message, "Profile Updated !")
+
+    def test_fail_update_profile(self):
+        """
+        If profile is not updated, a failed message is displayed
+        """
+        self.user.is_staff = True
+        self.user.save()
+        self.client.login(username=self.username, password=self.password)
+        response = self.client.get(reverse('sap:sap-admin_profile'))
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        self.assertContains(
+            response, "Update Admin Profile", html=True
+        )
+
+        form = UpdateAdminProfileForm(
+            data={"username": "Admin_1", "email": "admin@admin.com"})
+        self.assertFalse(form.is_valid())
+        response = self.client.post(
+            "/update_profile/", data={"username": "Admin_1", "email": "admin@admin.com"}, follow=True)
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        message = list(response.context['messages'])[0]
+        self.assertEqual(
+            message.message, "Could not Update Profile ! Username already exists")
 class EditEventTests(TestCase):
     """
     Tests for Edit Event feature
