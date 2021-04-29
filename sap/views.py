@@ -467,26 +467,22 @@ class MentorsListView(generic.ListView):
                     if categories_from_list:
                         if (categories_from_list.first_gen_college_student is True) and \
                                 ('First generation college-student' in curr_identity_list):
-                            identity_wise_list.insert(0, ally)
                             not_found = False
-                        elif (categories_from_list.low_income is True) and ('Low-income' in curr_identity_list):
-                            identity_wise_list.insert(0, ally)
+                        if (categories_from_list.low_income is True) and ('Low-income' in curr_identity_list):
                             not_found = False
-                        elif (categories_from_list.under_represented_racial_ethnic is True) and \
+                        if (categories_from_list.under_represented_racial_ethnic is True) and \
                             ('Underrepresented racial/ethnic minority' in curr_identity_list):
-                            identity_wise_list.insert(0, ally)
                             not_found = False
-                        elif (categories_from_list.lgbtq is True) and ('LGBTQ' in curr_identity_list):
-                            identity_wise_list.insert(0, ally)
+                        if (categories_from_list.lgbtq is True) and ('LGBTQ' in curr_identity_list):
                             not_found = False
-                        elif (categories_from_list.rural is True) and ('Rural' in curr_identity_list):
-                            identity_wise_list.insert(0, ally)
+                        if (categories_from_list.rural is True) and ('Rural' in curr_identity_list):
                             not_found = False
-                        elif (categories_from_list.disabled is True) and ('Disabled' in curr_identity_list):
-                            identity_wise_list.insert(0, ally)
+                        if (categories_from_list.disabled is True) and ('Disabled' in curr_identity_list):
                             not_found = False
                     if not_found:
                         identity_wise_list.append(ally)
+                    else:
+                        identity_wise_list.insert(0, ally)
             else:
                 identity_wise_list = allies_list
             return render(request, 'sap/dashboard_ally.html', {'allies_list': identity_wise_list})
