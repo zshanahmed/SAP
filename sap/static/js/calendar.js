@@ -15,8 +15,8 @@ $(document).ready(function() {
             end: end_time,
             className: colors[i% colors.length],
         }
-        if (myData[i]['fields']['allday'] === false) {
-            entry['allDay'] = myData[i]['fields']['allday']
+        if (myData[i]['fields']['allday'] === "False") {
+            entry['allDay'] = false
         }
         events.push(entry);
     }

@@ -721,12 +721,18 @@ class CreateEventView(AccessMixin, TemplateView):
     def post(self, request):
         """Enter what this class/method does"""
         new_event_dict = dict(request.POST)
+        print(new_event_dict)
         event_title = new_event_dict['event_title'][0]
         event_description = new_event_dict['event_description'][0]
         event_start_time = new_event_dict['event_start_time'][0]
         event_end_time = new_event_dict['event_end_time'][0]
         event_location = new_event_dict['event_location'][0]
-
+        invite_all = True
+        mentor_status = None
+        special_category = None
+        research_field = None
+        school_year_selected = None
+        role_selected = None
         allies_list = Ally.objects.order_by('-id')
         for ally in allies_list:
             if not ally.user.is_active:
@@ -736,33 +742,40 @@ class CreateEventView(AccessMixin, TemplateView):
 
         if 'role_selected' in new_event_dict:
             invite_ally_user_types = new_event_dict['role_selected']
+            role_selected = ','.join(new_event_dict['role_selected'])
         else:
             invite_ally_user_types = []
 
         if 'school_year_selected' in new_event_dict:
             invite_ally_school_years = new_event_dict['school_year_selected']
+            school_year_selected = ','.join(new_event_dict['school_year_selected'])
         else:
             invite_ally_school_years = []
 
         if 'mentor_status' in new_event_dict:
             invite_mentor_mentee = new_event_dict['mentor_status']
+            mentor_status = ','.join(new_event_dict['mentor_status'])
         else:
             invite_mentor_mentee = []
 
         if 'special_category' in new_event_dict:
             invite_ally_belonging_to_special_categories = new_event_dict['special_category']
+            special_category = ','.join(new_event_dict['special_category'])
         else:
             invite_ally_belonging_to_special_categories = []
 
         if 'research_area' in new_event_dict:
             invite_ally_belonging_to_research_area = new_event_dict['research_area']
+            research_field = ','.join(new_event_dict['research_area'])
         else:
             invite_ally_belonging_to_research_area = []
 
         if 'invite_all' in new_event_dict:
             invite_all_selected = True
+            invite_all = new_event_dict['invite_all'][0] == 'invite_all'
         else:
             invite_all_selected = []
+            invite_all = False
 
         allday = 'event_allday' in new_event_dict
 
@@ -777,7 +790,12 @@ class CreateEventView(AccessMixin, TemplateView):
                                      end_time=parse_datetime(event_end_time + '-0500'),
                                      location=event_location,
                                      allday=allday,
-                                     )
+                                     invite_all=invite_all,
+                                     mentor_status=mentor_status,
+                                     special_category=special_category,
+                                     research_field=research_field,
+                                     school_year_selected=school_year_selected,
+                                     role_selected=role_selected)
 
         if invite_all_selected:
             # If all allies are invited

@@ -37,3 +37,6 @@ jobs:
       env:
         SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY }}
         AZURE_STORAGE_CONNECTION_STRING: ${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}
+
+    - name: Run linter
+      run:  pylint --load-plugins pylint_django --django-settings-module=azuresite.settings sap/

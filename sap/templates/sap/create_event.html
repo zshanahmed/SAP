@@ -70,7 +70,7 @@
 
             var allInputs = document.getElementsByTagName("input");
             for (var i = 0, max = allInputs.length; i < max; i++){
-                if (allInputs[i].type === 'checkbox')
+                if (allInputs[i].type === 'checkbox' && allInputs[i].name !== 'event_allday')
                     allInputs[i].checked = value;
             }
         }

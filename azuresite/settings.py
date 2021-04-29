@@ -41,7 +41,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django_nose',
     'crispy_forms',
-    'notifications'
+    # 'notifications' commenting this line because when I merged Elias's branch into my branch, this line was throwing error
 ]
 
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
