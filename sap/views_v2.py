@@ -168,6 +168,22 @@ def create_new_user(post_dict):
         except KeyError:
             categories = StudentCategories.objects.create()
     AllyStudentCategoryRelation.objects.create(student_category_id=categories.id, ally_id=ally.id)
+    events_ally = Event.objects.none()
+    try:
+        if post_dict['identityCheckboxes']:
+            for entry in post_dict['identityCheckboxes']:
+                events_ally |= Event.objects.filter(special_category__contains=entry)
+    except:
+        pass
+    try:
+        if post_dict['areaOfResearchCheckboxes']:
+            for aor in post_dict['areaOfResearchCheckboxes']:
+                events_ally |= Event.objects.filter(research_field__contains=aor)
+    except:
+        pass
+    if events_ally is not None:
+        for event in events_ally:
+            EventInviteeRelation.objects.create(event_id=event.id, ally_id=ally.id)
     return user, ally
 
 
@@ -195,7 +211,8 @@ class SignUpView(TemplateView):
             html_content=message_body)
 
         try:
-            sendgrid_obj = SendGridAPIClient(os.environ.get('SENDGRID_API_KEY'))
+            # sendgrid_obj = SendGridAPIClient(os.environ.get('SENDGRID_API_KEY'))
+            sendgrid_obj = SendGridAPIClient('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')
             sendgrid_obj.send(email_content)
         except HTTPError as exception:
             messages.warning(self.request, str(exception))
