@@ -429,7 +429,67 @@ class MentorsListView(generic.ListView):
                 if ally.user.is_active:
                     if not ally.user.is_active:
                         allies_list = allies_list.exclude(id=ally.id)
-            return render(request, 'sap/dashboard_ally.html', {'allies_list': allies_list})
+
+            user = request.user
+            ally = Ally.objects.get(user=user)
+            try:
+                categories = AllyStudentCategoryRelation.objects.filter(
+                    ally_id=ally.id).values()[0]
+                categories = StudentCategories.objects.filter(
+                    id=categories['student_category_id'])[0]
+            except KeyError:
+                categories = []
+
+            if (categories) and (exclude_from_ms_default is False):
+                identity_wise_list = []
+                curr_identity_list = []
+                if categories.first_gen_college_student is True:
+                    curr_identity_list.append('First generation college-student')
+                if categories.low_income is True:
+                    curr_identity_list.append('Low-income')
+                if categories.under_represented_racial_ethnic is True:
+                    curr_identity_list.append('Underrepresented racial/ethnic minority')
+                if categories.lgbtq is True:
+                    curr_identity_list.append('LGBTQ')
+                if categories.rural is True:
+                    curr_identity_list.append('Rural')
+                if categories.disabled is True:
+                    curr_identity_list.append('Disabled')
+                for ally in allies_list:
+                    try:
+                        categories_from_list = AllyStudentCategoryRelation.objects.filter(
+                            ally_id=ally.id).values()[0]
+                        categories_from_list = StudentCategories.objects.filter(
+                            id=categories_from_list['student_category_id'])[0]
+                    except KeyError:
+                        categories_from_list = []
+                    not_found = True
+                    if categories_from_list:
+                        if (categories_from_list.first_gen_college_student is True) and \
+                                ('First generation college-student' in curr_identity_list):
+                            identity_wise_list.insert(0, ally)
+                            not_found = False
+                        elif (categories_from_list.low_income is True) and ('Low-income' in curr_identity_list):
+                            identity_wise_list.insert(0, ally)
+                            not_found = False
+                        elif (categories_from_list.under_represented_racial_ethnic is True) and \
+                            ('Underrepresented racial/ethnic minority' in curr_identity_list):
+                            identity_wise_list.insert(0, ally)
+                            not_found = False
+                        elif (categories_from_list.lgbtq is True) and ('LGBTQ' in curr_identity_list):
+                            identity_wise_list.insert(0, ally)
+                            not_found = False
+                        elif (categories_from_list.rural is True) and ('Rural' in curr_identity_list):
+                            identity_wise_list.insert(0, ally)
+                            not_found = False
+                        elif (categories_from_list.disabled is True) and ('Disabled' in curr_identity_list):
+                            identity_wise_list.insert(0, ally)
+                            not_found = False
+                    if not_found:
+                        identity_wise_list.append(ally)
+            else:
+                identity_wise_list = allies_list
+            return render(request, 'sap/dashboard_ally.html', {'allies_list': identity_wise_list})
 
         return HttpResponse()
 
