@@ -7,6 +7,7 @@ import io
 import os
 import uuid
 from datetime import date
+from notifications.signals import notify
 import pandas as pd
 from pandas.errors import ParserError, EmptyDataError
 import xlsxwriter
@@ -34,13 +35,12 @@ from sap.models import StudentCategories, Ally, AllyStudentCategoryRelation, Eve
 from sap.tokens import account_activation_token, password_reset_token
 from sap.views import User, AccessMixin
 
-
 class SignUpEventView(View):
     """
     Register for event.
     """
 
-    def get(self, request):
+    def get(self, request, context='calendar'):
         """
         Invitees can register for event
         """
@@ -73,6 +73,8 @@ class SignUpEventView(View):
             messages.error(request,
                            'Access denied. You are not registered in our system.')
 
+        if context == 'notification':
+            return redirect('sap:notification_center')
         return redirect(reverse('sap:calendar'))
 
 
@@ -166,6 +168,13 @@ def create_new_user(post_dict):
             categories = make_categories(post_dict["identityCheckboxes"])
         except KeyError:
             categories = StudentCategories.objects.create()
+
+    admins = User.objects.filter(is_staff=True)
+    msg = 'New ally has joined: ' + user.username
+    for admin in admins:
+        notify.send(user, recipient=admin, verb=msg, action_object=ally)
+    notify.send(user, recipient=user, verb='Welcome to Science Alliance!')
+
     AllyStudentCategoryRelation.objects.create(student_category_id=categories.id, ally_id=ally.id)
     return user, ally
 
@@ -704,7 +713,7 @@ class UploadAllies(AccessMixin, HttpResponse):
                                  'of the following (check all that may apply)'][i]
                 if 'First generation college-student' in tmp:
                     data_frame['first_gen_college_student'][i] = True
-                if 'LGBTQ' in tmp:
+                if 'LBGTQ' in tmp:
                     data_frame['lgbtq'][i] = True
                 if 'Transfer student' in tmp:
                     data_frame['transfer_student'][i] = True
