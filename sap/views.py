@@ -18,6 +18,8 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.http import HttpResponseNotFound
 from django.utils.dateparse import parse_datetime
+from notifications.signals import notify
+from notifications.models import Notification
 
 from .forms import UpdateAdminProfileForm
 from .models import Announcement, EventInviteeRelation, EventAttendeeRelation, Ally, StudentCategories, AllyStudentCategoryRelation, Event
@@ -25,6 +27,27 @@ from .models import Announcement, EventInviteeRelation, EventAttendeeRelation, A
 # Create your views here.
 
 User = get_user_model()
+
+def make_notification(request, notifications, user, msg, action_object=''):
+    """
+    Makes notifications based on the request, the users existing notifications, the recipient user, and the message.
+    Limiting notificaions to 10 based on database usage concerns.
+    @param notifications: notifications have recipient id = user.id
+    @param request: request that came from the client
+    @param user: user notification being sent to
+    @param msg: message to send
+    @action_object: django object (optional)
+    """
+    if notifications.exists():
+        length = len(notifications)
+        while length >= 10:
+            notifications[length - 1].delete()
+            length -= 1
+    if action_object == '':
+        notify.send(request.user, recipient=user, verb=msg)
+    else:
+        notify.send(request.user, recipient=user, verb=msg, action_object=action_object)
+
 
 def login_success(request):
     """
@@ -88,17 +111,26 @@ class CreateAnnouncement(AccessMixin, HttpResponse):
         """
         Enter what this class/method does
         """
+        notifications = Notification.objects.all()
+
+        users = User.objects.all()
         if request.user.is_staff:
             post_dict = dict(request.POST)
             curr_user = request.user
             title = post_dict['title'][0]
             description = post_dict['desc'][0]
-            Announcement.objects.create(
+            announcement = Announcement.objects.create(
                 username=curr_user.username,
                 title=title,
                 description=description,
                 created_at=datetime.datetime.utcnow()
             )
+
+            for user in users:
+                if not user.is_staff:
+                    user_notifications = notifications.filter(recipient=user.id)
+                    msg = 'Announcement: ' + announcement.title
+                    make_notification(request, user_notifications, user, msg, action_object=announcement)
 
             messages.success(request, 'Annoucement created successfully !!')
             return redirect('sap:sap-dashboard')
@@ -120,6 +152,7 @@ class DeleteAllyProfileFromAdminDashboard(AccessMixin, View):
             ally = Ally.objects.get(user=user)
             ally.delete()
             user.delete()
+
             messages.success(request, 'Successfully deleted the user ' + username)
             return redirect('sap:sap-dashboard')
 
@@ -165,6 +198,12 @@ class CalendarView(TemplateView):
         """
         This function gets all the events to be shown on Calendar
         """
+
+        if request.user.is_staff:
+            role = "admin"
+        else:
+            role = "ally"
+
         events_list = []
         curr_user = request.user
         if not curr_user.is_staff:
@@ -182,7 +221,8 @@ class CalendarView(TemplateView):
         return render(request, 'sap/calendar.html',
                       context={
                           "events": events,
-                          "user": curr_user
+                          "user": curr_user,
+                          "role": role,
                       })
 
 
@@ -608,6 +648,13 @@ class AnalyticsView(AccessMixin, TemplateView):
 
     def get(self, request):
         """gets analytics view"""
+
+        if request.user.is_staff:
+            role = "admin"
+        else:
+            role = "ally"
+
+
         allies = Ally.objects.all()
 
         if len(allies) != 0:
@@ -638,7 +685,8 @@ class AnalyticsView(AccessMixin, TemplateView):
                                                           "otherYears": other_years,
                                                           "staffNumbers": other_numbers[0],
                                                           "gradNumbers": other_numbers[1],
-                                                          "facultyNumbers": other_numbers[2], })
+                                                          "facultyNumbers": other_numbers[2],
+                                                          "role": role, })
 
         messages.error(request, "No allies to display!")
         return redirect('sap:sap-dashboard')
@@ -720,6 +768,8 @@ class CreateEventView(AccessMixin, TemplateView):
 
     def post(self, request):
         """Enter what this class/method does"""
+
+        notifications = Notification.objects.all()
         new_event_dict = dict(request.POST)
         print(new_event_dict)
         event_title = new_event_dict['event_title'][0]
@@ -850,6 +900,12 @@ class CreateEventView(AccessMixin, TemplateView):
                 event_ally_rel_obj = EventInviteeRelation(event=event, ally=ally)
                 all_event_ally_objs.append(event_ally_rel_obj)
                 invited_allies.add(event_ally_rel_obj.ally)
+            ally_user = ally.user
+            if not ally_user.is_staff:
+                user_notify = notifications.filter(recipient=ally_user.id)
+                if user_notify.exists():
+                    msg = 'Event Invitation: ' + event_title
+                    make_notification(request, user_notify, ally_user, msg, event)
 
         EventInviteeRelation.objects.bulk_create(all_event_ally_objs)
 
