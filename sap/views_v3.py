@@ -332,7 +332,7 @@ class AllyEventInformation(View):
         })
 
 
-class DeregisterEventView(TemplateView):
+class DeregisterEventView(View):
     """
     Undo register for event
     """
