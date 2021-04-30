@@ -13,7 +13,7 @@
 {% block content %}
 
 <body class="bg-gradient-primary">
-   <form method="post" class="user">{% csrf_token %}
+   <form method="post" class="user" enctype="multipart/form-data">{% csrf_token %}
     <div class="container">
         <div class="card o-hidden border-0 shadow-lg my-5">
             <div class="card-body p-5">
@@ -34,6 +34,19 @@
                 </div>
                 {% endif %}
                 <div class="row">
+                    <div class="form-group row text-center col-md-3 offset-md-4">
+                        <img src="{{ ally.image_url }}" style="width:200px; margin-left:14px">
+                        <label id="uploadImageLabel" for="uploadImage" class="btn btn-secondary btn-user btn-block px-md-4 text-truncate"
+                               style="margin-bottom: -8px;">Change profile pic <i class="fas fa-camera"></i>
+                        </label>
+                        <input id="uploadImage" type="file" value="Browse" name="file" accept="image/gif, image/jpeg, image/png" hidden>
+                        <button type="submit" formmethod="post" class="btn btn-primary btn-user btn-block px-md-4 mt-3" id="submitUpload">
+                                                Upload <i class="fas fa-cloud-upload-alt"></i>
+                        </button>
+                    </div>
+                </div>
+                <hr>
+                <div class="row">
                     <div class="col-md-4">
                         <h5 class="m-0 font-weight-bold text-primary">Name: </h5>
                     </div>
@@ -43,6 +56,7 @@
                             <input name="lastName" type="text" id="lastName" class="form-control-user form-control" style="width: 200px; display: inline" value='{{ ally.user.last_name }}' required>
                         </div>
                     </div>
+
                 </div>
                 <div class = "row mt-2"></div>
                 <div class="row">
@@ -754,5 +768,10 @@
                 yesnoCheck('undergradContent');
             }
         })
+
+        $('input[type="file"]').change(function(e){
+            var fileName = e.target.files[0].name;
+            $('#uploadImageLabel').text(fileName);
+        });
     </script>
 {% endblock content %}
