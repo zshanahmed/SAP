@@ -1,4 +1,5 @@
 {% load static %}
+{% load notifications_tags %}
 <!-- Topbar -->
                 <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
 
@@ -7,27 +8,29 @@
                     
                     <!-- Topbar Navbar -->
                     <ul class="navbar-nav ml-auto">
-                        
+                        <li class="nav-item dropdown no-arrow">
+                            <div class="btn-group dropleft">
+                                <a class="nav-link dropdown-toggle" style="right: 10px" href="#" id="notifyDropdown" role="button"
+                                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    <div id="icon-wrapper">
+                                        <i class="p3 fas fa-bell fa-2x" data-count="4b"></i>
+                                        <span style="background: rgba(0,0,0,0.5); width: auto; height: auto;margin: 0; border-radius: 50%; position:absolute; top: 8px; right: -5px;" class="badge">
+                                            {% live_notify_badge %}
+                                        </span>
+                                    </div>
+                                </a>
+                                <div class="dropdown-menu shadow animated--grow-in" style="right: 50px;" aria-labelledby="notifyDropdown">
+                                    <a href="{% url 'sap:notification_center' %}">
+                                        {% live_notify_list %}
+                                    </a>
+                                </div>
+                            </div>
+                        </li>
                         {% if role == "admin" %}
                             <button class="btn btn-primary" type="button" style="margin-top: 15px; margin-bottom: 15px;" data-toggle="modal" data-target="#announcementModal"> Make Announcement
-                                <i style="margin-left: 5px;" class="fa fa-bullhorn fa-sm"></i>
+                                <i style="margin-left: 5px; font-size: 0.73em;" class="fa fa-bullhorn fa-sm"></i>
                             </button>
-                        {% else %}
-                            <div class="dropdown-menu" aria-labelledby="dropdownMenu2">
-                                <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button">
-                                <img class="img-profile rounded-circle">
-                                    src="{% static '/img/undraw_profile.svg' %}">
-                                {% for notification in  user.notifications.unread %}
-                                  <div>
-                                    Message from <b>{{ notification.actor }}</b>
-                                    <button class="dropdown-item" type="button">{{ notification.description }}</button>
-                                    </div>
-                                    <div class="dropdown-divider"></div>
-                                {% endfor %}
-                                </a>
-                            </div>
                         {% endif %}
-                        
                         <div class="topbar-divider d-none d-sm-block"></div>
                         <!-- Nav Item - User Information -->
                         <li class="nav-item dropdown no-arrow">
@@ -79,7 +82,6 @@
                         </li>
 
                     </ul>
-
                 </nav>
                 <!-- End of Topbar -->
 

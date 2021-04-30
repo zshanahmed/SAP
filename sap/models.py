@@ -24,7 +24,7 @@ class Ally(models.Model):
         return self.hawk_id
 
     ##Grad and Faculty
-    area_of_research = models.CharField(max_length=200, null=True)
+    area_of_research = models.CharField(max_length=500, null=True)
     openings_in_lab_serving_at = models.BooleanField(default=False)
     description_of_research_done_at_lab = models.CharField(max_length=500, null=True)
     interested_in_mentoring = models.BooleanField(default=False)
@@ -83,10 +83,16 @@ class Event(models.Model):
     description = models.CharField(max_length=1000, null=True)
     start_time = models.DateTimeField(default=None, null=True)
     end_time = models.DateTimeField(default=None, null=True)
-    allday = models.BooleanField(default=False)
+    allday = models.CharField(max_length=500, null=True)
     location = models.CharField(max_length=500, null=True)
     num_invited = models.IntegerField(default=0)
     num_attending = models.IntegerField(default=0)
+    role_selected = models.CharField(max_length=500, null=True)
+    school_year_selected = models.CharField(max_length=500, null=True)
+    mentor_status = models.CharField(max_length=500, null=True)
+    research_field = models.CharField(max_length=500, null=True)
+    invite_all = models.CharField(max_length=500, null=True)
+    special_category = models.CharField(max_length=500, null=True)
 
 
 class EventInviteeRelation(models.Model):

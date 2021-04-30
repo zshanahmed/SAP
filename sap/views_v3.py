@@ -1,6 +1,7 @@
 """
 views_v3 has functions that are mapped to the urls in urls.py
 """
+from notifications.models import Notification
 from shutil import move
 from django.core.files.storage import FileSystemStorage
 from django.core.exceptions import ObjectDoesNotExist
@@ -15,6 +16,7 @@ from .models import Ally, StudentCategories, AllyStudentCategoryRelation, Event,
 from .upload_resource_to_azure import upload_file_to_azure
 
 User = get_user_model()
+
 
 
 def upload_prof_pic(file, post_dict):
@@ -355,3 +357,47 @@ class AllyEventInformation(View):
             'invited_events': event_invited,
             'signed_up_events': event_signed_up_id,
         })
+
+class SapNotifications(View):
+    """
+    View for seeing notifications, get method returns the role of the request user and
+    a query set of notfications. dimsiss notificaiton deletes and recycles the get method
+    """
+
+    @staticmethod
+    def get(request):
+        """
+        Method for retrieving the notifications page. populates the template
+        with user_notify and role
+        """
+        template_name = "sap/notifications.html"
+
+        if request.user.is_staff:
+            role = "admin"
+        else:
+            role = "ally"
+
+        user_notifications = Notification.objects.filter(recipient=request.user)
+
+        return render(request, template_name, {
+            'user_notify': user_notifications,
+            'role': role,
+        })
+
+    @staticmethod
+    def dismiss_notification(request, notification_id='0'):
+        """
+        Deletes the notification that the user clicks the button of.
+        """
+        try:
+            notification = Notification.objects.get(id=notification_id)
+            if notification.recipient == request.user:
+                notification.delete()
+                messages.add_message(request, messages.SUCCESS, 'Notification Dismissed!')
+            else:
+                messages.add_message(request, messages.WARNING, 'Access Denied!')
+
+        except ObjectDoesNotExist:
+            messages.add_message(request, messages.WARNING, 'Notification does not exist!')
+
+        return redirect('sap:notification_center')
