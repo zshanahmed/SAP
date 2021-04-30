@@ -1,8 +1,8 @@
 """
 views_v3 has functions that are mapped to the urls in urls.py
 """
-from notifications.models import Notification
 from shutil import move
+from notifications.models import Notification
 from django.core.files.storage import FileSystemStorage
 from django.core.exceptions import ObjectDoesNotExist
 from django.urls import reverse
