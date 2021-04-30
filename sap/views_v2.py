@@ -377,7 +377,8 @@ class ForgotPasswordView(TemplateView):
 
                 # Can only reset forgotten password for active user
                 if user.is_active:
-                    ally = Ally.objects.filter(user=user)
+                    ally_filter = Ally.objects.filter(user=user)
+                    ally = ally_filter[0]
                     ally.reset_password = True
                     # user.save()
 
