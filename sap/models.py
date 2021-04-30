@@ -18,6 +18,9 @@ class Ally(models.Model):
     hawk_id = models.CharField(max_length=100)
     user_type = models.CharField(max_length=25)  # student/faculty/..
 
+    ## Additional authentication fields
+    reset_password = models.BooleanField(default=False)
+
     def __str__(self):
         return self.hawk_id
 
