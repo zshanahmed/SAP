@@ -349,6 +349,7 @@ class DeregisterEventView(TemplateView):
         if ally_current.exists() and user_current.is_active:
 
             event_invitee_rel = EventInviteeRelation.objects.filter(event=event_id, ally=ally_current[0])
+            event_attendee_rel = EventAttendeeRelation.objects.filter(event=event_id, ally=ally_current[0])
 
             if event_invitee_rel.exists(): # Check if user is invited
                 event_attend_rel = EventAttendeeRelation.objects.filter(event=event_id, ally=ally_current[0])
