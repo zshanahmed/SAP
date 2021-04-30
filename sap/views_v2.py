@@ -120,6 +120,7 @@ def make_categories(student_categories):
 def create_new_user(post_dict):
     """
     Create new user and associated ally based on what user inputs in sign-up page
+    Also creates event invitations for new user based on the information they provide
     """
     user = User.objects.create_user(username=post_dict["new_username"][0],
                                     password=post_dict["new_password"][0],
@@ -169,18 +170,34 @@ def create_new_user(post_dict):
             categories = StudentCategories.objects.create()
     AllyStudentCategoryRelation.objects.create(student_category_id=categories.id, ally_id=ally.id)
     events_ally = Event.objects.none()
-    try:
-        if post_dict['identityCheckboxes']:
-            for entry in post_dict['identityCheckboxes']:
-                events_ally |= Event.objects.filter(special_category__contains=entry)
-    except:
-        pass
-    try:
-        if post_dict['areaOfResearchCheckboxes']:
-            for aor in post_dict['areaOfResearchCheckboxes']:
-                events_ally |= Event.objects.filter(research_field__contains=aor)
-    except:
-        pass
+
+    if 'identityCheckboxes' in post_dict:
+        for entry in post_dict['identityCheckboxes']:
+            events_ally |= Event.objects.filter(special_category__contains=entry)
+
+    if ally.user_type:
+        role = ally.user_type
+        if role == 'Undergraduate Student':
+            if ally.interested_in_being_mentored:
+                if Event.objects.filter(mentor_status__contains='Mentees'):
+                    events_ally |= Event.objects.filter(role_selected__contains=role).filter(school_year_selected__contains=post_dict['undergradYear'][0]).filter(mentor_status__contains='Mentees')
+                else:
+                    events_ally |= Event.objects.filter(role_selected__contains=role).filter(school_year_selected__contains=post_dict['undergradYear'][0])
+            else:
+                events_ally |= Event.objects.filter(role_selected__contains=role).filter(school_year_selected__contains=post_dict['undergradYear'][0])
+        else:
+            if ally.interested_in_mentoring:
+                if Event.objects.filter(mentor_status__contains='Mentors'):
+                    events_ally |= Event.objects.filter(role_selected__contains=role).filter(mentor_status__contains='Mentors')
+                else:
+                    events_ally |= Event.objects.filter(role_selected__contains=role)
+            else:
+                events_ally |= Event.objects.filter(role_selected__contains=role)
+
+    if ally.area_of_research:
+        for aor in ally.area_of_research:
+            events_ally |= Event.objects.filter(research_field__contains=aor)
+
     if events_ally is not None:
         for event in events_ally:
             EventInviteeRelation.objects.create(event_id=event.id, ally_id=ally.id)
