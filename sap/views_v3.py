@@ -356,7 +356,7 @@ class DeregisterEventView(View):
                 messages.success(request,
                                  'You will no longer attend this event.')
             else:
-                messages.success(request,
+                messages.warning(request,
                                  'You did not sign up for this event.')
 
         else:
