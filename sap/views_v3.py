@@ -348,24 +348,16 @@ class DeregisterEventView(TemplateView):
 
         if ally_current.exists() and user_current.is_active:
 
-            event_invitee_rel = EventInviteeRelation.objects.filter(event=event_id, ally=ally_current[0])
             event_attendee_rel = EventAttendeeRelation.objects.filter(event=event_id, ally=ally_current[0])
 
-            if event_invitee_rel.exists(): # Check if user is invited
-                event_attend_rel = EventAttendeeRelation.objects.filter(event=event_id, ally=ally_current[0])
+            if event_attendee_rel.exists(): # Check if user will attend
+                event_attendee_rel[0].delete()
 
-                if not event_attend_rel.exists():  # Check if user is invited
-                    EventAttendeeRelation.objects.create(event_id=event_id,
-                                                         ally_id=ally_current[0].id)
-                    messages.success(request,
-                                     'You have successfully signed up for this event!')
-                else:
-                    messages.success(request,
-                                     'You have already signed up for this event!')
-
+                messages.success(request,
+                                 'You will no longer attend this event.')
             else:
-                messages.warning(request,
-                                 'You cannot sign up for this event since you are not invited.')
+                messages.success(request,
+                                 'You did not sign up for this event.')
 
         else:
             messages.error(request,
