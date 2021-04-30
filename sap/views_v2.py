@@ -374,39 +374,39 @@ class ForgotPasswordView(TemplateView):
 
             if len(valid_email) > 0:
                 user = valid_email[0]
-                user.is_active = False  # User needs to be inactive for the reset password duration
-                # user.profile.reset_password = True
-                user.save()
 
-                message_body = render_to_string('sap/password-forgot-mail.html', {
-                    'user': user,
-                    'protocol': 'http',
-                    'domain': site.domain,
-                    'uid': urlsafe_base64_encode(force_bytes(user.pk)),  # encode user's primary key
-                    'token': password_reset_token.make_token(user),
-                })
+                # Can only reset forgotten password for active user
+                if user.is_active:
+                    ally = Ally.objects.filter(user=user)
+                    ally.reset_password = True
+                    # user.save()
 
-                # message_ = reverse('sap:password-forgot-confirm',
-                #                    args=[urlsafe_base64_encode(force_bytes(user.pk)),
-                #                          password_reset_token.make_token(user)])
-                #
-                # message_body = 'http:' + '//' + site.domain + message_
+                    message_body = render_to_string('sap/password-forgot-mail.html', {
+                        'user': user,
+                        'protocol': 'http',
+                        'domain': site.domain,
+                        'uid': urlsafe_base64_encode(force_bytes(user.pk)),  # encode user's primary key
+                        'token': password_reset_token.make_token(user),
+                    })
 
-                email_content = Mail(
-                    from_email="iba@uiowa.edu",
-                    to_emails=entered_email,
-                    subject='Reset Password for Science Alliance Portal',
-                    html_content=message_body)
+                    # message_ = reverse('sap:password-forgot-confirm',
+                    #                    args=[urlsafe_base64_encode(force_bytes(user.pk)),
+                    #                          password_reset_token.make_token(user)])
+                    #
+                    # message_body = 'http:' + '//' + site.domain + message_
 
-                try:
-                    sendgrid_obj = SendGridAPIClient(os.environ.get('SENDGRID_API_KEY'))
-                    sendgrid_obj.send(email_content)
+                    email_content = Mail(
+                        from_email="iba@uiowa.edu",
+                        to_emails=entered_email,
+                        subject='Reset Password for Science Alliance Portal',
+                        html_content=message_body)
 
-                except HTTPError as exception:
-                    messages.warning(self.request, str(exception))
+                    try:
+                        sendgrid_obj = SendGridAPIClient(os.environ.get('SENDGRID_API_KEY'))
+                        sendgrid_obj.send(email_content)
 
-
-                return redirect('/password-forgot-done')
+                    except HTTPError as exception:
+                        messages.warning(self.request, str(exception))
 
             return redirect('/password-forgot-done')
             # return render(request, 'account/password-forgot.html', {'form': form})
