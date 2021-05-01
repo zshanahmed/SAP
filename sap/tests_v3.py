@@ -477,9 +477,13 @@ class CreateEventTests(TestCase):
                                  'Underrepresented racial/ethnic minority', 'Transfer Student', 'LGBTQ'],
             'email_list': ['get_email_list'],
         })
-
-        url = response.url
-        assert url == '/'
+        try:
+            file_content = io.BytesIO(response.content)
+        except IOError:
+            assert False
+        compare_frame = pd.DataFrame(data={'Username': ['john1'], 'Email': ['john1@uiowa.edu']})
+        retrieved_frame = pd.read_excel(file_content)
+        pd.testing.assert_frame_equal(retrieved_frame, compare_frame)
 
     def test_end_date_less_than_start_date(self):
         """
