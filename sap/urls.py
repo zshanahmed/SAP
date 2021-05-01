@@ -81,7 +81,6 @@ urlpatterns = [
 
     url('^inbox/notifications/', include(notifications.urls, namespace='notifications')),
 
-
     url('create_iba_admin/',
         login_required(views.CreateAdminView.as_view()),
         name='create_iba_admin'),
@@ -97,6 +96,10 @@ urlpatterns = [
     url(r'^signup_event/(?P<context>[\s\w-]+)/$',
         login_required(sap.views_v2.SignUpEventView.as_view()),
         name='signup_event'),
+
+    url(r'^deregister_event/$',
+        login_required(sap.views_v3.DeregisterEventView.as_view()),
+        name='deregister_event'),
 
     url(r'^announcements/$',
         login_required(views.Announcements.as_view()),

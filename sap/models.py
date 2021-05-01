@@ -16,6 +16,8 @@ class Ally(models.Model):
         on_delete=models.CASCADE,
     )
     hawk_id = models.CharField(max_length=100)
+    image_url = models.CharField(max_length=500,
+                                 default="https://sepibafiles.blob.core.windows.net/sepibacontainer/blank-profile-picture.png")
     user_type = models.CharField(max_length=25)  # student/faculty/..
 
     def __str__(self):

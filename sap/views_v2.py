@@ -78,12 +78,6 @@ class SignUpEventView(View):
         return redirect(reverse('sap:calendar'))
 
 
-class DeregisterEventView(TemplateView):
-    """Enter what this class/method does"""
-
-    def get(self, request, *args, **kwargs):
-        """Enter what this class/method does"""
-
 
 def set_boolean(_list, post_dict):
     """Enter what this class/method does"""

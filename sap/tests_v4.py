@@ -233,6 +233,29 @@ class ResponseEventInvitationTests(TestCase):
     #     message = list(response.context['messages'])[0]
     #     self.assertEqual(message.message, 'Access denied. You are not registered in our system.')
 
+    def test_successfully_deregister_event(self):
+        """
+        Successfully sign up for event if haven't done so
+        """
+        self.client.login(username=self.ally_username, password=self.ally_password)
+        self.client.get('/signup_event/', {'event_id': self.event.id}, follow=True)
+        response = self.client.get('/deregister_event/', {'event_id': self.event.id}, follow=True)
+
+
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        message = list(response.context['messages'])[0]
+        self.assertEqual(message.message, "You will no longer attend this event.")
+
+    def test_cannot_deregister_event(self):
+        """
+        Already sign up for event, cannot sign up again
+        """
+        self.client.login(username=self.ally_username, password=self.ally_password)
+        response = self.client.get('/deregister_event/', {'event_id': self.event.id}, follow=True)
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        message = list(response.context['messages'])[0]
+        self.assertEqual(message.message, "You did not sign up for this event.")
+
 class AllyEventInformation(TestCase):
     """
     Tests View Ally Event Information in views_v3
