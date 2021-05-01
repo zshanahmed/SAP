@@ -772,7 +772,6 @@ class CreateEventView(AccessMixin, TemplateView):
     def post(self, request):
         """Enter what this class/method does"""
 
-        notifications = Notification.objects.all()
         new_event_dict = dict(request.POST)
         event_title = new_event_dict['event_title'][0]
         event_description = new_event_dict['event_description'][0]
@@ -879,23 +878,12 @@ class CreateEventView(AccessMixin, TemplateView):
             Ally.objects.filter(id__in=invited_allies_ids)
         )
 
-        all_event_ally_objs = []
-        invited_allies = set()
         allies_to_be_invited = set(allies_to_be_invited)
 
         try:
             junk = new_event_dict['email_list']
             if junk[0] == 'get_email_list':
-                byte_stream = CreateEventView.make_ally_list(allies_to_be_invited)
-                today = datetime.date.today()
-                today = today.strftime("%b-%d-%Y")
-                file_name = today + "_SAP_Invitees_" + event_title + ".xlsx"
-                response = HttpResponse(
-                    byte_stream,
-                    content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-                )
-                response['Content-Disposition'] = 'attachment; filename=' + file_name
-                return response
+                return CreateEventView.build_response(allies_to_be_invited, event_title)
             return redirect('/calendar')
         except KeyError:
             event = Event.objects.create(title=event_title,
@@ -911,24 +899,34 @@ class CreateEventView(AccessMixin, TemplateView):
                                          research_field=research_field,
                                          school_year_selected=school_year_selected,
                                          role_selected=role_selected)
-            for ally in allies_to_be_invited:
-                if ally.user.is_active:
-                    event_ally_rel_obj = EventInviteeRelation(event=event, ally=ally)
-                    all_event_ally_objs.append(event_ally_rel_obj)
-                    invited_allies.add(event_ally_rel_obj.ally)
+            CreateEventView.invite_and_notify(request, allies_to_be_invited, event)
+
+            messages.success(request, "Event successfully created!")
+
+            return redirect('/calendar')
+    @staticmethod
+    def invite_and_notify(request, allies_to_be_invited, event):
+        """
+        invite the users, notify users
+        """
+        invited_allies = set()
+        all_event_ally_objs = []
+        notifications = Notification.objects.all()
+        for ally in allies_to_be_invited:
+            if ally.user.is_active:
+                event_ally_rel_obj = EventInviteeRelation(event=event, ally=ally)
+                all_event_ally_objs.append(event_ally_rel_obj)
+                invited_allies.add(event_ally_rel_obj.ally)
                 ally_user = ally.user
                 if not ally_user.is_staff:
                     user_notify = notifications.filter(recipient=ally_user.id)
-                    print(user_notify)
-                    msg = 'Event Invitation: ' + event_title
+                    msg = 'Event Invitation: ' + event.title
                     make_notification(request, user_notify, ally_user, msg, event)
-            EventInviteeRelation.objects.bulk_create(all_event_ally_objs)
-            messages.success(request, "Event successfully created!")
-            return redirect('/calendar')
+        EventInviteeRelation.objects.bulk_create(all_event_ally_objs)
 
     @staticmethod
-    def make_ally_list(ally_list):
-        """Enter what this class/method does"""
+    def build_response(ally_list, event_title):
+        "Creates an httpresponse object containing a file that will be returned"
         byte_stream = io.BytesIO()
         workbook = xlsxwriter.Workbook(byte_stream)
         emails = workbook.add_worksheet('Ally Invite Emails')
@@ -941,4 +939,12 @@ class CreateEventView(AccessMixin, TemplateView):
             rows += 1
         workbook.close()
         byte_stream.seek(0)
-        return byte_stream
+        today = datetime.date.today()
+        today = today.strftime("%b-%d-%Y")
+        file_name = today + "_SAP_Invitees_" + event_title + ".xlsx"
+        response = HttpResponse(
+            byte_stream,
+            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+        response['Content-Disposition'] = 'attachment; filename=' + file_name
+        return response
