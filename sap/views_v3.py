@@ -401,3 +401,37 @@ class SapNotifications(View):
             messages.add_message(request, messages.WARNING, 'Notification does not exist!')
 
         return redirect('sap:notification_center')
+
+
+class DeregisterEventView(View):
+    """
+    Undo register for event
+    """
+
+    def get(self, request):
+        """
+        Invitees can register for event
+        """
+
+        user_current = request.user
+        ally_current = Ally.objects.filter(user=user_current)
+        event_id = request.GET['event_id']
+
+        if ally_current.exists() and user_current.is_active:
+
+            event_attendee_rel = EventAttendeeRelation.objects.filter(event=event_id, ally=ally_current[0])
+
+            if event_attendee_rel.exists(): # Check if user will attend
+                event_attendee_rel[0].delete()
+
+                messages.success(request,
+                                 'You will no longer attend this event.')
+            else:
+                messages.warning(request,
+                                 'You did not sign up for this event.')
+
+        else:
+            messages.error(request,
+                           'Access denied. You are not registered in our system.')
+
+        return redirect(reverse('sap:calendar'))
