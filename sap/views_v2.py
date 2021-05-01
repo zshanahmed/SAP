@@ -912,6 +912,7 @@ class EditEventView(View, AccessMixin):
         event_id = request.GET['event_id']
         event = Event.objects.get(pk=event_id)
         post_dict = dict(request.POST)
+        print(post_dict)
         if post_dict['end_time'] < post_dict['start_time']:
             messages.warning(request, 'End time cannot be less than start-time')
             return redirect('/edit_event/?event_id='+event_id)

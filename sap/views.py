@@ -2,6 +2,9 @@
 views has functions that are mapped to the urls in urls.py
 """
 import datetime
+import io
+
+import xlsxwriter
 from fuzzywuzzy import fuzz
 
 from django.core import serializers
@@ -771,7 +774,6 @@ class CreateEventView(AccessMixin, TemplateView):
 
         notifications = Notification.objects.all()
         new_event_dict = dict(request.POST)
-        print(new_event_dict)
         event_title = new_event_dict['event_title'][0]
         event_description = new_event_dict['event_description'][0]
         event_start_time = new_event_dict['event_start_time'][0]
@@ -895,19 +897,49 @@ class CreateEventView(AccessMixin, TemplateView):
         invited_allies = set()
         allies_to_be_invited = set(allies_to_be_invited)
 
-        for ally in allies_to_be_invited:
-            if ally.user.is_active:
-                event_ally_rel_obj = EventInviteeRelation(event=event, ally=ally)
-                all_event_ally_objs.append(event_ally_rel_obj)
-                invited_allies.add(event_ally_rel_obj.ally)
-            ally_user = ally.user
-            if not ally_user.is_staff:
-                user_notify = notifications.filter(recipient=ally_user.id)
-                if user_notify.exists():
-                    msg = 'Event Invitation: ' + event_title
-                    make_notification(request, user_notify, ally_user, msg, event)
+        try:
+            junk = new_event_dict['email_list']
+            if junk[0] == 'get_email_list':
+                byte_stream = CreateEventView.make_ally_list(allies_to_be_invited)
+                today = datetime.date.today()
+                today = today.strftime("%b-%d-%Y")
+                file_name = today + "_SAP_Invitees_" + event_title + ".xlsx"
+                response = HttpResponse(
+                    byte_stream,
+                    content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                )
+                response['Content-Disposition'] = 'attachment; filename=' + file_name
+                return response
+            return redirect('/calendar')
+        except KeyError:
+            for ally in allies_to_be_invited:
+                if ally.user.is_active:
+                    event_ally_rel_obj = EventInviteeRelation(event=event, ally=ally)
+                    all_event_ally_objs.append(event_ally_rel_obj)
+                    invited_allies.add(event_ally_rel_obj.ally)
+                ally_user = ally.user
+                if not ally_user.is_staff:
+                    user_notify = notifications.filter(recipient=ally_user.id)
+                    if user_notify.exists():
+                        msg = 'Event Invitation: ' + event_title
+                        make_notification(request, user_notify, ally_user, msg, event)
+            EventInviteeRelation.objects.bulk_create(all_event_ally_objs)
+            messages.success(request, "Event successfully created!")
+            return redirect('/calendar')
 
-        EventInviteeRelation.objects.bulk_create(all_event_ally_objs)
-
-        messages.success(request, "Event successfully created!")
-        return redirect('/calendar')
+    @staticmethod
+    def make_ally_list(ally_list):
+        """Enter what this class/method does"""
+        byte_stream = io.BytesIO()
+        workbook = xlsxwriter.Workbook(byte_stream)
+        emails = workbook.add_worksheet('Ally Invite Emails')
+        emails.write(0, 0, 'Username')
+        emails.write(0, 1, 'Email')
+        rows = 1
+        for ally in ally_list:
+            emails.write(rows, 0, ally.user.username)
+            emails.write(rows, 1, ally.user.email)
+            rows += 1
+        workbook.close()
+        byte_stream.seek(0)
+        return byte_stream
