@@ -4,11 +4,16 @@ contains unit tests for sap app
 import os
 from http import HTTPStatus
 
+from notifications.signals import notify
+from notifications.models import Notification
+from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth import get_user_model
+from django.core.exceptions import ObjectDoesNotExist
 from django.test import TestCase, Client  # tests file
 from django.urls import reverse
 from sap.models import EventInviteeRelation, AllyStudentCategoryRelation, StudentCategories, Ally, Event
 from .upload_resource_to_azure import upload_file_to_azure
+from .forms import UpdateAdminProfileForm
 
 User = get_user_model()
 
@@ -228,6 +233,29 @@ class ResponseEventInvitationTests(TestCase):
     #     message = list(response.context['messages'])[0]
     #     self.assertEqual(message.message, 'Access denied. You are not registered in our system.')
 
+    def test_successfully_deregister_event(self):
+        """
+        Successfully sign up for event if haven't done so
+        """
+        self.client.login(username=self.ally_username, password=self.ally_password)
+        self.client.get('/signup_event/', {'event_id': self.event.id}, follow=True)
+        response = self.client.get('/deregister_event/', {'event_id': self.event.id}, follow=True)
+
+
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        message = list(response.context['messages'])[0]
+        self.assertEqual(message.message, "You will no longer attend this event.")
+
+    def test_cannot_deregister_event(self):
+        """
+        Already sign up for event, cannot sign up again
+        """
+        self.client.login(username=self.ally_username, password=self.ally_password)
+        response = self.client.get('/deregister_event/', {'event_id': self.event.id}, follow=True)
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        message = list(response.context['messages'])[0]
+        self.assertEqual(message.message, "You did not sign up for this event.")
+
 class AllyEventInformation(TestCase):
     """
     Tests View Ally Event Information in views_v3
@@ -256,6 +284,196 @@ class AllyEventInformation(TestCase):
         self.assertEqual(response.status_code, 302)
 
 
+class AdminUpdateProfileAndPasswordTests(TestCase):
+    """
+    Unit test for update profile feature for admin and to reset their passwords
+    """
+
+    def setUp(self):
+        self.username = 'Admin_1'
+        self.password = 'admin_password1'
+        self.email = 'email@test.com'
+        self.client = Client()
+        self.user = User.objects.create_user(
+            self.username, self.email, self.password)
+
+    def test_change_password_page_for_admin(self):
+        """
+        Show Change Password page for Admin
+        """
+        self.user.is_staff = True
+        self.user.save()
+        self.client.login(username=self.username, password=self.password)
+        response = self.client.get(reverse('sap:change_password'))
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        self.assertContains(
+            response, "Change Password", html=True
+        )
+
+    def test_change_password_page_for_ally(self):
+        """
+        Show Change Password page for Ally
+        """
+        self.user.is_staff = False
+        self.user.save()
+        self.client.login(username=self.username, password=self.password)
+        response = self.client.get(reverse('sap:change_password'))
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+
+    def test_update_profile_page_for_admin(self):
+        """
+        Show Change Password page for Admin
+        """
+        self.user.is_staff = True
+        self.user.save()
+        self.client.login(username=self.username, password=self.password)
+        response = self.client.get(reverse('sap:sap-admin_profile'))
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        self.assertContains(
+            response, "Update Admin Profile", html=True
+        )
+
+    def test_update_profile_page_for_ally(self):
+        """
+        Show Change Password page for Ally
+        """
+        self.user.is_staff = False
+        self.user.save()
+        self.client.login(username=self.username, password=self.password)
+        response = self.client.get(reverse('sap:sap-admin_profile'))
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+
+    def test_failure_mismatched_new_pass_change_password(self):
+        """
+        If new passwords don't match, a failed message is displayed
+        """
+        self.user.is_staff = True
+        self.user.save()
+        self.client.login(username=self.username, password=self.password)
+        response = self.client.get(reverse('sap:change_password'))
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        self.assertContains(
+            response, "Change Password", html=True
+        )
+        data = {
+            "old_password": "admin_password1",
+            "new_password1": "something_random",
+            "new_password2": "admin_password2"
+        }
+        form = PasswordChangeForm(
+            user=self.user,
+            data=data
+        )
+        self.assertFalse(form.is_valid())
+
+        response = self.client.post(
+            reverse('sap:change_password'), data=data, follow=True)
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        message = list(response.context['messages'])[0]
+        self.assertEqual(message.message, "Could not Update Password !")
+
+    def test_failure_old_pass_wrong_change_password(self):
+        """
+        If old password is wrong, a failed message is displayed
+        """
+        self.user.is_staff = True
+        self.user.save()
+        self.client.login(username=self.username, password=self.password)
+        response = self.client.get(reverse('sap:change_password'))
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        self.assertContains(
+            response, "Change Password", html=True
+        )
+        data = {
+            "old_password": "something_random",
+            "new_password1": "admin_password2",
+            "new_password2": "admin_password2"
+        }
+        form = PasswordChangeForm(
+            user=self.user,
+            data=data
+        )
+        self.assertFalse(form.is_valid())
+        response = self.client.post(
+            reverse('sap:change_password'), data=data, follow=True)
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        message = list(response.context['messages'])[0]
+        self.assertEqual(message.message, "Could not Update Password !")
+
+    def test_success_change_password(self):
+        """
+        If old password is right and new password match then change password
+        is successfull and a success message is displayed
+        """
+        self.user.is_staff = True
+        self.user.save()
+        self.client.login(username=self.username, password=self.password)
+        response = self.client.get(reverse('sap:change_password'))
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        self.assertContains(
+            response, "Change Password", html=True
+        )
+        data = {
+            "old_password": "admin_password1",
+            "new_password1": "admin_password2",
+            "new_password2": "admin_password2"
+        }
+        form = PasswordChangeForm(
+            user=self.user,
+            data=data
+        )
+        self.assertTrue(form.is_valid())
+
+        response = self.client.post(
+            reverse('sap:change_password'), data=data, follow=True)
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        message = list(response.context['messages'])[0]
+        self.assertEqual(message.message, "Password Updated Successfully !")
+
+    def test_correct_update_profile(self):
+        """
+        If profile is updated, a success message is displayed
+        """
+        self.user.is_staff = True
+        self.user.save()
+        self.client.login(username=self.username, password=self.password)
+        response = self.client.get(reverse('sap:sap-admin_profile'))
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        self.assertContains(
+            response, "Update Admin Profile", html=True
+        )
+
+        form = UpdateAdminProfileForm(
+            data={"username": "Admin_2", "email": "admin@admin.com"})
+        self.assertTrue(form.is_valid())
+        response = self.client.post(
+            reverse('sap:sap-admin_profile'), data={"username": "Admin_2", "email": "admin@admin.com"}, follow=True)
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        message = list(response.context['messages'])[0]
+        self.assertEqual(message.message, "Profile Updated !")
+
+    def test_fail_update_profile(self):
+        """
+        If profile is not updated, a failed message is displayed
+        """
+        self.user.is_staff = True
+        self.user.save()
+        self.client.login(username=self.username, password=self.password)
+        response = self.client.get(reverse('sap:sap-admin_profile'))
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        self.assertContains(
+            response, "Update Admin Profile", html=True
+        )
+
+        form = UpdateAdminProfileForm(
+            data={"username": "Admin_1", "email": "admin@admin.com"})
+        self.assertFalse(form.is_valid())
+        response = self.client.post(
+            "/update_profile/", data={"username": "Admin_1", "email": "admin@admin.com"}, follow=True)
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        message = list(response.context['messages'])[0]
+        self.assertEqual(
+            message.message, "Could not Update Profile ! Username already exists")
 class EditEventTests(TestCase):
     """
     Tests for Edit Event feature
@@ -285,7 +503,10 @@ class EditEventTests(TestCase):
                                           research_field='Biochemistry,Bioinformatics',
                                           role_selected='Freshman,Sophomore,Juniors,Faculty',
                                           invite_all=True,
-                                          special_category='First generation college-student,Rural,Low-income,Underrepresented racial/ethnic minority,Disabled,Transfer Student,LGBTQ'
+                                          special_category='First generation college-student,'
+                                                           'Rural,Low-income,'
+                                                           'Underrepresented racial/ethnic minority,'
+                                                           'Disabled,Transfer Student,LGBTQ'
                                           )
 
         self.event2 = Event.objects.create(title='Mock Interview2',
@@ -297,10 +518,13 @@ class EditEventTests(TestCase):
                                           num_attending=0,
                                           num_invited=5,
                                           mentor_status='Mentors,Mentees',
-                                          research_field='Biochemistry,Bioinformatics',
+                                          research_field='Biochemistry,'
+                                                         'Bioinformatics',
                                           role_selected='Freshman,Sophomore,Juniors,Faculty',
                                           invite_all=False,
-                                          special_category='First generation college-student,Underrepresented racial/ethnic minority,Disabled,Transfer Student'
+                                          special_category='First generation college-student,'
+                                                           'Underrepresented racial/ethnic minority,'
+                                                           'Disabled,Transfer Student'
                                           )
 
         self.ally_user = User.objects.create_user(username='john2',
@@ -313,11 +537,11 @@ class EditEventTests(TestCase):
 
         self.ally = Ally.objects.create(
             user=self.ally_user,
-            hawk_id='johndoe2',
+            hawk_id='johndoe21',
             user_type='Graduate Student',
             works_at='College of Engineering',
-            area_of_research='Biochemistry',
-            major='Electrical Engineering',
+            area_of_research='Computer Science and Engineering',
+            major='Computer Science',
             willing_to_volunteer_for_events=True
         )
 
@@ -363,11 +587,24 @@ class EditEventTests(TestCase):
              'allday': ['allday'],
              'event_location': ['MacLean Hall'],
              'invite_all': ['invite_all'],
-             'role_selected': ['Staff', 'Graduate Student', 'Undergraduate Student', 'Faculty'],
-             'school_year_selected': ['Freshman', 'Sophomore', 'Juniors', 'Faculty'],
+             'role_selected': ['Staff', 'Graduate Student',
+                               'Undergraduate Student', 'Faculty'],
+             'school_year_selected': ['Freshman',
+                                      'Sophomore',
+                                      'Juniors',
+                                      'Faculty'],
              'mentor_status': ['Mentors', 'Mentees'],
-             'special_category': ['First generation college-student', 'Rural', 'Low-income', 'Underrepresented racial/ethnic minority', 'Disabled', 'Transfer Student', 'LGBTQ'],
-             'research_area': ['Biochemistry', 'Bioinformatics', 'Biology', 'Biomedical Engineering', 'Chemical Engineering', 'Chemistry', 'Computer Science and Engineering', 'Environmental Science', 'Health and Human Physiology', 'Mathematics', 'Microbiology', 'Neuroscience', 'Nursing', 'Physics', 'Psychology']
+             'special_category': ['First generation college-student', 'Rural',
+                                  'Low-income', 'Underrepresented racial/ethnic minority',
+                                  'Disabled', 'Transfer Student',
+                                  'LGBTQ'],
+             'research_area': ['Biochemistry', 'Bioinformatics',
+                               'Biology', 'Biomedical Engineering',
+                               'Chemical Engineering', 'Chemistry',
+                               'Computer Science and Engineering',
+                               'Environmental Science',
+                               'Health and Human Physiology', 'Mathematics', 'Microbiology',
+                               'Neuroscience', 'Nursing', 'Physics', 'Psychology']
              }, follow=True
         )
         event = Event.objects.filter(title=self.event.title)
@@ -395,8 +632,14 @@ class EditEventTests(TestCase):
              'role_selected': ['Staff', 'Graduate Student', 'Undergraduate Student', 'Faculty'],
              'school_year_selected': ['Freshman', 'Sophomore', 'Juniors', 'Faculty'],
              'mentor_status': ['Mentors', 'Mentees'],
-             'special_category': ['First generation college-student', 'Rural', 'Low-income', 'Underrepresented racial/ethnic minority', 'Disabled', 'Transfer Student', 'LGBTQ'],
-             'research_area': ['Biochemistry', 'Bioinformatics', 'Biology', 'Biomedical Engineering', 'Chemical Engineering', 'Chemistry', 'Computer Science and Engineering', 'Environmental Science', 'Health and Human Physiology', 'Mathematics', 'Microbiology', 'Neuroscience', 'Nursing', 'Physics', 'Psychology']
+             'special_category': ['First generation college-student', 'Rural',
+                                  'Low-income', 'Underrepresented racial/ethnic minority',
+                                  'Disabled', 'Transfer Student', 'LGBTQ'],
+             'research_area': ['Biochemistry', 'Bioinformatics', 'Biology',
+                               'Biomedical Engineering', 'Chemical Engineering',
+                               'Chemistry', 'Computer Science and Engineering', 'Environmental Science',
+                               'Health and Human Physiology', 'Mathematics', 'Microbiology',
+                               'Neuroscience', 'Nursing', 'Physics', 'Psychology']
              }
             , follow=True
         )
@@ -441,3 +684,62 @@ class EditEventTests(TestCase):
         assert url == '/calendar'
         assert event.exists()
         assert EventInviteeRelation.objects.filter(event=event[0], ally=self.ally).exists()
+
+class SapNotifications(TestCase):
+    """
+    Test sap notification view
+    """
+    def setUp(self):
+        recipient = User.objects.create_user(username='recipient', password='12345678')
+        sender = User.objects.create_user(username='sender', password='12345678')
+        self.notification = notify.send(sender, recipient=recipient, verb='testing testing 123')[0][1][0]
+        self.other_notification = notify.send(recipient, recipient=sender, verb='not yo message')[0][1][0]
+        self.client = Client()
+
+    def test_get_page(self):
+        """
+        Test that a valid url exists for the notificaion page and it can be reached
+        """
+        self.client.login(username='recipient', password='12345678')
+        response = self.client.get('/notification_center/')
+        self.assertEqual(response.status_code, 200)
+
+    def test_dismiss_not_yours(self):
+        """
+        Check that you cannot dismiss others' notifications
+        """
+        self.client.login(username='recipient', password='12345678')
+        response = self.client.get(reverse('sap:dismiss_notification', args=[self.other_notification.id]), follow=True)
+        self.assertEqual(response.status_code, 200)
+        message = list(response.context['messages'])[0]
+        self.assertEqual(message.message, 'Access Denied!')
+        try:
+            Notification.objects.get(id=self.other_notification.id)
+        except ObjectDoesNotExist:
+            assert False
+
+    def test_dismiss_not_existing(self):
+        """
+        Test that you cannot dismiss non-existant notificaitons
+        """
+        self.client.login(username='recipient', password='12345678')
+        response = self.client.get(reverse('sap:dismiss_notification', args=[0]), follow=True)
+        self.assertEqual(response.status_code, 200)
+        print(response.context['messages'])
+        message = list(response.context['messages'])[0]
+        self.assertEqual(message.message, 'Notification does not exist!')
+
+    def test_dismiss(self):
+        """
+        Test the dismiss function on the notification page
+        """
+        self.client.login(username='recipient', password='12345678')
+        response = self.client.get(reverse('sap:dismiss_notification', args=[self.notification.id]), follow=True)
+        self.assertEqual(response.status_code, 200)
+        message = list(response.context['messages'])[0]
+        self.assertEqual(message.message, 'Notification Dismissed!')
+        try:
+            Notification.objects.get(id=self.notification.id)
+            assert False
+        except ObjectDoesNotExist:
+            pass

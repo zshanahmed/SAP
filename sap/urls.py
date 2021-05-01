@@ -1,7 +1,8 @@
 """
 Url mappings with appropriate functions to handle them
 """
-from django.urls import path
+import notifications.urls
+from django.urls import path, include
 from django.contrib.auth import views as auth_views
 from django.conf.urls import url
 from django.contrib.auth.decorators import login_required
@@ -78,6 +79,8 @@ urlpatterns = [
     url(r'^delete/$', login_required(views.DeleteAllyProfileFromAdminDashboard.as_view()),
         name='admin_delete_ally'),
 
+    url('^inbox/notifications/', include(notifications.urls, namespace='notifications')),
+
     url('create_iba_admin/',
         login_required(views.CreateAdminView.as_view()),
         name='create_iba_admin'),
@@ -89,6 +92,14 @@ urlpatterns = [
     url(r'^signup_event/$',
         login_required(sap.views_v2.SignUpEventView.as_view()),
         name='signup_event'),
+
+    url(r'^signup_event/(?P<context>[\s\w-]+)/$',
+        login_required(sap.views_v2.SignUpEventView.as_view()),
+        name='signup_event'),
+
+    url(r'^deregister_event/$',
+        login_required(sap.views_v3.DeregisterEventView.as_view()),
+        name='deregister_event'),
 
     url(r'^announcements/$',
         login_required(views.Announcements.as_view()),
@@ -111,5 +122,12 @@ urlpatterns = [
     url(r'^create_announcements/$',
         login_required(views.CreateAnnouncement.create_announcement), name='create_announcement'),
 
+    url(r'^notification_center/$',
+        login_required(sap.views_v3.SapNotifications.as_view()), name='notification_center'),
+
     url(r'^upload_allies/$', login_required(sap.views_v2.UploadAllies.upload_allies), name='upload_allies'),
+
+    url(r'^dismiss_notification/(?P<notification_id>[\w-]+)/$',
+        login_required(sap.views_v3.SapNotifications.dismiss_notification),
+        name='dismiss_notification'),
 ]

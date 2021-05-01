@@ -43,4 +43,4 @@ def upload_file_to_azure(upload_file_name, called_by_test_function=False):
     if called_by_test_function:
         blob_client.delete_blob()
 
-    return "https://sepibafiles.blob.core.windows.net/sepibacontainer/" + upload_file_name
+    return "https://sepibafiles.blob.core.windows.net/sepibacontainer/" + file_name_on_cloud

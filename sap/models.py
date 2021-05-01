@@ -16,13 +16,15 @@ class Ally(models.Model):
         on_delete=models.CASCADE,
     )
     hawk_id = models.CharField(max_length=100)
+    image_url = models.CharField(max_length=500,
+                                 default="https://sepibafiles.blob.core.windows.net/sepibacontainer/blank-profile-picture.png")
     user_type = models.CharField(max_length=25)  # student/faculty/..
 
     def __str__(self):
         return self.hawk_id
 
     ##Grad and Faculty
-    area_of_research = models.CharField(max_length=200, null=True)
+    area_of_research = models.CharField(max_length=500, null=True)
     openings_in_lab_serving_at = models.BooleanField(default=False)
     description_of_research_done_at_lab = models.CharField(max_length=500, null=True)
     interested_in_mentoring = models.BooleanField(default=False)

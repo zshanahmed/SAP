@@ -17,7 +17,6 @@ from .models import Ally, StudentCategories, AllyStudentCategoryRelation, Event,
 
 User = get_user_model()
 
-
 def wack_test_db():
     """
     Delete users/allies/categories from the database
@@ -359,21 +358,21 @@ class CreateEventTests(TestCase):
         self.client = Client()
         self.client.login(username=self.username, password=self.password)
 
-        self.ally_user = User.objects.create_user(username='john2',
-                                                  email='john2@uiowa.edu',
-                                                  password='johndoe2',
-                                                  first_name='John2',
+        self.ally_user = User.objects.create_user(username='john1',
+                                                  email='john1@uiowa.edu',
+                                                  password='johndoe1',
+                                                  first_name='John1',
                                                   last_name='Doe',
                                                   is_active=True,
                                                   )
 
         self.ally = Ally.objects.create(
             user=self.ally_user,
-            hawk_id='johndoe2',
+            hawk_id='johndoe1',
             user_type='Graduate Student',
             works_at='College of Engineering',
             area_of_research='Biochemistry',
-            major='Electrical Engineering',
+            major='Computer Science',
             willing_to_volunteer_for_events=True
         )
 
@@ -478,14 +477,8 @@ class CreateEventTests(TestCase):
              'invite_all': ['invite_all'],
              'role_selected': ['Staff', 'Graduate Student', 'Undergraduate Student', 'Faculty'],
              'mentor_status': ['Mentors', 'Mentees'],
-             'special_category': ['First generation college-student', 'Rural', 'Low-income',
-                                  'Underrepresented racial/ethnic minority',
-                                  'Disabled', 'Transfer Student', 'LGBTQ'],
-             'research_area': ['Biochemistry', 'Bioinformatics', 'Biology',
-                               'Biomedical Engineering', 'Chemical Engineering', 'Chemistry',
-                               'Computer Science and Engineering', 'Environmental Science',
-                               'Health and Human Physiology', 'Mathematics', 'Microbiology',
-                               'Neuroscience', 'Nursing', 'Physics', 'Psychology']
+             'special_category': ['First generation college-student'],
+             'research_area': ['Biochemistry'],
              }, follow= True)
         self.assertContains(
             response, "End time cannot be less than start time!", html=True

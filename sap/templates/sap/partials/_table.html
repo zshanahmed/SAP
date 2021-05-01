@@ -47,7 +47,7 @@
                                         </div>
                                         <div class="modal-footer">
                                           <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                                          <a class="btn btn-danger" href="">Confirm</a>
+                                          <a class="btn btn-danger" onclick="clickAndDisable(this);" href="">Confirm</a>
                                         </div>
                                       </div>
                                     </div>
@@ -99,6 +99,21 @@
             </div>
         </div>
     </div>
-
 </div>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script>
+    $(document).ready( function () {
+        $('#dataTable').dataTable({
+            "order": []
+        });
+    });
+</script>
+<script>
+   function clickAndDisable(link) {
+     // disable subsequent clicks
+     link.onclick = function(event) {
+        event.preventDefault();
+     }
+   }
+</script>
 <!-- /.container-fluid -->
