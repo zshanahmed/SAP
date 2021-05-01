@@ -33,7 +33,7 @@ from django.views.generic import TemplateView, View
 from sap.forms import UserResetForgotPasswordForm
 from sap.models import StudentCategories, Ally, AllyStudentCategoryRelation, Event, EventInviteeRelation, EventAttendeeRelation
 from sap.tokens import account_activation_token, password_reset_token
-from sap.views import User, AccessMixin
+from sap.views import User, AccessMixin, CreateEventView
 
 class SignUpEventView(View):
     """
@@ -906,6 +906,7 @@ class EditEventView(View, AccessMixin):
         event_id = request.GET['event_id']
         event = Event.objects.get(pk=event_id)
         post_dict = dict(request.POST)
+        print(post_dict)
         if post_dict['end_time'] < post_dict['start_time']:
             messages.warning(request, 'End time cannot be less than start-time')
             return redirect('/edit_event/?event_id='+event_id)
@@ -931,7 +932,6 @@ class EditEventView(View, AccessMixin):
         if event.invite_all:
             # If all allies are invited
             allies_for_invitation = allies_list
-
         else:
             allies_for_invitation = []
 
@@ -940,7 +940,6 @@ class EditEventView(View, AccessMixin):
 
         if 'Mentors' in event.mentor_status:
             allies_for_invitation.extend(Ally.objects.filter(interested_in_mentoring=True))
-
         if 'Mentees' in event.mentor_status:
             allies_for_invitation.extend(Ally.objects.filter(interested_in_mentor_training=True))
 
@@ -953,20 +952,15 @@ class EditEventView(View, AccessMixin):
             if ctg == 'First generation college-student':
                 student_categories_to_include_for_event.extend(
                     StudentCategories.objects.filter(first_gen_college_student=True))
-
             elif ctg == 'Low-income':
                 student_categories_to_include_for_event.extend(StudentCategories.objects.filter(low_income=True))
-
             elif ctg == 'Underrepresented racial/ethnic minority':
                 student_categories_to_include_for_event.extend(
                     StudentCategories.objects.filter(under_represented_racial_ethnic=True))
-
             elif ctg == 'LGBTQ':
                 student_categories_to_include_for_event.extend(StudentCategories.objects.filter(lgbtq=True))
-
             elif ctg == 'Rural':
                 student_categories_to_include_for_event.extend(StudentCategories.objects.filter(rural=True))
-
             elif ctg == 'Disabled':
                 student_categories_to_include_for_event.extend(StudentCategories.objects.filter(disabled=True))
 
@@ -977,17 +971,14 @@ class EditEventView(View, AccessMixin):
             Ally.objects.filter(id__in=ids_for_invitation)
         )
 
-        event_ally_objs = []
-        invited_allies_set = set()
         allies_for_invitation = set(allies_for_invitation)
-
-        for ally in allies_for_invitation:
-            if ally.user.is_active:
-                event_ally_rel_obj = EventInviteeRelation(event=event, ally=ally)
-                event_ally_objs.append(event_ally_rel_obj)
-                invited_allies_set.add(event_ally_rel_obj.ally)
-
-        EventInviteeRelation.objects.bulk_create(event_ally_objs)
+        try:
+            junk = post_dict['email_list']
+            if junk[0] == 'get_email_list':
+                return CreateEventView.build_response(allies_for_invitation, event.title)
+            return redirect('/calendar')
+        except KeyError:
+            CreateEventView.invite_and_notify(request, allies_for_invitation, event)
 
         messages.success(request, 'Event Updated Successfully')
         return redirect('/calendar')
