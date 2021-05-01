@@ -835,20 +835,6 @@ class CreateEventView(AccessMixin, TemplateView):
             messages.warning(request, 'End time cannot be less than start time!')
             return redirect('/create_event')
 
-        event = Event.objects.create(title=event_title,
-                                     description=event_description,
-                                     start_time=parse_datetime(event_start_time + '-0500'),
-                                     # converting time to central time before storing in db
-                                     end_time=parse_datetime(event_end_time + '-0500'),
-                                     location=event_location,
-                                     allday=allday,
-                                     invite_all=invite_all,
-                                     mentor_status=mentor_status,
-                                     special_category=special_category,
-                                     research_field=research_field,
-                                     school_year_selected=school_year_selected,
-                                     role_selected=role_selected)
-
         if invite_all_selected:
             # If all allies are invited
             allies_to_be_invited = allies_list
@@ -912,6 +898,19 @@ class CreateEventView(AccessMixin, TemplateView):
                 return response
             return redirect('/calendar')
         except KeyError:
+            event = Event.objects.create(title=event_title,
+                                         description=event_description,
+                                         start_time=parse_datetime(event_start_time + '-0500'),
+                                         # converting time to central time before storing in db
+                                         end_time=parse_datetime(event_end_time + '-0500'),
+                                         location=event_location,
+                                         allday=allday,
+                                         invite_all=invite_all,
+                                         mentor_status=mentor_status,
+                                         special_category=special_category,
+                                         research_field=research_field,
+                                         school_year_selected=school_year_selected,
+                                         role_selected=role_selected)
             for ally in allies_to_be_invited:
                 if ally.user.is_active:
                     event_ally_rel_obj = EventInviteeRelation(event=event, ally=ally)
@@ -920,9 +919,9 @@ class CreateEventView(AccessMixin, TemplateView):
                 ally_user = ally.user
                 if not ally_user.is_staff:
                     user_notify = notifications.filter(recipient=ally_user.id)
-                    if user_notify.exists():
-                        msg = 'Event Invitation: ' + event_title
-                        make_notification(request, user_notify, ally_user, msg, event)
+                    print(user_notify)
+                    msg = 'Event Invitation: ' + event_title
+                    make_notification(request, user_notify, ally_user, msg, event)
             EventInviteeRelation.objects.bulk_create(all_event_ally_objs)
             messages.success(request, "Event successfully created!")
             return redirect('/calendar')

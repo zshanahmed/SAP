@@ -408,7 +408,7 @@ class DeregisterEventView(View):
     Undo register for event
     """
 
-    def get(self, request):
+    def get(self, request, context=''):
         """
         Invitees can register for event
         """
@@ -434,4 +434,6 @@ class DeregisterEventView(View):
             messages.error(request,
                            'Access denied. You are not registered in our system.')
 
+        if context == 'notification':
+            return redirect(reverse('sap:notification_center'))
         return redirect(reverse('sap:calendar'))
