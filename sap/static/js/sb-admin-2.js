@@ -114,6 +114,7 @@
       .find(".modal-body")
       .html(footer_content);
     $("#btn-signup").attr("href", "/signup_event/?event_id=" + id)
+    $("#btn-deregister").attr("href", "/deregister_event/?event_id=" + id)
     $("#btn-del").attr("href", "/delete_event/?event_id=" + id)
     $("#btn-edit").attr("href", "/edit_event/?event_id=" + id)
   });

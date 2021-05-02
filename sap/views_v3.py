@@ -1,7 +1,9 @@
 """
 views_v3 has functions that are mapped to the urls in urls.py
 """
+from shutil import move
 from notifications.models import Notification
+from django.core.files.storage import FileSystemStorage
 from django.core.exceptions import ObjectDoesNotExist
 from django.urls import reverse
 from django.views.generic import View
@@ -11,9 +13,26 @@ from django.contrib import messages
 from django.http import HttpResponseNotFound
 from .models import Ally, StudentCategories, AllyStudentCategoryRelation, Event, \
     EventInviteeRelation, EventAttendeeRelation
-
+from .upload_resource_to_azure import upload_file_to_azure
 
 User = get_user_model()
+
+
+
+def upload_prof_pic(file, post_dict):
+    """
+    @param file: file object
+    @param post_dict: request dictionary
+    @return:
+    """
+    file_system = FileSystemStorage()
+    filename = file_system.save(file.name, file)
+    move(filename, '/tmp/{}'.format(filename))
+    # Need to delete the uploaded file if called by test function to avoid creating unwanted files on Azure
+    # as storing new files on Azure costs money
+    invoked_by_unit_test = bool('test' in post_dict)
+    return upload_file_to_azure(filename, called_by_test_function=invoked_by_unit_test)
+
 
 class EditAllyProfile(View):
     """
@@ -49,7 +68,7 @@ class EditAllyProfile(View):
             'LGBTQ': ally_categories.lgbtq,
             'Transfer Student': ally_categories.transfer_student,
             'Rural': ally_categories.rural,
-            'Disabled':  ally_categories.disabled
+            'Disabled': ally_categories.disabled
         }
         for category, is_category in categories_dict.items():
             if category in student_categories:
@@ -110,9 +129,7 @@ class EditAllyProfile(View):
         except ObjectDoesNotExist:
             return HttpResponseNotFound()
 
-
-
-#{'csrfmiddlewaretoken': ['ex5Zuuyjk241FNEvxQoU4a4bnYbw4oI9gtHoblO2iG6EHhRhgAmvcerjUN9Wa6c9'],
+    # {'csrfmiddlewaretoken': ['ex5Zuuyjk241FNEvxQoU4a4bnYbw4oI9gtHoblO2iG6EHhRhgAmvcerjUN9Wa6c9'],
     # 'firstName': ['Alesia'], 'lastName': ['Larsen'], 'newUsername': ['alarsen'], 'username':
     # ['alarsen'], 'email': ['alesia-larsen@uiowa.ed'], 'hawkID': ['alarsen'], 'password': [''],
     # 'roleSelected': ['Undergraduate Student'], 'undergradYear': ['Freshman'], 'major': ['Human Physiolog'],
@@ -121,12 +138,19 @@ class EditAllyProfile(View):
 
     def post(self, request, username=''):
         """Updates profile details from edit_ally page"""
+        same = True
         post_dict = dict(request.POST)
         user_req = request.user
 
         try:
             user = User.objects.get(username=username)
             ally = Ally.objects.get(user=user)
+
+            if request.FILES:  # update profile pic
+                file = request.FILES['file']
+                ally.image_url = upload_prof_pic(file, post_dict)
+                same = False
+
             category_relation = AllyStudentCategoryRelation.objects.get(ally_id=ally.id)
             category = StudentCategories.objects.get(id=category_relation.student_category_id)
         except ObjectDoesNotExist:
@@ -141,7 +165,6 @@ class EditAllyProfile(View):
             return redirect('sap:ally-dashboard')
 
         message = ''
-        same = True
         try:
             user_type = post_dict['roleSelected'][0]
             if user_type != ally.user_type:
@@ -298,8 +321,10 @@ class EditAllyProfile(View):
 
         return redirect('sap:ally-dashboard')
 
+
 class AllyEventInformation(View):
     """View all ally event information."""
+
     @staticmethod
     def get(request, ally_username=''):
         """
@@ -376,3 +401,39 @@ class SapNotifications(View):
             messages.add_message(request, messages.WARNING, 'Notification does not exist!')
 
         return redirect('sap:notification_center')
+
+
+class DeregisterEventView(View):
+    """
+    Undo register for event
+    """
+
+    def get(self, request, context=''):
+        """
+        Invitees can register for event
+        """
+
+        user_current = request.user
+        ally_current = Ally.objects.filter(user=user_current)
+        event_id = request.GET['event_id']
+
+        if ally_current.exists() and user_current.is_active:
+
+            event_attendee_rel = EventAttendeeRelation.objects.filter(event=event_id, ally=ally_current[0])
+
+            if event_attendee_rel.exists(): # Check if user will attend
+                event_attendee_rel[0].delete()
+
+                messages.success(request,
+                                 'You will no longer attend this event.')
+            else:
+                messages.warning(request,
+                                 'You did not sign up for this event.')
+
+        else:
+            messages.error(request,
+                           'Access denied. You are not registered in our system.')
+
+        if context == 'notification':
+            return redirect(reverse('sap:notification_center'))
+        return redirect(reverse('sap:calendar'))

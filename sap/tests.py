@@ -1,6 +1,7 @@
 """
 contains unit tests for sap app
 """
+import os
 from http import HTTPStatus
 from django.urls import reverse
 from django.contrib.auth import get_user_model
@@ -357,6 +358,42 @@ class AdminAllyTableFeatureTests(TestCase):
         self.assertContains(
             response, self.ally_user.first_name + ' ' + self.ally_user.last_name, html=True
         )
+
+    def test_edit_ally_upload_profile_pic(self):
+        """
+        Test the first filetype which has the same format as the file found in the DownloadAllies view.
+        """
+        self.user.is_staff = True
+        self.user.save()
+        self.client.login(username=self.username, password=self.password)
+
+        name = './pytests/assets/blank-profile-picture.png'
+        abs_path = os.path.abspath(name)
+
+        dictionary = {'csrfmiddlewaretoken': ['YXW4Ib9TNmwod6ZETztHgp3ouwbg09sbAYibaXHc5RMKbAECHTZKHIsdJrvzvvP5'],
+                      'firstName': self.ally_user.first_name, 'lastName': self.ally_user.last_name,
+                      'newUsername': self.ally_user.username, 'username': self.ally_user.username,
+                      'category_id': self.ally_student_category_relation.id,
+                      'email': self.ally_user.email, 'hawkID': self.ally.hawk_id,
+                      'password': [''], 'roleSelected': self.ally.user_type,
+                      'areaOfResearchCheckboxes': ['Biochemistry', 'Bioinformatics', 'Chemical Engineering', 'Chemistry'],
+                      'research-des': [''], 'openingRadios': ['Yes'], 'labShadowRadios': ['Yes'], 'mentoringRadios': ['Yes'],
+                      'volunteerRadios': ['Yes'], 'mentorTrainingRadios': ['Yes'], 'connectingWithMentorsRadios': ['Yes'],
+                      'studentsInterestedRadios': ['Yes'], 'howCanWeHelp': [''], 'test': ['True']}
+
+        with open(abs_path, 'rb') as file_name:
+            headers = {
+                'HTTP_CONTENT_TYPE': 'multipart/form-data',
+                'HTTP_CONTENT_DISPOSITION': 'attachment; filename=' + 'blank-profile-picture.jpg'}
+
+            url = reverse('sap:admin_edit_ally', args=[self.ally_user.username])
+            dictionary['file'] = file_name
+            response = self.client.post(url, dictionary, **headers)
+
+        self.assertEqual(response.status_code, 302)
+        default_image_url = 'https://sepibafiles.blob.core.windows.net/sepibacontainer/blank-profile-picture.png'
+        self.ally = Ally.objects.get(user=self.ally_user)
+        self.assertNotEqual(self.ally.image_url, default_image_url)
 
     def test_edit_ally_page_for_admin(self):
         """

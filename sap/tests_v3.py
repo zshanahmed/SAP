@@ -462,6 +462,29 @@ class CreateEventTests(TestCase):
         assert event.exists()
         assert EventInviteeRelation.objects.filter(event=event[0], ally=self.ally).exists()
 
+    def test_download_list(self):
+        """
+        test to check if only allies belonging to special categories are invited for an event
+        """
+        response = self.client.post('/create_event/', {
+            'csrfmiddlewaretoken': ['gr9bKWMJLFrJZfcdKkdRhlyKLI0JeTh2ZefMhjulIFuY05e6romNm1CvLZUKa0zG'],
+            'event_title': ['title'],
+            'event_description': ['description'],
+            'event_location': ['https://zoom.us/abc123edf'],
+            'event_start_time': ['2021-03-31T15:33'],
+            'event_end_time': ['2021-04-30T15:3'],
+            'special_category': ['First generation college-student', 'Rural', 'Low-income',
+                                 'Underrepresented racial/ethnic minority', 'Transfer Student', 'LGBTQ'],
+            'email_list': ['get_email_list'],
+        })
+        try:
+            file_content = io.BytesIO(response.content)
+        except IOError:
+            assert False
+        compare_frame = pd.DataFrame(data={'Username': ['john1'], 'Email': ['john1@uiowa.edu']})
+        retrieved_frame = pd.read_excel(file_content)
+        pd.testing.assert_frame_equal(retrieved_frame, compare_frame)
+
     def test_end_date_less_than_start_date(self):
         """
         Checks if the post function validates that start time < end time
