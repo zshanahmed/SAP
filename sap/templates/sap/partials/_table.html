@@ -59,10 +59,10 @@
                                     <td style="text-align:center">{{ ally.user.first_name }} {{ally.user.last_name}}</td>
                                     <td style="text-align:center">{{ ally.user_type }}</td>
                                     <td style="text-align:center">{{ally.user.date_joined|day_month_year}}</td>
-                                    <td width="25%">{{ ally.area_of_research }}</td>
-                                    <td style="text-align:center">{{ ally.interested_in_mentoring }}</td>
+                                    <td width="15%">{{ ally.area_of_research }}</td>
+                                    <td width="10%" style="text-align:center">{{ ally.interested_in_mentoring }}</td>
                                     <td style="text-align:center">{{ ally.year }}</td>
-                                    <td>
+                                    <td width="20%">
                                         <ul class="list-inline m-0" style="text-align: center">
                                             <li class="list-inline-item">
                                                 <a href="{% url 'sap:admin_view_ally' ally.user.username %}" class="btn btn-primary btn-sm" type="button" data-toggle="tooltip" data-placement="top"
