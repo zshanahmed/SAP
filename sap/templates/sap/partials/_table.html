@@ -1,5 +1,5 @@
 {% load static %}
-
+{% load filter %}
 <div class="container-fluid float-left">
     <!-- DataTables Content -->
     <div class="card shadow mb-4">
@@ -14,6 +14,7 @@
                             <tr>
                                 <th>Name</th>
                                 <th>User Type</th>
+                                <th>Date Joined</th>
                                 <th>STEM AOR</th>
                                 <th>Interested in Mentoring</th>
                                 <th>Year</th>
@@ -24,6 +25,7 @@
                             <tr>
                                 <th>Name</th>
                                 <th>User Type</th>
+                                <th>Date Joined</th>
                                 <th>STEM AOR</th>
                                 <th>Interested in Mentoring</th>
                                 <th>Year</th>
@@ -56,7 +58,8 @@
                                 <tr>
                                     <td>{{ ally.user.first_name }} {{ally.user.last_name}}</td>
                                     <td>{{ ally.user_type }}</td>
-                                    <td>{{ ally.area_of_research }}</td>
+                                    <td>{{ally.user.date_joined|day_month_year}}</td>
+                                    <td width="25%">{{ ally.area_of_research }}</td>
                                     <td>{{ ally.interested_in_mentoring }}</td>
                                     <td>{{ ally.year }}</td>
                                     <td>
