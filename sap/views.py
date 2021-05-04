@@ -20,13 +20,14 @@ from django.contrib.auth.forms import PasswordChangeForm
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.http import HttpResponseNotFound
+from django.db import IntegrityError
 from django.utils.dateparse import parse_datetime
 from notifications.signals import notify
 from notifications.models import Notification
 
-from django.db import IntegrityError
 from .forms import UpdateAdminProfileForm
-from .models import Announcement, EventInviteeRelation, EventAttendeeRelation, Ally, StudentCategories, AllyStudentCategoryRelation, Event, AllyMentorRelation, AllyMenteeRelation
+from .models import Announcement, EventInviteeRelation, EventAttendeeRelation, Ally, StudentCategories, \
+ AllyStudentCategoryRelation, Event, AllyMentorRelation, AllyMenteeRelation
 
 # Create your views here.
 
@@ -99,6 +100,7 @@ def add_mentor_relation(ally_id, mentor_id):
     try:
         AllyMentorRelation.objects.create(ally_id=ally_id,
             mentor_id=mentor_id)
+        return "Mentor added !"
     except IntegrityError:
         return HttpResponse("ERROR: Mentor already exists!")
 
@@ -121,16 +123,16 @@ class ViewAllyProfileFromAdminDashboard(View):
         """
 
         try:
-            user = User.objects.get(username=ally_username)
-            ally = Ally.objects.get(user=user)
-            
+            req_user = User.objects.get(username=ally_username)
+            ally = Ally.objects.get(user=req_user)
+
             try:
                 mentor = AllyMentorRelation.objects.get(ally_id=ally.id)
                 mentor = Ally.objects.get(pk=mentor.mentor_id)
             except ObjectDoesNotExist:
                 mentor = []
 
-            try: 
+            try:
                 mentees_queryset = AllyMenteeRelation.objects.filter(ally_id=ally.id)
                 mentees = []
                 for mentee in mentees_queryset:
