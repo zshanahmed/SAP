@@ -261,7 +261,6 @@ class SignUpView(TemplateView):
 
         try:
             sendgrid_obj = SendGridAPIClient(os.environ.get('SENDGRID_API_KEY'))
-            # sendgrid_obj = SendGridAPIClient('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')
             sendgrid_obj.send(email_content)
         except HTTPError as exception:
             messages.warning(self.request, str(exception))
