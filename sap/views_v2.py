@@ -16,7 +16,6 @@ from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
 from python_http_client.exceptions import HTTPError
 from django.contrib import messages
-from django.utils.dateparse import parse_datetime
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.forms import PasswordResetForm
 from django.contrib.sites.shortcuts import get_current_site
@@ -25,7 +24,6 @@ from django.http import HttpResponse, HttpResponseForbidden
 from django.shortcuts import render, redirect
 from django.template.loader import render_to_string
 from django.urls import reverse
-from django.core.exceptions import ObjectDoesNotExist
 from django.utils.encoding import force_bytes, force_text
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.views.generic import TemplateView, View
@@ -33,7 +31,7 @@ from django.views.generic import TemplateView, View
 from sap.forms import UserResetForgotPasswordForm
 from sap.models import StudentCategories, Ally, AllyStudentCategoryRelation, Event, EventInviteeRelation, EventAttendeeRelation
 from sap.tokens import account_activation_token, password_reset_token
-from sap.views import User, AccessMixin, CreateEventView
+from sap.views import User, AccessMixin
 
 class SignUpEventView(View):
     """
@@ -89,6 +87,68 @@ def set_boolean(_list, post_dict):
             dictionary[selection] = False
     return dictionary
 
+def categories_to_string(ally):
+    """
+    Returns categories of ally to list format
+    """
+    ally_categories = []
+    category_rel = AllyStudentCategoryRelation.objects.get(ally_id=ally.id)
+    ally_category = StudentCategories.objects.filter(id=category_rel.student_category_id)
+    category_dict = list(ally_category.values())[0]
+    for key, value in category_dict.items():
+        category_map = {
+            "first_gen_college_student": "First generation college-student",
+            "rural": "Rural",
+            "under_represented_racial_ethnic": "Underrepresented racial/ethnic minority",
+            "low_income": "Low-income",
+            "disabled": "Disabled",
+            "transfer_student": "Transfer Student",
+            "lgbtq": "LGBTQ"
+        }
+        if value and key not in ['id']:
+            ally_categories.append(category_map[key])
+    return ally_categories
+
+def event_invitations(ally):
+    """
+    Creates invitation for ally
+    """
+    events_ally = Event.objects.none()
+    print(categories_to_string(ally))
+    for category in categories_to_string(ally):
+        events_ally |= Event.objects.filter(special_category__contains=category)
+
+    if ally.user_type:
+        role = ally.user_type
+        if role == 'Undergraduate Student':
+            if ally.interested_in_being_mentored:
+                if Event.objects.filter(mentor_status__contains='Mentees'):
+                    events_ally |= Event.objects.filter(role_selected__contains=role).filter(
+                        school_year_selected__contains=ally.year).filter(mentor_status__contains='Mentees')
+                else:
+                    events_ally |= Event.objects.filter(role_selected__contains=role).filter(
+                        school_year_selected__contains=ally.year)
+            else:
+                events_ally |= Event.objects.filter(role_selected__contains=role).filter(
+                    school_year_selected__contains=ally.year)
+        else:
+            if ally.interested_in_mentoring:
+                if Event.objects.filter(mentor_status__contains='Mentors'):
+                    events_ally |= Event.objects.filter(role_selected__contains=role).filter(
+                        mentor_status__contains='Mentors')
+                else:
+                    events_ally |= Event.objects.filter(role_selected__contains=role)
+            else:
+                events_ally |= Event.objects.filter(role_selected__contains=role)
+
+    if ally.area_of_research:
+        for aor in ally.area_of_research.split(','):
+            print('Aor: ', aor, '  ', Event.objects.filter(research_field__contains=aor))
+            events_ally |= Event.objects.filter(research_field__contains=aor)
+
+    if events_ally is not None:
+        for event in events_ally:
+            EventInviteeRelation.objects.create(event_id=event.id, ally_id=ally.id)
 
 def make_categories(student_categories):
     """Enter what this class/method does"""
@@ -115,7 +175,9 @@ def make_categories(student_categories):
 def create_new_user(post_dict):
     """
     Create new user and associated ally based on what user inputs in sign-up page
+    Also creates event invitations for new user based on the information they provide
     """
+    print(post_dict)
     user = User.objects.create_user(username=post_dict["new_username"][0],
                                     password=post_dict["new_password"][0],
                                     email=post_dict["new_email"][0],
@@ -170,6 +232,7 @@ def create_new_user(post_dict):
     notify.send(user, recipient=user, verb='Welcome to Science Alliance!')
 
     AllyStudentCategoryRelation.objects.create(student_category_id=categories.id, ally_id=ally.id)
+    event_invitations(ally)
     return user, ally
 
 
@@ -866,122 +929,3 @@ class UploadAllies(AccessMixin, HttpResponse):
             return redirect('sap:sap-dashboard')
 
         return HttpResponseForbidden()
-
-class DeleteEventView(AccessMixin, View):
-    """
-    Delete event from calendar view
-    """
-    def get(self, request):
-        """
-        Method to get event which needs to be deleted
-        """
-        event_id = request.GET['event_id']
-        try:
-            event = Event.objects.get(pk=event_id)
-            event.delete()
-            messages.success(request, 'Event deleted successfully!')
-            return redirect(reverse('sap:calendar'))
-        except ObjectDoesNotExist:
-            messages.warning(request, "Event doesn't exist!")
-        return redirect(reverse('sap:calendar'))
-
-
-class EditEventView(View, AccessMixin):
-    """
-    View enabling admins to edit events
-    """
-
-    def get(self, request):
-        """
-        Get details of event selected on calendar
-        """
-        event_id = request.GET['event_id']
-        event = Event.objects.get(pk=event_id)
-
-        return render(request, template_name="sap/edit_event.html", context={
-            'event': event
-        })
-
-    def post(self, request):
-        """
-        Updating the details in the database with information obtained from the form
-        """
-        event_id = request.GET['event_id']
-        event = Event.objects.get(pk=event_id)
-        post_dict = dict(request.POST)
-        print(post_dict)
-        if post_dict['end_time'] < post_dict['start_time']:
-            messages.warning(request, 'End time cannot be less than start-time')
-            return redirect('/edit_event/?event_id='+event_id)
-        post_dict.pop('csrfmiddlewaretoken')
-        event.mentor_status = ''
-        event.research_field = ''
-        event.role_selected = ''
-        event.school_year_selected = ''
-        event.special_category = ''
-
-        for key, item in post_dict.items():
-            new_value = ','.join(item)
-            if key in ("start_time", "end_time"):
-                new_value = parse_datetime(new_value + '-0500')
-            setattr(event, key, new_value)
-
-        event.invite_all = "invite_all" in post_dict
-        event.allday = "allday" in post_dict
-        event.save()
-        EventInviteeRelation.objects.filter(event_id=event.id).delete()
-
-        allies_list = list(Ally.objects.all())
-        if event.invite_all:
-            # If all allies are invited
-            allies_for_invitation = allies_list
-        else:
-            allies_for_invitation = []
-
-        allies_for_invitation.extend(Ally.objects.filter(user_type__in=event.role_selected))
-        allies_for_invitation.extend(Ally.objects.filter(year__in=event.school_year_selected))
-
-        if 'Mentors' in event.mentor_status:
-            allies_for_invitation.extend(Ally.objects.filter(interested_in_mentoring=True))
-        if 'Mentees' in event.mentor_status:
-            allies_for_invitation.extend(Ally.objects.filter(interested_in_mentor_training=True))
-
-        allies_for_invitation.extend(
-            Ally.objects.filter(area_of_research__in=event.research_field))
-        student_categories_to_include_for_event = []
-
-        for ctg in event.special_category.split(','):
-            print(ctg)
-            if ctg == 'First generation college-student':
-                student_categories_to_include_for_event.extend(
-                    StudentCategories.objects.filter(first_gen_college_student=True))
-            elif ctg == 'Low-income':
-                student_categories_to_include_for_event.extend(StudentCategories.objects.filter(low_income=True))
-            elif ctg == 'Underrepresented racial/ethnic minority':
-                student_categories_to_include_for_event.extend(
-                    StudentCategories.objects.filter(under_represented_racial_ethnic=True))
-            elif ctg == 'LGBTQ':
-                student_categories_to_include_for_event.extend(StudentCategories.objects.filter(lgbtq=True))
-            elif ctg == 'Rural':
-                student_categories_to_include_for_event.extend(StudentCategories.objects.filter(rural=True))
-            elif ctg == 'Disabled':
-                student_categories_to_include_for_event.extend(StudentCategories.objects.filter(disabled=True))
-
-        ids_for_invitation = AllyStudentCategoryRelation.objects.filter(student_category__in=
-                                                                        student_categories_to_include_for_event).values(
-            'ally')
-        allies_for_invitation.extend(
-            Ally.objects.filter(id__in=ids_for_invitation)
-        )
-
-        allies_for_invitation = set(allies_for_invitation)
-        try:
-            junk = post_dict['email_list']
-            if junk[0] == 'get_email_list':
-                return CreateEventView.build_response(allies_for_invitation, event.title)
-            return redirect('/calendar')
-        except KeyError:
-            CreateEventView.invite_and_notify(request, allies_for_invitation, event)
-
-        messages.success(request, 'Event Updated Successfully')
-        return redirect('/calendar')
