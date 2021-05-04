@@ -119,9 +119,7 @@ class ViewAllyProfileFromAdminDashboard(View):
         """
         method to retrieve all ally information
         """
-        # add_mentor_relation(1, 2)
-        # add_mentee_relation(1, 3)
-        # add_mentee_relation(1, 4)
+
         try:
             user = User.objects.get(username=ally_username)
             ally = Ally.objects.get(user=user)
