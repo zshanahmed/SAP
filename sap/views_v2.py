@@ -842,6 +842,9 @@ class UploadAllies(AccessMixin, HttpResponse):
                                                                       disabled=category['disabled'])
                         AllyStudentCategoryRelation.objects.create(ally_id=ally1.id,
                                                                    student_category_id=categories.id)
+
+                        notify.send(user, recipient=user, verb='Welcome to Science Alliance!')
+
                     except IntegrityError:
                         error_log[ally[0]] = "Ally already exists in the database"
 

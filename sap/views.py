@@ -44,11 +44,12 @@ def make_notification(request, notifications, user, msg, action_object=''):
     if notifications.exists():
         announcements_and_events = []
         for notification in notifications:
-            if notification.action_object == action_object:
-                notification.delete()
-            elif notification.action_object._meta.verbose_name == 'event' or \
-                notification.action_object._meta.verbose_name == 'announcement':
-                announcements_and_events.append(notification)
+            if notification.action_object:
+                if notification.action_object == action_object:
+                    notification.delete()
+                elif notification.action_object._meta.verbose_name == 'event' or \
+                    notification.action_object._meta.verbose_name == 'announcement':
+                    announcements_and_events.append(notification)
         length = len(announcements_and_events)
         while length >= 10:
             announcements_and_events[length - 1].delete()
