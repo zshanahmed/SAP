@@ -2,6 +2,9 @@
 views has functions that are mapped to the urls in urls.py
 """
 import datetime
+import io
+
+import xlsxwriter
 from fuzzywuzzy import fuzz
 
 from django.core import serializers
@@ -39,9 +42,16 @@ def make_notification(request, notifications, user, msg, action_object=''):
     @action_object: django object (optional)
     """
     if notifications.exists():
-        length = len(notifications)
+        announcements_and_events = []
+        for notification in notifications:
+            if notification.action_object == action_object:
+                notification.delete()
+            elif notification.action_object._meta.verbose_name == 'event' or \
+                notification.action_object._meta.verbose_name == 'announcement':
+                announcements_and_events.append(notification)
+        length = len(announcements_and_events)
         while length >= 10:
-            notifications[length - 1].delete()
+            announcements_and_events[length - 1].delete()
             length -= 1
     if action_object == '':
         notify.send(request.user, recipient=user, verb=msg)
@@ -772,9 +782,7 @@ class CreateEventView(AccessMixin, TemplateView):
     def post(self, request):
         """Enter what this class/method does"""
 
-        notifications = Notification.objects.all()
         new_event_dict = dict(request.POST)
-        print(new_event_dict)
         event_title = new_event_dict['event_title'][0]
         event_description = new_event_dict['event_description'][0]
         event_start_time = new_event_dict['event_start_time'][0]
@@ -836,20 +844,6 @@ class CreateEventView(AccessMixin, TemplateView):
             messages.warning(request, 'End time cannot be less than start time!')
             return redirect('/create_event')
 
-        event = Event.objects.create(title=event_title,
-                                     description=event_description,
-                                     start_time=parse_datetime(event_start_time + '-0500'),
-                                     # converting time to central time before storing in db
-                                     end_time=parse_datetime(event_end_time + '-0500'),
-                                     location=event_location,
-                                     allday=allday,
-                                     invite_all=invite_all,
-                                     mentor_status=mentor_status,
-                                     special_category=special_category,
-                                     research_field=research_field,
-                                     school_year_selected=school_year_selected,
-                                     role_selected=role_selected)
-
         if invite_all_selected:
             # If all allies are invited
             allies_to_be_invited = allies_list
@@ -894,23 +888,73 @@ class CreateEventView(AccessMixin, TemplateView):
             Ally.objects.filter(id__in=invited_allies_ids)
         )
 
-        all_event_ally_objs = []
-        invited_allies = set()
         allies_to_be_invited = set(allies_to_be_invited)
 
+        try:
+            junk = new_event_dict['email_list']
+            if junk[0] == 'get_email_list':
+                return CreateEventView.build_response(allies_to_be_invited, event_title)
+            return redirect('/calendar')
+        except KeyError:
+            event = Event.objects.create(title=event_title,
+                                         description=event_description,
+                                         start_time=parse_datetime(event_start_time + '-0500'),
+                                         # converting time to central time before storing in db
+                                         end_time=parse_datetime(event_end_time + '-0500'),
+                                         location=event_location,
+                                         allday=allday,
+                                         invite_all=invite_all,
+                                         mentor_status=mentor_status,
+                                         special_category=special_category,
+                                         research_field=research_field,
+                                         school_year_selected=school_year_selected,
+                                         role_selected=role_selected)
+            CreateEventView.invite_and_notify(request, allies_to_be_invited, event)
+
+            messages.success(request, "Event successfully created!")
+
+            return redirect('/calendar')
+    @staticmethod
+    def invite_and_notify(request, allies_to_be_invited, event):
+        """
+        invite the users, notify users
+        """
+        invited_allies = set()
+        all_event_ally_objs = []
+        notifications = Notification.objects.all()
         for ally in allies_to_be_invited:
             if ally.user.is_active:
                 event_ally_rel_obj = EventInviteeRelation(event=event, ally=ally)
                 all_event_ally_objs.append(event_ally_rel_obj)
                 invited_allies.add(event_ally_rel_obj.ally)
-            ally_user = ally.user
-            if not ally_user.is_staff:
-                user_notify = notifications.filter(recipient=ally_user.id)
-                if user_notify.exists():
-                    msg = 'Event Invitation: ' + event_title
+                ally_user = ally.user
+                if not ally_user.is_staff:
+                    user_notify = notifications.filter(recipient=ally_user.id)
+                    msg = 'Event Invitation: ' + event.title
                     make_notification(request, user_notify, ally_user, msg, event)
-
         EventInviteeRelation.objects.bulk_create(all_event_ally_objs)
 
-        messages.success(request, "Event successfully created!")
-        return redirect('/calendar')
+    @staticmethod
+    def build_response(ally_list, event_title):
+        "Creates an httpresponse object containing a file that will be returned"
+        byte_stream = io.BytesIO()
+        workbook = xlsxwriter.Workbook(byte_stream)
+        emails = workbook.add_worksheet('Ally Invite Emails')
+        emails.write(0, 0, 'Username')
+        emails.write(0, 1, 'Email')
+        rows = 1
+        for ally in ally_list:
+            emails.write(rows, 0, ally.user.username)
+            emails.write(rows, 1, ally.user.email)
+            rows += 1
+        workbook.close()
+        byte_stream.seek(0)
+        today = datetime.date.today()
+        today = today.strftime("%b-%d-%Y")
+        file_name = today + "_SAP_Invitees_" + event_title + ".xlsx"
+        response = HttpResponse(
+            byte_stream,
+            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+        response['Content-Disposition'] = 'attachment; filename=' + file_name
+        return response

@@ -101,6 +101,10 @@ urlpatterns = [
         login_required(sap.views_v3.DeregisterEventView.as_view()),
         name='deregister_event'),
 
+    url(r'^deregister_event/(?P<context>[\s\w-]+)/$',
+        login_required(sap.views_v3.DeregisterEventView.as_view()),
+        name='deregister_event'),
+
     url(r'^announcements/$',
         login_required(views.Announcements.as_view()),
         name='announcements'),

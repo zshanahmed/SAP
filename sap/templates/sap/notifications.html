@@ -62,6 +62,7 @@
                                         <div class="form-group row">
                                             <div class="col-sm-6 mb-3 mb-sm-0">
                                                 <a class="btn btn-success" href="/signup_event/notification/?event_id={{notification.action_object.id}}">Yes, I'll attend</a>
+                                                <a class="btn btn-dark" href="/deregister_event/notification/?event_id={{notification.action_object.id}}">I won't attend</a>
                                                 <a class="btn btn-danger" href="{% url 'sap:dismiss_notification' notification.id %}">Dismiss</a>
                                             </div>
                                         </div>
