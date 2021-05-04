@@ -353,17 +353,6 @@ class SignUpTests(TestCase):
             school_year_selected="Freshman",
             invite_all=False
         )
-        Event.objects.create(
-            title="Mock Interviews",
-            description="This event is for mock interviews",
-            location="Maclean Hall",
-            allday=False,
-            invite_all=False,
-            end_time="2021-05-06 22:19:00",
-            start_time="2021-05-02 21:19:00",
-            role_selected="Graduate Student,Undergraduate Student",
-            school_year_selected="Freshman"
-        )
         response = self.client.post(
             '/sign-up/',
             {
@@ -395,10 +384,6 @@ class SignUpTests(TestCase):
         Event.objects.get(pk=event.id).delete()
         self.assertTrue(categories.exists())
 
-    def test_create_undergrad_no_mentored_events(self):
-        """
-        Test signup feature using undergrad user interested in being mentored but with no mentored events
-        """
         Event.objects.create(
             title="Mock Interviews",
             description="This event is for mock interviews",
