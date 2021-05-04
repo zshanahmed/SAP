@@ -10,7 +10,7 @@ from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from django.contrib.auth.forms import PasswordResetForm
 from .forms import UserResetForgotPasswordForm
-from .models import Ally, StudentCategories, AllyStudentCategoryRelation
+from .models import Ally, StudentCategories, AllyStudentCategoryRelation, Event, EventInviteeRelation
 
 # Create your tests here.
 from .tokens import password_reset_token, account_activation_token
@@ -337,8 +337,34 @@ class SignUpTests(TestCase):
 
     def test_create_undergrad(self):
         """
-        Test signup feature using undergrad user
+        Test signup feature using undergrad user interested in being mentored
         """
+        event = Event.objects.create(
+            title="Mock Interviews",
+            description="This event is for mock interviews",
+            location="Maclean Hall",
+            allday=False,
+            end_time="2021-05-02 22:19:00",
+            start_time="2021-05-02 21:19:00",
+            num_attending=0,
+            num_invited=0,
+            mentor_status="Mentees",
+            research_field="Computer Science and Engineering",
+            role_selected="Undergraduate Student",
+            school_year_selected="Freshman",
+            invite_all=False
+        )
+        Event.objects.create(
+            title="Mock Interviews",
+            description="This event is for mock interviews",
+            location="Maclean Hall",
+            allday=False,
+            invite_all=False,
+            end_time="2021-05-06 22:19:00",
+            start_time="2021-05-02 21:19:00",
+            role_selected="Graduate Student,Undergraduate Student",
+            school_year_selected="Freshman"
+        )
         response = self.client.post(
             '/sign-up/',
             {
@@ -362,8 +388,104 @@ class SignUpTests(TestCase):
         ally = Ally.objects.filter(user_id=user[0].id)
         category_relation = AllyStudentCategoryRelation.objects.filter(ally_id=ally[0].id)
         categories = StudentCategories.objects.filter(id=category_relation[0].student_category_id)
+        invitation = EventInviteeRelation.objects.filter(ally_id=ally[0].id, event_id=event.id)
         self.assertTrue(user.exists())
         self.assertTrue(ally.exists())
+        self.assertTrue(category_relation.exists())
+        self.assertTrue(invitation.exists())
+        Event.objects.get(pk=event.id).delete()
+        self.assertTrue(categories.exists())
+
+    def test_create_undergrad_no_mentored_events(self):
+        """
+        Test signup feature using undergrad user interested in being mentored but with no mentored events
+        """
+        Event.objects.create(
+            title="Mock Interviews",
+            description="This event is for mock interviews",
+            location="Maclean Hall",
+            allday=False,
+            invite_all=False,
+            end_time="2021-05-06 22:19:00",
+            start_time="2021-05-02 21:19:00",
+            role_selected="Graduate Student,Undergraduate Student",
+            school_year_selected="Freshman"
+        )
+        response = self.client.post(
+            '/sign-up/',
+            {
+                'csrfmiddlewaretoken': ['At4HFZNsApVRWNye2Jcj4RVcWYf1fviv1kFbSZevLnNmJrWz4OyZhcAPn0JeaknZ'],
+                'firstName': ['Zeeshan'],
+                'lastName': ['Ahmed'],
+                'new_username': ['zeeahmed1'],
+                'new_email': ['zeeahmed@uiowa.edu'],
+                'new_password': self.password,
+                'repeat_password': self.password,
+                'roleSelected': ['Undergraduate Student'], 'undergradYear': ['Freshman'],
+                'major': ['major'],
+                'interestLabRadios': ['Yes'], 'labExperienceRadios': ['Yes'],
+                'undergradMentoringRadios': ['Yes'], 'beingMentoredRadios': ['Yes'], 'agreementRadios': ['Yes']
+            }
+        )
+        url = response.url
+        self.assertEqual(url, '/sign-up-done/')
+        self.assertEqual(response.status_code, 302)
+        user = User.objects.filter(username="zeeahmed1")
+        ally = Ally.objects.filter(user_id=user[0].id)
+        category_relation = AllyStudentCategoryRelation.objects.filter(ally_id=ally[0].id)
+        categories = StudentCategories.objects.filter(id=category_relation[0].student_category_id)
+        invitation = EventInviteeRelation.objects.filter(ally_id=ally[0].id)
+        self.assertTrue(user.exists())
+        self.assertTrue(ally.exists())
+        self.assertTrue(category_relation.exists())
+        self.assertTrue(invitation.exists())
+        self.assertTrue(categories.exists())
+
+    def test_create_undergrad_non_mentees(self):
+        """
+        Test signup feature using undergrad user not interested in being mentored
+        """
+        Event.objects.create(
+            title="Mock Interviews",
+            description="This event is for mock interviews",
+            location="Maclean Hall",
+            allday=False,
+            invite_all=False,
+            end_time="2021-05-06 22:19:00",
+            start_time="2021-05-02 21:19:00",
+            role_selected="Graduate Student,Undergraduate Student",
+            school_year_selected="Freshman"
+        )
+        response = self.client.post(
+            '/sign-up/',
+            {
+                'csrfmiddlewaretoken': ['At4HFZNsApVRWNye2Jcj4RVcWYf1fviv1kFbSZevLnNmJrWz4OyZhcAPn0JeaknZ'],
+                'firstName': ['Zeeshan'],
+                'lastName': ['Ahmed'],
+                'new_username': ['zeeahmed1'],
+                'new_email': ['zeeahmed@uiowa.edu'],
+                'new_password': self.password,
+                'repeat_password': self.password,
+                'roleSelected': ['Undergraduate Student'], 'undergradYear': ['Freshman'],
+              'identityCheckboxes': ['First generation college-student'], 'major': ['major'],
+              'interestLabRadios': ['Yes'], 'labExperienceRadios': ['Yes'],
+              'undergradMentoringRadios': ['No'], 'beingMentoredRadios': ['No'], 'agreementRadios': ['Yes']
+            }
+        )
+        url = response.url
+        self.assertEqual(url, '/sign-up-done/')
+        self.assertEqual(response.status_code, 302)
+        user = User.objects.filter(username="zeeahmed1")
+        ally = Ally.objects.filter(user_id=user[0].id)
+        category_relation = AllyStudentCategoryRelation.objects.filter(ally_id=ally[0].id)
+        categories = StudentCategories.objects.filter(id=category_relation[0].student_category_id)
+        event_invitee = Event.objects.filter(role_selected__contains='Undergraduate Student').filter(
+                                            school_year_selected__contains='Freshman')
+        invitation = EventInviteeRelation.objects.filter(ally_id=ally[0].id, event_id=event_invitee[0].id)
+        self.assertTrue(user.exists())
+        self.assertTrue(ally.exists())
+        self.assertEqual(ally[0].interested_in_being_mentored, False)
+        self.assertTrue(invitation.exists())
         self.assertTrue(category_relation.exists())
         self.assertTrue(categories.exists())
 
@@ -371,7 +493,21 @@ class SignUpTests(TestCase):
         """
         Test signup feature using a grad user
         """
-
+        event = Event.objects.create(
+                                          title="Mock Interviews",
+                                          description="This event is for mock interviews",
+                                          location="Maclean Hall",
+                                          allday=False,
+                                          end_time="2021-05-02 22:19:00",
+                                          start_time="2021-05-02 21:19:00",
+                                          num_attending=0,
+                                          num_invited=0,
+                                          mentor_status="Mentors,Mentees",
+                                          research_field="Computer Science and Engineering",
+                                          role_selected="Graduate Student,Undergraduate Student",
+                                          special_category="First generation college-student",
+                                          invite_all=False
+                                          )
         response = self.client.post(
             '/sign-up/',
             {
@@ -383,8 +519,8 @@ class SignUpTests(TestCase):
                 'new_password': self.password,
                 'repeat_password': self.password,
                 'roleSelected': ['Graduate Student'],
-                'areaOfResearchCheckboxes': ['Bioinformatics'], 'research-des': ['research'],
-                'openingRadios': ['No'], 'mentoringRadios': ['No'], 'connectingWithMentorsRadios': ['Yes'],
+                'areaOfResearchCheckboxes': ['Computer Science and Engineering'], 'research-des': ['research'],
+                'openingRadios': ['No'], 'mentoringRadios': ['Yes'], 'connectingWithMentorsRadios': ['Yes'],
                 'studentsInterestedRadios': ['No'], 'mentorCheckboxes': ['Low-income'], 'labShadowRadios': ['Yes'],
                 'volunteerRadios': ['Yes'], 'trainingRadios': ['Yes'], 'howCanWeHelp': ['no']
             }
@@ -396,10 +532,93 @@ class SignUpTests(TestCase):
         ally = Ally.objects.filter(user_id=user[0].id)
         category_relation = AllyStudentCategoryRelation.objects.filter(ally_id=ally[0].id)
         categories = StudentCategories.objects.filter(id=category_relation[0].student_category_id)
+        invitation = EventInviteeRelation.objects.filter(ally_id=ally[0].id, event_id=event.id)
         self.assertTrue(user.exists())
         self.assertTrue(ally.exists())
         self.assertTrue(category_relation.exists())
+        self.assertTrue(invitation.exists())
         self.assertTrue(categories.exists())
+
+    def test_create_grad_no_mentor_events(self):
+        """
+        Test signup feature using a grad user with no events having mentors
+        """
+        event1 = Event.objects.create(
+            title="Mock Interviews",
+            description="This event is for mock interviews",
+            location="Maclean Hall",
+            allday=False,
+            invite_all=False,
+            end_time="2021-05-06 22:19:00",
+            start_time="2021-05-02 21:19:00",
+            role_selected="Graduate Student,Undergraduate Student",
+            school_year_selected="Freshman"
+        )
+        response = self.client.post(
+            '/sign-up/',
+            {
+                'csrfmiddlewaretoken': ['nl8oQ7HV6N0vEI7lWN9ji8Ehw38tcKRDb9MQrJfuh4VChgEF8UCS3anXIoHKBro7'],
+                 'firstName': ['Zeeshan'], 'lastName': ['Ahmed'],
+                 'new_username': ['zeeahmed'], 'new_email': ['zeeshan-ahmed@uiowa.edu'],
+                 'new_password': [self.password], 'repeat_password': [self.password],
+                 'roleSelected': ['Graduate Student'], 'research-des': ['LTE Security'],
+                 'openingRadios': ['No'], 'mentoringRadios': ['Yes'], 'connectingWithMentorsRadios': ['No'],
+                 'studentsInterestedRadios': ['No'], 'labShadowRadios': ['No'], 'volunteerRadios': ['No'],
+                 'trainingRadios': ['No'], 'howCanWeHelp': ['Internship']
+            }
+        )
+        url = response.url
+        self.assertEqual(url, '/sign-up-done/')
+        self.assertEqual(response.status_code, 302)
+        user1 = User.objects.filter(username="zeeahmed")
+        ally1 = Ally.objects.filter(user_id=user1[0].id)
+        self.assertTrue(EventInviteeRelation.objects.filter(ally_id=ally1[0].id, event_id=event1.id).exists())
+        self.assertTrue(ally1.exists())
+        self.assertTrue(user1.exists())
+
+    def test_create_grad_non_mentors(self):
+        """
+        Test signup feature using a grad user non mentors
+        """
+        Event.objects.create(
+            title="Mock Interviews",
+            description="This event is for mock interviews",
+            location="Maclean Hall",
+            allday=False,
+            invite_all=False,
+            end_time="2021-05-06 22:19:00",
+            start_time="2021-05-02 21:19:00",
+            role_selected="Graduate Student,Undergraduate Student",
+            school_year_selected="Freshman"
+        )
+        response = self.client.post(
+            '/sign-up/',
+            {
+                'csrfmiddlewaretoken': ['TFosu1rFWp6S4SsYIV5Rb9FtBzoTavgrCsu31o9hTp975IuRpZeNgPJeBQiU6Cy5'],
+                'firstName': ['glumpy'],
+                'lastName': ['guy'],
+                'new_username': ['big_guy1'],
+                'new_email': ['eshaeffer@uiowa.edu'],
+                'new_password': self.password,
+                'repeat_password': self.password,
+                'roleSelected': ['Graduate Student'],
+                'areaOfResearchCheckboxes': ['Computer Science and Engineering'], 'research-des': ['research'],
+                'openingRadios': ['No'], 'mentoringRadios': ['No'], 'connectingWithMentorsRadios': ['No'],
+                'studentsInterestedRadios': ['No'], 'mentorCheckboxes': ['Low-income'], 'labShadowRadios': ['No'],
+                'volunteerRadios': ['No'], 'trainingRadios': ['No'], 'howCanWeHelp': ['No']
+            }
+        )
+        url = response.url
+        self.assertEqual(url, '/sign-up-done/')
+        self.assertEqual(response.status_code, 302)
+        user = User.objects.filter(username="big_guy1")
+        ally = Ally.objects.filter(user_id=user[0].id)
+        self.assertTrue(user.exists())
+        self.assertTrue(ally.exists())
+        self.assertFalse(ally[0].interested_in_mentoring)
+        grad_event = Event.objects.filter(role_selected__contains='Graduate Student')
+        invitation2 = EventInviteeRelation.objects.filter(ally_id=ally[0].id, event_id=grad_event[0].id)
+        self.assertTrue(invitation2.exists())
 
     def test_create_grad_no_boxes(self):
         """

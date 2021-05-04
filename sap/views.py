@@ -150,8 +150,11 @@ class DeleteAllyProfileFromAdminDashboard(AccessMixin, View):
         try:
             user = User.objects.get(username=username)
             ally = Ally.objects.get(user=user)
+            ally_categories=AllyStudentCategoryRelation.objects.filter(ally_id=ally.id)
+            categories=StudentCategories.objects.filter(id=ally_categories[0].student_category_id)
             ally.delete()
             user.delete()
+            categories[0].delete()
 
             messages.success(request, 'Successfully deleted the user ' + username)
             return redirect('sap:sap-dashboard')
