@@ -462,13 +462,17 @@ class ForgotPasswordConfirmView(TemplateView):
             messages.warning(request, str(exception))
             user = None
 
-        if user is not None and password_reset_token.check_token(user, token):
-            context = {
-                'form': UserResetForgotPasswordForm(user),
-                'uid': uidb64,
-                'token': token
-            }
-            return render(request, 'sap/password-forgot-confirm.html', context)
+        if user is not None and user.is_active:
+            ally_filter = Ally.objects.filter(user=user)
+            ally = ally_filter[0]
+
+            if password_reset_token.check_token(user, token):
+                context = {
+                    'form': UserResetForgotPasswordForm(user),
+                    'uid': uidb64,
+                    'token': token
+                }
+                return render(request, 'sap/password-forgot-confirm.html', context)
 
         messages.error(request, 'Password reset link is invalid. Please request a new password reset.')
         return redirect('sap:home')
