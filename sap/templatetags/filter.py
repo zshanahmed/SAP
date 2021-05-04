@@ -34,3 +34,11 @@ def format_date(value):
     Formats a python date time object in a way that moment can convert to local time.
     """
     return datetime.strftime(value, "%Y/%m/%d %H:%M")
+
+
+@register.filter(name='day_month_year')
+def day_month_year(value):
+    """
+    Formats the date such that only the month, day, and year appear.
+    """
+    return datetime.strftime(value, "%d %b, %Y")
