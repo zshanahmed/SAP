@@ -48,6 +48,34 @@
             </div>
             <div class="col-md-6">{{ ally.hawk_id }}</div>
           </div>
+          {% if mentor %}
+            <div class="row mt-2">
+              <div class="col-md-5">
+                <h5 class="m-0 font-weight-bold text-primary">Mentor:</h5>
+              </div>
+              <div class="col-md-6">
+                <a href="{% url 'sap:admin_view_ally' mentor.user.username %}">
+                  {{ mentor.user.first_name }} {{ mentor.user.last_name }}
+                </a>
+              </div>
+            </div>
+          {% endif %}
+          {% if mentees %}
+            <div class="row mt-2">
+              <div class="col-md-5">
+                <h5 class="m-0 font-weight-bold text-primary">Mentees:</h5>
+              </div>
+              <div class="col-md-6">
+                {% for mentee in mentees %}
+                <div>
+                <a href="{% url 'sap:admin_view_ally' mentee.user.username %}">
+                  {{ mentee.user.first_name }} {{ mentee.user.last_name }}
+                </a>
+                </div>
+                {% endfor %}
+              </div>
+            </div>
+          {% endif %}
           <div class = "row mt-2"></div>
           <div class="row">
             <div class="col-md-5">

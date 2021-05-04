@@ -24,8 +24,9 @@ from django.utils.dateparse import parse_datetime
 from notifications.signals import notify
 from notifications.models import Notification
 
+from django.db import IntegrityError
 from .forms import UpdateAdminProfileForm
-from .models import Announcement, EventInviteeRelation, EventAttendeeRelation, Ally, StudentCategories, AllyStudentCategoryRelation, Event
+from .models import Announcement, EventInviteeRelation, EventAttendeeRelation, Ally, StudentCategories, AllyStudentCategoryRelation, Event, AllyMentorRelation, AllyMenteeRelation
 
 # Create your views here.
 
@@ -91,6 +92,23 @@ class AccessMixin(LoginRequiredMixin):
             return self.handle_no_permission()
         return super().dispatch(request, *args, **kwargs)
 
+def add_mentor_relation(ally_id, mentor_id):
+    """
+    helper function for adding mentor relation
+    """
+    try:
+        AllyMentorRelation.objects.create(ally_id=ally_id,
+            mentor_id=mentor_id)
+    except IntegrityError:
+        return HttpResponse("ERROR: Mentor already exists!")
+
+
+def add_mentee_relation(ally_id, mentee_id):
+    """
+    helper function for adding mentee relation
+    """
+    AllyMenteeRelation.objects.get_or_create(ally_id=ally_id,
+                                      mentee_id=mentee_id)
 
 class ViewAllyProfileFromAdminDashboard(View):
     """
@@ -101,13 +119,35 @@ class ViewAllyProfileFromAdminDashboard(View):
         """
         method to retrieve all ally information
         """
+        # add_mentor_relation(1, 2)
+        # add_mentee_relation(1, 3)
+        # add_mentee_relation(1, 4)
         try:
             user = User.objects.get(username=ally_username)
             ally = Ally.objects.get(user=user)
+            
+            try:
+                mentor = AllyMentorRelation.objects.get(ally_id=ally.id)
+                mentor = Ally.objects.get(pk=mentor.mentor_id)
+            except ObjectDoesNotExist:
+                mentor = []
+
+            try: 
+                mentees_queryset = AllyMenteeRelation.objects.filter(ally_id=ally.id)
+                mentees = []
+                for mentee in mentees_queryset:
+                    mentees.append(
+                        Ally.objects.get(pk=mentee.mentee_id))
+            except ObjectDoesNotExist:
+                mentees = []
+
             return render(request, 'sap/admin_ally_table/view_ally.html', {
-                'ally': ally
+                'ally': ally,
+                'mentor': mentor,
+                'mentees': mentees
             })
         except ObjectDoesNotExist:
+            print(ObjectDoesNotExist)
             return HttpResponseNotFound()
 
 

@@ -51,7 +51,7 @@ class AllyMentorRelation(models.Model):
     """
     AllyMentorRelation table is used for mapping One to One relationship between allies and their mentors
     """
-    ally = models.ForeignKey(
+    ally = models.OneToOneField(
         Ally,
         related_name='ally_mentor_relation',
         on_delete=models.CASCADE,
