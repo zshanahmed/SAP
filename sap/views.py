@@ -741,7 +741,6 @@ class AnalyticsView(AccessMixin, TemplateView):
                                                           "gradNumbers": other_numbers[1],
                                                           "facultyNumbers": other_numbers[2],
                                                           "role": role, })
-
         messages.error(request, "No allies to display!")
         return redirect('sap:sap-dashboard')
 
@@ -810,18 +809,18 @@ class CreateAdminView(AccessMixin, TemplateView):
 
 
 class CreateEventView(AccessMixin, TemplateView):
-    """Enter what this class/method does"""
+    """Create a new event functions"""
     template_name = "sap/create_event.html"
 
     def get(self, request):
-        """Enter what this class/method does"""
+        """Render create event page"""
         if request.user.is_staff:
             return render(request, self.template_name)
 
         return redirect('sap:resources')
 
     def post(self, request):
-        """Enter what this class/method does"""
+        """Creates a new event if when the admin clicks on create event button on create event page"""
 
         new_event_dict = dict(request.POST)
         event_title = new_event_dict['event_title'][0]
