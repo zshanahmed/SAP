@@ -383,7 +383,6 @@ class SignUpTests(TestCase):
         self.assertTrue(invitation.exists())
         Event.objects.get(pk=event.id).delete()
         self.assertTrue(categories.exists())
-
         Event.objects.create(
             title="Mock Interviews",
             description="This event is for mock interviews",

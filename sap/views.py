@@ -928,9 +928,7 @@ class CreateEventView(AccessMixin, TemplateView):
         allies_to_be_invited.extend(
             Ally.objects.filter(id__in=invited_allies_ids)
         )
-
         allies_to_be_invited = set(allies_to_be_invited)
-
         try:
             junk = new_event_dict['email_list']
             if junk[0] == 'get_email_list':
