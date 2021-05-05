@@ -26,7 +26,7 @@ class Ally(models.Model):
     def __str__(self):
         return self.hawk_id
 
-    ##Grad and Faculty
+    ## Grad and Faculty
     area_of_research = models.CharField(max_length=500, null=True)
     openings_in_lab_serving_at = models.BooleanField(default=False)
     description_of_research_done_at_lab = models.CharField(max_length=500, null=True)
@@ -37,11 +37,11 @@ class Ally(models.Model):
     willing_to_volunteer_for_events = models.BooleanField(default=False)
     works_at = models.CharField(max_length=200, null=True)
 
-    ##Staff
+    ## Staff
     people_who_might_be_interested_in_iba = models.BooleanField(default=False)
     how_can_science_ally_serve_you = models.CharField(max_length=500, null=True)
 
-    ##Undergraduate
+    ## Undergraduate
     year = models.CharField(max_length=30)
     major = models.CharField(max_length=50)
     information_release = models.BooleanField(default=False)
