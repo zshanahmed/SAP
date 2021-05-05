@@ -541,14 +541,12 @@ class ForgotPasswordConfirmView(TemplateView):
             uid = force_text(urlsafe_base64_decode(uidb64))
             user = User.objects.get(pk=uid)
             ally = Ally.objects.get(user=user)
-
         except (TypeError, ValueError, OverflowError, User.DoesNotExist) as exception:
             messages.warning(request, str(exception))
             user = None
             ally = None
 
         if user is not None and ally is not None and password_reset_token.check_token(user, token):
-
             if user.is_active and ally.reset_password:
                 context = {
                     'form': UserResetForgotPasswordForm(user),
@@ -556,6 +554,10 @@ class ForgotPasswordConfirmView(TemplateView):
                     'token': token
                 }
                 return render(request, 'sap/password-forgot-confirm.html', context)
+
+            if user.is_active and not ally.reset_password:
+                messages.error(request, 'Password reset link is expired. Please request a new password reset.')
+                return redirect('sap:home')
 
         messages.error(request, 'Password reset link is invalid. Please request a new password reset.')
         return redirect('sap:home')
@@ -576,30 +578,36 @@ class ForgotPasswordConfirmView(TemplateView):
         try:
             uid = force_text(urlsafe_base64_decode(uidb64))
             user = User.objects.get(pk=uid)
+            ally = Ally.objects.get(user=user)
         except (TypeError, ValueError, OverflowError, User.DoesNotExist) as exception:
             messages.warning(request, str(exception))
             user = None
+            ally = None
 
-        if user is not None and password_reset_token.check_token(user, token):
-            form = UserResetForgotPasswordForm(user=user, data=request.POST)
-            if form.is_valid():
-                form.save()
-                update_session_auth_hash(request, form.user)
+        if user is not None and ally is not None and password_reset_token.check_token(user, token):
+            if user.is_active and ally.reset_password:
+                form = UserResetForgotPasswordForm(user=user, data=request.POST)
+                if form.is_valid():
+                    form.save()
+                    update_session_auth_hash(request, form.user)
 
-                user.is_active = True
-                # user.profile.reset_password = False
-                user.save()
-                messages.success(request, 'New Password Created Successfully!')
+                    ally.reset_password = False
+                    # user.save()
+                    messages.success(request, 'New Password Created Successfully!')
+                    return redirect('sap:home')
+
+                # else part
+                context = {
+                    'form': UserResetForgotPasswordForm(user),
+                    'uid': uidb64,
+                    'token': token
+                }
+                messages.error(request, 'Password does not meet requirements.')
+                return render(request, 'sap/password-forgot-confirm.html', context)
+
+            if user.is_active and not ally.reset_password:
+                messages.error(request, 'Password reset link is expired. Please request a new password reset.')
                 return redirect('sap:home')
-
-            # else part
-            context = {
-                'form': UserResetForgotPasswordForm(user),
-                'uid': uidb64,
-                'token': token
-            }
-            messages.error(request, 'Password does not meet requirements.')
-            return render(request, 'sap/password-forgot-confirm.html', context)
 
         messages.error(request, 'Password reset link is invalid. Please request a new password reset.')
         return redirect('sap:home')
