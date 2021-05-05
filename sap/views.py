@@ -20,12 +20,14 @@ from django.contrib.auth.forms import PasswordChangeForm
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.http import HttpResponseNotFound
+from django.db import IntegrityError
 from django.utils.dateparse import parse_datetime
 from notifications.signals import notify
 from notifications.models import Notification
 
 from .forms import UpdateAdminProfileForm
-from .models import Announcement, EventInviteeRelation, EventAttendeeRelation, Ally, StudentCategories, AllyStudentCategoryRelation, Event
+from .models import Announcement, EventInviteeRelation, EventAttendeeRelation, Ally, StudentCategories, \
+ AllyStudentCategoryRelation, Event, AllyMentorRelation, AllyMenteeRelation
 
 # Create your views here.
 
@@ -44,11 +46,12 @@ def make_notification(request, notifications, user, msg, action_object=''):
     if notifications.exists():
         announcements_and_events = []
         for notification in notifications:
-            if notification.action_object == action_object:
-                notification.delete()
-            elif notification.action_object._meta.verbose_name == 'event' or \
-                notification.action_object._meta.verbose_name == 'announcement':
-                announcements_and_events.append(notification)
+            if notification.action_object:
+                if notification.action_object == action_object:
+                    notification.delete()
+                elif notification.action_object._meta.verbose_name == 'event' or \
+                    notification.action_object._meta.verbose_name == 'announcement':
+                    announcements_and_events.append(notification)
         length = len(announcements_and_events)
         while length >= 10:
             announcements_and_events[length - 1].delete()
@@ -91,6 +94,24 @@ class AccessMixin(LoginRequiredMixin):
             return self.handle_no_permission()
         return super().dispatch(request, *args, **kwargs)
 
+def add_mentor_relation(ally_id, mentor_id):
+    """
+    helper function for adding mentor relation
+    """
+    try:
+        AllyMentorRelation.objects.create(ally_id=ally_id,
+            mentor_id=mentor_id)
+        return "Mentor added !"
+    except IntegrityError:
+        return HttpResponse("ERROR: Mentor already exists!")
+
+
+def add_mentee_relation(ally_id, mentee_id):
+    """
+    helper function for adding mentee relation
+    """
+    AllyMenteeRelation.objects.get_or_create(ally_id=ally_id,
+                                      mentee_id=mentee_id)
 
 class ViewAllyProfileFromAdminDashboard(View):
     """
@@ -101,13 +122,33 @@ class ViewAllyProfileFromAdminDashboard(View):
         """
         method to retrieve all ally information
         """
+
         try:
-            user = User.objects.get(username=ally_username)
-            ally = Ally.objects.get(user=user)
+            req_user = User.objects.get(username=ally_username)
+            ally = Ally.objects.get(user=req_user)
+
+            try:
+                mentor = AllyMentorRelation.objects.get(ally_id=ally.id)
+                mentor = Ally.objects.get(pk=mentor.mentor_id)
+            except ObjectDoesNotExist:
+                mentor = []
+
+            try:
+                mentees_queryset = AllyMenteeRelation.objects.filter(ally_id=ally.id)
+                mentees = []
+                for mentee in mentees_queryset:
+                    mentees.append(
+                        Ally.objects.get(pk=mentee.mentee_id))
+            except ObjectDoesNotExist:
+                mentees = []
+
             return render(request, 'sap/admin_ally_table/view_ally.html', {
-                'ally': ally
+                'ally': ally,
+                'mentor': mentor,
+                'mentees': mentees
             })
         except ObjectDoesNotExist:
+            print(ObjectDoesNotExist)
             return HttpResponseNotFound()
 
 
@@ -160,8 +201,11 @@ class DeleteAllyProfileFromAdminDashboard(AccessMixin, View):
         try:
             user = User.objects.get(username=username)
             ally = Ally.objects.get(user=user)
+            ally_categories=AllyStudentCategoryRelation.objects.filter(ally_id=ally.id)
+            categories=StudentCategories.objects.filter(id=ally_categories[0].student_category_id)
             ally.delete()
             user.delete()
+            categories[0].delete()
 
             messages.success(request, 'Successfully deleted the user ' + username)
             return redirect('sap:sap-dashboard')
@@ -697,7 +741,6 @@ class AnalyticsView(AccessMixin, TemplateView):
                                                           "gradNumbers": other_numbers[1],
                                                           "facultyNumbers": other_numbers[2],
                                                           "role": role, })
-
         messages.error(request, "No allies to display!")
         return redirect('sap:sap-dashboard')
 
@@ -766,18 +809,18 @@ class CreateAdminView(AccessMixin, TemplateView):
 
 
 class CreateEventView(AccessMixin, TemplateView):
-    """Enter what this class/method does"""
+    """Create a new event functions"""
     template_name = "sap/create_event.html"
 
     def get(self, request):
-        """Enter what this class/method does"""
+        """Render create event page"""
         if request.user.is_staff:
             return render(request, self.template_name)
 
         return redirect('sap:resources')
 
     def post(self, request):
-        """Enter what this class/method does"""
+        """Creates a new event if when the admin clicks on create event button on create event page"""
 
         new_event_dict = dict(request.POST)
         event_title = new_event_dict['event_title'][0]
@@ -884,9 +927,7 @@ class CreateEventView(AccessMixin, TemplateView):
         allies_to_be_invited.extend(
             Ally.objects.filter(id__in=invited_allies_ids)
         )
-
         allies_to_be_invited = set(allies_to_be_invited)
-
         try:
             junk = new_event_dict['email_list']
             if junk[0] == 'get_email_list':

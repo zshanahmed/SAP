@@ -50,6 +50,35 @@ class Ally(models.Model):
     interested_in_joining_lab = models.BooleanField(default=False)
     has_lab_experience = models.BooleanField(default=False)
 
+class AllyMentorRelation(models.Model):
+    """
+    AllyMentorRelation table is used for mapping One to One relationship between allies and their mentors
+    """
+    ally = models.OneToOneField(
+        Ally,
+        related_name='ally_mentor_relation',
+        on_delete=models.CASCADE,
+    )
+    mentor = models.ForeignKey(
+        Ally,
+        related_name='mentor',
+        on_delete=models.CASCADE,
+    )
+
+class AllyMenteeRelation(models.Model):
+    """
+    AllyMenteeRelation table is used for mapping One to Manu relationship between allies and their mentee
+    """
+    ally = models.ForeignKey(
+        Ally,
+        related_name='ally_mentee_relation',
+        on_delete=models.CASCADE,
+    )
+    mentee = models.ForeignKey(
+        Ally,
+        related_name='mentee',
+        on_delete=models.CASCADE,
+    )
 
 class StudentCategories(models.Model):
     """
