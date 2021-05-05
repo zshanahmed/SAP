@@ -91,7 +91,7 @@
                                                     {% if user_ally.user_type == "Undergraduate Student" %}
                                                         {% if user_ally.interested_in_being_mentored and ally.interested_in_mentoring %}
                                                             <li class="list-inline-item">
-                                                                <a href="{% url 'sap:notify_mentor' ally.user.username %}" class="btn btn-success btn-sm" type="button" data-toggle="tooltip" data-placement="top"
+                                                                <a href="{% url 'sap:notify_mentor' ally.user.username %}" class="btn btn-danger btn-sm" type="button" data-toggle="tooltip" data-placement="top"
                                                                     title="Ask to be Mentee">
                                                                     <i class="fa fa-child"></i>
                                                                 </a>
@@ -100,7 +100,7 @@
                                                     {% else %}
                                                         {% if user_ally.interested_in_mentoring and ally.interested_in_being_mentored %}
                                                             <li class="list-inline-item">
-                                                                <a href="{% url 'sap:notify_mentee' ally.user.username %}" class="btn btn-success btn-sm" type="button" data-toggle="tooltip" data-placement="top"
+                                                                <a href="{% url 'sap:notify_mentee' ally.user.username %}" class="btn btn-dark btn-sm" type="button" data-toggle="tooltip" data-placement="top"
                                                                    title="Ask to be Mentor">
                                                                     <i class="fas fa-hand-holding"></i>
                                                                 </a>

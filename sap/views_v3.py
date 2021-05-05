@@ -12,8 +12,9 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.http import HttpResponseNotFound
 from django.utils.dateparse import parse_datetime
+from django.db import IntegrityError
 
-from sap.views import make_notification
+from sap.views import make_notification, add_mentor_relation, add_mentee_relation
 from sap.views import AccessMixin
 from .models import Ally, StudentCategories, AllyStudentCategoryRelation, Event, \
     EventInviteeRelation, EventAttendeeRelation
@@ -614,3 +615,39 @@ class MentorshipView(View):
             messages.warning(request, 'Ally not found!')
 
         return redirect('sap:ally-dashboard')
+
+    @staticmethod
+    def make_mentor_mentee(request, mentor_username=''):
+        """
+        Makes a mentor pair based on mentee request
+        """
+        try:
+            mentee = Ally.objects.get(user=request.user)
+            mentor_user = User.objects.get(username=mentor_username)
+            mentor = Ally.objects.get(user=mentor_user)
+            add_mentor_relation(mentee.id, mentor.id)
+            add_mentee_relation(mentor.id, mentee.id)
+            messages.success(request, mentor_user.first_name + " " + mentor_user.last_name + " is now set to be your mentor!")
+        except ObjectDoesNotExist:
+            messages.warning(request, 'Ally not found!')
+        except IntegrityError:
+            messages.warning(request, 'You already have a mentor!')
+        return redirect('sap:notification_center')
+
+    @staticmethod
+    def make_mentee_mentor(request, mentee_username=''):
+        """
+        Adds mentee pair based on mentor request
+        """
+        try:
+            mentor = Ally.objects.get(user=request.user)
+            mentee_user = User.objects.get(username=mentee_username)
+            mentee = Ally.objects.get(user=mentee_user)
+            add_mentee_relation(mentor.id, mentee.id)
+            add_mentor_relation(mentee.id, mentor.id)
+            messages.success(request, mentee_user.first_name + " " + mentee_user.last_name + " is now set to be your mentee!")
+        except ObjectDoesNotExist:
+            messages.warning(request, 'Ally not found!')
+        except IntegrityError:
+            messages.warning(request, 'Ally already has a mentor!')
+        return redirect('sap:notification_center')

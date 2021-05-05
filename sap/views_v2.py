@@ -914,7 +914,7 @@ class UploadAllies(AccessMixin, HttpResponse):
 
     @staticmethod
     def upload_allies(request):
-        """Enter what this class/method does"""
+        """Uploads allies if they match the requested format and returns a log of users added and errors encountered"""
         if request.user.is_staff:
             try:
                 file = request.FILES['file']

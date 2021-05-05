@@ -98,12 +98,8 @@ def add_mentor_relation(ally_id, mentor_id):
     """
     helper function for adding mentor relation
     """
-    try:
-        AllyMentorRelation.objects.create(ally_id=ally_id,
-            mentor_id=mentor_id)
-        return "Mentor added !"
-    except IntegrityError:
-        return HttpResponse("ERROR: Mentor already exists!")
+    AllyMentorRelation.objects.create(ally_id=ally_id,
+                                      mentor_id=mentor_id)
 
 
 def add_mentee_relation(ally_id, mentee_id):
@@ -111,7 +107,8 @@ def add_mentee_relation(ally_id, mentee_id):
     helper function for adding mentee relation
     """
     AllyMenteeRelation.objects.get_or_create(ally_id=ally_id,
-                                      mentee_id=mentee_id)
+                                             mentee_id=mentee_id)
+
 
 class ViewAllyProfileFromAdminDashboard(View):
     """
@@ -910,19 +907,14 @@ class CreateEventView(AccessMixin, TemplateView):
         for category in invite_ally_belonging_to_special_categories:
             if category == 'First generation college-student':
                 student_categories_to_include_for_event.extend(StudentCategories.objects.filter(first_gen_college_student=True))
-
             elif category == 'Low-income':
                 student_categories_to_include_for_event.extend(StudentCategories.objects.filter(low_income=True))
-
             elif category == 'Underrepresented racial/ethnic minority':
                 student_categories_to_include_for_event.extend(StudentCategories.objects.filter(under_represented_racial_ethnic=True))
-
             elif category == 'LGBTQ':
                 student_categories_to_include_for_event.extend(StudentCategories.objects.filter(lgbtq=True))
-
             elif category == 'Rural':
                 student_categories_to_include_for_event.extend(StudentCategories.objects.filter(rural=True))
-
             elif category == 'Disabled':
                 student_categories_to_include_for_event.extend(StudentCategories.objects.filter(disabled=True))
 

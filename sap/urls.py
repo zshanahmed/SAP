@@ -140,4 +140,11 @@ urlpatterns = [
 
     url(r'notify_mentee/(?P<mentee_requested_username>[\w\s-]+)/$',
         login_required(sap.views_v3.MentorshipView.make_mentee_notification), name='notify_mentee'),
+
+    url(r'add_mentor/(?P<mentor_username>[\w\s-]+)$',
+        login_required(sap.views_v3.MentorshipView.make_mentor_mentee), name='add_mentor'),
+
+
+    url(r'add_mentee/(?P<mentee_username>[\w\s-]+)$',
+        login_required(sap.views_v3.MentorshipView.make_mentee_mentor), name='add_mentee')
 ]
