@@ -339,36 +339,39 @@ class SignUpView(TemplateView):
             user, _ = create_new_user(post_dict=post_dict)
             site = get_current_site(request)
             self.send_verification_email(user=user, site=site, entered_email=post_dict["new_email"][0])
+
+        messages.warning(request,
+                         'ATTENTION REQUIRED: To finish creating a new account, please follow instructions in the email we just sent you.')
         return redirect("sap:sign-up-done")
 
 
-class SignUpDoneView(TemplateView):
-    """
-    A view which is presented if the user successfully fill out the form presented in Sign-Up view
-    """
-    template_name = "sap/sign-up-done.html"
-
-    def get(self, request, *args, **kwargs):
-        """Enter what this class/method does"""
-        site = get_current_site(request)
-        accepted_origin = 'http:' + '//' + site.domain + reverse('sap:sign-up')
-
-        try:
-            origin = request.headers['Referer']
-
-            if request.headers['Referer'] and origin == accepted_origin:
-                return render(request, self.template_name)
-
-            if request.user.is_authenticated:
-                return redirect('sap:resources')
-
-            return redirect('sap:home')
-
-        except KeyError:
-            if request.user.is_authenticated:
-                return redirect('sap:resources')
-
-            return redirect('sap:home')
+# class SignUpDoneView(TemplateView):
+#     """
+#     A view which is presented if the user successfully fill out the form presented in Sign-Up view
+#     """
+#     template_name = "sap/sign-up-done.html"
+#
+#     def get(self, request, *args, **kwargs):
+#         """Enter what this class/method does"""
+#         site = get_current_site(request)
+#         accepted_origin = 'http:' + '//' + site.domain + reverse('sap:sign-up')
+#
+#         try:
+#             origin = request.headers['Referer']
+#
+#             if request.headers['Referer'] and origin == accepted_origin:
+#                 return render(request, self.template_name)
+#
+#             if request.user.is_authenticated:
+#                 return redirect('sap:resources')
+#
+#             return redirect('sap:home')
+#
+#         except KeyError:
+#             if request.user.is_authenticated:
+#                 return redirect('sap:resources')
+#
+#             return redirect('sap:home')
 
 
 class SignUpConfirmView(TemplateView):
@@ -463,41 +466,43 @@ class ForgotPasswordView(TemplateView):
                     messages.warning(self.request, str(exception))
 
 
-                return redirect('/password-forgot-done')
-
-            return redirect('/password-forgot-done')
+            # return redirect('/password-forgot-done')
             # return render(request, 'account/password-forgot.html', {'form': form})
+
+            messages.warning(request,
+                             'ATTENTION REQUIRED: To finish resetting your password, please follow instructions included in the email we just sent you.')
+            return redirect('sap:home')
 
         return render(request, 'sap/password-forgot.html', {'form': form})
 
 
-class ForgotPasswordDoneView(TemplateView):
-    """
-    A view which is presented if the user entered valid email in Forget Password view
-    """
-    template_name = "sap/password-forgot-done.html"
-
-    def get(self, request, *args, **kwargs):
-        """Enter what this class/method does"""
-        site = get_current_site(request)
-        accepted_origin = 'http:' + '//' + site.domain + reverse('sap:password-forgot')
-
-        try:
-            origin = request.headers['Referer']
-
-            if request.headers['Referer'] and origin == accepted_origin:
-                return render(request, self.template_name)
-
-            if request.user.is_authenticated:
-                return redirect('sap:resources')
-
-            return redirect('sap:home')
-
-        except KeyError:
-            if request.user.is_authenticated:
-                return redirect('sap:resources')
-
-            return redirect('sap:home')
+# class ForgotPasswordDoneView(TemplateView):
+#     """
+#     A view which is presented if the user entered valid email in Forget Password view
+#     """
+#     template_name = "sap/password-forgot-done.html"
+#
+#     def get(self, request, *args, **kwargs):
+#         """Enter what this class/method does"""
+#         site = get_current_site(request)
+#         accepted_origin = 'http:' + '//' + site.domain + reverse('sap:password-forgot')
+#
+#         try:
+#             origin = request.headers['Referer']
+#
+#             if request.headers['Referer'] and origin == accepted_origin:
+#                 return render(request, self.template_name)
+#
+#             if request.user.is_authenticated:
+#                 return redirect('sap:resources')
+#
+#             return redirect('sap:home')
+#
+#         except KeyError:
+#             if request.user.is_authenticated:
+#                 return redirect('sap:resources')
+#
+#             return redirect('sap:home')
 
 
 class ForgotPasswordConfirmView(TemplateView):
