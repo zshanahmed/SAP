@@ -340,9 +340,10 @@ class SignUpView(TemplateView):
             site = get_current_site(request)
             self.send_verification_email(user=user, site=site, entered_email=post_dict["new_email"][0])
 
-        messages.warning(request,
+        messages.info(request,
                          'ATTENTION REQUIRED: To finish creating a new account, please follow instructions in the email we just sent you.')
-        return redirect("sap:sign-up-done")
+        return redirect("sap:home")
+
 
 
 # class SignUpDoneView(TemplateView):
@@ -469,7 +470,7 @@ class ForgotPasswordView(TemplateView):
             # return redirect('/password-forgot-done')
             # return render(request, 'account/password-forgot.html', {'form': form})
 
-            messages.warning(request,
+            messages.info(request,
                              'ATTENTION REQUIRED: To finish resetting your password, please follow instructions included in the email we just sent you.')
             return redirect('sap:home')
 
