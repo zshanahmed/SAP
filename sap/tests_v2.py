@@ -94,7 +94,7 @@ class SignUpTests(TestCase):
         Ally.objects.create(user=self.user,
                             user_type=['Graduate Student'],
                             hawk_id=self.user.username,
-                            area_of_research=['Biochemistry'],
+                            area_of_research=['Chemistry'],
                             interested_in_mentoring=False,
                             willing_to_offer_lab_shadowing=False,
                             interested_in_connecting_with_other_mentors=False,
@@ -144,11 +144,11 @@ class SignUpTests(TestCase):
                             user_type=['Graduate Student'],
                             hawk_id=self.user.username,
                             area_of_research=['Biochemistry'],
-                            interested_in_mentoring=False,
+                            interested_in_mentoring=True,
                             willing_to_offer_lab_shadowing=False,
                             interested_in_connecting_with_other_mentors=False,
                             willing_to_volunteer_for_events=False,
-                            interested_in_mentor_training=True)
+                            interested_in_mentor_training=False)
         self.user.save()
         self.client.logout()
         response = self.client.post(
@@ -193,8 +193,8 @@ class SignUpTests(TestCase):
                             area_of_research=['Biochemistry'],
                             interested_in_mentoring=False,
                             willing_to_offer_lab_shadowing=False,
-                            interested_in_connecting_with_other_mentors=False,
-                            willing_to_volunteer_for_events=False,
+                            interested_in_connecting_with_other_mentors=True,
+                            willing_to_volunteer_for_events=True,
                             interested_in_mentor_training=True)
         self.user.save()
         self.client.logout()
@@ -242,7 +242,7 @@ class SignUpTests(TestCase):
                             willing_to_offer_lab_shadowing=False,
                             interested_in_connecting_with_other_mentors=False,
                             willing_to_volunteer_for_events=False,
-                            interested_in_mentor_training=True)
+                            interested_in_mentor_training=False)
         self.user.save()
         self.client.logout()
         response = self.client.post(
@@ -670,8 +670,8 @@ class SignUpTests(TestCase):
                             hawk_id=self.user.username,
                             area_of_research=['Biochemistry'],
                             interested_in_mentoring=False,
-                            willing_to_offer_lab_shadowing=False,
-                            interested_in_connecting_with_other_mentors=False,
+                            willing_to_offer_lab_shadowing=True,
+                            interested_in_connecting_with_other_mentors=True,
                             willing_to_volunteer_for_events=False,
                             interested_in_mentor_training=True)
         self.user.save()
@@ -692,12 +692,12 @@ class SignUpTests(TestCase):
         Ally.objects.create(user=self.user,
                             user_type=['Graduate Student'],
                             hawk_id=self.user.username,
-                            area_of_research=['Biochemistry'],
+                            area_of_research=['Biology'],
                             interested_in_mentoring=False,
                             willing_to_offer_lab_shadowing=False,
                             interested_in_connecting_with_other_mentors=False,
                             willing_to_volunteer_for_events=False,
-                            interested_in_mentor_training=True)
+                            interested_in_mentor_training=False)
         self.user.save()
         self.client.logout()
 
@@ -720,9 +720,9 @@ class SignUpTests(TestCase):
                             user_type=['Graduate Student'],
                             hawk_id=self.user.username,
                             area_of_research=['Biochemistry'],
-                            interested_in_mentoring=False,
+                            interested_in_mentoring=True,
                             willing_to_offer_lab_shadowing=False,
-                            interested_in_connecting_with_other_mentors=False,
+                            interested_in_connecting_with_other_mentors=True,
                             willing_to_volunteer_for_events=False,
                             interested_in_mentor_training=True)
         self.user.save()
