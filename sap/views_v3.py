@@ -13,6 +13,7 @@ from django.contrib import messages
 from django.http import HttpResponseNotFound
 from django.utils.dateparse import parse_datetime
 
+from sap.views import make_notification
 from sap.views import AccessMixin
 from .models import Ally, StudentCategories, AllyStudentCategoryRelation, Event, \
     EventInviteeRelation, EventAttendeeRelation
@@ -569,3 +570,38 @@ class EditEventView(View, AccessMixin):
 
         messages.success(request, 'Event Updated Successfully')
         return redirect('/calendar')
+
+class MentorshipNotifications(View):
+    @staticmethod
+    def make_mentee_notification(request, mentor_requester_id=0, mentee_requested_id=0):
+        """
+        Makes a notification from a mentor to a mentee that asks them to become their mentee
+        """
+        sender = request.user
+        try:
+            recipient = User.objects.get(id=mentee_requested_id)
+            notifications = Notification.objects.filter(recipient=recipient)
+            mentor = Ally.objects.get(id=mentor_requester_id)
+            make_notification(request, notifications, recipient,
+                              sender.first_name + " " + sender.last_name + " is asking to be your mentor!",
+                              action_object=mentor)
+        except ObjectDoesNotExist:
+            messages.success(request, 'Ally not found!')
+            return redirect('sap:ally-dashboard')
+
+    @staticmethod
+    def make_mentor_notification(request, mentee_requester_id=0, mentor_requested_id=0):
+        """
+        Makes a notification from a mentee to a mentor that asks them to become their mentor
+        """
+        sender = request.user
+        try:
+            recipient = User.objects.get(id=mentor_requested_id)
+            notifications = Notification.objects.filter(recipient=recipient)
+            mentee = Ally.objects.get(id=mentee_requester_id)
+            make_notification(request, notifications, recipient,
+                              sender.first_name + " " + sender.last_name + " is asking to be your mentee!",
+                              action_object=mentee)
+        except ObjectDoesNotExist:
+            messages.success(request, 'Ally not found!')
+            return redirect('sap:ally-dashboard')

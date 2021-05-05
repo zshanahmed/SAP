@@ -134,4 +134,10 @@ urlpatterns = [
     url(r'^dismiss_notification/(?P<notification_id>[\w-]+)/$',
         login_required(sap.views_v3.SapNotifications.dismiss_notification),
         name='dismiss_notification'),
+
+    url(r'notify_mentor/(?P<mentor_requester_id>[\w-]+)/(?P<mentee_requested_id>[\w-]+)$',
+        login_required(sap.views_v3.MentorshipNotifications.make_mentor_notification), name='notify_mentor'),
+
+    url(r'notify_mentee/(?P<mentee_requester_id>[\w-]+)/(?P<mentor_requested_id>[\w-]+)/$',
+        login_required(sap.views_v3.MentorshipNotifications.make_mentee_notification), name='notify_mentee'),
 ]
