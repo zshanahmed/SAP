@@ -757,6 +757,16 @@ class ForgotPasswordTest(TestCase):
         self.client = Client()
         self.user = User.objects.create_user(self.username, self.email, self.password)
 
+        self.ally = Ally.objects.create(user=self.user,
+                            user_type=['Graduate Student'],
+                            hawk_id=self.user.username,
+                            area_of_research=['Biochemistry'],
+                            interested_in_mentoring=False,
+                            willing_to_offer_lab_shadowing=False,
+                            interested_in_connecting_with_other_mentors=False,
+                            willing_to_volunteer_for_events=False,
+                            interested_in_mentor_training=True)
+
     def test_get_success(self):
         """
         Can access if user is not logged in.
@@ -824,6 +834,10 @@ class ForgotPasswordTest(TestCase):
         """
         Enter invalid text in email field.
         """
+        self.user.is_active = True
+        self.user.save()
+        self.ally.reset_password = True
+        self.ally.save()
         response = self.client.get(reverse('sap:password-forgot'))
         self.assertEqual(response.status_code, HTTPStatus.OK)
         self.assertContains(
@@ -846,6 +860,10 @@ class ForgotPasswordTest(TestCase):
         """
         The unique link to reset password exists and works
         """
+        self.user.is_active = True
+        self.user.save()
+        self.ally.reset_password = True
+        self.ally.save()
         token = password_reset_token.make_token(self.user)
         uid = urlsafe_base64_encode(force_bytes(self.user.pk))
         link = reverse('sap:password-forgot-confirm', args=[uid, token])
@@ -857,6 +875,10 @@ class ForgotPasswordTest(TestCase):
         """
         Successfully create new password.
         """
+        self.user.is_active = True
+        self.user.save()
+        self.ally.reset_password = True
+        self.ally.save()
         token = password_reset_token.make_token(self.user)
         uid = urlsafe_base64_encode(force_bytes(self.user.pk))
         link = reverse('sap:password-forgot-confirm', args=[uid, token])
@@ -884,6 +906,10 @@ class ForgotPasswordTest(TestCase):
         """
         Fail to create new password.
         """
+        self.user.is_active = True
+        self.user.save()
+        self.ally.reset_password = True
+        self.ally.save()
         token = password_reset_token.make_token(self.user)
         uid = urlsafe_base64_encode(force_bytes(self.user.pk))
         link = reverse('sap:password-forgot-confirm', args=[uid, token])
@@ -923,6 +949,10 @@ class ForgotPasswordTest(TestCase):
         """
         Fail to create new password.
         """
+        self.user.is_active = True
+        self.user.save()
+        self.ally.reset_password = True
+        self.ally.save()
         token = password_reset_token.make_token(self.user)
         uid = urlsafe_base64_encode(force_bytes(self.user.pk))
         link = reverse('sap:password-forgot-confirm', args=[uid, token])
@@ -948,35 +978,35 @@ class ForgotPasswordTest(TestCase):
         self.assertEqual(response.status_code, HTTPStatus.OK)
 
 
-class ForgotPasswordDoneView(TestCase):
-    """
-    Unit tests for SignUpDoneView
-    """
-
-    def setUp(self):
-        self.username = 'admin'
-        self.username_active = 'user_active'
-        self.password = 'admin_password1'
-        self.email = 'email@test.com'
-        self.email_active = 'email_active@test.com'
-        self.user = User.objects.create_user(username=self.username, email=self.email, password=self.password)
-        self.user_active = User.objects.create_user(username=self.username_active, email=self.email_active,
-                                                    password=self.password,
-                                                    is_active=True)
-        self.client = Client()
-
-    def test_forgotpassword_if_keyerror(self):
-        """
-        If keyerror
-        """
-        self.client.logout()
-        response = self.client.get(reverse('sap:password-forgot-done'))
-        self.assertEqual(response.status_code, 302)
-
-    def test_forgotpassword_if_keyerror_and_is_authenticated(self):
-        """
-        If keyerror and is_authenticated
-        """
-        self.client.login(username=self.username, password=self.password)
-        response = self.client.get(reverse('sap:password-forgot-done'))
-        self.assertEqual(response.status_code, 302)
+# class ForgotPasswordDoneView(TestCase):
+#     """
+#     Unit tests for ForgotPasswordDoneView
+#     """
+#
+#     def setUp(self):
+#         self.username = 'admin'
+#         self.username_active = 'user_active'
+#         self.password = 'admin_password1'
+#         self.email = 'email@test.com'
+#         self.email_active = 'email_active@test.com'
+#         self.user = User.objects.create_user(username=self.username, email=self.email, password=self.password)
+#         self.user_active = User.objects.create_user(username=self.username_active, email=self.email_active,
+#                                                     password=self.password,
+#                                                     is_active=True)
+#         self.client = Client()
+#
+#     def test_forgotpassword_if_keyerror(self):
+#         """
+#         If keyerror
+#         """
+#         self.client.logout()
+#         response = self.client.get(reverse('sap:password-forgot-done'))
+#         self.assertEqual(response.status_code, 302)
+#
+#     def test_forgotpassword_if_keyerror_and_is_authenticated(self):
+#         """
+#         If keyerror and is_authenticated
+#         """
+#         self.client.login(username=self.username, password=self.password)
+#         response = self.client.get(reverse('sap:password-forgot-done'))
+#         self.assertEqual(response.status_code, 302)

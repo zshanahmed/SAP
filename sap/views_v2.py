@@ -67,9 +67,9 @@ class SignUpEventView(View):
                 messages.warning(request,
                                  'You cannot sign up for this event since you are not invited.')
 
-        else:
-            messages.error(request,
-                           'Access denied. You are not registered in our system.')
+        # else:
+        #     messages.error(request,
+        #                    'Access denied. You are not registered in our system.')
 
         if context == 'notification':
             return redirect('sap:notification_center')
