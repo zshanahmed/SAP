@@ -470,18 +470,20 @@ class ForgotPasswordView(TemplateView):
                         sendgrid_obj = SendGridAPIClient(os.environ.get('SENDGRID_API_KEY'))
                         sendgrid_obj.send(email_content)
 
-                        ally.reset_password = True
-                        ally.save()
-
-                        messages.info(request,
-                                      'ATTENTION REQUIRED: To finish resetting your password, please follow instructions in the email we just sent you.')
-
-                        return redirect('sap:home')
-
                     except HTTPError as exception:
                         messages.warning(self.request,
                                          'Please try again another time or contact team1sep@hotmail.com and report this error code, HTTP401.')
                         return redirect('sap:home')
+
+                    # this part will only be executed if try block succeed
+                    ally.reset_password = True
+                    ally.save()
+
+                    messages.info(request,
+                                  'ATTENTION REQUIRED: To finish resetting your password, please follow instructions in the email we just sent you.')
+
+                    return redirect('sap:home')
+
 
             # return redirect('/password-forgot-done')
             # return render(request, 'account/password-forgot.html', {'form': form})
