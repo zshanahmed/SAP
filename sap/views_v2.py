@@ -525,7 +525,10 @@ class ForgotPasswordConfirmView(TemplateView):
 
     # template_name = "sap/password-forgot-confirm.html"
     def get(self, request, **kwargs):
-        """Enter what this class/method does"""
+        """
+        Can only access this page is user is active and ally.reset_password = True
+        """
+
         path = request.path
         path_1, token = os.path.split(path)
 
@@ -537,23 +540,31 @@ class ForgotPasswordConfirmView(TemplateView):
         try:
             uid = force_text(urlsafe_base64_decode(uidb64))
             user = User.objects.get(pk=uid)
+            ally = Ally.objects.get(user=user)
+
         except (TypeError, ValueError, OverflowError, User.DoesNotExist) as exception:
             messages.warning(request, str(exception))
             user = None
+            ally = None
 
-        if user is not None and password_reset_token.check_token(user, token):
-            context = {
-                'form': UserResetForgotPasswordForm(user),
-                'uid': uidb64,
-                'token': token
-            }
-            return render(request, 'sap/password-forgot-confirm.html', context)
+        if user is not None and ally is not None and password_reset_token.check_token(user, token):
+
+            if user.is_active and ally.reset_password:
+                context = {
+                    'form': UserResetForgotPasswordForm(user),
+                    'uid': uidb64,
+                    'token': token
+                }
+                return render(request, 'sap/password-forgot-confirm.html', context)
 
         messages.error(request, 'Password reset link is invalid. Please request a new password reset.')
         return redirect('sap:home')
 
     def post(self, request, **kwargs):
-        """Enter what this class/method does"""
+        """
+        Submit a new password
+        Also check if ally.reset_password=True before proceeding
+        """
         path = request.path
         path_1, token = os.path.split(path)
 
