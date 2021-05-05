@@ -13,10 +13,9 @@ from django.contrib import messages
 from django.http import HttpResponseNotFound
 from .models import Ally, StudentCategories, AllyStudentCategoryRelation, Event, \
     EventInviteeRelation, EventAttendeeRelation
-from .upload_resource_to_azure import upload_file_to_azure
+from .upload_resource_to_azure import upload_file_to_azure, delete_azure_blob
 
 User = get_user_model()
-
 
 
 def upload_prof_pic(file, post_dict):
@@ -148,6 +147,10 @@ class EditAllyProfile(View):
 
             if request.FILES:  # update profile pic
                 file = request.FILES['file']
+
+                if ally.image_url != "https://sepibafiles.blob.core.windows.net/sepibacontainer/blank-profile-picture.png":
+                    delete_azure_blob(ally.image_url)
+
                 ally.image_url = upload_prof_pic(file, post_dict)
                 same = False
 
@@ -358,6 +361,7 @@ class AllyEventInformation(View):
             'signed_up_events': event_signed_up_id,
         })
 
+
 class SapNotifications(View):
     """
     View for seeing notifications, get method returns the role of the request user and
@@ -421,7 +425,7 @@ class DeregisterEventView(View):
 
             event_attendee_rel = EventAttendeeRelation.objects.filter(event=event_id, ally=ally_current[0])
 
-            if event_attendee_rel.exists(): # Check if user will attend
+            if event_attendee_rel.exists():  # Check if user will attend
                 event_attendee_rel[0].delete()
 
                 messages.success(request,

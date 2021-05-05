@@ -26,6 +26,7 @@ from notifications.models import Notification
 
 from .forms import UpdateAdminProfileForm
 from .models import Announcement, EventInviteeRelation, EventAttendeeRelation, Ally, StudentCategories, AllyStudentCategoryRelation, Event
+from .upload_resource_to_azure import delete_azure_blob
 
 # Create your views here.
 
@@ -168,6 +169,29 @@ class DeleteAllyProfileFromAdminDashboard(AccessMixin, View):
 
         except ObjectDoesNotExist:
             return HttpResponseNotFound("")
+
+
+class DeleteAllyProfilePic(AccessMixin, View):
+    """
+    Enter what this class/method does
+    """
+
+    def get(self, request):
+        """Enter what this class/method does"""
+        username = request.GET['username']
+
+        try:
+            user = User.objects.get(username=username)
+            ally = Ally.objects.get(user=user)
+            delete_azure_blob(ally.image_url)
+            ally.image_url = 'https://sepibafiles.blob.core.windows.net/sepibacontainer/blank-profile-picture.png'
+            ally.save()
+            messages.success(request, 'Successfully deleted the profile pic ' + username)
+            return redirect('sap:sap-dashboard')
+
+        except ObjectDoesNotExist:
+            return HttpResponseNotFound("")
+
 
 
 class ChangeAdminPassword(View):

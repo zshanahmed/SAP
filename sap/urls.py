@@ -79,6 +79,9 @@ urlpatterns = [
     url(r'^delete/$', login_required(views.DeleteAllyProfileFromAdminDashboard.as_view()),
         name='admin_delete_ally'),
 
+    url(r'^delete_prof_pic/$', login_required(views.DeleteAllyProfilePic.as_view()),
+        name='admin_delete_prof_pic'),
+
     url('^inbox/notifications/', include(notifications.urls, namespace='notifications')),
 
     url('create_iba_admin/',
