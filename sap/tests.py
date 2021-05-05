@@ -38,6 +38,7 @@ class AdminAllyTableFeatureTests(TestCase):
         self.username = 'Admin_1'
         self.password = 'admin_password1'
         self.email = 'email@test.com'
+
         self.client = Client()
 
         self.user = User.objects.create_user(
