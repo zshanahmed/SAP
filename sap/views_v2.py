@@ -426,7 +426,9 @@ class ForgotPasswordView(TemplateView):
         return redirect('sap:home')
 
     def post(self, request):
-        """Enter what this class/method does"""
+        """
+        Only if the confirmation email is successfully sent by SendGrid, ally.reset_password can be updated
+        """
         form = PasswordResetForm(request.POST)
 
         if form.is_valid():
@@ -441,8 +443,8 @@ class ForgotPasswordView(TemplateView):
                 # Can only reset forgotten password for active user and there is an ally associated with the user
                 if user.is_active and ally_filter.exists():
                     ally = ally_filter[0]
-                    ally.reset_password = True
-                    ally.save()
+                    # ally.reset_password = True
+                    # ally.save()
 
                     message_body = render_to_string('sap/password-forgot-mail.html', {
                         'user': user,
@@ -467,6 +469,9 @@ class ForgotPasswordView(TemplateView):
                     try:
                         sendgrid_obj = SendGridAPIClient(os.environ.get('SENDGRID_API_KEY'))
                         sendgrid_obj.send(email_content)
+
+                        ally.reset_password = True
+                        ally.save()
 
                         messages.info(request,
                                       'ATTENTION REQUIRED: To finish resetting your password, please follow instructions in the email we just sent you.')
