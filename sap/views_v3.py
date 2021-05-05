@@ -571,37 +571,46 @@ class EditEventView(View, AccessMixin):
         messages.success(request, 'Event Updated Successfully')
         return redirect('/calendar')
 
-class MentorshipNotifications(View):
+class MentorshipView(View):
     @staticmethod
-    def make_mentee_notification(request, mentor_requester_id=0, mentee_requested_id=0):
+    def make_mentee_notification(request, mentee_requested_username=''):
         """
         Makes a notification from a mentor to a mentee that asks them to become their mentee
         """
         sender = request.user
         try:
-            recipient = User.objects.get(id=mentee_requested_id)
+            recipient = User.objects.get(username=mentee_requested_username)
             notifications = Notification.objects.filter(recipient=recipient)
-            mentor = Ally.objects.get(id=mentor_requester_id)
+            mentor = Ally.objects.get(user=sender)
             make_notification(request, notifications, recipient,
                               sender.first_name + " " + sender.last_name + " is asking to be your mentor!",
                               action_object=mentor)
+            messages.success(request,
+                             'Invitation for ' + recipient.first_name + " " + recipient.last_name
+                             + ' to become your mentee has been sent!')
         except ObjectDoesNotExist:
-            messages.success(request, 'Ally not found!')
-            return redirect('sap:ally-dashboard')
+            messages.warning(request, 'Ally not found!')
+
+        return redirect('sap:ally-dashboard')
 
     @staticmethod
-    def make_mentor_notification(request, mentee_requester_id=0, mentor_requested_id=0):
+    def make_mentor_notification(request, mentor_requested_username=''):
         """
         Makes a notification from a mentee to a mentor that asks them to become their mentor
         """
         sender = request.user
         try:
-            recipient = User.objects.get(id=mentor_requested_id)
+            recipient = User.objects.get(username=mentor_requested_username)
             notifications = Notification.objects.filter(recipient=recipient)
-            mentee = Ally.objects.get(id=mentee_requester_id)
+            mentee = Ally.objects.get(user=sender)
             make_notification(request, notifications, recipient,
                               sender.first_name + " " + sender.last_name + " is asking to be your mentee!",
                               action_object=mentee)
+            messages.success(request,
+                             'Invitation for ' + recipient.first_name + " " + recipient.last_name
+                             + ' to mentor you has been sent!')
+
         except ObjectDoesNotExist:
-            messages.success(request, 'Ally not found!')
-            return redirect('sap:ally-dashboard')
+            messages.warning(request, 'Ally not found!')
+
+        return redirect('sap:ally-dashboard')
