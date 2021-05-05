@@ -337,18 +337,13 @@ class DeleteAllyProfilePic(AccessMixin, View):
     def get(self, request):
         """Delete the profile picture of an ally"""
         username = request.GET['username']
-
-        try:
-            user_obj = User.objects.get(username=username)
-            ally = Ally.objects.get(user=user_obj)
-            delete_azure_blob(ally.image_url)
-            ally.image_url = 'https://sepibafiles.blob.core.windows.net/sepibacontainer/blank-profile-picture.png'
-            ally.save()
-            messages.success(request, 'Successfully deleted the profile pic ' + username)
-            return redirect('sap:sap-dashboard')
-
-        except ObjectDoesNotExist:
-            return HttpResponseNotFound("")
+        user_obj = User.objects.get(username=username)
+        ally = Ally.objects.get(user=user_obj)
+        delete_azure_blob(ally.image_url)
+        ally.image_url = 'https://sepibafiles.blob.core.windows.net/sepibacontainer/blank-profile-picture.png'
+        ally.save()
+        messages.success(request, 'Successfully deleted the profile pic ' + username)
+        return redirect('sap:sap-dashboard')
 
 
 class AllyEventInformation(View):

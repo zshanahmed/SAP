@@ -595,6 +595,25 @@ class AdminAllyTableFeatureTests(TestCase):
         self.assertEqual(response.status_code, HTTPStatus.OK)
         self.assertNotContains(response, name, html=True)
 
+    def test_delete_ally_profile_pic(self):
+        """
+        Unit test for delete ally profile pic
+        """
+        self.user.is_staff = True
+        self.user.save()
+        self.client.login(username=self.username, password=self.password)
+        name = './pytests/assets/blank-profile-picture.png'
+        local_file_name = 'blank-profile-picture.png'
+        self.ally = Ally.objects.get(user=self.ally_user)
+        copyfile(name, '/tmp/{}'.format(local_file_name))
+        uploaded_resource_url_in_cloud = upload_file_to_azure(local_file_name)
+        self.ally.image_url = uploaded_resource_url_in_cloud
+        self.ally.save()
+
+        response = self.client.get('/delete_prof_pic/', {'username': self.ally_user.username}, follow=True)
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        self.assertNotContains(response, name, html=True)
+
     def test_delete_ally_fail(self):
         """
         Unit test for deleting non existent ally
