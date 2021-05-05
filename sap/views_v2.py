@@ -262,8 +262,12 @@ class SignUpView(TemplateView):
         try:
             sendgrid_obj = SendGridAPIClient(os.environ.get('SENDGRID_API_KEY'))
             sendgrid_obj.send(email_content)
+
+            messages.info(self.request,
+                          'ATTENTION REQUIRED: To finish creating a new account, please follow instructions in the email we just sent you.')
         except HTTPError as exception:
-            messages.warning(self.request, str(exception))
+            messages.warning(self.request,
+                             'Please try again another time or contact team1sep@hotmail.com and report this error code, HTTP401.')
 
     def get(self, request):
         """
@@ -340,10 +344,7 @@ class SignUpView(TemplateView):
             site = get_current_site(request)
             self.send_verification_email(user=user, site=site, entered_email=post_dict["new_email"][0])
 
-        messages.info(request,
-                         'ATTENTION REQUIRED: To finish creating a new account, please follow instructions in the email we just sent you.')
         return redirect("sap:home")
-
 
 
 # class SignUpDoneView(TemplateView):
@@ -435,10 +436,10 @@ class ForgotPasswordView(TemplateView):
 
             if len(valid_email) > 0:
                 user = valid_email[0]
+                ally_filter = Ally.objects.filter(user=user)
 
-                # Can only reset forgotten password for active user
-                if user.is_active:
-                    ally_filter = Ally.objects.filter(user=user)
+                # Can only reset forgotten password for active user and there is an ally associated with the user
+                if user.is_active and ally_filter.exists():
                     ally = ally_filter[0]
                     ally.reset_password = True
                     # user.save()
@@ -467,17 +468,23 @@ class ForgotPasswordView(TemplateView):
                         sendgrid_obj = SendGridAPIClient(os.environ.get('SENDGRID_API_KEY'))
                         sendgrid_obj.send(email_content)
 
-                    except HTTPError as exception:
-                        messages.warning(self.request, str(exception))
+                        messages.info(request,
+                                      'ATTENTION REQUIRED: To finish resetting your password, please follow instructions in the email we just sent you.')
 
+                        return redirect('sap:home')
+
+                    except HTTPError as exception:
+                        messages.warning(self.request,
+                                         'Please try again another time or contact team1sep@hotmail.com and report this error code, HTTP401.')
+                        return redirect('sap:home')
 
             # return redirect('/password-forgot-done')
             # return render(request, 'account/password-forgot.html', {'form': form})
-
             messages.info(request,
-                             'ATTENTION REQUIRED: To finish resetting your password, please follow instructions included in the email we just sent you.')
+                          'ATTENTION REQUIRED: To finish resetting your password, please follow instructions in the email we just sent you.')
             return redirect('sap:home')
 
+        # if form is not valid
         return render(request, 'sap/password-forgot.html', {'form': form})
 
 
