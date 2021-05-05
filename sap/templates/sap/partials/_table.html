@@ -55,7 +55,6 @@
                                       </div>
                                     </div>
                                   </div>
-
                                 <tr>
                                     <td style="text-align:center">{{ ally.user.first_name }} {{ally.user.last_name}}</td>
                                     <td style="text-align:center">{{ ally.user_type }}</td>
@@ -88,6 +87,27 @@
                                                     <a href="{% url 'sap:admin_edit_ally' ally.user.username %}" class="btn btn-success btn-sm" type="button" data-toggle="tooltip" data-placement="top"
                                                         title="Edit"><i class="fa fa-edit"></i></a>
                                                     </li>
+                                                {% else %}
+                                                    {% if user_ally.user_type == "Undergraduate Student" %}
+                                                        {% if user_ally.interested_in_being_mentored and ally.interested_in_mentoring %}
+                                                            <li class="list-inline-item">
+                                                                <a href="{% url 'sap:admin_edit_ally' ally.user.username %}" class="btn btn-success btn-sm" type="button" data-toggle="tooltip" data-placement="top"
+                                                                    title="Ask to be Mentee">
+                                                                    <i class="fa fa-child"></i>
+                                                                </a>
+                                                            </li>
+                                                        {% endif %}
+                                                    {% else %}
+                                                        {% if user_ally.interested_in_mentoring and ally.interested_in_being_mentored %}
+
+                                                            <li class="list-inline-item">
+                                                                <a href="{% url 'sap:admin_edit_ally' ally.user.username %}" class="btn btn-success btn-sm" type="button" data-toggle="tooltip" data-placement="top"
+                                                                   title="Ask to be Mentor">
+                                                                    <i class="fas fa-hand-holding"></i>
+                                                                </a>
+                                                            </li>
+                                                        {% endif %}
+                                                    {% endif %}
                                                 {% endif %}
                                             {% endif %}
                                         </ul>
