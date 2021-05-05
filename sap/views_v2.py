@@ -442,7 +442,7 @@ class ForgotPasswordView(TemplateView):
                 if user.is_active and ally_filter.exists():
                     ally = ally_filter[0]
                     ally.reset_password = True
-                    # user.save()
+                    ally.save()
 
                     message_body = render_to_string('sap/password-forgot-mail.html', {
                         'user': user,
@@ -592,7 +592,7 @@ class ForgotPasswordConfirmView(TemplateView):
                     update_session_auth_hash(request, form.user)
 
                     ally.reset_password = False
-                    # user.save()
+                    ally.save()
                     messages.success(request, 'New Password Created Successfully!')
                     return redirect('sap:home')
 
