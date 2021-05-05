@@ -329,7 +329,7 @@ class EditAllyProfile(View):
         return redirect('sap:ally-dashboard')
 
 
-class DeleteAllyProfilePic(AccessMixin, View):
+class DeleteAllyProfilePic(View):
     """
     Class that handles the delete profile pic of ally
     """
@@ -342,8 +342,8 @@ class DeleteAllyProfilePic(AccessMixin, View):
         delete_azure_blob(ally.image_url)
         ally.image_url = 'https://sepibafiles.blob.core.windows.net/sepibacontainer/blank-profile-picture.png'
         ally.save()
-        messages.success(request, 'Successfully deleted the profile pic ' + username)
-        return redirect('sap:sap-dashboard')
+        messages.success(request, 'Successfully deleted the profile pic of ' + username)
+        return redirect('sap:ally-dashboard')
 
 
 class AllyEventInformation(View):
