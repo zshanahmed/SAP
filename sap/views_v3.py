@@ -3,6 +3,7 @@ views_v3 has functions that are mapped to the urls in urls.py
 """
 import os
 from shutil import move
+from datetime import datetime
 
 from django.template.loader import render_to_string
 from notifications.models import Notification
@@ -597,20 +598,23 @@ class FeedbackView(View):
 
         post_dict = dict(request.POST)
 
+        now = datetime.now()
+        dt_string = now.strftime("%m/%d/%Y %H:%M:%S")
         user = request.user
         email_user = post_dict["email_address"][0]
         message = post_dict["message"][0]
 
         message_body = render_to_string('sap/feedback-mail.html', {
             'email_to_contact': email_user,
-            'message': message,
+            'message': '\n' + message,
             'user': user,
+            'datetime': dt_string,
         })
 
         email_content = Mail(
             from_email="iba@uiowa.edu",
-            to_emails='nale@uiowa.edu',
-            subject='[User-Feedback] from' + email_user,
+            to_emails='team1sep@hotmail.com',
+            subject='[User-Feedback] from ' + email_user + ' on ' + dt_string,
             html_content=message_body)
 
         try:

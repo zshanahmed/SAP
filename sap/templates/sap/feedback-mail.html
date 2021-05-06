@@ -1,15 +1,17 @@
 {% autoescape off %}
 <h3>
-    Hello SAP developers,
+    Feedback from {{ user.get_username }},
 </h3>
 
-We just got a feedback from a valued customer. Read below:
+We just got a feedback from a valued customer.
+Read below:
 <br><br>
-Username: {{ user.get_username }}
+User's email address to contact: {{ email_to_contact }}.
 <br><br>
-Email address to contact: {{ email_to_contact }}.
+Date-time: {{ datetime }}
 <br><br>
 Message:
+<br><br>
 {{ message }}
 <br><br>
 

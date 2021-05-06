@@ -328,3 +328,26 @@ class ForgotPasswordTest(TestCase):
 #         self.client.login(username=self.username, password=self.password)
 #         response = self.client.get(reverse('sap:password-forgot-done'))
 #         self.assertEqual(response.status_code, 302)
+
+
+class FeedbackTest(TestCase):
+    """
+    Unit tests for forgot password feature
+    """
+
+    def setUp(self):
+        self.username = 'user1'
+        self.password = 'user_password1'
+        self.email = 'email1@test.com'
+        self.client = Client()
+        self.user = User.objects.create_user(self.username, self.email, self.password)
+
+        self.ally = Ally.objects.create(user=self.user,
+                                        user_type=['Graduate Student'],
+                                        hawk_id=self.user.username,
+                                        area_of_research=['Computer Science and Engineering'],
+                                        interested_in_mentoring=True,
+                                        willing_to_offer_lab_shadowing=True,
+                                        interested_in_connecting_with_other_mentors=True,
+                                        willing_to_volunteer_for_events=True,
+                                        interested_in_mentor_training=True)
