@@ -9,7 +9,7 @@ from django.contrib.auth.decorators import login_required
 
 import sap.views_v2
 import sap.views_v3
-from . import views, views_v3
+from . import views
 
 app_name = 'sap'
 urlpatterns = [

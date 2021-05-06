@@ -340,14 +340,59 @@ class FeedbackTest(TestCase):
         self.password = 'user_password1'
         self.email = 'email1@test.com'
         self.client = Client()
-        self.user = User.objects.create_user(self.username, self.email, self.password)
+        self.user = User.objects.create_user(
+            username=self.username,
+            email=self.email,
+            password=self.password,
+            is_active=True,
+        )
 
-        self.ally = Ally.objects.create(user=self.user,
-                                        user_type=['Graduate Student'],
-                                        hawk_id=self.user.username,
-                                        area_of_research=['Computer Science and Engineering'],
-                                        interested_in_mentoring=True,
-                                        willing_to_offer_lab_shadowing=True,
-                                        interested_in_connecting_with_other_mentors=True,
-                                        willing_to_volunteer_for_events=True,
-                                        interested_in_mentor_training=True)
+        self.ally = Ally.objects.create(
+            user=self.user,
+            user_type=['Graduate Student'],
+            hawk_id=self.user.username,
+            area_of_research=['Computer Science and Engineering'],
+            interested_in_mentoring=True,
+            willing_to_offer_lab_shadowing=True,
+            interested_in_connecting_with_other_mentors=True,
+            willing_to_volunteer_for_events=True,
+            interested_in_mentor_training=True,
+        )
+
+    def test_get(self):
+        """
+        Successfully get the feedback page
+        """
+        self.client.login(username=self.username, password=self.password)
+        link = reverse('sap:feedback')
+        response = self.client.get(link)
+
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+
+    def test_get_fail(self):
+        """
+        Fail to get the feedback page
+        """
+        self.client.login(username=self.username, password=self.password)
+        self.client.logout()
+        link = reverse('sap:feedback')
+        response = self.client.get(link)
+
+        self.assertEqual(response.status_code, HTTPStatus.FOUND)
+
+    def test_post(self):
+        """
+        Successfully send the feedback
+        """
+        self.client.login(username=self.username, password=self.password)
+        link = reverse('sap:feedback')
+
+        data = {
+            "email_address": "test@uiowa.edu",
+            "message": "good app!"
+        }
+
+        response = self.client.post(
+            link, data=data, follow=True)
+
+        self.assertEqual(response.status_code, HTTPStatus.OK)

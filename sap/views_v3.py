@@ -7,7 +7,7 @@ from datetime import datetime
 
 from django.template.loader import render_to_string
 from notifications.models import Notification
-from django.core.files.storage import FileSystemStorage
+import django.core.files.storage
 from django.core.exceptions import ObjectDoesNotExist
 from django.urls import reverse
 from django.views.generic import View
@@ -35,7 +35,7 @@ def upload_prof_pic(file, post_dict):
     @param post_dict: request dictionary
     @return:
     """
-    file_system = FileSystemStorage()
+    file_system = django.core.files.storage.FileSystemStorage()
     filename = file_system.save(file.name, file)
     move(filename, '/tmp/{}'.format(filename))
     # Need to delete the uploaded file if called by test function to avoid creating unwanted files on Azure
@@ -611,15 +611,15 @@ class FeedbackView(View):
             'datetime': dt_string,
         })
 
-        email_content = Mail(
+        content = Mail(
             from_email="iba@uiowa.edu",
             to_emails='team1sep@hotmail.com',
             subject='[User-Feedback] from ' + email_user + ' on ' + dt_string,
             html_content=message_body)
 
         try:
-            sendgrid_obj = SendGridAPIClient(os.environ.get('SENDGRID_API_KEY'))
-            sendgrid_obj.send(email_content)
+            sendgrid_obj_request = SendGridAPIClient(os.environ.get('SENDGRID_API_KEY'))
+            sendgrid_obj_request.send(content)
 
             messages.info(self.request,
                           'Thank you for your feedback, we will get back to you soon!')
