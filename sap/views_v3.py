@@ -116,9 +116,9 @@ class EditAllyProfile(View):
 
     @staticmethod
     def get(request, username=''):
-        """Enter what this class/method does"""
+        """Returns Edit ally template"""
         user_req = request.user
-
+        allies = Ally.objects.all()
         if (username != user_req.username) and not user_req.is_staff:
             messages.warning(request, 'Access Denied!')
             return redirect('sap:ally-dashboard')
@@ -127,10 +127,27 @@ class EditAllyProfile(View):
             ally = Ally.objects.get(user=user)
             category_relation = AllyStudentCategoryRelation.objects.get(ally_id=ally.id)
             category = StudentCategories.objects.get(id=category_relation.student_category_id)
+            try:
+                mentor = AllyMentorRelation.objects.get(ally_id=ally.id)
+                mentor = Ally.objects.get(id=mentor.ally_id)
+            except ObjectDoesNotExist:
+                mentor = []
+            try:
+                mentee_list = []
+                mentees = AllyMenteeRelation.objects.filter(ally_id=ally.id)
+                for mentee in mentees:
+                    the_ally = allies.filter(id=mentee.mentee_id)
+                    if the_ally.exists():
+                        the_ally = the_ally[0]
+                        mentee_list.append(the_ally)
+            except ObjectDoesNotExist:
+                mentee_list = []
             return render(request, 'sap/admin_ally_table/edit_ally.html', {
                 'ally': ally,
                 'category': category,
                 'req': request.user,
+                'mentor': mentor,
+                'mentees': mentee_list
             })
         except ObjectDoesNotExist:
             return HttpResponseNotFound()
