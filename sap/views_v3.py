@@ -569,3 +569,43 @@ class EditEventView(View, AccessMixin):
 
         messages.success(request, 'Event Updated Successfully')
         return redirect('/calendar')
+
+
+class FeedbackView(View):
+    """
+    Allow users to send a message to developers.
+    """
+
+    def get(self, request):
+        """
+        User type in their email address and message
+        """
+        if request.user.is_authenticated:
+            return render(request, 'sap/feedback.html')
+
+    def post(self, request):
+        """
+        Send emails to developers
+        """
+
+
+
+        return redirect('sap:home')
+        # curr_user = request.user
+        # form = FeedbackForm(request.POST)
+        #
+        # email_body = form.data['message']
+        # new_email = form.data['email']
+        # if not User.objects.filter(username=new_username).exists():
+        #     curr_user.username = new_username
+        #     curr_user.email = new_email
+        #     curr_user.save()
+        #     messages.success(request, "Profile Updated !")
+        #     return redirect('sap:sap-admin_profile')
+        #
+        # messages.error(
+        #     request, "Could not Update Profile ! Username already exists")
+        # return render(request, 'sap/profile.html', {
+        #     'form': form
+        # })
+
