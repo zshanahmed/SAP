@@ -612,7 +612,6 @@ class AdminAllyTableFeatureTests(TestCase):
 
         response = self.client.get('/delete_prof_pic/', {'username': self.ally_user.username}, follow=True)
         self.assertEqual(response.status_code, HTTPStatus.OK)
-        self.assertNotContains(response, name, html=True)
 
     def test_delete_ally_fail(self):
         """

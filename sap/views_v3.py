@@ -156,7 +156,9 @@ class EditAllyProfile(View):
                     delete_azure_blob(ally.image_url)
 
                 ally.image_url = upload_prof_pic(file, post_dict)
-                same = False
+                ally.save()
+
+                return redirect(reverse('sap:admin_edit_ally', args=[user.username]))
 
             category_relation = AllyStudentCategoryRelation.objects.get(ally_id=ally.id)
             category = StudentCategories.objects.get(id=category_relation.student_category_id)
@@ -343,7 +345,7 @@ class DeleteAllyProfilePic(View):
         ally.image_url = 'https://sepibafiles.blob.core.windows.net/sepibacontainer/blank-profile-picture.png'
         ally.save()
         messages.success(request, 'Successfully deleted the profile pic of ' + username)
-        return redirect('sap:ally-dashboard')
+        return redirect(reverse('sap:admin_edit_ally', args=[user_obj.username]))
 
 
 class AllyEventInformation(View):
