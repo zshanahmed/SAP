@@ -575,18 +575,25 @@ class FeedbackView(View):
     """
     Allow users to send a message to developers.
     """
+    template_name = "sap/feedback.html"
 
     def get(self, request):
         """
         User type in their email address and message
         """
         if request.user.is_authenticated:
-            return render(request, 'sap/feedback.html')
+            return render(request, self.template_name)
+        return redirect('sap:home')
 
     def post(self, request):
         """
         Send emails to developers
         """
+
+        post_dict = dict(request.POST)
+
+        email_user = post_dict["email_address"][0]
+        message = post_dict["message"][0]
 
 
 

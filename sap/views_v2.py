@@ -273,9 +273,6 @@ class SignUpView(TemplateView):
                              'and report this error code, HTTP401.')
 
     def get(self, request):
-        """
-        First log current user out
-        """
         if not request.user.is_authenticated:
             return render(request, self.template_name)
         return redirect('sap:home')
