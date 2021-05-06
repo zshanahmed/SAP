@@ -57,11 +57,8 @@ urlpatterns = [
     url(r'password-forgot/$', sap.views_v2.ForgotPasswordView.as_view(),
         name='password-forgot'),
 
-    url(r'password-forgot-done/$', sap.views_v2.ForgotPasswordDoneView.as_view(),
-        name='password-forgot-done'),
-
-    # path(r'^password-forgot-confirm/(<slug:uidb64>/<slug:token>/$', auth_views.PasswordResetConfirmView.as_view(),
-    #      name='password-forgot-confirm'),
+    # url(r'password-forgot-done/$', sap.views_v2.ForgotPasswordDoneView.as_view(),
+    #     name='password-forgot-done'),
 
     url(r'password-forgot-confirm/(?P<uidb64>[\w-]+)/(?P<token>[\w-]+)$', sap.views_v2.ForgotPasswordConfirmView.as_view(),
         name='password-forgot-confirm'),
@@ -116,8 +113,8 @@ urlpatterns = [
     url('sign-up/', sap.views_v2.SignUpView.as_view(),
         name='sign-up'),
 
-    url(r'sign-up-done/$', sap.views_v2.SignUpDoneView.as_view(),
-        name='sign-up-done'),
+    # url(r'sign-up-done/$', sap.views_v2.SignUpDoneView.as_view(),
+    #     name='sign-up-done'),
 
     url(r'sign-up-confirm/(?P<uidb64>[\w-]+)/(?P<token>[\w-]+)$', sap.views_v2.SignUpConfirmView.as_view(),
         name='sign-up-confirm'),
