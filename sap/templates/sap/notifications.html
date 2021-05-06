@@ -88,8 +88,12 @@
                                                     <a class="btn btn-success" href="{% url 'sap:add_mentee' notification.action_object.user.username %}">Accept</a>
                                                 {% elif " is asking to be your mentor!" in notification.verb %}
                                                     <a class="btn btn-success" href="{% url 'sap:add_mentor' notification.action_object.user.username %}">Accept</a>
+                                                {% elif " has added you as their mentee!" in notification.verb%}
+                                                    <a class="btn btn-dark" href="{% url 'sap:delete_mentor' notification.action_object.user.username 'notification' %}">Undo</a>
+                                                {% elif " has added you as their mentor!" in notification.verb %}
+                                                    <a class="btn btn-dark" href="{% url 'sap:delete_mentee' notification.action_object.user.username 'notification'%}"> Undo </a>
                                                 {% endif %}
-                                                    <a class="btn btn-danger" href="{% url 'sap:dismiss_notification' notification.id %}">Dismiss</a>
+                                                        <a class="btn btn-danger" href="{% url 'sap:dismiss_notification' notification.id %}">Dismiss</a>
                                                 </div>
                                             </div>
                                         </div>

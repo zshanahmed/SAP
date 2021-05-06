@@ -16,7 +16,7 @@ from django.db import IntegrityError
 
 from sap.views import make_notification, add_mentor_relation, add_mentee_relation
 from sap.views import AccessMixin
-from .models import Ally, StudentCategories, AllyStudentCategoryRelation, Event, \
+from .models import Ally, StudentCategories, AllyStudentCategoryRelation, Event, AllyMentorRelation, AllyMenteeRelation, \
     EventInviteeRelation, EventAttendeeRelation
 from .upload_resource_to_azure import upload_file_to_azure
 
@@ -628,6 +628,10 @@ class MentorshipView(View):
             add_mentor_relation(mentee.id, mentor.id)
             add_mentee_relation(mentor.id, mentee.id)
             messages.success(request, mentor_user.first_name + " " + mentor_user.last_name + " is now set to be your mentor!")
+            notifications = Notification.objects.filter(recipient=mentor_user)
+            make_notification(request, notifications, mentor_user,
+                              request.user.first_name + " " + request.user.last_name + " has added you as their mentor!",
+                              action_object=mentee)
         except ObjectDoesNotExist:
             messages.warning(request, 'Ally not found!')
         except IntegrityError:
@@ -645,9 +649,60 @@ class MentorshipView(View):
             mentee = Ally.objects.get(user=mentee_user)
             add_mentee_relation(mentor.id, mentee.id)
             add_mentor_relation(mentee.id, mentor.id)
-            messages.success(request, mentee_user.first_name + " " + mentee_user.last_name + " is now set to be your mentee!")
+            messages.success(request,
+                             mentee_user.first_name + " " + mentee_user.last_name + " is now set to be your mentee!")
+            notifications = Notification.objects.filter(recipient=mentee_user)
+            make_notification(request, notifications, mentee_user,
+                              request.user.first_name + " " + request.user.last_name + " has added you as their mentee!",
+                              action_object=mentor)
         except ObjectDoesNotExist:
             messages.warning(request, 'Ally not found!')
         except IntegrityError:
             messages.warning(request, 'Ally already has a mentor!')
         return redirect('sap:notification_center')
+
+    @staticmethod
+    def delete_mentor_mentee(request, mentor_username='', context=''):
+        """
+        Removes a mentor pair based on mentee request
+        """
+        try:
+            mentee = Ally.objects.get(user=request.user)
+            mentor_user = User.objects.get(username=mentor_username)
+            menteeRelation = AllyMenteeRelation.objects.get(mentee_id=mentee.id)
+            mentorRelation = AllyMentorRelation.objects.get(ally_id=mentee.id)
+            menteeRelation.delete()
+            mentorRelation.delete()
+            messages.success(request, mentor_user.first_name + " " + mentor_user.last_name + " is no longer your mentor!")
+            notifications = Notification.objects.filter(recipient=mentor_user)
+            make_notification(request, notifications, mentor_user,
+                              request.user.first_name + " " + request.user.last_name + " has removed you as their mentor!")
+        except ObjectDoesNotExist:
+            messages.warning(request, 'Mentor relationship does not exist!')
+        if context == 'notification':
+            return redirect('sap:notification_center')
+        return redirect(reverse('sap:admin_view_ally', args=[mentor_username]))
+
+    @staticmethod
+    def delete_mentee_mentor(request, mentee_username='', context=''):
+        """
+        deletes a mentee pair based on mentor request
+        """
+        try:
+            mentee_user = User.objects.get(username=mentee_username)
+            mentee = Ally.objects.get(user=mentee_user)
+            menteeRelations = AllyMenteeRelation.objects.get(mentee_id=mentee.id)
+            mentorRelations = AllyMentorRelation.objects.get(ally_id=mentee.id)
+            menteeRelations.delete()
+            mentorRelations.delete()
+            messages.success(request,
+                             mentee_user.first_name + " " + mentee_user.last_name + " is no longer your mentee!")
+            notifications = Notification.objects.filter(recipient=mentee_user)
+            make_notification(request, notifications, mentee_user,
+                              request.user.first_name + " " + request.user.last_name + " has removed you as their mentee!")
+        except ObjectDoesNotExist:
+            messages.warning(request, 'Mentee Relationship does not exist!')
+        if context == 'notification':
+            return redirect('sap:notification_center')
+        return redirect(reverse('sap:admin_view_ally', args=[mentee_username]))
+
