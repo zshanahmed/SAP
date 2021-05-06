@@ -1,7 +1,11 @@
 """
 views_v3 has functions that are mapped to the urls in urls.py
 """
+import os
 from shutil import move
+
+from django.contrib.sites.shortcuts import get_current_site
+from django.template.loader import render_to_string
 from notifications.models import Notification
 from django.core.files.storage import FileSystemStorage
 from django.core.exceptions import ObjectDoesNotExist
@@ -12,6 +16,8 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.http import HttpResponseNotFound
 from django.utils.dateparse import parse_datetime
+from python_http_client.exceptions import HTTPError
+from sendgrid import Mail, SendGridAPIClient
 
 from sap.views import AccessMixin
 from .models import Ally, StudentCategories, AllyStudentCategoryRelation, Event, \
@@ -594,25 +600,30 @@ class FeedbackView(View):
 
         email_user = post_dict["email_address"][0]
         message = post_dict["message"][0]
+        site = get_current_site(request)
 
+        message_body = render_to_string('sap/feedback-mail.html', {
+            'email_to_contact': email_user,
+            'message': message,
+            'protocol': 'http',
+            'domain': site.domain,
+        })
 
+        email_content = Mail(
+            from_email="iba@uiowa.edu",
+            to_emails='nale@uiowa.edu',
+            subject='[User-Feedback] from' + email_user,
+            html_content=message_body)
+
+        try:
+            sendgrid_obj = SendGridAPIClient(os.environ.get('SENDGRID_API_KEY'))
+            sendgrid_obj.send(email_content)
+
+            messages.info(self.request,
+                          'Thank you for your feedback, we will get back to you soon!')
+        except HTTPError:
+            messages.warning(self.request,
+                             'Please try again another time or contact team1sep@hotmail.com '
+                             'and report this error code, HTTP401.')
 
         return redirect('sap:home')
-        # curr_user = request.user
-        # form = FeedbackForm(request.POST)
-        #
-        # email_body = form.data['message']
-        # new_email = form.data['email']
-        # if not User.objects.filter(username=new_username).exists():
-        #     curr_user.username = new_username
-        #     curr_user.email = new_email
-        #     curr_user.save()
-        #     messages.success(request, "Profile Updated !")
-        #     return redirect('sap:sap-admin_profile')
-        #
-        # messages.error(
-        #     request, "Could not Update Profile ! Username already exists")
-        # return render(request, 'sap/profile.html', {
-        #     'form': form
-        # })
-
