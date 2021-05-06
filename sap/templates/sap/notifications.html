@@ -84,23 +84,11 @@
                                             <div class="form-group row">
                                                 <div class="col-sm-6 mb-3 mb-sm-0">
                                                     <a class="btn btn-primary user" href="{% url 'sap:admin_view_ally' notification.action_object.user.username %}">View Profile</a>
-                                                </div>
-                                            </div>
-                                            {% if " is asking to be your mentee!" in notification.verb %}
-                                                <div class="form-group row">
-                                                    <div class="col-sm-6 mb-3 mb-sm-0">
-                                                        <a class="btn btn-success" href="{% url 'sap:add_mentee' notification.action_object.user.username %}">Accept</a>
-                                                    </div>
-                                                </div>
-                                            {% elif " is asking to be your mentor!" in notification.verb %}
-                                            <div class="form-group row">
-                                                    <div class="col-sm-6 mb-3 mb-sm-0">
-                                                        <a class="btn btn-success" href="{% url 'sap:add_mentor' notification.action_object.user.username %}">Accept</a>
-                                                    </div>
-                                                </div>
-                                            {% endif %}
-                                            <div class="form-group row">
-                                                <div class="col-sm-6 mb-3 mb-sm-0">
+                                                {% if " is asking to be your mentee!" in notification.verb %}
+                                                    <a class="btn btn-success" href="{% url 'sap:add_mentee' notification.action_object.user.username %}">Accept</a>
+                                                {% elif " is asking to be your mentor!" in notification.verb %}
+                                                    <a class="btn btn-success" href="{% url 'sap:add_mentor' notification.action_object.user.username %}">Accept</a>
+                                                {% endif %}
                                                     <a class="btn btn-danger" href="{% url 'sap:dismiss_notification' notification.id %}">Dismiss</a>
                                                 </div>
                                             </div>
