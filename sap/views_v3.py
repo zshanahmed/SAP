@@ -16,11 +16,10 @@ from django.utils.dateparse import parse_datetime
 from sap.views import AccessMixin
 from .models import Ally, StudentCategories, AllyStudentCategoryRelation, Event, \
     EventInviteeRelation, EventAttendeeRelation
-from .upload_resource_to_azure import upload_file_to_azure
+from .upload_resource_to_azure import upload_file_to_azure, delete_azure_blob
 
 
 User = get_user_model()
-
 
 
 def upload_prof_pic(file, post_dict):
@@ -152,8 +151,14 @@ class EditAllyProfile(View):
 
             if request.FILES:  # update profile pic
                 file = request.FILES['file']
+
+                if ally.image_url != "https://sepibafiles.blob.core.windows.net/sepibacontainer/blank-profile-picture.png":
+                    delete_azure_blob(ally.image_url)
+
                 ally.image_url = upload_prof_pic(file, post_dict)
-                same = False
+                ally.save()
+
+                return redirect(reverse('sap:admin_edit_ally', args=[user.username]))
 
             category_relation = AllyStudentCategoryRelation.objects.get(ally_id=ally.id)
             category = StudentCategories.objects.get(id=category_relation.student_category_id)
@@ -326,6 +331,23 @@ class EditAllyProfile(View):
         return redirect('sap:ally-dashboard')
 
 
+class DeleteAllyProfilePic(View):
+    """
+    Class that handles the delete profile pic of ally
+    """
+
+    def get(self, request):
+        """Delete the profile picture of an ally"""
+        username = request.GET['username']
+        user_obj = User.objects.get(username=username)
+        ally = Ally.objects.get(user=user_obj)
+        delete_azure_blob(ally.image_url)
+        ally.image_url = 'https://sepibafiles.blob.core.windows.net/sepibacontainer/blank-profile-picture.png'
+        ally.save()
+        messages.success(request, 'Successfully deleted the profile pic of ' + username)
+        return redirect(reverse('sap:admin_edit_ally', args=[user_obj.username]))
+
+
 class AllyEventInformation(View):
     """View all ally event information."""
 
@@ -361,6 +383,7 @@ class AllyEventInformation(View):
             'invited_events': event_invited,
             'signed_up_events': event_signed_up_id,
         })
+
 
 class SapNotifications(View):
     """
@@ -425,7 +448,7 @@ class DeregisterEventView(View):
 
             event_attendee_rel = EventAttendeeRelation.objects.filter(event=event_id, ally=ally_current[0])
 
-            if event_attendee_rel.exists(): # Check if user will attend
+            if event_attendee_rel.exists():  # Check if user will attend
                 event_attendee_rel[0].delete()
 
                 messages.success(request,
