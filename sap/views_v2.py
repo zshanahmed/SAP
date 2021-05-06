@@ -67,9 +67,9 @@ class SignUpEventView(View):
                 messages.warning(request,
                                  'You cannot sign up for this event since you are not invited.')
 
-        else:
-            messages.error(request,
-                           'Access denied. You are not registered in our system.')
+        # else:
+        #     messages.error(request,
+        #                    'Access denied. You are not registered in our system.')
 
         if context == 'notification':
             return redirect('sap:notification_center')
@@ -262,8 +262,14 @@ class SignUpView(TemplateView):
         try:
             sendgrid_obj = SendGridAPIClient(os.environ.get('SENDGRID_API_KEY'))
             sendgrid_obj.send(email_content)
-        except HTTPError as exception:
-            messages.warning(self.request, str(exception))
+
+            messages.info(self.request,
+                          'ATTENTION REQUIRED: To finish creating a new account, '
+                          'please follow instructions in the email we just sent you.')
+        except HTTPError:
+            messages.warning(self.request,
+                             'Please try again another time or contact team1sep@hotmail.com '
+                             'and report this error code, HTTP401.')
 
     def get(self, request):
         """
@@ -339,36 +345,37 @@ class SignUpView(TemplateView):
             user, _ = create_new_user(post_dict=post_dict)
             site = get_current_site(request)
             self.send_verification_email(user=user, site=site, entered_email=post_dict["new_email"][0])
-        return redirect("sap:sign-up-done")
+
+        return redirect("sap:home")
 
 
-class SignUpDoneView(TemplateView):
-    """
-    A view which is presented if the user successfully fill out the form presented in Sign-Up view
-    """
-    template_name = "sap/sign-up-done.html"
-
-    def get(self, request, *args, **kwargs):
-        """Enter what this class/method does"""
-        site = get_current_site(request)
-        accepted_origin = 'http:' + '//' + site.domain + reverse('sap:sign-up')
-
-        try:
-            origin = request.headers['Referer']
-
-            if request.headers['Referer'] and origin == accepted_origin:
-                return render(request, self.template_name)
-
-            if request.user.is_authenticated:
-                return redirect('sap:resources')
-
-            return redirect('sap:home')
-
-        except KeyError:
-            if request.user.is_authenticated:
-                return redirect('sap:resources')
-
-            return redirect('sap:home')
+# class SignUpDoneView(TemplateView):
+#     """
+#     A view which is presented if the user successfully fill out the form presented in Sign-Up view
+#     """
+#     template_name = "sap/sign-up-done.html"
+#
+#     def get(self, request, *args, **kwargs):
+#         """Enter what this class/method does"""
+#         site = get_current_site(request)
+#         accepted_origin = 'http:' + '//' + site.domain + reverse('sap:sign-up')
+#
+#         try:
+#             origin = request.headers['Referer']
+#
+#             if request.headers['Referer'] and origin == accepted_origin:
+#                 return render(request, self.template_name)
+#
+#             if request.user.is_authenticated:
+#                 return redirect('sap:resources')
+#
+#             return redirect('sap:home')
+#
+#         except KeyError:
+#             if request.user.is_authenticated:
+#                 return redirect('sap:resources')
+#
+#             return redirect('sap:home')
 
 
 class SignUpConfirmView(TemplateView):
@@ -421,7 +428,9 @@ class ForgotPasswordView(TemplateView):
         return redirect('sap:home')
 
     def post(self, request):
-        """Enter what this class/method does"""
+        """
+        Only if the confirmation email is successfully sent by SendGrid, ally.reset_password can be updated
+        """
         form = PasswordResetForm(request.POST)
 
         if form.is_valid():
@@ -431,73 +440,93 @@ class ForgotPasswordView(TemplateView):
 
             if len(valid_email) > 0:
                 user = valid_email[0]
-                user.is_active = False  # User needs to be inactive for the reset password duration
-                # user.profile.reset_password = True
-                user.save()
+                ally_filter = Ally.objects.filter(user=user)
 
-                message_body = render_to_string('sap/password-forgot-mail.html', {
-                    'user': user,
-                    'protocol': 'http',
-                    'domain': site.domain,
-                    'uid': urlsafe_base64_encode(force_bytes(user.pk)),  # encode user's primary key
-                    'token': password_reset_token.make_token(user),
-                })
+                # Can only reset forgotten password for active user and there is an ally associated with the user
+                if user.is_active and ally_filter.exists():
+                    ally = ally_filter[0]
+                    # ally.reset_password = True
+                    # ally.save()
 
-                # message_ = reverse('sap:password-forgot-confirm',
-                #                    args=[urlsafe_base64_encode(force_bytes(user.pk)),
-                #                          password_reset_token.make_token(user)])
-                #
-                # message_body = 'http:' + '//' + site.domain + message_
+                    message_body = render_to_string('sap/password-forgot-mail.html', {
+                        'user': user,
+                        'protocol': 'http',
+                        'domain': site.domain,
+                        'uid': urlsafe_base64_encode(force_bytes(user.pk)),  # encode user's primary key
+                        'token': password_reset_token.make_token(user),
+                    })
 
-                email_content = Mail(
-                    from_email="iba@uiowa.edu",
-                    to_emails=entered_email,
-                    subject='Reset Password for Science Alliance Portal',
-                    html_content=message_body)
+                    # message_ = reverse('sap:password-forgot-confirm',
+                    #                    args=[urlsafe_base64_encode(force_bytes(user.pk)),
+                    #                          password_reset_token.make_token(user)])
+                    #
+                    # message_body = 'http:' + '//' + site.domain + message_
 
-                try:
-                    sendgrid_obj = SendGridAPIClient(os.environ.get('SENDGRID_API_KEY'))
-                    sendgrid_obj.send(email_content)
+                    email_content = Mail(
+                        from_email="iba@uiowa.edu",
+                        to_emails=entered_email,
+                        subject='Reset Password for Science Alliance Portal',
+                        html_content=message_body)
 
-                except HTTPError as exception:
-                    messages.warning(self.request, str(exception))
+                    try:
+                        sendgrid_obj = SendGridAPIClient(os.environ.get('SENDGRID_API_KEY'))
+                        sendgrid_obj.send(email_content)
+
+                    except HTTPError:
+                        messages.warning(self.request,
+                                         'Please try again another time or contact team1sep@hotmail.com '
+                                         'and report this error code, HTTP401.')
+                        return redirect('sap:home')
+
+                    # this part will only be executed if try block succeed
+                    ally.reset_password = True
+                    ally.save()
+
+                    messages.info(request,
+                                  'ATTENTION REQUIRED: To finish resetting your password, '
+                                  'please follow instructions in the email we just sent you.')
+
+                    return redirect('sap:home')
 
 
-                return redirect('/password-forgot-done')
-
-            return redirect('/password-forgot-done')
+            # return redirect('/password-forgot-done')
             # return render(request, 'account/password-forgot.html', {'form': form})
+            messages.info(request,
+                          'ATTENTION REQUIRED: To finish resetting your password, '
+                          'please follow instructions in the email we just sent you.')
+            return redirect('sap:home')
 
+        # if form is not valid
         return render(request, 'sap/password-forgot.html', {'form': form})
 
 
-class ForgotPasswordDoneView(TemplateView):
-    """
-    A view which is presented if the user entered valid email in Forget Password view
-    """
-    template_name = "sap/password-forgot-done.html"
-
-    def get(self, request, *args, **kwargs):
-        """Enter what this class/method does"""
-        site = get_current_site(request)
-        accepted_origin = 'http:' + '//' + site.domain + reverse('sap:password-forgot')
-
-        try:
-            origin = request.headers['Referer']
-
-            if request.headers['Referer'] and origin == accepted_origin:
-                return render(request, self.template_name)
-
-            if request.user.is_authenticated:
-                return redirect('sap:resources')
-
-            return redirect('sap:home')
-
-        except KeyError:
-            if request.user.is_authenticated:
-                return redirect('sap:resources')
-
-            return redirect('sap:home')
+# class ForgotPasswordDoneView(TemplateView):
+#     """
+#     A view which is presented if the user entered valid email in Forget Password view
+#     """
+#     template_name = "sap/password-forgot-done.html"
+#
+#     def get(self, request, *args, **kwargs):
+#         """Enter what this class/method does"""
+#         site = get_current_site(request)
+#         accepted_origin = 'http:' + '//' + site.domain + reverse('sap:password-forgot')
+#
+#         try:
+#             origin = request.headers['Referer']
+#
+#             if request.headers['Referer'] and origin == accepted_origin:
+#                 return render(request, self.template_name)
+#
+#             if request.user.is_authenticated:
+#                 return redirect('sap:resources')
+#
+#             return redirect('sap:home')
+#
+#         except KeyError:
+#             if request.user.is_authenticated:
+#                 return redirect('sap:resources')
+#
+#             return redirect('sap:home')
 
 
 class ForgotPasswordConfirmView(TemplateView):
@@ -508,7 +537,10 @@ class ForgotPasswordConfirmView(TemplateView):
 
     # template_name = "sap/password-forgot-confirm.html"
     def get(self, request, **kwargs):
-        """Enter what this class/method does"""
+        """
+        Can only access this page is user is active and ally.reset_password = True
+        """
+
         path = request.path
         path_1, token = os.path.split(path)
 
@@ -520,23 +552,33 @@ class ForgotPasswordConfirmView(TemplateView):
         try:
             uid = force_text(urlsafe_base64_decode(uidb64))
             user = User.objects.get(pk=uid)
+            ally = Ally.objects.get(user=user)
         except (TypeError, ValueError, OverflowError, User.DoesNotExist) as exception:
             messages.warning(request, str(exception))
             user = None
+            ally = None
 
-        if user is not None and password_reset_token.check_token(user, token):
-            context = {
-                'form': UserResetForgotPasswordForm(user),
-                'uid': uidb64,
-                'token': token
-            }
-            return render(request, 'sap/password-forgot-confirm.html', context)
+        if user is not None and ally is not None and password_reset_token.check_token(user, token):
+            if user.is_active and ally.reset_password:
+                context = {
+                    'form': UserResetForgotPasswordForm(user),
+                    'uid': uidb64,
+                    'token': token
+                }
+                return render(request, 'sap/password-forgot-confirm.html', context)
+
+            if user.is_active and not ally.reset_password:
+                messages.error(request, 'Password reset link is expired. Please request a new password reset.')
+                return redirect('sap:home')
 
         messages.error(request, 'Password reset link is invalid. Please request a new password reset.')
         return redirect('sap:home')
 
     def post(self, request, **kwargs):
-        """Enter what this class/method does"""
+        """
+        Submit a new password
+        Also check if ally.reset_password=True before proceeding
+        """
         path = request.path
         path_1, token = os.path.split(path)
 
@@ -548,30 +590,36 @@ class ForgotPasswordConfirmView(TemplateView):
         try:
             uid = force_text(urlsafe_base64_decode(uidb64))
             user = User.objects.get(pk=uid)
+            ally = Ally.objects.get(user=user)
         except (TypeError, ValueError, OverflowError, User.DoesNotExist) as exception:
             messages.warning(request, str(exception))
             user = None
+            ally = None
 
-        if user is not None and password_reset_token.check_token(user, token):
-            form = UserResetForgotPasswordForm(user=user, data=request.POST)
-            if form.is_valid():
-                form.save()
-                update_session_auth_hash(request, form.user)
+        if user is not None and ally is not None and password_reset_token.check_token(user, token):
+            if user.is_active and ally.reset_password:
+                form = UserResetForgotPasswordForm(user=user, data=request.POST)
+                if form.is_valid():
+                    form.save()
+                    update_session_auth_hash(request, form.user)
 
-                user.is_active = True
-                # user.profile.reset_password = False
-                user.save()
-                messages.success(request, 'New Password Created Successfully!')
+                    ally.reset_password = False
+                    ally.save()
+                    messages.success(request, 'New Password Created Successfully!')
+                    return redirect('sap:home')
+
+                # else part
+                context = {
+                    'form': UserResetForgotPasswordForm(user),
+                    'uid': uidb64,
+                    'token': token
+                }
+                messages.error(request, 'Password does not meet requirements.')
+                return render(request, 'sap/password-forgot-confirm.html', context)
+
+            if user.is_active and not ally.reset_password:
+                messages.error(request, 'Password reset link is expired. Please request a new password reset.')
                 return redirect('sap:home')
-
-            # else part
-            context = {
-                'form': UserResetForgotPasswordForm(user),
-                'uid': uidb64,
-                'token': token
-            }
-            messages.error(request, 'Password does not meet requirements.')
-            return render(request, 'sap/password-forgot-confirm.html', context)
 
         messages.error(request, 'Password reset link is invalid. Please request a new password reset.')
         return redirect('sap:home')

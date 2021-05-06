@@ -94,7 +94,7 @@ class SignUpTests(TestCase):
         Ally.objects.create(user=self.user,
                             user_type=['Graduate Student'],
                             hawk_id=self.user.username,
-                            area_of_research=['Biochemistry'],
+                            area_of_research=['Chemistry'],
                             interested_in_mentoring=False,
                             willing_to_offer_lab_shadowing=False,
                             interested_in_connecting_with_other_mentors=False,
@@ -129,7 +129,7 @@ class SignUpTests(TestCase):
             }
         )
         url = response.url
-        self.assertEqual(url, '/sign-up-done/')
+        self.assertEqual(url, '/')
         self.assertEqual(self.user.is_active, False)
         self.assertEqual(response.status_code, HTTPStatus.FOUND)
 
@@ -144,11 +144,11 @@ class SignUpTests(TestCase):
                             user_type=['Graduate Student'],
                             hawk_id=self.user.username,
                             area_of_research=['Biochemistry'],
-                            interested_in_mentoring=False,
+                            interested_in_mentoring=True,
                             willing_to_offer_lab_shadowing=False,
                             interested_in_connecting_with_other_mentors=False,
                             willing_to_volunteer_for_events=False,
-                            interested_in_mentor_training=True)
+                            interested_in_mentor_training=False)
         self.user.save()
         self.client.logout()
         response = self.client.post(
@@ -157,8 +157,8 @@ class SignUpTests(TestCase):
                 'csrfmiddlewaretoken': ['MIyNUVJILbLGKrHXjz4m4fWt4d13TUOkkvRtCpStSmxkW8PKomuz3ESTYF8VVQil'],
                 'firstName': ['Elias'],
                 'lastName': ['Shaeffer'],
-                'new_username': ['admin1'],
-                'new_email': self.user_active.email,
+                'new_username': self.user_active.username,
+                'new_email': self.user.email,
                 'new_password': self.password,
                 'repeat_password': self.password,
                 'roleSelected': ['Graduate Student'],
@@ -193,8 +193,8 @@ class SignUpTests(TestCase):
                             area_of_research=['Biochemistry'],
                             interested_in_mentoring=False,
                             willing_to_offer_lab_shadowing=False,
-                            interested_in_connecting_with_other_mentors=False,
-                            willing_to_volunteer_for_events=False,
+                            interested_in_connecting_with_other_mentors=True,
+                            willing_to_volunteer_for_events=True,
                             interested_in_mentor_training=True)
         self.user.save()
         self.client.logout()
@@ -242,7 +242,7 @@ class SignUpTests(TestCase):
                             willing_to_offer_lab_shadowing=False,
                             interested_in_connecting_with_other_mentors=False,
                             willing_to_volunteer_for_events=False,
-                            interested_in_mentor_training=True)
+                            interested_in_mentor_training=False)
         self.user.save()
         self.client.logout()
         response = self.client.post(
@@ -370,7 +370,7 @@ class SignUpTests(TestCase):
             }
         )
         url = response.url
-        self.assertEqual(url, '/sign-up-done/')
+        self.assertEqual(url, '/')
         self.assertEqual(response.status_code, 302)
         user = User.objects.filter(username="zeeahmed1")
         ally = Ally.objects.filter(user_id=user[0].id)
@@ -411,7 +411,7 @@ class SignUpTests(TestCase):
             }
         )
         url = response.url
-        self.assertEqual(url, '/sign-up-done/')
+        self.assertEqual(url, '/')
         self.assertEqual(response.status_code, 302)
         user = User.objects.filter(username="zeeahmed1")
         ally = Ally.objects.filter(user_id=user[0].id)
@@ -456,7 +456,7 @@ class SignUpTests(TestCase):
             }
         )
         url = response.url
-        self.assertEqual(url, '/sign-up-done/')
+        self.assertEqual(url, '/')
         self.assertEqual(response.status_code, 302)
         user = User.objects.filter(username="zeeahmed1")
         ally = Ally.objects.filter(user_id=user[0].id)
@@ -509,7 +509,7 @@ class SignUpTests(TestCase):
             }
         )
         url = response.url
-        self.assertEqual(url, '/sign-up-done/')
+        self.assertEqual(url, '/')
         self.assertEqual(response.status_code, 302)
         user = User.objects.filter(username="big_guy1")
         ally = Ally.objects.filter(user_id=user[0].id)
@@ -551,7 +551,7 @@ class SignUpTests(TestCase):
             }
         )
         url = response.url
-        self.assertEqual(url, '/sign-up-done/')
+        self.assertEqual(url, '/')
         self.assertEqual(response.status_code, 302)
         user1 = User.objects.filter(username="zeeahmed")
         ally1 = Ally.objects.filter(user_id=user1[0].id)
@@ -592,7 +592,7 @@ class SignUpTests(TestCase):
             }
         )
         url = response.url
-        self.assertEqual(url, '/sign-up-done/')
+        self.assertEqual(url, '/')
         self.assertEqual(response.status_code, 302)
         user = User.objects.filter(username="big_guy1")
         ally = Ally.objects.filter(user_id=user[0].id)
@@ -625,7 +625,7 @@ class SignUpTests(TestCase):
             }
         )
         url = response.url
-        self.assertEqual(url, '/sign-up-done/')
+        self.assertEqual(url, '/')
         self.assertEqual(response.status_code, 302)
         user = User.objects.filter(username="big_guy12")
         ally = Ally.objects.filter(user_id=user[0].id)
@@ -670,8 +670,8 @@ class SignUpTests(TestCase):
                             hawk_id=self.user.username,
                             area_of_research=['Biochemistry'],
                             interested_in_mentoring=False,
-                            willing_to_offer_lab_shadowing=False,
-                            interested_in_connecting_with_other_mentors=False,
+                            willing_to_offer_lab_shadowing=True,
+                            interested_in_connecting_with_other_mentors=True,
                             willing_to_volunteer_for_events=False,
                             interested_in_mentor_training=True)
         self.user.save()
@@ -692,12 +692,12 @@ class SignUpTests(TestCase):
         Ally.objects.create(user=self.user,
                             user_type=['Graduate Student'],
                             hawk_id=self.user.username,
-                            area_of_research=['Biochemistry'],
+                            area_of_research=['Biology'],
                             interested_in_mentoring=False,
                             willing_to_offer_lab_shadowing=False,
                             interested_in_connecting_with_other_mentors=False,
                             willing_to_volunteer_for_events=False,
-                            interested_in_mentor_training=True)
+                            interested_in_mentor_training=False)
         self.user.save()
         self.client.logout()
 
@@ -720,9 +720,9 @@ class SignUpTests(TestCase):
                             user_type=['Graduate Student'],
                             hawk_id=self.user.username,
                             area_of_research=['Biochemistry'],
-                            interested_in_mentoring=False,
+                            interested_in_mentoring=True,
                             willing_to_offer_lab_shadowing=False,
-                            interested_in_connecting_with_other_mentors=False,
+                            interested_in_connecting_with_other_mentors=True,
                             willing_to_volunteer_for_events=False,
                             interested_in_mentor_training=True)
         self.user.save()
@@ -740,69 +740,69 @@ class SignUpTests(TestCase):
         request = self.client.get(link)
         self.assertEqual(request.status_code, HTTPStatus.FOUND)
 
-class SignUpDoneViewTests(TestCase):
-    """
-    Unit tests for SignUpDoneView
-    """
-    def setUp(self):
-        self.username = 'admin1'
-        self.username_active = 'user_active1'
-        self.password = 'admin_password12'
-        self.email = 'email1@test.com'
-        self.active_email = 'email_active1@test.com'
-        self.user = User.objects.create_user(username=self.username, email=self.email, password=self.password)
-        self.user_active = User.objects.create_user(username=self.username_active, email=self.active_email,
-                                                    password=self.password,
-                                                    is_active=True)
-        self.client = Client()
-
-    def test_if_user_come_from_signup(self):
-        """
-        If user comes from sign-up, redirect to the page
-        """
-        response = self.client.post(
-            '/sign-up/',
-            {
-                'csrfmiddlewaretoken': ['K5dFCUih0K6ZYklAemhvIWSpCebK86zdx4ric6ucIPLUQhAdtdT7hhp4r5etxoJY'],
-                'firstName': ['hawk'],
-                'lastName': ['herky'],
-                'new_username': ['hawkherky'],
-                'new_email': ['hawkherky@uiowa.edu'],
-                'new_password': self.password,
-                'repeat_password': self.password,
-                'roleSelected': ['Graduate Student'],
-                'research-des': ['research'],
-                'openingRadios': ['No'], 'mentoringRadios': ['No'], 'connectingWithMentorsRadios': ['Yes'],
-                'studentsInterestedRadios': ['No'], 'labShadowRadios': ['Yes'],
-                'volunteerRadios': ['Yes'], 'trainingRadios': ['Yes'], 'howCanWeHelp': ['no']
-            }
-        )
-
-        # response2 = response
-        url = response.url
-        self.assertEqual(url, '/sign-up-done/')
-        self.assertEqual(response.status_code, 302)
-
-    def test_signup_if_user_is_authenticated(self):
-        """
-        If user is authenticated
-        """
-        self.client.login(username=self.username, password=self.password)
-        response = self.client.get(reverse('sap:sign-up-done'))
-        self.assertEqual(response.status_code, 302)
-
-    def test_signup_if_keyerror(self):
-        """
-        If keyerror
-        """
-        self.client.logout()
-        response = self.client.get(reverse('sap:sign-up-done'))
-        self.assertEqual(response.status_code, 302)
-
-    def test_signup_if_keyerror_and_is_authenticated(self):
-        """
-        If keyerror and is_authenticated
-        """
-        self.client.login(username=self.username, password=self.password)
-        response = self.client.get(reverse('sap:sign-up-done'))
-        self.assertEqual(response.status_code, 302)
+# class SignUpDoneViewTests(TestCase):
+#     """
+#     Unit tests for SignUpDoneView
+#     """
+#     def setUp(self):
+#         self.username = 'admin1'
+#         self.username_active = 'user_active1'
+#         self.password = 'admin_password12'
+#         self.email = 'email1@test.com'
+#         self.active_email = 'email_active1@test.com'
+#         self.user = User.objects.create_user(username=self.username, email=self.email, password=self.password)
+#         self.user_active = User.objects.create_user(username=self.username_active, email=self.active_email,
+#                                                     password=self.password,
+#                                                     is_active=True)
+#         self.client = Client()
+#
+#     def test_if_user_come_from_signup(self):
+#         """
+#         If user comes from sign-up, redirect to the page
+#         """
+#         response = self.client.post(
+#             '/sign-up/',
+#             {
+#                 'csrfmiddlewaretoken': ['K5dFCUih0K6ZYklAemhvIWSpCebK86zdx4ric6ucIPLUQhAdtdT7hhp4r5etxoJY'],
+#                 'firstName': ['hawk'],
+#                 'lastName': ['herky'],
+#                 'new_username': ['hawkherky'],
+#                 'new_email': ['hawkherky@uiowa.edu'],
+#                 'new_password': self.password,
+#                 'repeat_password': self.password,
+#                 'roleSelected': ['Graduate Student'],
+#                 'research-des': ['research'],
+#                 'openingRadios': ['No'], 'mentoringRadios': ['No'], 'connectingWithMentorsRadios': ['Yes'],
+#                 'studentsInterestedRadios': ['No'], 'labShadowRadios': ['Yes'],
+#                 'volunteerRadios': ['Yes'], 'trainingRadios': ['Yes'], 'howCanWeHelp': ['no']
+#             }
+#         )
+#
+#         # response2 = response
+#         url = response.url
+#         self.assertEqual(url, '/sign-up-done/')
+#         self.assertEqual(response.status_code, 302)
+#
+#     def test_signup_if_user_is_authenticated(self):
+#         """
+#         If user is authenticated
+#         """
+#         self.client.login(username=self.username, password=self.password)
+#         response = self.client.get(reverse('sap:sign-up-done'))
+#         self.assertEqual(response.status_code, 302)
+#
+#     def test_signup_if_keyerror(self):
+#         """
+#         If keyerror
+#         """
+#         self.client.logout()
+#         response = self.client.get(reverse('sap:sign-up-done'))
+#         self.assertEqual(response.status_code, 302)
+#
+#     def test_signup_if_keyerror_and_is_authenticated(self):
+#         """
+#         If keyerror and is_authenticated
+#         """
+#         self.client.login(username=self.username, password=self.password)
+#         response = self.client.get(reverse('sap:sign-up-done'))
+#         self.assertEqual(response.status_code, 302)
