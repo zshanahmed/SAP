@@ -528,21 +528,30 @@
         </div>
         <div class="py-1"><strong>How can science alliance serve you?</strong></div>
         <input name="howCanWeHelp" type="text" class="form-control form-control-user" id="howHelp" value='{{ ally.how_can_science_ally_serve_you }}'>
-        {% if mentees %}
-            <div class="row mt-2">
-              <div class="col-md-5">
-                <h5 class="m-0 font-weight-bold text-primary">Mentees:</h5>
-              </div>
-              <div class="col-md-6">
+        {% if not req.is_staff%}
+            {% if mentees %}
+                <div class="py-1">
+                <div class="row mt-2">
+                  <div class="col-md-5">
+                    <h5 class="m-0 font-weight-bold text-primary">Mentees:</h5>
+                  </div>
+                </div>
+                <div class="row mt-2"></div>
                 {% for mentee in mentees %}
-                    <div>
-                    <a href="{% url 'sap:admin_view_ally' mentee.user.username %}">
-                      {{ mentee.user.first_name }} {{ mentee.user.last_name }}
-                    </a>
+                    <div class="row mt-2">
+                        <div class="px-3">
+                            <span><strong>
+                              {{ mentee.user.first_name }} {{ mentee.user.last_name }}
+                            </strong><span>
+                            &emsp;
+                            <a class="btn btn-danger btn-sm" href="{% url 'sap:delete_mentee' mentee.user.username %}">
+                                <i class="fa fa-trash"></i>
+                            </a>
+                        </div>
                     </div>
                 {% endfor %}
-              </div>
-            </div>
+                </div>
+            {% endif %}
         {% endif %}
     </div>
 
@@ -778,22 +787,29 @@
                   </div>
                 </div>
           {% endif %}
-          {% if mentees %}
-            <div class="row mt-2">
-              <div class="col-md-5">
-                <h5 class="m-0 font-weight-bold text-primary">Mentees:</h5>
-              </div>
-              <div class="col-md-6">
+            {% if mentees %}
+                <div class="py-1">
+                <div class="row mt-2">
+                  <div class="col-md-5">
+                    <h5 class="m-0 font-weight-bold text-primary">Mentees:</h5>
+                  </div>
+                </div>
+                <div class="row mt-2"></div>
                 {% for mentee in mentees %}
-                    <div>
-                    <a href="{% url 'sap:admin_view_ally' mentee.user.username %}">
-                      {{ mentee.user.first_name }} {{ mentee.user.last_name }}
-                    </a>
+                    <div class="row mt-2">
+                        <div class="px-3">
+                            <span><strong>
+                              {{ mentee.user.first_name }} {{ mentee.user.last_name }}
+                            </strong><span>
+                            &emsp;
+                            <a class="btn btn-danger btn-sm" href="{% url 'sap:delete_mentee' mentee.user.username %}">
+                                <i class="fa fa-trash"></i>
+                            </a>
+                        </div>
                     </div>
                 {% endfor %}
-              </div>
-            </div>
-          {% endif %}
+                </div>
+            {% endif %}
         {% endif %}
     </div>
 

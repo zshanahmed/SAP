@@ -150,4 +150,10 @@ urlpatterns = [
 
     url(r'delete_mentee/(?P<mentee_username>[\w\s-]+)/(?P<context>[\w\s-]+)$',
         login_required(sap.views_v3.MentorshipView.delete_mentee_mentor), name='delete_mentee'),
+
+    url(r'delete_mentor/(?P<mentor_username>[\w\s-]+)$',
+        login_required(sap.views_v3.MentorshipView.delete_mentor_mentee), name='delete_mentor'),
+
+    url(r'delete_mentee/(?P<mentee_username>[\w\s-]+)$',
+        login_required(sap.views_v3.MentorshipView.delete_mentee_mentor), name='delete_mentee'),
 ]

@@ -698,7 +698,7 @@ class MentorshipView(View):
             messages.warning(request, 'Mentor relationship does not exist!')
         if context == 'notification':
             return redirect('sap:notification_center')
-        return redirect(reverse('sap:admin_view_ally', args=[mentor_username]))
+        return redirect(reverse('sap:admin_edit_ally', args=[request.user.username]))
 
     @staticmethod
     def delete_mentee_mentor(request, mentee_username='', context=''):
@@ -721,5 +721,5 @@ class MentorshipView(View):
             messages.warning(request, 'Mentee Relationship does not exist!')
         if context == 'notification':
             return redirect('sap:notification_center')
-        return redirect(reverse('sap:admin_view_ally', args=[mentee_username]))
+        return redirect(reverse('sap:admin_edit_ally', args=[request.user.username]))
 

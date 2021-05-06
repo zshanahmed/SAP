@@ -465,11 +465,17 @@ class MentorsListView(generic.ListView):
             user_ally = Ally.objects.get(user=request.user)
         except ObjectDoesNotExist:
             return HttpResponseNotFound
+        try:
+            mentor = AllyMentorRelation.objects.get(ally_id=user_ally.id)
+            mentor = Ally.objects.get(id=mentor.mentor_id)
+        except ObjectDoesNotExist:
+            mentor = None
         for ally in allies_list:
             if ally.user.is_active:
                 if not ally.user.is_active:
                     allies_list = allies_list.exclude(id=ally.id)
-        return render(request, 'sap/dashboard_ally.html', {'allies_list': allies_list, 'user_ally': user_ally})
+        return render(request, 'sap/dashboard_ally.html', {'allies_list': allies_list,
+                                                           'user_ally': user_ally, 'mentor': mentor})
 
     def post(self, request):
         """Returns filtered version of allies on the dashboard"""
