@@ -1,20 +1,16 @@
 {% autoescape off %}
 <h3>
-    Hello {{ user.get_username }},
+    Hello SAP developers,
 </h3>
 
-You received this email because you requested to reset your forgot password.
+We just got a feedback from a valued customer. Read below:
 <br><br>
-To initiate the password reset process for your account on {{ domain }},
-click the link below:
+Username: {{ user.get_username }}
 <br><br>
-If clicking the link does not work, please try to copy and paste it in your browser.
+Email address to contact: {{ email_to_contact }}.
+<br><br>
+Message:
 {{ message }}
 <br><br>
-If you do not want to change your password, please ignore this email.
-<br><br>
-Best wishes,
-<br><br>
-IBA team
 
 {% endautoescape %}

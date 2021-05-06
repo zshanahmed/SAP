@@ -4,7 +4,6 @@ views_v3 has functions that are mapped to the urls in urls.py
 import os
 from shutil import move
 
-from django.contrib.sites.shortcuts import get_current_site
 from django.template.loader import render_to_string
 from notifications.models import Notification
 from django.core.files.storage import FileSystemStorage
@@ -598,15 +597,14 @@ class FeedbackView(View):
 
         post_dict = dict(request.POST)
 
+        user = request.user
         email_user = post_dict["email_address"][0]
         message = post_dict["message"][0]
-        site = get_current_site(request)
 
         message_body = render_to_string('sap/feedback-mail.html', {
             'email_to_contact': email_user,
             'message': message,
-            'protocol': 'http',
-            'domain': site.domain,
+            'user': user,
         })
 
         email_content = Mail(
