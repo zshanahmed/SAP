@@ -151,11 +151,12 @@
                     {% if req.is_staff %}
                         <div class="row mt-2"></div>
                         <div class="py-1">
-                            {% if ally.user_type == 'Undergraduate Student' and not mentor %}
+                            {% if ally.user_type == 'Undergraduate Student' and not mentor and ally.interested_in_being_mentored%}
                                 <a class="btn btn-dark" href="{% url 'sap:admin_add_mentor_mentee' ally.user.username 'addMentor'%}">
                                         Add Mentor
                                 </a>
                             {% endif %}
+                            {% if ally.interested_in_mentoring %}
                             <a class="btn btn-success" href="{% url 'sap:admin_add_mentor_mentee' ally.user.username 'addMentee'%}">
                                 Add Mentee(s)
                             </a>
