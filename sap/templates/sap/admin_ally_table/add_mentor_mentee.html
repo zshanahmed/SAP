@@ -1,0 +1,61 @@
+{% extends 'sap/base.html' %}
+{% load static %}
+
+{% block title %} Admin Add ally/mentor {% endblock title %}
+
+{% block content %}
+    <body class="bg-gradient-primary">
+        <div class="container">
+          <div class="card o-hidden border-0 shadow-lg my-5">
+            <div class="card-body p-5">
+                {% if context == 'addMentee'%}
+                    <h1 class="h3 mb-0 text-gray-800">Choose Mentee(s) for {{ally_to_change.user.username}}</h1>
+                {% else %}
+                    <h1 class="h3 mb-0 text-gray-800">Choose Mentor for {{ally_to_change.user.username}}</h1>
+                {% endif %}
+              <hr/>
+                <div class="table-responsive">
+                    {% if allies %}
+                        <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>User Type</th>
+                                    <th>Stem AOR</th>
+                                    <th></th>
+                                 </tr>
+                            </thead>
+                            <tfoot>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>User Type</th>
+                                    <th>Stem AOR</th>
+                                    <th></th>
+                                </tr>
+                            </tfoot>
+                          <tbody>
+                          {% for ally in allies %}
+                            <tr>
+                              <td>{{ally.user.first_name}} {{ally.user.last_name}}</td>
+                              <td>{{ally.user_type}}</td>
+                              <td>{{event.area_of_research}}</td>
+                              <td></td>
+                            </tr>
+                          {% endfor %}
+                          </tbody>
+                        </table>
+                    {% else %}
+                        <strong> No Allies are available to mentor/mentee </strong>
+                    {% endif %}
+              <hr/>
+              <div class = "row mt-2"></div>
+              <a href="{% url 'sap:admin_edit_ally' ally_to_change.user.username %}" class="btn btn-primary btn-user">Back to Edit Profile</a>
+              <a href="/dashboard" class="btn btn-primary btn-user"> Back to Dashboard</a>
+              <br>
+            </div>
+          </div>
+        </div>
+        </div>
+    </body>
+{% endblock content %}
+

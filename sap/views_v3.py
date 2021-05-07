@@ -591,6 +591,32 @@ class EditEventView(View, AccessMixin):
 
 class MentorshipView(View):
     @staticmethod
+    def get(request, ally_username='', context=''):
+        """
+        Render a template that allows you to manually set the ally mentor mentee relationships as an admin
+        """
+        if not request.user.is_staff:
+            return HttpResponseForbidden
+        all_allies = Ally.objects.all()
+        try:
+            ally_to_change = User.objects.get(username=ally_username)
+            ally_to_change = Ally.objects.get(user=ally_to_change)
+            if context == 'addMentor':
+                allies_of_interest = all_allies.filter(interested_in_mentoring=True)
+            else:
+                context = 'addMentee'
+                allies_of_interest = all_allies.filter(interested_in_being_mentored=True)
+            return render(request, 'sap/admin_ally_table/add_mentor_mentee.html', {
+                'allies': allies_of_interest,
+                'req': request.user,
+                'ally_to_change': ally_to_change,
+                'context': context,
+            })
+        except ObjectDoesNotExist:
+            messages.warning(request, 'Ally Does Not Exist!')
+            return redirect('sap:sap-dashboard')
+
+    @staticmethod
     def make_mentee_notification(request, mentee_requested_username=''):
         """
         Makes a notification from a mentor to a mentee that asks them to become their mentee
