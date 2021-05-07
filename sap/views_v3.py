@@ -606,6 +606,9 @@ class MentorshipView(View):
             else:
                 context = 'addMentee'
                 allies_of_interest = all_allies.filter(interested_in_being_mentored=True)
+                takenMentees = AllyMentorRelation.objects.all()
+                for mentee in takenMentees:
+                    allies_of_interest = allies_of_interest.exclude(id=mentee.ally_id)
             allies = []
             for ally in allies_of_interest:
                 if ally.user.is_active:
@@ -769,3 +772,23 @@ class MentorshipView(View):
         except ObjectDoesNotExist:
             messages.warning(request, "Mentee Mentor Relationship Not Found!")
         return redirect(reverse('sap:admin_edit_ally', args=[mentee_username]))
+
+    @staticmethod
+    def add_mentor_as_admin(request, mentor_username, mentee_username):
+        """
+        add mentor mentee pair as an admin
+        """
+        if not request.user.is_staff:
+            return HttpResponseForbidden
+        try:
+            mentee = User.objects.get(username=mentee_username)
+            mentee = Ally.objects.get(user=mentee)
+            mentor = User.objects.get(username=mentor_username)
+            mentor = Ally.objects.get(user=mentor)
+            add_mentor_relation(mentee.id, mentor.id)
+            add_mentee_relation(mentor.id, mentee.id)
+            messages.success(request, "Mentor Added!")
+        except ObjectDoesNotExist:
+            messages.warning(request, "Ally Not Found!")
+        except IntegrityError:
+            messages.warning(request, "Mentee already has mentor!")

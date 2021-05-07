@@ -161,5 +161,8 @@ urlpatterns = [
         login_required(sap.views_v3.MentorshipView.delete_relation_as_admin), name='admin_delete_mentor_mentee'),
 
     url(r'admin_add_mentor_mentee/(?P<ally_username>[\w\s-]+)/(?P<context>[\w\s-]+)$',
-        login_required(sap.views_v3.MentorshipView.as_view()), name='admin_add_mentor_mentee')
+        login_required(sap.views_v3.MentorshipView.as_view()), name='admin_add_mentor_mentee'),
+
+    url(r'admin_add_mentor/(?P<mentor_username>[\w\s-]+)/(?P<mentee_username>[\w\s-]+)$',
+        login_required(sap.views_v3.MentorshipView.add_mentor_as_admin), name='admin_add_mentor'),
 ]

@@ -40,7 +40,11 @@
                               <td>{{ally.user.first_name}} {{ally.user.last_name}}</td>
                               <td>{{ally.user_type}}</td>
                               <td>{{event.area_of_research}}</td>
-                              <td></td>
+                              <td>
+                                  {% if not context == 'addMentee' %}
+
+                                  {% endif %}
+                              </td>
                             </tr>
                           {% endfor %}
                           </tbody>
