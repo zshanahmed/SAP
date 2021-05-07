@@ -748,8 +748,15 @@ class UploadAllies(AccessMixin, HttpResponse):
             data_frame[boolFields] = data_frame[boolFields].fillna(value=False)
             data_frame[boolFields] = data_frame[boolFields].replace('Yes (Yes)', True)
             data_frame[boolFields] = data_frame[boolFields].replace('No (No)', False)
+            data_frame['interested_in_being_mentored'] = False
             data_frame['interested_in_mentoring'] = False
+            data_frame['Year'] = data_frame['Year'].replace(regex=r'\s\([^)]*\)', value='')
+            data_frame['Year'] = data_frame['Year'].replace(regex=r'Sophmore', value='Sophomore')
             for i in range(0, len(data_frame)):
+                year = data_frame['Year'][i]
+                if year in ('Freshman', 'Sophomore'):
+                    data_frame['interested_in_being_mentored'][i] = data_frame['Are you interested in becoming a peer mentor?'][i] or \
+                                                                    data_frame['Are you interested in mentoring students?'][i]
                 data_frame['interested_in_mentoring'][i] = data_frame['Are you interested in becoming a peer mentor?'][i] or \
                                                            data_frame['Are you interested in mentoring students?'][i]
             data_frame = data_frame.drop(['Are you interested in becoming a peer mentor?',
@@ -774,7 +781,6 @@ class UploadAllies(AccessMixin, HttpResponse):
             data_frame['STEM Area of Research'] = data_frame['STEM Area of Research'].replace(regex=[r'\n'], value=',')
             data_frame['STEM Area of Research'] = data_frame['STEM Area of Research'].replace(regex=[r'\s\([^)]*\)'], value='')
             data_frame['University Type'] = data_frame['University Type'].replace(regex=[r'\s\([^)]*\)', '/Post-doc'], value='')
-            data_frame['Year'] = data_frame['Year'].replace(regex=r'\s\([^)]*\)', value='')
             data_frame = data_frame.rename({'STEM Area of Research': 'area_of_research',
                                             'University Type': 'user_type',
                                             'Please provide a short description of the type of research done by undergrads':
@@ -804,7 +810,6 @@ class UploadAllies(AccessMixin, HttpResponse):
                              "Initiator is present"
             return data_frame, errorlog
         data_frame['information_release'] = False
-        data_frame['interested_in_being_mentored'] = False
         data_frame['is_active'] = True
         data_frame['works_at'] = ''
         data_frame['last_login'] = ''
@@ -955,7 +960,7 @@ class UploadAllies(AccessMixin, HttpResponse):
 
     @staticmethod
     def upload_allies(request):
-        """Enter what this class/method does"""
+        """Uploads allies if they match the requested format and returns a log of users added and errors encountered"""
         if request.user.is_staff:
             try:
                 file = request.FILES['file']

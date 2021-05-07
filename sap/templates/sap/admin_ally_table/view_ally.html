@@ -267,6 +267,21 @@
           <div class = "row mt-2"></div>
           <div class="row">
             <div class="col-md-5">
+              <h5 class="m-0 font-weight-bold text-primary">
+                Interested in Mentoring:
+              </h5>
+            </div>
+            <div class="col-md-6">
+              {% if ally.interested_in_mentoring %}
+              <i class="fa fa-check" style="color: green"></i>
+              {% else %}
+              <i class="fa fa-times" style="color: red"></i>
+              {% endif %}
+            </div>
+          </div>
+          <div class = "row mt-2"></div>
+          <div class="row">
+            <div class="col-md-5">
               <h5 class="m-0 font-weight-bold text-primary">Interested in Joining Lab:</h5>
             </div>
             <div class="col-md-6">

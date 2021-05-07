@@ -34,7 +34,7 @@
                             </tr>
                         </tfoot>
                         <tbody>
-                            {% for ally in allies_list %}
+                            {% for ally, has_mentor in allies_list.items %}
                                 <!-- Logout Modal-->
                                 <div class="modal fade" id="delAllyModal" tabindex="-1" role="dialog" aria-labelledby="delAllyModalLabel" aria-hidden="true">
                                     <div class="modal-dialog" role="document">
@@ -55,7 +55,6 @@
                                       </div>
                                     </div>
                                   </div>
-
                                 <tr>
                                     <td style="text-align:center">{{ ally.user.first_name }} {{ally.user.last_name}}</td>
                                     <td style="text-align:center">{{ ally.user_type }}</td>
@@ -88,13 +87,31 @@
                                                     <a href="{% url 'sap:admin_edit_ally' ally.user.username %}" class="btn btn-success btn-sm" type="button" data-toggle="tooltip" data-placement="top"
                                                         title="Edit"><i class="fa fa-edit"></i></a>
                                                     </li>
+                                                {% else %}
+                                                    {% if user_ally.user_type == "Undergraduate Student" %}
+                                                        {% if user_ally.interested_in_being_mentored and ally.interested_in_mentoring and not mentor%}
+                                                            <li class="list-inline-item">
+                                                                <a href="{% url 'sap:notify_mentor' ally.user.username %}" class="btn btn-danger btn-sm" type="button" data-toggle="tooltip" data-placement="top"
+                                                                    title="Ask to be Mentee">
+                                                                    <i class="fa fa-child"></i>
+                                                                </a>
+                                                            </li>
+                                                        {% endif %}
+                                                    {% endif %}
+                                                    {% if user_ally.interested_in_mentoring and ally.interested_in_being_mentored  and not has_mentor %}
+                                                        <li class="list-inline-item">
+                                                            <a href="{% url 'sap:notify_mentee' ally.user.username %}" class="btn btn-dark btn-sm" type="button" data-toggle="tooltip" data-placement="top"
+                                                             title="Ask to be Mentor">
+                                                             <i class="fas fa-hand-holding"></i>
+                                                            </a>
+                                                        </li>
+                                                    {% endif %}
                                                 {% endif %}
                                             {% endif %}
                                         </ul>
                                     </td>
                                 </tr>
                             {% endfor %}
-
                         </tbody>
                     </table>
                 {% else %}
