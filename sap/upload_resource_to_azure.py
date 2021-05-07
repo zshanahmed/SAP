@@ -43,4 +43,23 @@ def upload_file_to_azure(upload_file_name, called_by_test_function=False):
     if called_by_test_function:
         blob_client.delete_blob()
 
-    return "https://sepibafiles.blob.core.windows.net/sepibacontainer/" + upload_file_name
+    return "https://sepibafiles.blob.core.windows.net/sepibacontainer/" + file_name_on_cloud
+
+
+def delete_azure_blob(resource_url):
+    """
+
+    @param resource_url: The image url to be deleted
+    @return: True if the delete operation is successful
+    """
+    connect_str = os.getenv('AZURE_STORAGE_CONNECTION_STRING')
+
+    # Create the BlobServiceClient object which will be used to create a container client
+    blob_service_client = BlobServiceClient.from_connection_string(connect_str)
+
+    # Create a unique name for the container
+    container_name = resource_url.split('/')[-2]
+
+    blob_name = resource_url.split('/')[-1]
+    blob_client = blob_service_client.get_blob_client(container=container_name, blob=blob_name)
+    return blob_client.delete_blob(delete_snapshots="include")

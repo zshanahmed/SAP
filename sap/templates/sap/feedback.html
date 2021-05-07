@@ -1,0 +1,64 @@
+{% extends 'sap/base.html' %}
+{% load static %}
+
+{% block title %}IBA - Signup{% endblock title %}
+
+{% block content %}
+
+<body class="bg-gradient-primary">
+
+    <div class="container">
+        {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible text-center" role="alert">
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <strong>{% if message.level == DEFAULT_MESSAGE_LEVELS.ERROR %}Error{% else %}{{ message.tags|title }}{% endif %}!</strong> {{ message }}
+        </div>
+        {% endfor %}
+        {% endif %}
+
+        <div class="card o-hidden border-0 shadow-lg my-5">
+            <div class="card-body p-0">
+                <!-- Nested Row within Card Body -->
+                <div class="row">
+                    <a class="col-lg-4 d-none d-lg-block bg-scienceAlliance-image"></a>
+                    <div class="col-lg-8">
+                        <div class="p-5">
+                            <form method="post" class="user">{% csrf_token %}
+                                <div class="text-center">
+                                    <h1 class="h4 text-gray-900 mb-4">Help us improve Science Alliance Portal</h1>
+                                </div>
+
+                                <div class="form-group">
+                                    <strong>Your email address</strong>
+                                    <input name="email_address" type="email" class="form-control form-control-user"
+                                           id="email_address"
+                                           required >
+                                </div>
+
+<!--                                <div class="form-group">-->
+<!--                                    <strong>Details</strong>-->
+<!--                                    <input name="message" type="text" rows="3" class="form-control form-control-user" id="message" placeholder="Please let us know your experience using our service"  required >-->
+<!--                                </div>-->
+
+
+                                <strong>Please let us know your experience using our service</strong>
+                                <div class="form-group">
+                                    <textarea class="span6" cols="63" rows="3" id="message" name="message" required  maxlength=1000></textarea>
+                                </div>
+
+
+                                <button type="submit" formmethod="post" class="btn btn-primary btn-user btn-block mt-2" id="submit_new_ally">
+                                    Send feedback
+                                </button>
+
+                            </form>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock content %}

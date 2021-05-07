@@ -16,12 +16,17 @@ class Ally(models.Model):
         on_delete=models.CASCADE,
     )
     hawk_id = models.CharField(max_length=100)
+    image_url = models.CharField(max_length=500,
+                                 default="https://sepibafiles.blob.core.windows.net/sepibacontainer/blank-profile-picture.png")
     user_type = models.CharField(max_length=25)  # student/faculty/..
+
+    ## Additional authentication fields
+    reset_password = models.BooleanField(default=False)
 
     def __str__(self):
         return self.hawk_id
 
-    ##Grad and Faculty
+    ## Grad and Faculty
     area_of_research = models.CharField(max_length=500, null=True)
     openings_in_lab_serving_at = models.BooleanField(default=False)
     description_of_research_done_at_lab = models.CharField(max_length=500, null=True)
@@ -32,11 +37,11 @@ class Ally(models.Model):
     willing_to_volunteer_for_events = models.BooleanField(default=False)
     works_at = models.CharField(max_length=200, null=True)
 
-    ##Staff
+    ## Staff
     people_who_might_be_interested_in_iba = models.BooleanField(default=False)
     how_can_science_ally_serve_you = models.CharField(max_length=500, null=True)
 
-    ##Undergraduate
+    ## Undergraduate
     year = models.CharField(max_length=30)
     major = models.CharField(max_length=50)
     information_release = models.BooleanField(default=False)
@@ -45,6 +50,35 @@ class Ally(models.Model):
     interested_in_joining_lab = models.BooleanField(default=False)
     has_lab_experience = models.BooleanField(default=False)
 
+class AllyMentorRelation(models.Model):
+    """
+    AllyMentorRelation table is used for mapping One to One relationship between allies and their mentors
+    """
+    ally = models.OneToOneField(
+        Ally,
+        related_name='ally_mentor_relation',
+        on_delete=models.CASCADE,
+    )
+    mentor = models.ForeignKey(
+        Ally,
+        related_name='mentor',
+        on_delete=models.CASCADE,
+    )
+
+class AllyMenteeRelation(models.Model):
+    """
+    AllyMenteeRelation table is used for mapping One to Manu relationship between allies and their mentee
+    """
+    ally = models.ForeignKey(
+        Ally,
+        related_name='ally_mentee_relation',
+        on_delete=models.CASCADE,
+    )
+    mentee = models.ForeignKey(
+        Ally,
+        related_name='mentee',
+        on_delete=models.CASCADE,
+    )
 
 class StudentCategories(models.Model):
     """

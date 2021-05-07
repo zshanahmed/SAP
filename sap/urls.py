@@ -26,6 +26,7 @@ urlpatterns = [
 
     url(r'^password/$', login_required(views.ChangeAdminPassword.as_view()),
         name='change_password'),
+
     url(r'^update_profile/$', login_required(views.EditAdminProfile.as_view()),
         name='sap-admin_profile'),
 
@@ -41,10 +42,14 @@ urlpatterns = [
         login_required(views.CalendarView.as_view()),
         name='calendar'),
 
-    url(r'^delete_event/$', login_required(sap.views_v2.DeleteEventView.as_view()),
+    url(r'^feedback/$',
+        login_required(sap.views_v3.FeedbackView.as_view()),
+        name='feedback'),
+
+    url(r'^delete_event/$', login_required(sap.views_v3.DeleteEventView.as_view()),
         name='admin_delete_event'),
 
-    url(r'^edit_event/$', login_required(sap.views_v2.EditEventView.as_view()), name='edit_event'),
+    url(r'^edit_event/$', login_required(sap.views_v3.EditEventView.as_view()), name='edit_event'),
 
     url('analytics/',
         login_required(views.AnalyticsView.as_view()),
@@ -57,11 +62,8 @@ urlpatterns = [
     url(r'password-forgot/$', sap.views_v2.ForgotPasswordView.as_view(),
         name='password-forgot'),
 
-    url(r'password-forgot-done/$', sap.views_v2.ForgotPasswordDoneView.as_view(),
-        name='password-forgot-done'),
-
-    # path(r'^password-forgot-confirm/(<slug:uidb64>/<slug:token>/$', auth_views.PasswordResetConfirmView.as_view(),
-    #      name='password-forgot-confirm'),
+    # url(r'password-forgot-done/$', sap.views_v2.ForgotPasswordDoneView.as_view(),
+    #     name='password-forgot-done'),
 
     url(r'password-forgot-confirm/(?P<uidb64>[\w-]+)/(?P<token>[\w-]+)$', sap.views_v2.ForgotPasswordConfirmView.as_view(),
         name='password-forgot-confirm'),
@@ -79,8 +81,10 @@ urlpatterns = [
     url(r'^delete/$', login_required(views.DeleteAllyProfileFromAdminDashboard.as_view()),
         name='admin_delete_ally'),
 
-    url('^inbox/notifications/', include(notifications.urls, namespace='notifications')),
+    url(r'^delete_prof_pic/$', login_required(sap.views_v3.DeleteAllyProfilePic.as_view()),
+        name='admin_delete_prof_pic'),
 
+    url('^inbox/notifications/', include(notifications.urls, namespace='notifications')),
 
     url('create_iba_admin/',
         login_required(views.CreateAdminView.as_view()),
@@ -98,6 +102,14 @@ urlpatterns = [
         login_required(sap.views_v2.SignUpEventView.as_view()),
         name='signup_event'),
 
+    url(r'^deregister_event/$',
+        login_required(sap.views_v3.DeregisterEventView.as_view()),
+        name='deregister_event'),
+
+    url(r'^deregister_event/(?P<context>[\s\w-]+)/$',
+        login_required(sap.views_v3.DeregisterEventView.as_view()),
+        name='deregister_event'),
+
     url(r'^announcements/$',
         login_required(views.Announcements.as_view()),
         name='announcements'),
@@ -109,8 +121,8 @@ urlpatterns = [
     url('sign-up/', sap.views_v2.SignUpView.as_view(),
         name='sign-up'),
 
-    url(r'sign-up-done/$', sap.views_v2.SignUpDoneView.as_view(),
-        name='sign-up-done'),
+    # url(r'sign-up-done/$', sap.views_v2.SignUpDoneView.as_view(),
+    #     name='sign-up-done'),
 
     url(r'sign-up-confirm/(?P<uidb64>[\w-]+)/(?P<token>[\w-]+)$', sap.views_v2.SignUpConfirmView.as_view(),
         name='sign-up-confirm'),

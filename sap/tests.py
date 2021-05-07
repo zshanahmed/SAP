@@ -1,14 +1,17 @@
 """
 contains unit tests for sap app
 """
+import os
+from shutil import copyfile
 from http import HTTPStatus
 from django.urls import reverse
 from django.contrib.auth import get_user_model
 from django.test import TestCase, Client  # tests file
 from .models import Ally, AllyStudentCategoryRelation, StudentCategories
-
+from .upload_resource_to_azure import upload_file_to_azure
 
 User = get_user_model()
+
 
 def create_ally(username, hawk_id):
     """
@@ -32,10 +35,10 @@ class AdminAllyTableFeatureTests(TestCase):
     """
 
     def setUp(self):
-
         self.username = 'Admin_1'
         self.password = 'admin_password1'
         self.email = 'email@test.com'
+
         self.client = Client()
 
         self.user = User.objects.create_user(
@@ -70,18 +73,18 @@ class AdminAllyTableFeatureTests(TestCase):
         )
 
         self.ally_student_category = StudentCategories.objects.create(
-            under_represented_racial_ethnic = False,
-            first_gen_college_student = False,
-            transfer_student = False,
-            lgbtq = False,
-            low_income = False,
-            rural = True,
-            disabled = False
+            under_represented_racial_ethnic=False,
+            first_gen_college_student=False,
+            transfer_student=False,
+            lgbtq=False,
+            low_income=False,
+            rural=True,
+            disabled=False
         )
 
         self.ally_student_category_relation = AllyStudentCategoryRelation.objects.create(
             ally=self.ally,
-            student_category = self.ally_student_category
+            student_category=self.ally_student_category
         )
 
         self.ally_user_2 = User.objects.create_user(username='johndoe_2',
@@ -114,18 +117,18 @@ class AdminAllyTableFeatureTests(TestCase):
         )
 
         self.ally_2_student_category = StudentCategories.objects.create(
-            under_represented_racial_ethnic = True,
-            first_gen_college_student = True,
-            transfer_student = True,
-            lgbtq = True,
-            low_income = True,
-            rural = False,
-            disabled = True
+            under_represented_racial_ethnic=True,
+            first_gen_college_student=True,
+            transfer_student=True,
+            lgbtq=True,
+            low_income=True,
+            rural=False,
+            disabled=True
         )
 
         self.ally_2_student_category_relation = AllyStudentCategoryRelation.objects.create(
             ally=self.ally_2,
-            student_category = self.ally_2_student_category
+            student_category=self.ally_2_student_category
         )
 
     def test_major_filter_for_admin(self):
@@ -164,7 +167,6 @@ class AdminAllyTableFeatureTests(TestCase):
         self.assertContains(
             response, 'John' + ' ' + 'Doe', html=True
         )
-
 
     def test_mentorship_status_filter_for_admin(self):
         """
@@ -228,7 +230,7 @@ class AdminAllyTableFeatureTests(TestCase):
 
         self.assertContains(
             response, "No allies are available.", html=True
-         )
+        )
 
         # Should find our johndoe
         response = self.client.post(
@@ -358,6 +360,83 @@ class AdminAllyTableFeatureTests(TestCase):
             response, self.ally_user.first_name + ' ' + self.ally_user.last_name, html=True
         )
 
+    def test_edit_ally_upload_profile_pic(self):
+        """
+        Test the edit ally request that has an uploaded profile picture
+        """
+        self.user.is_staff = True
+        self.user.save()
+        self.client.login(username=self.username, password=self.password)
+        name = './pytests/assets/blank-profile-picture.png'
+        abs_path = os.path.abspath(name)
+
+        dictionary = {'csrfmiddlewaretoken': ['YXW4Ib9TNmwod6ZETztHgp3ouwbg09sbAYibaXHc5RMKbAECHTZKHIsdJrvzvvP5'],
+                      'firstName': self.ally_user.first_name, 'lastName': self.ally_user.last_name,
+                      'newUsername': self.ally_user.username, 'username': self.ally_user.username,
+                      'category_id': self.ally_student_category_relation.id,
+                      'email': self.ally_user.email, 'hawkID': self.ally.hawk_id,
+                      'password': [''], 'roleSelected': self.ally.user_type,
+                      'areaOfResearchCheckboxes': ['Biochemistry', 'Bioinformatics', 'Chemical Engineering', 'Chemistry'],
+                      'research-des': [''], 'openingRadios': ['Yes'], 'labShadowRadios': ['Yes'], 'mentoringRadios': ['Yes'],
+                      'volunteerRadios': ['Yes'], 'mentorTrainingRadios': ['Yes'], 'connectingWithMentorsRadios': ['Yes'],
+                      'studentsInterestedRadios': ['Yes'], 'howCanWeHelp': [''], 'test': ['True']}
+
+        with open(abs_path, 'rb') as file_name:
+            headers = {
+                'HTTP_CONTENT_TYPE': 'multipart/form-data',
+                'HTTP_CONTENT_DISPOSITION': 'attachment; filename=' + 'blank-profile-picture.jpg'}
+
+            url = reverse('sap:admin_edit_ally', args=[self.ally_user.username])
+            dictionary['file'] = file_name
+            response = self.client.post(url, dictionary, **headers)
+
+        self.assertEqual(response.status_code, 302)
+        default_image_url = 'https://sepibafiles.blob.core.windows.net/sepibacontainer/blank-profile-picture.png'
+        self.ally = Ally.objects.get(user=self.ally_user)
+        self.assertNotEqual(self.ally.image_url, default_image_url)
+
+    def test_edit_ally_update_profile_pic(self):
+        """
+        Test the edit ally request that has an new profile picture different from that of existing one
+        """
+        self.user.is_staff = True
+        self.user.save()
+        self.client.login(username=self.username, password=self.password)
+        name = './pytests/assets/blank-profile-picture.png'
+        local_file_name = 'blank-profile-picture.png'
+        self.ally = Ally.objects.get(user=self.ally_user)
+        copyfile(name, '/tmp/{}'.format(local_file_name))
+        uploaded_resource_url_in_cloud = upload_file_to_azure(local_file_name)
+        self.ally.image_url = old_profile_pic_url = uploaded_resource_url_in_cloud
+        self.ally.save()
+
+        name = './pytests/assets/blank-profile-picture_2.png'
+        abs_path = os.path.abspath(name)
+
+        dictionary = {'csrfmiddlewaretoken': ['YXW4Ib9TNmwod6ZETztHgp3ouwbg09sbAYibaXHc5RMKbAECHTZKHIsdJrvzvvP5'],
+                      'firstName': self.ally_user.first_name, 'lastName': self.ally_user.last_name,
+                      'newUsername': self.ally_user.username, 'username': self.ally_user.username,
+                      'category_id': self.ally_student_category_relation.id,
+                      'email': self.ally_user.email, 'hawkID': self.ally.hawk_id,
+                      'password': [''], 'roleSelected': self.ally.user_type,
+                      'areaOfResearchCheckboxes': ['Biochemistry', 'Bioinformatics', 'Chemical Engineering', 'Chemistry'],
+                      'research-des': [''], 'openingRadios': ['Yes'], 'labShadowRadios': ['Yes'], 'mentoringRadios': ['Yes'],
+                      'volunteerRadios': ['Yes'], 'mentorTrainingRadios': ['Yes'], 'connectingWithMentorsRadios': ['Yes'],
+                      'studentsInterestedRadios': ['Yes'], 'howCanWeHelp': [''], 'test': ['True']}
+
+        with open(abs_path, 'rb') as file_name:
+            headers = {
+                'HTTP_CONTENT_TYPE': 'multipart/form-data',
+                'HTTP_CONTENT_DISPOSITION': 'attachment; filename=' + 'blank-profile-picture.jpg'}
+
+            url = reverse('sap:admin_edit_ally', args=[self.ally_user.username])
+            dictionary['file'] = file_name
+            response = self.client.post(url, dictionary, **headers)
+
+        self.assertEqual(response.status_code, 302)
+        self.ally = Ally.objects.get(user=self.ally_user)
+        self.assertNotEqual(self.ally.image_url, old_profile_pic_url)
+
     def test_edit_ally_page_for_admin(self):
         """
         Show and Complete Edit ally page for admin
@@ -367,7 +446,7 @@ class AdminAllyTableFeatureTests(TestCase):
         self.user.save()
         self.client.login(username=self.username, password=self.password)
         # Testing for Staff user type
-        #response = self.client.get('/edit_allies/', {'username': self.ally_user.username,
+        # response = self.client.get('/edit_allies/', {'username': self.ally_user.username,
         #                                             'category_relation_id': self.ally_2_student_category_relation.id})
 
         url = reverse('sap:admin_edit_ally', args=[self.ally_user.username])
@@ -375,15 +454,15 @@ class AdminAllyTableFeatureTests(TestCase):
         self.assertEqual(response.status_code, HTTPStatus.OK)
 
         dictionary = {'csrfmiddlewaretoken': ['YXW4Ib9TNmwod6ZETztHgp3ouwbg09sbAYibaXHc5RMKbAECHTZKHIsdJrvzvvP5'],
-         'firstName': self.ally_user.first_name, 'lastName': self.ally_user.last_name,
-         'newUsername': self.ally_user.username,'username': self.ally_user.username,
-         'category_id': self.ally_student_category_relation.id,
-         'email': self.ally_user.email, 'hawkID': self.ally.hawk_id,
-         'password': [''], 'roleSelected': self.ally.user_type,
-         'areaOfResearchCheckboxes': ['Biochemistry', 'Bioinformatics', 'Chemical Engineering', 'Chemistry'],
-         'research-des': [''], 'openingRadios': ['Yes'], 'labShadowRadios': ['Yes'], 'mentoringRadios': ['Yes'],
-         'volunteerRadios': ['Yes'], 'mentorTrainingRadios': ['Yes'], 'connectingWithMentorsRadios': ['Yes'],
-         'studentsInterestedRadios': ['Yes'], 'howCanWeHelp': ['']}
+                      'firstName': self.ally_user.first_name, 'lastName': self.ally_user.last_name,
+                      'newUsername': self.ally_user.username, 'username': self.ally_user.username,
+                      'category_id': self.ally_student_category_relation.id,
+                      'email': self.ally_user.email, 'hawkID': self.ally.hawk_id,
+                      'password': [''], 'roleSelected': self.ally.user_type,
+                      'areaOfResearchCheckboxes': ['Biochemistry', 'Bioinformatics', 'Chemical Engineering', 'Chemistry'],
+                      'research-des': [''], 'openingRadios': ['Yes'], 'labShadowRadios': ['Yes'], 'mentoringRadios': ['Yes'],
+                      'volunteerRadios': ['Yes'], 'mentorTrainingRadios': ['Yes'], 'connectingWithMentorsRadios': ['Yes'],
+                      'studentsInterestedRadios': ['Yes'], 'howCanWeHelp': ['']}
 
         response = self.client.post(url, dictionary, follow=True)
 
@@ -403,8 +482,8 @@ class AdminAllyTableFeatureTests(TestCase):
                 'username': [self.ally_user.username], 'category_id': [self.ally_student_category_relation.id],
                 'undergradYear': ['Freshman'], 'major': ['Psychology'],
                 'identityCheckboxes': ['First generation college-student', 'Low-income',
-                                          'Underrepresented racial/ethnic minority',
-                                          'LGBTQ', 'Rural', 'Disabled', 'Transfer Student'],
+                                       'Underrepresented racial/ethnic minority',
+                                       'LGBTQ', 'Rural', 'Disabled', 'Transfer Student'],
                 'interestLabRadios': ['No'], 'labExperienceRadios': ['Yes'], 'undergradMentoringRadios': ['No'],
                 'agreementRadios': ['Yes'], 'beingMentoredRadios': ['Yes']
             }, follow=True
@@ -417,15 +496,15 @@ class AdminAllyTableFeatureTests(TestCase):
 
         url = reverse('sap:admin_edit_ally', args=[self.ally_user.username])
         dictionary = {'csrfmiddlewaretoken': ['YXW4Ib9TNmwod6ZETztHgp3ouwbg09sbAYibaXHc5RMKbAECHTZKHIsdJrvzvvP5'],
-         'firstName': 'firstName', 'lastName': 'lastName',
-         'newUsername': 'bigUsername', 'username': self.ally_user.username,
-         'category_id': self.ally_student_category_relation.id,
-         'email': 'bigEmail', 'hawkID': 'bigHawk',
-         'password': [''], 'roleSelected': 'Faculty',
-         'areaOfResearchCheckboxes': "",
-         'research-des': [''], 'openingRadios': ['Yes'], 'labShadowRadios': ['Yes'], 'mentoringRadios': ['Yes'],
-         'volunteerRadios': ['Yes'], 'mentorTrainingRadios': ['Yes'], 'connectingWithMentorsRadios': ['Yes'],
-         'studentsInterestedRadios': ['Yes'], 'howCanWeHelp': ['']}
+                      'firstName': 'firstName', 'lastName': 'lastName',
+                      'newUsername': 'bigUsername', 'username': self.ally_user.username,
+                      'category_id': self.ally_student_category_relation.id,
+                      'email': 'bigEmail', 'hawkID': 'bigHawk',
+                      'password': [''], 'roleSelected': 'Faculty',
+                      'areaOfResearchCheckboxes': "",
+                      'research-des': [''], 'openingRadios': ['Yes'], 'labShadowRadios': ['Yes'], 'mentoringRadios': ['Yes'],
+                      'volunteerRadios': ['Yes'], 'mentorTrainingRadios': ['Yes'], 'connectingWithMentorsRadios': ['Yes'],
+                      'studentsInterestedRadios': ['Yes'], 'howCanWeHelp': ['']}
 
         response = self.client.post(url, dictionary, follow=True)
 
@@ -438,17 +517,16 @@ class AdminAllyTableFeatureTests(TestCase):
         url = reverse('sap:admin_edit_ally', args=[self.ally_user.username])
 
         dictionary = {'csrfmiddlewaretoken': ['YXW4Ib9TNmwod6ZETztHgp3ouwbg09sbAYibaXHc5RMKbAECHTZKHIsdJrvzvvP5'],
-         'firstName': 'firstName',
-         'newUsername': self.ally_user.username, 'username': 'bigUsername',
-         'category_id': self.ally_student_category_relation.id,
-         'email': self.user.email, 'hawkID': 'bigHawk2',
-         'password': ['thebiggestPassword'], 'roleSelected': 'Faculty',
-         'openingRadios': ['Yes'], 'labShadowRadios': ['Yes'], 'mentoringRadios': ['Yes'],
-         'volunteerRadios': ['Yes'], 'mentorTrainingRadios': ['Yes'], 'connectingWithMentorsRadios': ['Yes'],
-         'studentsInterestedRadios': ['Yes']}
+                      'firstName': 'firstName',
+                      'newUsername': self.ally_user.username, 'username': 'bigUsername',
+                      'category_id': self.ally_student_category_relation.id,
+                      'email': self.user.email, 'hawkID': 'bigHawk2',
+                      'password': ['thebiggestPassword'], 'roleSelected': 'Faculty',
+                      'openingRadios': ['Yes'], 'labShadowRadios': ['Yes'], 'mentoringRadios': ['Yes'],
+                      'volunteerRadios': ['Yes'], 'mentorTrainingRadios': ['Yes'], 'connectingWithMentorsRadios': ['Yes'],
+                      'studentsInterestedRadios': ['Yes']}
 
         response = self.client.post(url, dictionary, follow=True)
-
 
     def test_edit_non_ally_page_for_admin(self):
         """
@@ -517,6 +595,24 @@ class AdminAllyTableFeatureTests(TestCase):
         self.assertEqual(response.status_code, HTTPStatus.OK)
         self.assertNotContains(response, name, html=True)
 
+    def test_delete_ally_profile_pic(self):
+        """
+        Unit test for delete ally profile pic
+        """
+        self.user.is_staff = True
+        self.user.save()
+        self.client.login(username=self.username, password=self.password)
+        name = './pytests/assets/blank-profile-picture.png'
+        local_file_name = 'blank-profile-picture.png'
+        self.ally = Ally.objects.get(user=self.ally_user)
+        copyfile(name, '/tmp/{}'.format(local_file_name))
+        uploaded_resource_url_in_cloud = upload_file_to_azure(local_file_name)
+        self.ally.image_url = uploaded_resource_url_in_cloud
+        self.ally.save()
+
+        response = self.client.get('/delete_prof_pic/', {'username': self.ally_user.username}, follow=True)
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+
     def test_delete_ally_fail(self):
         """
         Unit test for deleting non existent ally
@@ -546,8 +642,8 @@ class AllyDashboardTests(TestCase):
         self.user = User.objects.create_user(
             self.username, self.email, self.password)
 
-        self.ally_user = User.objects.create_user(username='johndoe1',email='johndoe1@uiowa.edu',
-                                                  password='johndoe1',first_name='John1', last_name='Doe1')
+        self.ally_user = User.objects.create_user(username='johndoe1', email='johndoe1@uiowa.edu',
+                                                  password='johndoe1', first_name='John1', last_name='Doe1')
 
         self.ally_user1 = User.objects.create_user(username='johndoe2', email='johndoe2@uiowa.edu',
                                                    password='johndoe2', first_name='John2', last_name='Doe2')
@@ -559,7 +655,7 @@ class AllyDashboardTests(TestCase):
             people_who_might_be_interested_in_iba=True,
             how_can_science_ally_serve_you='Help in connecting with like minded people',
             year='Senior', major='Electical Engineering', willing_to_offer_lab_shadowing=False,
-            willing_to_volunteer_for_events=True,  interested_in_mentoring=False,
+            willing_to_volunteer_for_events=True, interested_in_mentoring=False,
             interested_in_connecting_with_other_mentors=True, interested_in_mentor_training=True,
             interested_in_joining_lab=True, has_lab_experience=True, information_release=True,
             openings_in_lab_serving_at=False,
@@ -617,11 +713,11 @@ class AllyDashboardTests(TestCase):
         category.rural = True
         category.disabled = True
         category.save()
-        self.ally_user_student_category_relation =AllyStudentCategoryRelation.objects.create(ally_id=self.user_ally.id,
-                                                                                             student_category_id=category.id)
+        self.ally_user_student_category_relation = AllyStudentCategoryRelation.objects.create(ally_id=self.user_ally.id,
+                                                                                              student_category_id=category.id)
         category = StudentCategories.objects.create()
         self.category_relation = AllyStudentCategoryRelation.objects.create(ally_id=self.ally_2.id,
-                                                   student_category_id=category.id)
+                                                                            student_category_id=category.id)
         category = StudentCategories.objects.create()
         category.under_represented_racial_ethnic = True
         category.first_gen_college_student = True
@@ -735,12 +831,12 @@ class AllyDashboardTests(TestCase):
         self.assertEqual(response.status_code, 200)
 
         dictionary = {'csrfmiddlewaretoken': ['YXW4Ib9TNmwod6ZETztHgp3ouwbg09sbAYibaXHc5RMKbAECHTZKHIsdJrvzvvP5'],
-         'firstName': 'big guy', 'lastName': 'giga', 'newUsername': 'bigusername1234', 'username': self.user.username,
-         'category_id': self.ally_user_student_category_relation.id,
-        'hawkID': ['bigHawk2'], 'password': ['thebiggestPassword'], 'roleSelected': 'Graduate Student',
-         'openingRadios': ['Yes'], 'labShadowRadios': ['No'], 'mentoringRadios': ['Yes'], 'research-des': [''],
-        'howCanWeHelp': ['no'], 'volunteerRadios': ['Yes'], 'mentorTrainingRadios': ['Yes'],
-        'connectingWithMentorsRadios': ['Yes'], 'studentsInterestedRadios': ['no']}
+                      'firstName': 'big guy', 'lastName': 'giga', 'newUsername': 'bigusername1234', 'username': self.user.username,
+                      'category_id': self.ally_user_student_category_relation.id,
+                      'hawkID': ['bigHawk2'], 'password': ['thebiggestPassword'], 'roleSelected': 'Graduate Student',
+                      'openingRadios': ['Yes'], 'labShadowRadios': ['No'], 'mentoringRadios': ['Yes'], 'research-des': [''],
+                      'howCanWeHelp': ['no'], 'volunteerRadios': ['Yes'], 'mentorTrainingRadios': ['Yes'],
+                      'connectingWithMentorsRadios': ['Yes'], 'studentsInterestedRadios': ['no']}
 
         response = self.client.post(url, dictionary, follow=True)
 

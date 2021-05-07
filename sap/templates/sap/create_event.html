@@ -184,11 +184,11 @@
                                             <label class="form-check-label" for="sophomore">Sophomore</label>
                                         </div>
                                         <div class="px-2">
-                                            <input type="checkbox" onclick="javascript:toggle_invite_all();" name="school_year_selected" id="junior" value="Juniors">
+                                            <input type="checkbox" onclick="javascript:toggle_invite_all();" name="school_year_selected" id="junior" value="Junior">
                                             <label class="form-check-label" for="junior">Junior</label>
                                         </div>
                                         <div class="px-2">
-                                            <input type="checkbox" onclick="javascript:toggle_invite_all();" name="school_year_selected" id="senior" value="Faculty">
+                                            <input type="checkbox" onclick="javascript:toggle_invite_all();" name="school_year_selected" id="senior" value="Senior">
                                             <label class="form-check-label" for="senior">Senior</label>
                                         </div>
 
@@ -284,9 +284,18 @@
                                     </div>
 
                                 </div>
-                                <button type="submit" formmethod="post" class="btn btn-primary btn-user btn-block" id="submit_new_admin">
-                                    Create Event
-                                </button>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <button type="submit" formmethod="post" class="btn btn-primary btn-user btn-block" id="submit_new_admin">
+                                            Create Event
+                                        </button>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <button type="submit" name="email_list" value="get_email_list" formmethod="post" class="btn btn-primary btn-user btn-block" id="download_list">
+                                            Download Email List
+                                        </button>
+                                    </div>
+                                </div>
                                 <hr>
                             </form>
                         </div>

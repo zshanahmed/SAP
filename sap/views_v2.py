@@ -16,7 +16,6 @@ from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
 from python_http_client.exceptions import HTTPError
 from django.contrib import messages
-from django.utils.dateparse import parse_datetime
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.forms import PasswordResetForm
 from django.contrib.sites.shortcuts import get_current_site
@@ -25,7 +24,6 @@ from django.http import HttpResponse, HttpResponseForbidden
 from django.shortcuts import render, redirect
 from django.template.loader import render_to_string
 from django.urls import reverse
-from django.core.exceptions import ObjectDoesNotExist
 from django.utils.encoding import force_bytes, force_text
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.views.generic import TemplateView, View
@@ -34,6 +32,7 @@ from sap.forms import UserResetForgotPasswordForm
 from sap.models import StudentCategories, Ally, AllyStudentCategoryRelation, Event, EventInviteeRelation, EventAttendeeRelation
 from sap.tokens import account_activation_token, password_reset_token
 from sap.views import User, AccessMixin
+
 
 class SignUpEventView(View):
     """
@@ -69,20 +68,14 @@ class SignUpEventView(View):
                 messages.warning(request,
                                  'You cannot sign up for this event since you are not invited.')
 
-        else:
-            messages.error(request,
-                           'Access denied. You are not registered in our system.')
+        # else:
+        #     messages.error(request,
+        #                    'Access denied. You are not registered in our system.')
 
         if context == 'notification':
             return redirect('sap:notification_center')
         return redirect(reverse('sap:calendar'))
 
-
-class DeregisterEventView(TemplateView):
-    """Enter what this class/method does"""
-
-    def get(self, request, *args, **kwargs):
-        """Enter what this class/method does"""
 
 
 def set_boolean(_list, post_dict):
@@ -95,6 +88,68 @@ def set_boolean(_list, post_dict):
             dictionary[selection] = False
     return dictionary
 
+def categories_to_string(ally):
+    """
+    Returns categories of ally to list format
+    """
+    ally_categories = []
+    category_rel = AllyStudentCategoryRelation.objects.get(ally_id=ally.id)
+    ally_category = StudentCategories.objects.filter(id=category_rel.student_category_id)
+    category_dict = list(ally_category.values())[0]
+    for key, value in category_dict.items():
+        category_map = {
+            "first_gen_college_student": "First generation college-student",
+            "rural": "Rural",
+            "under_represented_racial_ethnic": "Underrepresented racial/ethnic minority",
+            "low_income": "Low-income",
+            "disabled": "Disabled",
+            "transfer_student": "Transfer Student",
+            "lgbtq": "LGBTQ"
+        }
+        if value and key not in ['id']:
+            ally_categories.append(category_map[key])
+    return ally_categories
+
+def event_invitations(ally):
+    """
+    Creates invitation for ally
+    """
+    events_ally = Event.objects.none()
+    print(categories_to_string(ally))
+    for category in categories_to_string(ally):
+        events_ally |= Event.objects.filter(special_category__contains=category)
+
+    if ally.user_type:
+        role = ally.user_type
+        if role == 'Undergraduate Student':
+            if ally.interested_in_being_mentored:
+                if Event.objects.filter(mentor_status__contains='Mentees'):
+                    events_ally |= Event.objects.filter(role_selected__contains=role).filter(
+                        school_year_selected__contains=ally.year).filter(mentor_status__contains='Mentees')
+                else:
+                    events_ally |= Event.objects.filter(role_selected__contains=role).filter(
+                        school_year_selected__contains=ally.year)
+            else:
+                events_ally |= Event.objects.filter(role_selected__contains=role).filter(
+                    school_year_selected__contains=ally.year)
+        else:
+            if ally.interested_in_mentoring:
+                if Event.objects.filter(mentor_status__contains='Mentors'):
+                    events_ally |= Event.objects.filter(role_selected__contains=role).filter(
+                        mentor_status__contains='Mentors')
+                else:
+                    events_ally |= Event.objects.filter(role_selected__contains=role)
+            else:
+                events_ally |= Event.objects.filter(role_selected__contains=role)
+
+    if ally.area_of_research:
+        for aor in ally.area_of_research.split(','):
+            print('Aor: ', aor, '  ', Event.objects.filter(research_field__contains=aor))
+            events_ally |= Event.objects.filter(research_field__contains=aor)
+
+    if events_ally is not None:
+        for event in events_ally:
+            EventInviteeRelation.objects.create(event_id=event.id, ally_id=ally.id)
 
 def make_categories(student_categories):
     """Enter what this class/method does"""
@@ -121,7 +176,9 @@ def make_categories(student_categories):
 def create_new_user(post_dict):
     """
     Create new user and associated ally based on what user inputs in sign-up page
+    Also creates event invitations for new user based on the information they provide
     """
+    print(post_dict)
     user = User.objects.create_user(username=post_dict["new_username"][0],
                                     password=post_dict["new_password"][0],
                                     email=post_dict["new_email"][0],
@@ -166,7 +223,7 @@ def create_new_user(post_dict):
                                    interested_in_being_mentored=selections['beingMentoredRadios'])
         try:
             categories = make_categories(post_dict["identityCheckboxes"])
-        except KeyError:
+        except KeyError:  # pragma: no cover
             categories = StudentCategories.objects.create()
 
     admins = User.objects.filter(is_staff=True)
@@ -176,6 +233,7 @@ def create_new_user(post_dict):
     notify.send(user, recipient=user, verb='Welcome to Science Alliance!')
 
     AllyStudentCategoryRelation.objects.create(student_category_id=categories.id, ally_id=ally.id)
+    event_invitations(ally)
     return user, ally
 
 
@@ -205,13 +263,16 @@ class SignUpView(TemplateView):
         try:
             sendgrid_obj = SendGridAPIClient(os.environ.get('SENDGRID_API_KEY'))
             sendgrid_obj.send(email_content)
-        except HTTPError as exception:
-            messages.warning(self.request, str(exception))
+
+            messages.info(self.request,
+                          'ATTENTION REQUIRED: To finish creating a new account, '
+                          'please follow instructions in the email we just sent you.')
+        except HTTPError:  # pragma: no cover
+            messages.warning(self.request,
+                             'Please try again another time or contact team1sep@hotmail.com '
+                             'and report this error code, HTTP401.')
 
     def get(self, request):
-        """
-        First log current user out
-        """
         if not request.user.is_authenticated:
             return render(request, self.template_name)
         return redirect('sap:home')
@@ -282,36 +343,37 @@ class SignUpView(TemplateView):
             user, _ = create_new_user(post_dict=post_dict)
             site = get_current_site(request)
             self.send_verification_email(user=user, site=site, entered_email=post_dict["new_email"][0])
-        return redirect("sap:sign-up-done")
+
+        return redirect("sap:home")
 
 
-class SignUpDoneView(TemplateView):
-    """
-    A view which is presented if the user successfully fill out the form presented in Sign-Up view
-    """
-    template_name = "sap/sign-up-done.html"
-
-    def get(self, request, *args, **kwargs):
-        """Enter what this class/method does"""
-        site = get_current_site(request)
-        accepted_origin = 'http:' + '//' + site.domain + reverse('sap:sign-up')
-
-        try:
-            origin = request.headers['Referer']
-
-            if request.headers['Referer'] and origin == accepted_origin:
-                return render(request, self.template_name)
-
-            if request.user.is_authenticated:
-                return redirect('sap:resources')
-
-            return redirect('sap:home')
-
-        except KeyError:
-            if request.user.is_authenticated:
-                return redirect('sap:resources')
-
-            return redirect('sap:home')
+# class SignUpDoneView(TemplateView):
+#     """
+#     A view which is presented if the user successfully fill out the form presented in Sign-Up view
+#     """
+#     template_name = "sap/sign-up-done.html"
+#
+#     def get(self, request, *args, **kwargs):
+#         """Enter what this class/method does"""
+#         site = get_current_site(request)
+#         accepted_origin = 'http:' + '//' + site.domain + reverse('sap:sign-up')
+#
+#         try:
+#             origin = request.headers['Referer']
+#
+#             if request.headers['Referer'] and origin == accepted_origin:
+#                 return render(request, self.template_name)
+#
+#             if request.user.is_authenticated:
+#                 return redirect('sap:resources')
+#
+#             return redirect('sap:home')
+#
+#         except KeyError:
+#             if request.user.is_authenticated:
+#                 return redirect('sap:resources')
+#
+#             return redirect('sap:home')
 
 
 class SignUpConfirmView(TemplateView):
@@ -364,7 +426,9 @@ class ForgotPasswordView(TemplateView):
         return redirect('sap:home')
 
     def post(self, request):
-        """Enter what this class/method does"""
+        """
+        Only if the confirmation email is successfully sent by SendGrid, ally.reset_password can be updated
+        """
         form = PasswordResetForm(request.POST)
 
         if form.is_valid():
@@ -374,73 +438,93 @@ class ForgotPasswordView(TemplateView):
 
             if len(valid_email) > 0:
                 user = valid_email[0]
-                user.is_active = False  # User needs to be inactive for the reset password duration
-                # user.profile.reset_password = True
-                user.save()
+                ally_filter = Ally.objects.filter(user=user)
 
-                message_body = render_to_string('sap/password-forgot-mail.html', {
-                    'user': user,
-                    'protocol': 'http',
-                    'domain': site.domain,
-                    'uid': urlsafe_base64_encode(force_bytes(user.pk)),  # encode user's primary key
-                    'token': password_reset_token.make_token(user),
-                })
+                # Can only reset forgotten password for active user and there is an ally associated with the user
+                if user.is_active and ally_filter.exists():
+                    ally = ally_filter[0]
+                    # ally.reset_password = True
+                    # ally.save()
 
-                # message_ = reverse('sap:password-forgot-confirm',
-                #                    args=[urlsafe_base64_encode(force_bytes(user.pk)),
-                #                          password_reset_token.make_token(user)])
-                #
-                # message_body = 'http:' + '//' + site.domain + message_
+                    message_body = render_to_string('sap/password-forgot-mail.html', {
+                        'user': user,
+                        'protocol': 'http',
+                        'domain': site.domain,
+                        'uid': urlsafe_base64_encode(force_bytes(user.pk)),  # encode user's primary key
+                        'token': password_reset_token.make_token(user),
+                    })
 
-                email_content = Mail(
-                    from_email="iba@uiowa.edu",
-                    to_emails=entered_email,
-                    subject='Reset Password for Science Alliance Portal',
-                    html_content=message_body)
+                    # message_ = reverse('sap:password-forgot-confirm',
+                    #                    args=[urlsafe_base64_encode(force_bytes(user.pk)),
+                    #                          password_reset_token.make_token(user)])
+                    #
+                    # message_body = 'http:' + '//' + site.domain + message_
 
-                try:
-                    sendgrid_obj = SendGridAPIClient(os.environ.get('SENDGRID_API_KEY'))
-                    sendgrid_obj.send(email_content)
+                    email_content = Mail(
+                        from_email="iba@uiowa.edu",
+                        to_emails=entered_email,
+                        subject='Reset Password for Science Alliance Portal',
+                        html_content=message_body)
 
-                except HTTPError as exception:
-                    messages.warning(self.request, str(exception))
+                    try:
+                        sendgrid_obj = SendGridAPIClient(os.environ.get('SENDGRID_API_KEY'))
+                        sendgrid_obj.send(email_content)
+
+                    except HTTPError:  # pragma: no cover
+                        messages.warning(self.request,
+                                         'Please try again another time or contact team1sep@hotmail.com '
+                                         'and report this error code, HTTP401.')
+                        return redirect('sap:home')
+
+                    # this part will only be executed if try block succeed
+                    ally.reset_password = True
+                    ally.save()
+
+                    messages.info(request,
+                                  'ATTENTION REQUIRED: To finish resetting your password, '
+                                  'please follow instructions in the email we just sent you.')
+
+                    return redirect('sap:home')
 
 
-                return redirect('/password-forgot-done')
-
-            return redirect('/password-forgot-done')
+            # return redirect('/password-forgot-done')
             # return render(request, 'account/password-forgot.html', {'form': form})
+            messages.info(request,
+                          'ATTENTION REQUIRED: To finish resetting your password, '
+                          'please follow instructions in the email we just sent you.')
+            return redirect('sap:home')
 
+        # if form is not valid
         return render(request, 'sap/password-forgot.html', {'form': form})
 
 
-class ForgotPasswordDoneView(TemplateView):
-    """
-    A view which is presented if the user entered valid email in Forget Password view
-    """
-    template_name = "sap/password-forgot-done.html"
-
-    def get(self, request, *args, **kwargs):
-        """Enter what this class/method does"""
-        site = get_current_site(request)
-        accepted_origin = 'http:' + '//' + site.domain + reverse('sap:password-forgot')
-
-        try:
-            origin = request.headers['Referer']
-
-            if request.headers['Referer'] and origin == accepted_origin:
-                return render(request, self.template_name)
-
-            if request.user.is_authenticated:
-                return redirect('sap:resources')
-
-            return redirect('sap:home')
-
-        except KeyError:
-            if request.user.is_authenticated:
-                return redirect('sap:resources')
-
-            return redirect('sap:home')
+# class ForgotPasswordDoneView(TemplateView):
+#     """
+#     A view which is presented if the user entered valid email in Forget Password view
+#     """
+#     template_name = "sap/password-forgot-done.html"
+#
+#     def get(self, request, *args, **kwargs):
+#         """Enter what this class/method does"""
+#         site = get_current_site(request)
+#         accepted_origin = 'http:' + '//' + site.domain + reverse('sap:password-forgot')
+#
+#         try:
+#             origin = request.headers['Referer']
+#
+#             if request.headers['Referer'] and origin == accepted_origin:
+#                 return render(request, self.template_name)
+#
+#             if request.user.is_authenticated:
+#                 return redirect('sap:resources')
+#
+#             return redirect('sap:home')
+#
+#         except KeyError:
+#             if request.user.is_authenticated:
+#                 return redirect('sap:resources')
+#
+#             return redirect('sap:home')
 
 
 class ForgotPasswordConfirmView(TemplateView):
@@ -451,7 +535,10 @@ class ForgotPasswordConfirmView(TemplateView):
 
     # template_name = "sap/password-forgot-confirm.html"
     def get(self, request, **kwargs):
-        """Enter what this class/method does"""
+        """
+        Can only access this page is user is active and ally.reset_password = True
+        """
+
         path = request.path
         path_1, token = os.path.split(path)
 
@@ -463,23 +550,33 @@ class ForgotPasswordConfirmView(TemplateView):
         try:
             uid = force_text(urlsafe_base64_decode(uidb64))
             user = User.objects.get(pk=uid)
+            ally = Ally.objects.get(user=user)
         except (TypeError, ValueError, OverflowError, User.DoesNotExist) as exception:
             messages.warning(request, str(exception))
             user = None
+            ally = None
 
-        if user is not None and password_reset_token.check_token(user, token):
-            context = {
-                'form': UserResetForgotPasswordForm(user),
-                'uid': uidb64,
-                'token': token
-            }
-            return render(request, 'sap/password-forgot-confirm.html', context)
+        if user is not None and ally is not None and password_reset_token.check_token(user, token):
+            if user.is_active and ally.reset_password:
+                context = {
+                    'form': UserResetForgotPasswordForm(user),
+                    'uid': uidb64,
+                    'token': token
+                }
+                return render(request, 'sap/password-forgot-confirm.html', context)
+
+            if user.is_active and not ally.reset_password:
+                messages.error(request, 'Password reset link is expired. Please request a new password reset.')
+                return redirect('sap:home')
 
         messages.error(request, 'Password reset link is invalid. Please request a new password reset.')
         return redirect('sap:home')
 
     def post(self, request, **kwargs):
-        """Enter what this class/method does"""
+        """
+        Submit a new password
+        Also check if ally.reset_password=True before proceeding
+        """
         path = request.path
         path_1, token = os.path.split(path)
 
@@ -491,30 +588,36 @@ class ForgotPasswordConfirmView(TemplateView):
         try:
             uid = force_text(urlsafe_base64_decode(uidb64))
             user = User.objects.get(pk=uid)
+            ally = Ally.objects.get(user=user)
         except (TypeError, ValueError, OverflowError, User.DoesNotExist) as exception:
             messages.warning(request, str(exception))
             user = None
+            ally = None
 
-        if user is not None and password_reset_token.check_token(user, token):
-            form = UserResetForgotPasswordForm(user=user, data=request.POST)
-            if form.is_valid():
-                form.save()
-                update_session_auth_hash(request, form.user)
+        if user is not None and ally is not None and password_reset_token.check_token(user, token):
+            if user.is_active and ally.reset_password:
+                form = UserResetForgotPasswordForm(user=user, data=request.POST)
+                if form.is_valid():
+                    form.save()
+                    update_session_auth_hash(request, form.user)
 
-                user.is_active = True
-                # user.profile.reset_password = False
-                user.save()
-                messages.success(request, 'New Password Created Successfully!')
+                    ally.reset_password = False
+                    ally.save()
+                    messages.success(request, 'New Password Created Successfully!')
+                    return redirect('sap:home')
+
+                # else part
+                context = {
+                    'form': UserResetForgotPasswordForm(user),
+                    'uid': uidb64,
+                    'token': token
+                }
+                messages.error(request, 'Password does not meet requirements.')
+                return render(request, 'sap/password-forgot-confirm.html', context)
+
+            if user.is_active and not ally.reset_password:
+                messages.error(request, 'Password reset link is expired. Please request a new password reset.')
                 return redirect('sap:home')
-
-            # else part
-            context = {
-                'form': UserResetForgotPasswordForm(user),
-                'uid': uidb64,
-                'token': token
-            }
-            messages.error(request, 'Password does not meet requirements.')
-            return render(request, 'sap/password-forgot-confirm.html', context)
 
         messages.error(request, 'Password reset link is invalid. Please request a new password reset.')
         return redirect('sap:home')
@@ -621,11 +724,11 @@ class UploadAllies(AccessMixin, HttpResponse):
         """Enter what this class/method does"""
         try:
             data_frame = data_frame.drop(['Workflow ID', 'Status', 'Name'], axis=1)
-        except KeyError:
+        except KeyError: # pragma: no cover
             errorlog[1000] = "Could not drop unnecessary columns \'Workflow ID\', \'Status\', \'Name\'"
         try:
             data_frame1 = pd.DataFrame({"Name": data_frame['Initiator']})
-        except KeyError:
+        except KeyError:  # pragma: no cover
             errorlog[2000] = "CRITICAL ERROR: The \'Initiator\' column is not present, cannot proceed"
             return data_frame, errorlog
         try:
@@ -637,7 +740,7 @@ class UploadAllies(AccessMixin, HttpResponse):
             data_frame = data_frame.join(data_frame2)
             data_frame['email'] = data_frame['Initiator'].str.extract(r'(.*@uiowa.edu)')
             data_frame = data_frame.drop(['Initiator'], axis=1)
-        except KeyError:
+        except KeyError:  # pragma: no cover
             errorlog[3000] = "CRITICAL ERROR: data could not be extracted from \'Initiator\' column " \
                              "and added as columns"
             return data_frame, errorlog
@@ -662,7 +765,7 @@ class UploadAllies(AccessMixin, HttpResponse):
                 'Are you interested in joining a lab?': 'interested_in_joining_lab',
                 'Do you have experience working in a laboratory?': 'has_lab_experience'
             }, axis=1)
-        except KeyError:
+        except KeyError:  # pragma: no cover
             errorlog[4000] = "CRITICAL ERROR: boolean could not replace blanks. Ensure the following are present:" + \
                              str(boolFields)
             return data_frame, errorlog
@@ -679,7 +782,7 @@ class UploadAllies(AccessMixin, HttpResponse):
                                             'Year': 'year', 'Major': 'major',
                                             'How can the Science Alliance serve you?': 'how_can_science_ally_serve_you'},
                                            axis=1)
-        except KeyError:
+        except KeyError:  # pragma: no cover
             errorlog[5000] = "CRITICAL ERROR: problem in tidying charfield columns. ensure the following is present:" \
                              "STEM Area of Research, University Type, Please provide a short description of the type " \
                              "of research done by undergrads, " \
@@ -688,7 +791,7 @@ class UploadAllies(AccessMixin, HttpResponse):
         try:
             data_frame['Submission Date'] = data_frame['Submission Date'].map(lambda x: x.strftime("%b-%d-%Y"))
             data_frame = data_frame.rename({'Submission Date': 'date_joined'}, axis=1)
-        except KeyError:
+        except KeyError:  # pragma: no cover
             errorlog[6000] = "CRITICAL ERROR: problem converting timestamp to date, please ensure Submission Date is a column"
             return data_frame, errorlog
         try:
@@ -696,7 +799,7 @@ class UploadAllies(AccessMixin, HttpResponse):
             for i in range(0, len(data_frame)):
                 hawkid = data_frame['first_name'][i][0] + data_frame['last_name'][i]
                 data_frame['username'][i] = hawkid.lower()
-        except KeyError:
+        except KeyError:  # pragma: no cover
             errorlog[7000] = "CRITICAL ERROR: Could not convert first name and last name to hawkid. Please Ensure the " \
                              "Initiator is present"
             return data_frame, errorlog
@@ -721,7 +824,7 @@ class UploadAllies(AccessMixin, HttpResponse):
                     data_frame['under_represented_racial_ethnic'][i] = True
             data_frame = data_frame.drop(['Are you interested in serving as a mentor to students who identify as any of the following '
                                           '(check all that may apply)'], axis=1)
-        except KeyError:
+        except KeyError:  # pragma: no cover
             errorlog[8000] = "Possible data error: willing to mentor may be inaccurate. Please ensure the column: " \
                              "\'Are you interested in serving as a mentor to students who identify as any of the following " \
                              "(check all that may apply)\'" \
@@ -739,7 +842,7 @@ class UploadAllies(AccessMixin, HttpResponse):
             ally_data = data_frame[allyFields].to_dict('index')
             user_data = data_frame[userFields].to_dict('index')
             category_data = data_frame[categoryFields].to_dict('index')
-        except KeyError:
+        except KeyError:  # pragma: no cover
             error_log[9000] = "CRITICAL ERROR: Data does not contain necessary columns. Please ensure that the data has columns:\n" + \
                               str(userFields + allyFields + categoryFields)
         for ally in ally_data.items():
@@ -784,10 +887,13 @@ class UploadAllies(AccessMixin, HttpResponse):
                                                                       disabled=category['disabled'])
                         AllyStudentCategoryRelation.objects.create(ally_id=ally1.id,
                                                                    student_category_id=categories.id)
-                    except IntegrityError:
+
+                        notify.send(user, recipient=user, verb='Welcome to Science Alliance!')
+
+                    except IntegrityError: # pragma: no cover
                         error_log[ally[0]] = "Ally already exists in the database"
 
-                except IntegrityError:
+                except IntegrityError:  # pragma: no cover
                     error_log[ally[0]] = "user with username: " + user['username'] + " or email: " + user['email'] \
                                          + " already exists in database"
             else:
@@ -802,11 +908,11 @@ class UploadAllies(AccessMixin, HttpResponse):
         data_frame = pd.DataFrame()
         try:
             data_frame = pd.read_csv(file)
-        except ParserError:
+        except ParserError: # pragma: no cover
             error_log[900] = "Empty xlsx cannot make allies."
-        except EmptyDataError:
+        except EmptyDataError:  # pragma: no cover
             error_log[900] = "Empty csv cannot make allies"
-        except UnicodeDecodeError:
+        except UnicodeDecodeError:  # pragma: no cover
             try:
                 data_frame = pd.read_excel(file)
             except XLRDError:
@@ -863,137 +969,9 @@ class UploadAllies(AccessMixin, HttpResponse):
                 )
                 response['Content-Disposition'] = 'attachment; filename=' + file_name
                 return response
-            except KeyError:
+            except KeyError:  # pragma: no cover
                 messages.add_message(request, messages.ERROR, 'Please select a file to upload!')
 
             return redirect('sap:sap-dashboard')
 
         return HttpResponseForbidden()
-
-class DeleteEventView(AccessMixin, View):
-    """
-    Delete event from calendar view
-    """
-    def get(self, request):
-        """
-        Method to get event which needs to be deleted
-        """
-        event_id = request.GET['event_id']
-        try:
-            event = Event.objects.get(pk=event_id)
-            event.delete()
-            messages.success(request, 'Event deleted successfully!')
-            return redirect(reverse('sap:calendar'))
-        except ObjectDoesNotExist:
-            messages.warning(request, "Event doesn't exist!")
-        return redirect(reverse('sap:calendar'))
-
-
-class EditEventView(View, AccessMixin):
-    """
-    View enabling admins to edit events
-    """
-
-    def get(self, request):
-        """
-        Get details of event selected on calendar
-        """
-        event_id = request.GET['event_id']
-        event = Event.objects.get(pk=event_id)
-
-        return render(request, template_name="sap/edit_event.html", context={
-            'event': event
-        })
-
-    def post(self, request):
-        """
-        Updating the details in the database with information obtained from the form
-        """
-        event_id = request.GET['event_id']
-        event = Event.objects.get(pk=event_id)
-        post_dict = dict(request.POST)
-        if post_dict['end_time'] < post_dict['start_time']:
-            messages.warning(request, 'End time cannot be less than start-time')
-            return redirect('/edit_event/?event_id='+event_id)
-        post_dict.pop('csrfmiddlewaretoken')
-        event.mentor_status = ''
-        event.research_field = ''
-        event.role_selected = ''
-        event.school_year_selected = ''
-        event.special_category = ''
-
-        for key, item in post_dict.items():
-            new_value = ','.join(item)
-            if key in ("start_time", "end_time"):
-                new_value = parse_datetime(new_value + '-0500')
-            setattr(event, key, new_value)
-
-        event.invite_all = "invite_all" in post_dict
-        event.allday = "allday" in post_dict
-        event.save()
-        EventInviteeRelation.objects.filter(event_id=event.id).delete()
-
-        allies_list = list(Ally.objects.all())
-        if event.invite_all:
-            # If all allies are invited
-            allies_for_invitation = allies_list
-
-        else:
-            allies_for_invitation = []
-
-        allies_for_invitation.extend(Ally.objects.filter(user_type__in=event.role_selected))
-        allies_for_invitation.extend(Ally.objects.filter(year__in=event.school_year_selected))
-
-        if 'Mentors' in event.mentor_status:
-            allies_for_invitation.extend(Ally.objects.filter(interested_in_mentoring=True))
-
-        if 'Mentees' in event.mentor_status:
-            allies_for_invitation.extend(Ally.objects.filter(interested_in_mentor_training=True))
-
-        allies_for_invitation.extend(
-            Ally.objects.filter(area_of_research__in=event.research_field))
-        student_categories_to_include_for_event = []
-
-        for ctg in event.special_category.split(','):
-            print(ctg)
-            if ctg == 'First generation college-student':
-                student_categories_to_include_for_event.extend(
-                    StudentCategories.objects.filter(first_gen_college_student=True))
-
-            elif ctg == 'Low-income':
-                student_categories_to_include_for_event.extend(StudentCategories.objects.filter(low_income=True))
-
-            elif ctg == 'Underrepresented racial/ethnic minority':
-                student_categories_to_include_for_event.extend(
-                    StudentCategories.objects.filter(under_represented_racial_ethnic=True))
-
-            elif ctg == 'LGBTQ':
-                student_categories_to_include_for_event.extend(StudentCategories.objects.filter(lgbtq=True))
-
-            elif ctg == 'Rural':
-                student_categories_to_include_for_event.extend(StudentCategories.objects.filter(rural=True))
-
-            elif ctg == 'Disabled':
-                student_categories_to_include_for_event.extend(StudentCategories.objects.filter(disabled=True))
-
-        ids_for_invitation = AllyStudentCategoryRelation.objects.filter(student_category__in=
-                                                                        student_categories_to_include_for_event).values(
-            'ally')
-        allies_for_invitation.extend(
-            Ally.objects.filter(id__in=ids_for_invitation)
-        )
-
-        event_ally_objs = []
-        invited_allies_set = set()
-        allies_for_invitation = set(allies_for_invitation)
-
-        for ally in allies_for_invitation:
-            if ally.user.is_active:
-                event_ally_rel_obj = EventInviteeRelation(event=event, ally=ally)
-                event_ally_objs.append(event_ally_rel_obj)
-                invited_allies_set.add(event_ally_rel_obj.ally)
-
-        EventInviteeRelation.objects.bulk_create(event_ally_objs)
-
-        messages.success(request, 'Event Updated Successfully')
-        return redirect('/calendar')

@@ -8,12 +8,11 @@ from django.contrib.auth import get_user_model
 from django.test import TestCase, Client  # tests file
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
-from django.contrib.auth.forms import PasswordResetForm
-from .forms import UserResetForgotPasswordForm
-from .models import Ally, StudentCategories, AllyStudentCategoryRelation
+
+from .models import Ally, StudentCategories, AllyStudentCategoryRelation, Event, EventInviteeRelation
 
 # Create your tests here.
-from .tokens import password_reset_token, account_activation_token
+from .tokens import account_activation_token
 
 User = get_user_model()
 
@@ -23,11 +22,11 @@ class SignUpTests(TestCase):
     """
 
     def setUp(self):
-        self.username = 'admin'
-        self.username_active = 'user_active'
-        self.password = 'admin_password1'
-        self.email = 'email@test.com'
-        self.email_active = 'email_active@test.com'
+        self.username = 'admin2'
+        self.username_active = 'user_active2'
+        self.password = 'admin_password21'
+        self.email = 'email2@test.com'
+        self.email_active = 'email_active2@test.com'
         self.user = User.objects.create_user(username=self.username, email=self.email, password=self.password)
         self.user_active = User.objects.create_user(username=self.username_active, email=self.email_active, password=self.password,
                                                     is_active=True)
@@ -95,7 +94,7 @@ class SignUpTests(TestCase):
         Ally.objects.create(user=self.user,
                             user_type=['Graduate Student'],
                             hawk_id=self.user.username,
-                            area_of_research=['Biochemistry'],
+                            area_of_research=['Chemistry'],
                             interested_in_mentoring=False,
                             willing_to_offer_lab_shadowing=False,
                             interested_in_connecting_with_other_mentors=False,
@@ -130,7 +129,7 @@ class SignUpTests(TestCase):
             }
         )
         url = response.url
-        self.assertEqual(url, '/sign-up-done/')
+        self.assertEqual(url, '/')
         self.assertEqual(self.user.is_active, False)
         self.assertEqual(response.status_code, HTTPStatus.FOUND)
 
@@ -145,11 +144,11 @@ class SignUpTests(TestCase):
                             user_type=['Graduate Student'],
                             hawk_id=self.user.username,
                             area_of_research=['Biochemistry'],
-                            interested_in_mentoring=False,
+                            interested_in_mentoring=True,
                             willing_to_offer_lab_shadowing=False,
                             interested_in_connecting_with_other_mentors=False,
                             willing_to_volunteer_for_events=False,
-                            interested_in_mentor_training=True)
+                            interested_in_mentor_training=False)
         self.user.save()
         self.client.logout()
         response = self.client.post(
@@ -158,8 +157,8 @@ class SignUpTests(TestCase):
                 'csrfmiddlewaretoken': ['MIyNUVJILbLGKrHXjz4m4fWt4d13TUOkkvRtCpStSmxkW8PKomuz3ESTYF8VVQil'],
                 'firstName': ['Elias'],
                 'lastName': ['Shaeffer'],
-                'new_username': ['admin1'],
-                'new_email': self.user_active.email,
+                'new_username': self.user_active.username,
+                'new_email': self.user.email,
                 'new_password': self.password,
                 'repeat_password': self.password,
                 'roleSelected': ['Graduate Student'],
@@ -194,8 +193,8 @@ class SignUpTests(TestCase):
                             area_of_research=['Biochemistry'],
                             interested_in_mentoring=False,
                             willing_to_offer_lab_shadowing=False,
-                            interested_in_connecting_with_other_mentors=False,
-                            willing_to_volunteer_for_events=False,
+                            interested_in_connecting_with_other_mentors=True,
+                            willing_to_volunteer_for_events=True,
                             interested_in_mentor_training=True)
         self.user.save()
         self.client.logout()
@@ -243,7 +242,7 @@ class SignUpTests(TestCase):
                             willing_to_offer_lab_shadowing=False,
                             interested_in_connecting_with_other_mentors=False,
                             willing_to_volunteer_for_events=False,
-                            interested_in_mentor_training=True)
+                            interested_in_mentor_training=False)
         self.user.save()
         self.client.logout()
         response = self.client.post(
@@ -337,8 +336,23 @@ class SignUpTests(TestCase):
 
     def test_create_undergrad(self):
         """
-        Test signup feature using undergrad user
+        Test signup feature using undergrad user interested in being mentored
         """
+        event = Event.objects.create(
+            title="Mock Interviews",
+            description="This event is for mock interviews",
+            location="Maclean Hall",
+            allday=False,
+            end_time="2021-05-02 22:19:00",
+            start_time="2021-05-02 21:19:00",
+            num_attending=0,
+            num_invited=0,
+            mentor_status="Mentees",
+            research_field="Computer Science and Engineering",
+            role_selected="Undergraduate Student",
+            school_year_selected="Freshman",
+            invite_all=False
+        )
         response = self.client.post(
             '/sign-up/',
             {
@@ -356,14 +370,105 @@ class SignUpTests(TestCase):
             }
         )
         url = response.url
-        self.assertEqual(url, '/sign-up-done/')
+        self.assertEqual(url, '/')
         self.assertEqual(response.status_code, 302)
         user = User.objects.filter(username="zeeahmed1")
         ally = Ally.objects.filter(user_id=user[0].id)
         category_relation = AllyStudentCategoryRelation.objects.filter(ally_id=ally[0].id)
         categories = StudentCategories.objects.filter(id=category_relation[0].student_category_id)
+        invitation = EventInviteeRelation.objects.filter(ally_id=ally[0].id, event_id=event.id)
         self.assertTrue(user.exists())
         self.assertTrue(ally.exists())
+        self.assertTrue(category_relation.exists())
+        self.assertTrue(invitation.exists())
+        Event.objects.get(pk=event.id).delete()
+        self.assertTrue(categories.exists())
+        Event.objects.create(
+            title="Mock Interviews",
+            description="This event is for mock interviews",
+            location="Maclean Hall",
+            allday=False,
+            invite_all=False,
+            end_time="2021-05-06 22:19:00",
+            start_time="2021-05-02 21:19:00",
+            role_selected="Graduate Student,Undergraduate Student",
+            school_year_selected="Freshman"
+        )
+        response = self.client.post(
+            '/sign-up/',
+            {
+                'csrfmiddlewaretoken': ['At4HFZNsApVRWNye2Jcj4RVcWYf1fviv1kFbSZevLnNmJrWz4OyZhcAPn0JeaknZ'],
+                'firstName': ['Zeeshan'],
+                'lastName': ['Ahmed'],
+                'new_username': ['zeeahmed1'],
+                'new_email': ['zeeahmed@uiowa.edu'],
+                'new_password': self.password,
+                'repeat_password': self.password,
+                'roleSelected': ['Undergraduate Student'], 'undergradYear': ['Freshman'],
+                'major': ['major'],
+                'interestLabRadios': ['Yes'], 'labExperienceRadios': ['Yes'],
+                'undergradMentoringRadios': ['Yes'], 'beingMentoredRadios': ['Yes'], 'agreementRadios': ['Yes']
+            }
+        )
+        url = response.url
+        self.assertEqual(url, '/')
+        self.assertEqual(response.status_code, 302)
+        user = User.objects.filter(username="zeeahmed1")
+        ally = Ally.objects.filter(user_id=user[0].id)
+        category_relation = AllyStudentCategoryRelation.objects.filter(ally_id=ally[0].id)
+        categories = StudentCategories.objects.filter(id=category_relation[0].student_category_id)
+        invitation = EventInviteeRelation.objects.filter(ally_id=ally[0].id)
+        self.assertTrue(user.exists())
+        self.assertTrue(ally.exists())
+        self.assertTrue(category_relation.exists())
+        self.assertTrue(invitation.exists())
+        self.assertTrue(categories.exists())
+
+    def test_create_undergrad_non_mentees(self):
+        """
+        Test signup feature using undergrad user not interested in being mentored
+        """
+        Event.objects.create(
+            title="Mock Interviews",
+            description="This event is for mock interviews",
+            location="Maclean Hall",
+            allday=False,
+            invite_all=False,
+            end_time="2021-05-06 22:19:00",
+            start_time="2021-05-02 21:19:00",
+            role_selected="Graduate Student,Undergraduate Student",
+            school_year_selected="Freshman"
+        )
+        response = self.client.post(
+            '/sign-up/',
+            {
+                'csrfmiddlewaretoken': ['At4HFZNsApVRWNye2Jcj4RVcWYf1fviv1kFbSZevLnNmJrWz4OyZhcAPn0JeaknZ'],
+                'firstName': ['Zeeshan'],
+                'lastName': ['Ahmed'],
+                'new_username': ['zeeahmed1'],
+                'new_email': ['zeeahmed@uiowa.edu'],
+                'new_password': self.password,
+                'repeat_password': self.password,
+                'roleSelected': ['Undergraduate Student'], 'undergradYear': ['Freshman'],
+              'identityCheckboxes': ['First generation college-student'], 'major': ['major'],
+              'interestLabRadios': ['Yes'], 'labExperienceRadios': ['Yes'],
+              'undergradMentoringRadios': ['No'], 'beingMentoredRadios': ['No'], 'agreementRadios': ['Yes']
+            }
+        )
+        url = response.url
+        self.assertEqual(url, '/')
+        self.assertEqual(response.status_code, 302)
+        user = User.objects.filter(username="zeeahmed1")
+        ally = Ally.objects.filter(user_id=user[0].id)
+        category_relation = AllyStudentCategoryRelation.objects.filter(ally_id=ally[0].id)
+        categories = StudentCategories.objects.filter(id=category_relation[0].student_category_id)
+        event_invitee = Event.objects.filter(role_selected__contains='Undergraduate Student').filter(
+                                            school_year_selected__contains='Freshman')
+        invitation = EventInviteeRelation.objects.filter(ally_id=ally[0].id, event_id=event_invitee[0].id)
+        self.assertTrue(user.exists())
+        self.assertTrue(ally.exists())
+        self.assertEqual(ally[0].interested_in_being_mentored, False)
+        self.assertTrue(invitation.exists())
         self.assertTrue(category_relation.exists())
         self.assertTrue(categories.exists())
 
@@ -371,7 +476,21 @@ class SignUpTests(TestCase):
         """
         Test signup feature using a grad user
         """
-
+        event = Event.objects.create(
+                                          title="Mock Interviews",
+                                          description="This event is for mock interviews",
+                                          location="Maclean Hall",
+                                          allday=False,
+                                          end_time="2021-05-02 22:19:00",
+                                          start_time="2021-05-02 21:19:00",
+                                          num_attending=0,
+                                          num_invited=0,
+                                          mentor_status="Mentors,Mentees",
+                                          research_field="Computer Science and Engineering",
+                                          role_selected="Graduate Student,Undergraduate Student",
+                                          special_category="First generation college-student",
+                                          invite_all=False
+                                          )
         response = self.client.post(
             '/sign-up/',
             {
@@ -383,23 +502,106 @@ class SignUpTests(TestCase):
                 'new_password': self.password,
                 'repeat_password': self.password,
                 'roleSelected': ['Graduate Student'],
-                'areaOfResearchCheckboxes': ['Bioinformatics'], 'research-des': ['research'],
-                'openingRadios': ['No'], 'mentoringRadios': ['No'], 'connectingWithMentorsRadios': ['Yes'],
+                'areaOfResearchCheckboxes': ['Computer Science and Engineering'], 'research-des': ['research'],
+                'openingRadios': ['No'], 'mentoringRadios': ['Yes'], 'connectingWithMentorsRadios': ['Yes'],
                 'studentsInterestedRadios': ['No'], 'mentorCheckboxes': ['Low-income'], 'labShadowRadios': ['Yes'],
                 'volunteerRadios': ['Yes'], 'trainingRadios': ['Yes'], 'howCanWeHelp': ['no']
             }
         )
         url = response.url
-        self.assertEqual(url, '/sign-up-done/')
+        self.assertEqual(url, '/')
         self.assertEqual(response.status_code, 302)
         user = User.objects.filter(username="big_guy1")
         ally = Ally.objects.filter(user_id=user[0].id)
         category_relation = AllyStudentCategoryRelation.objects.filter(ally_id=ally[0].id)
         categories = StudentCategories.objects.filter(id=category_relation[0].student_category_id)
+        invitation = EventInviteeRelation.objects.filter(ally_id=ally[0].id, event_id=event.id)
         self.assertTrue(user.exists())
         self.assertTrue(ally.exists())
         self.assertTrue(category_relation.exists())
+        self.assertTrue(invitation.exists())
         self.assertTrue(categories.exists())
+
+    def test_create_grad_no_mentor_events(self):
+        """
+        Test signup feature using a grad user with no events having mentors
+        """
+        event1 = Event.objects.create(
+            title="Mock Interviews",
+            description="This event is for mock interviews",
+            location="Maclean Hall",
+            allday=False,
+            invite_all=False,
+            end_time="2021-05-06 22:19:00",
+            start_time="2021-05-02 21:19:00",
+            role_selected="Graduate Student,Undergraduate Student",
+            school_year_selected="Freshman"
+        )
+        response = self.client.post(
+            '/sign-up/',
+            {
+                'csrfmiddlewaretoken': ['nl8oQ7HV6N0vEI7lWN9ji8Ehw38tcKRDb9MQrJfuh4VChgEF8UCS3anXIoHKBro7'],
+                 'firstName': ['Zeeshan'], 'lastName': ['Ahmed'],
+                 'new_username': ['zeeahmed'], 'new_email': ['zeeshan-ahmed@uiowa.edu'],
+                 'new_password': [self.password], 'repeat_password': [self.password],
+                 'roleSelected': ['Graduate Student'], 'research-des': ['LTE Security'],
+                 'openingRadios': ['No'], 'mentoringRadios': ['Yes'], 'connectingWithMentorsRadios': ['No'],
+                 'studentsInterestedRadios': ['No'], 'labShadowRadios': ['No'], 'volunteerRadios': ['No'],
+                 'trainingRadios': ['No'], 'howCanWeHelp': ['Internship']
+            }
+        )
+        url = response.url
+        self.assertEqual(url, '/')
+        self.assertEqual(response.status_code, 302)
+        user1 = User.objects.filter(username="zeeahmed")
+        ally1 = Ally.objects.filter(user_id=user1[0].id)
+        self.assertTrue(EventInviteeRelation.objects.filter(ally_id=ally1[0].id, event_id=event1.id).exists())
+        self.assertTrue(ally1.exists())
+        self.assertTrue(user1.exists())
+
+    def test_create_grad_non_mentors(self):
+        """
+        Test signup feature using a grad user non mentors
+        """
+        Event.objects.create(
+            title="Mock Interviews",
+            description="This event is for mock interviews",
+            location="Maclean Hall",
+            allday=False,
+            invite_all=False,
+            end_time="2021-05-06 22:19:00",
+            start_time="2021-05-02 21:19:00",
+            role_selected="Graduate Student,Undergraduate Student",
+            school_year_selected="Freshman"
+        )
+        response = self.client.post(
+            '/sign-up/',
+            {
+                'csrfmiddlewaretoken': ['TFosu1rFWp6S4SsYIV5Rb9FtBzoTavgrCsu31o9hTp975IuRpZeNgPJeBQiU6Cy5'],
+                'firstName': ['glumpy'],
+                'lastName': ['guy'],
+                'new_username': ['big_guy1'],
+                'new_email': ['eshaeffer@uiowa.edu'],
+                'new_password': self.password,
+                'repeat_password': self.password,
+                'roleSelected': ['Graduate Student'],
+                'areaOfResearchCheckboxes': ['Computer Science and Engineering'], 'research-des': ['research'],
+                'openingRadios': ['No'], 'mentoringRadios': ['No'], 'connectingWithMentorsRadios': ['No'],
+                'studentsInterestedRadios': ['No'], 'mentorCheckboxes': ['Low-income'], 'labShadowRadios': ['No'],
+                'volunteerRadios': ['No'], 'trainingRadios': ['No'], 'howCanWeHelp': ['No']
+            }
+        )
+        url = response.url
+        self.assertEqual(url, '/')
+        self.assertEqual(response.status_code, 302)
+        user = User.objects.filter(username="big_guy1")
+        ally = Ally.objects.filter(user_id=user[0].id)
+        self.assertTrue(user.exists())
+        self.assertTrue(ally.exists())
+        self.assertFalse(ally[0].interested_in_mentoring)
+        grad_event = Event.objects.filter(role_selected__contains='Graduate Student')
+        invitation2 = EventInviteeRelation.objects.filter(ally_id=ally[0].id, event_id=grad_event[0].id)
+        self.assertTrue(invitation2.exists())
 
     def test_create_grad_no_boxes(self):
         """
@@ -423,7 +625,7 @@ class SignUpTests(TestCase):
             }
         )
         url = response.url
-        self.assertEqual(url, '/sign-up-done/')
+        self.assertEqual(url, '/')
         self.assertEqual(response.status_code, 302)
         user = User.objects.filter(username="big_guy12")
         ally = Ally.objects.filter(user_id=user[0].id)
@@ -468,8 +670,8 @@ class SignUpTests(TestCase):
                             hawk_id=self.user.username,
                             area_of_research=['Biochemistry'],
                             interested_in_mentoring=False,
-                            willing_to_offer_lab_shadowing=False,
-                            interested_in_connecting_with_other_mentors=False,
+                            willing_to_offer_lab_shadowing=True,
+                            interested_in_connecting_with_other_mentors=True,
                             willing_to_volunteer_for_events=False,
                             interested_in_mentor_training=True)
         self.user.save()
@@ -490,12 +692,12 @@ class SignUpTests(TestCase):
         Ally.objects.create(user=self.user,
                             user_type=['Graduate Student'],
                             hawk_id=self.user.username,
-                            area_of_research=['Biochemistry'],
+                            area_of_research=['Biology'],
                             interested_in_mentoring=False,
                             willing_to_offer_lab_shadowing=False,
                             interested_in_connecting_with_other_mentors=False,
                             willing_to_volunteer_for_events=False,
-                            interested_in_mentor_training=True)
+                            interested_in_mentor_training=False)
         self.user.save()
         self.client.logout()
 
@@ -518,9 +720,9 @@ class SignUpTests(TestCase):
                             user_type=['Graduate Student'],
                             hawk_id=self.user.username,
                             area_of_research=['Biochemistry'],
-                            interested_in_mentoring=False,
+                            interested_in_mentoring=True,
                             willing_to_offer_lab_shadowing=False,
-                            interested_in_connecting_with_other_mentors=False,
+                            interested_in_connecting_with_other_mentors=True,
                             willing_to_volunteer_for_events=False,
                             interested_in_mentor_training=True)
         self.user.save()
@@ -538,306 +740,69 @@ class SignUpTests(TestCase):
         request = self.client.get(link)
         self.assertEqual(request.status_code, HTTPStatus.FOUND)
 
-
-class ForgotPasswordTest(TestCase):
-    """
-    Unit tests for forgot password feature
-    """
-
-    def setUp(self):
-        self.username = 'user1'
-        self.password = 'user_password1'
-        self.email = 'email1@test.com'
-        self.client = Client()
-        self.user = User.objects.create_user(self.username, self.email, self.password)
-
-    def test_get_success(self):
-        """
-        Can access if user is not logged in.
-        """
-        self.client.logout()
-        response = self.client.get(reverse('sap:password-forgot'))
-        self.assertEqual(response.status_code, HTTPStatus.OK)
-        self.assertContains(
-            response, "Send me instructions!", html=True
-        )
-
-    def test_get_fail(self):
-        """
-        Cannot access if user is not logged in.
-        """
-        self.client.login(username=self.username, password=self.password)
-        response = self.client.get(reverse('sap:password-forgot'))
-        self.assertEqual(response.status_code, HTTPStatus.FOUND)
-
-    def test_enter_valid_reset_email_address(self):
-        """
-        Enter email address and receive a message
-        """
-        response = self.client.get(reverse('sap:password-forgot'))
-        self.assertEqual(response.status_code, HTTPStatus.OK)
-        self.assertContains(
-            response, "Send me instructions!", html=True
-        )
-
-        data = {
-            "email": "email1@test.com",
-        }
-        form = PasswordResetForm(
-            data=data
-        )
-        self.assertTrue(form.is_valid())
-
-        response = self.client.post(
-            reverse("sap:password-forgot"), data=data, follow=True)
-        self.assertEqual(response.status_code, HTTPStatus.OK)
-
-    def test_enter_invalid_reset_email_address(self):
-        """
-        Enter invalid email address and receive a message.
-        """
-        response = self.client.get(reverse('sap:password-forgot'))
-        self.assertEqual(response.status_code, HTTPStatus.OK)
-        self.assertContains(
-            response, "Send me instructions!", html=True
-        )
-
-        data = {
-            "email": "wrongemail@test.com",
-        }
-        form = PasswordResetForm(
-            data=data
-        )
-        self.assertTrue(form.is_valid())
-
-        response = self.client.post(
-            reverse('sap:password-forgot'), data=data, follow=True)
-        self.assertEqual(response.status_code, HTTPStatus.OK)
-
-    def test_enter_invalid_form(self):
-        """
-        Enter invalid text in email field.
-        """
-        response = self.client.get(reverse('sap:password-forgot'))
-        self.assertEqual(response.status_code, HTTPStatus.OK)
-        self.assertContains(
-            response, "Send me instructions!", html=True
-        )
-
-        data = {
-            "email": "not_an_email_address",
-        }
-        form = PasswordResetForm(
-            data=data
-        )
-        self.assertFalse(form.is_valid())
-
-        response = self.client.post(
-            reverse('sap:password-forgot'), data=data, follow=True)
-        self.assertEqual(response.status_code, HTTPStatus.OK)
-
-    def test_if_confirmation_link_work(self):
-        """
-        The unique link to reset password exists and works
-        """
-        token = password_reset_token.make_token(self.user)
-        uid = urlsafe_base64_encode(force_bytes(self.user.pk))
-        link = reverse('sap:password-forgot-confirm', args=[uid, token])
-
-        request = self.client.get(link)
-        self.assertEqual(request.status_code, HTTPStatus.OK)
-
-    def test_reset_password_success(self):
-        """
-        Successfully create new password.
-        """
-        token = password_reset_token.make_token(self.user)
-        uid = urlsafe_base64_encode(force_bytes(self.user.pk))
-        link = reverse('sap:password-forgot-confirm', args=[uid, token])
-
-        request = self.client.get(link)
-        self.assertEqual(request.status_code, HTTPStatus.OK)
-
-        data = {
-            "new_password1": "user_password2",
-            "new_password2": "user_password2"
-        }
-        form = UserResetForgotPasswordForm(
-            user=self.user,
-            data=data
-        )
-        self.assertTrue(form.is_valid())
-
-        response = self.client.post(
-            link, data=data, follow=True)
-        self.assertEqual(response.status_code, HTTPStatus.OK)
-        message = list(response.context['messages'])[0]
-        self.assertEqual(message.message, "New Password Created Successfully!")
-
-    def test_reset_password_failure(self):
-        """
-        Fail to create new password.
-        """
-        token = password_reset_token.make_token(self.user)
-        uid = urlsafe_base64_encode(force_bytes(self.user.pk))
-        link = reverse('sap:password-forgot-confirm', args=[uid, token])
-
-        request = self.client.get(link)
-        self.assertEqual(request.status_code, HTTPStatus.OK)
-
-        data = {
-            "new_password1": "user_password2",
-            "new_password2": "wrong_password"
-        }
-        form = UserResetForgotPasswordForm(
-            user=self.user,
-            data=data
-        )
-        self.assertFalse(form.is_valid())
-
-        response = self.client.post(
-            link, data=data, follow=True)
-        # self.assertEqual(response.url, link)
-        self.assertEqual(response.status_code, HTTPStatus.OK)
-
-    def test_confirmation_link_fail_for_get_method(self):
-        """
-        Cannot open invalid confirmation link.
-        """
-        token = password_reset_token.make_token(self.user)
-        uid = urlsafe_base64_encode(force_bytes(self.user.pk))
-        link = reverse('sap:password-forgot-confirm', args=[uid, token])
-
-        self.user.delete()
-
-        request = self.client.get(link)
-        self.assertEqual(request.status_code, HTTPStatus.FOUND)
-
-    def test_confirmation_link_fail_for_post_method(self):
-        """
-        Fail to create new password.
-        """
-        token = password_reset_token.make_token(self.user)
-        uid = urlsafe_base64_encode(force_bytes(self.user.pk))
-        link = reverse('sap:password-forgot-confirm', args=[uid, token])
-
-        request = self.client.get(link)
-        self.assertEqual(request.status_code, HTTPStatus.OK)
-
-        data = {
-            "new_password1": "user_password2",
-            "new_password2": "user_password2"
-        }
-        form = UserResetForgotPasswordForm(
-            user=self.user,
-            data=data
-        )
-        self.assertTrue(form.is_valid())
-
-        self.user.delete()
-
-        response = self.client.post(
-            link, data=data, follow=True)
-        # self.assertEqual(response.url, link)
-        self.assertEqual(response.status_code, HTTPStatus.OK)
-
-
-class SignUpDoneViewTests(TestCase):
-    """
-    Unit tests for SignUpDoneView
-    """
-    def setUp(self):
-        self.username = 'admin'
-        self.username_active = 'user_active'
-        self.password = 'admin_password1'
-        self.email = 'email@test.com'
-        self.email_active = 'email_active@test.com'
-        self.user = User.objects.create_user(username=self.username, email=self.email, password=self.password)
-        self.user_active = User.objects.create_user(username=self.username_active, email=self.email_active,
-                                                    password=self.password,
-                                                    is_active=True)
-        self.client = Client()
-
-    def test_if_user_come_from_signup(self):
-        """
-        If user comes from sign-up, redirect to the page
-        """
-        response = self.client.post(
-            '/sign-up/',
-            {
-                'csrfmiddlewaretoken': ['K5dFCUih0K6ZYklAemhvIWSpCebK86zdx4ric6ucIPLUQhAdtdT7hhp4r5etxoJY'],
-                'firstName': ['hawk'],
-                'lastName': ['herky'],
-                'new_username': ['hawkherky'],
-                'new_email': ['hawkherky@uiowa.edu'],
-                'new_password': self.password,
-                'repeat_password': self.password,
-                'roleSelected': ['Graduate Student'],
-                'research-des': ['research'],
-                'openingRadios': ['No'], 'mentoringRadios': ['No'], 'connectingWithMentorsRadios': ['Yes'],
-                'studentsInterestedRadios': ['No'], 'labShadowRadios': ['Yes'],
-                'volunteerRadios': ['Yes'], 'trainingRadios': ['Yes'], 'howCanWeHelp': ['no']
-            }
-        )
-
-        # response2 = response
-        url = response.url
-        self.assertEqual(url, '/sign-up-done/')
-        self.assertEqual(response.status_code, 302)
-
-    def test_signup_if_user_is_authenticated(self):
-        """
-        If user is authenticated
-        """
-        self.client.login(username=self.username, password=self.password)
-        response = self.client.get(reverse('sap:sign-up-done'))
-        self.assertEqual(response.status_code, 302)
-
-    def test_signup_if_keyerror(self):
-        """
-        If keyerror
-        """
-        self.client.logout()
-        response = self.client.get(reverse('sap:sign-up-done'))
-        self.assertEqual(response.status_code, 302)
-
-    def test_signup_if_keyerror_and_is_authenticated(self):
-        """
-        If keyerror and is_authenticated
-        """
-        self.client.login(username=self.username, password=self.password)
-        response = self.client.get(reverse('sap:sign-up-done'))
-        self.assertEqual(response.status_code, 302)
-
-
-class ForgotPasswordDoneView(TestCase):
-    """
-    Unit tests for SignUpDoneView
-    """
-    def setUp(self):
-        self.username = 'admin'
-        self.username_active = 'user_active'
-        self.password = 'admin_password1'
-        self.email = 'email@test.com'
-        self.email_active = 'email_active@test.com'
-        self.user = User.objects.create_user(username=self.username, email=self.email, password=self.password)
-        self.user_active = User.objects.create_user(username=self.username_active, email=self.email_active,
-                                                    password=self.password,
-                                                    is_active=True)
-        self.client = Client()
-
-    def test_forgotpassword_if_keyerror(self):
-        """
-        If keyerror
-        """
-        self.client.logout()
-        response = self.client.get(reverse('sap:password-forgot-done'))
-        self.assertEqual(response.status_code, 302)
-
-    def test_forgotpassword_if_keyerror_and_is_authenticated(self):
-        """
-        If keyerror and is_authenticated
-        """
-        self.client.login(username=self.username, password=self.password)
-        response = self.client.get(reverse('sap:password-forgot-done'))
-        self.assertEqual(response.status_code, 302)
+# class SignUpDoneViewTests(TestCase):
+#     """
+#     Unit tests for SignUpDoneView
+#     """
+#     def setUp(self):
+#         self.username = 'admin1'
+#         self.username_active = 'user_active1'
+#         self.password = 'admin_password12'
+#         self.email = 'email1@test.com'
+#         self.active_email = 'email_active1@test.com'
+#         self.user = User.objects.create_user(username=self.username, email=self.email, password=self.password)
+#         self.user_active = User.objects.create_user(username=self.username_active, email=self.active_email,
+#                                                     password=self.password,
+#                                                     is_active=True)
+#         self.client = Client()
+#
+#     def test_if_user_come_from_signup(self):
+#         """
+#         If user comes from sign-up, redirect to the page
+#         """
+#         response = self.client.post(
+#             '/sign-up/',
+#             {
+#                 'csrfmiddlewaretoken': ['K5dFCUih0K6ZYklAemhvIWSpCebK86zdx4ric6ucIPLUQhAdtdT7hhp4r5etxoJY'],
+#                 'firstName': ['hawk'],
+#                 'lastName': ['herky'],
+#                 'new_username': ['hawkherky'],
+#                 'new_email': ['hawkherky@uiowa.edu'],
+#                 'new_password': self.password,
+#                 'repeat_password': self.password,
+#                 'roleSelected': ['Graduate Student'],
+#                 'research-des': ['research'],
+#                 'openingRadios': ['No'], 'mentoringRadios': ['No'], 'connectingWithMentorsRadios': ['Yes'],
+#                 'studentsInterestedRadios': ['No'], 'labShadowRadios': ['Yes'],
+#                 'volunteerRadios': ['Yes'], 'trainingRadios': ['Yes'], 'howCanWeHelp': ['no']
+#             }
+#         )
+#
+#         # response2 = response
+#         url = response.url
+#         self.assertEqual(url, '/sign-up-done/')
+#         self.assertEqual(response.status_code, 302)
+#
+#     def test_signup_if_user_is_authenticated(self):
+#         """
+#         If user is authenticated
+#         """
+#         self.client.login(username=self.username, password=self.password)
+#         response = self.client.get(reverse('sap:sign-up-done'))
+#         self.assertEqual(response.status_code, 302)
+#
+#     def test_signup_if_keyerror(self):
+#         """
+#         If keyerror
+#         """
+#         self.client.logout()
+#         response = self.client.get(reverse('sap:sign-up-done'))
+#         self.assertEqual(response.status_code, 302)
+#
+#     def test_signup_if_keyerror_and_is_authenticated(self):
+#         """
+#         If keyerror and is_authenticated
+#         """
+#         self.client.login(username=self.username, password=self.password)
+#         response = self.client.get(reverse('sap:sign-up-done'))
+#         self.assertEqual(response.status_code, 302)

@@ -2,6 +2,9 @@
 views has functions that are mapped to the urls in urls.py
 """
 import datetime
+import io
+
+import xlsxwriter
 from fuzzywuzzy import fuzz
 
 from django.core import serializers
@@ -17,16 +20,17 @@ from django.contrib.auth.forms import PasswordChangeForm
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.http import HttpResponseNotFound
+from django.db import IntegrityError
 from django.utils.dateparse import parse_datetime
 from notifications.signals import notify
 from notifications.models import Notification
 
 from .forms import UpdateAdminProfileForm
-from .models import Announcement, EventInviteeRelation, EventAttendeeRelation, Ally, StudentCategories, AllyStudentCategoryRelation, Event
-
-# Create your views here.
+from .models import Announcement, EventInviteeRelation, EventAttendeeRelation, Ally, StudentCategories, \
+ AllyStudentCategoryRelation, Event, AllyMentorRelation, AllyMenteeRelation
 
 User = get_user_model()
+
 
 def make_notification(request, notifications, user, msg, action_object=''):
     """
@@ -39,9 +43,17 @@ def make_notification(request, notifications, user, msg, action_object=''):
     @action_object: django object (optional)
     """
     if notifications.exists():
-        length = len(notifications)
+        announcements_and_events = []
+        for notification in notifications:
+            if notification.action_object:
+                if notification.action_object == action_object:
+                    notification.delete()
+                elif notification.action_object._meta.verbose_name == 'event' or \
+                    notification.action_object._meta.verbose_name == 'announcement':
+                    announcements_and_events.append(notification)
+        length = len(announcements_and_events)
         while length >= 10:
-            notifications[length - 1].delete()
+            announcements_and_events[length - 1].delete()
             length -= 1
     if action_object == '':
         notify.send(request.user, recipient=user, verb=msg)
@@ -81,6 +93,24 @@ class AccessMixin(LoginRequiredMixin):
             return self.handle_no_permission()
         return super().dispatch(request, *args, **kwargs)
 
+def add_mentor_relation(ally_id, mentor_id):
+    """
+    helper function for adding mentor relation
+    """
+    try:
+        AllyMentorRelation.objects.create(ally_id=ally_id,
+            mentor_id=mentor_id)
+        return "Mentor added !"
+    except IntegrityError:  # pragma: no cover
+        return HttpResponse("ERROR: Mentor already exists!")
+
+
+def add_mentee_relation(ally_id, mentee_id):
+    """
+    helper function for adding mentee relation
+    """
+    AllyMenteeRelation.objects.get_or_create(ally_id=ally_id,
+                                      mentee_id=mentee_id)
 
 class ViewAllyProfileFromAdminDashboard(View):
     """
@@ -91,13 +121,33 @@ class ViewAllyProfileFromAdminDashboard(View):
         """
         method to retrieve all ally information
         """
+
         try:
-            user = User.objects.get(username=ally_username)
-            ally = Ally.objects.get(user=user)
+            req_user = User.objects.get(username=ally_username)
+            ally = Ally.objects.get(user=req_user)
+
+            try:
+                mentor = AllyMentorRelation.objects.get(ally_id=ally.id)
+                mentor = Ally.objects.get(pk=mentor.mentor_id)
+            except ObjectDoesNotExist:
+                mentor = []
+
+            try:
+                mentees_queryset = AllyMenteeRelation.objects.filter(ally_id=ally.id)
+                mentees = []
+                for mentee in mentees_queryset:
+                    mentees.append(
+                        Ally.objects.get(pk=mentee.mentee_id))
+            except ObjectDoesNotExist:  # pragma: no cover
+                mentees = []
+
             return render(request, 'sap/admin_ally_table/view_ally.html', {
-                'ally': ally
+                'ally': ally,
+                'mentor': mentor,
+                'mentees': mentees
             })
-        except ObjectDoesNotExist:
+        except ObjectDoesNotExist:  # pragma: no cover
+            print(ObjectDoesNotExist)
             return HttpResponseNotFound()
 
 
@@ -150,8 +200,11 @@ class DeleteAllyProfileFromAdminDashboard(AccessMixin, View):
         try:
             user = User.objects.get(username=username)
             ally = Ally.objects.get(user=user)
+            ally_categories=AllyStudentCategoryRelation.objects.filter(ally_id=ally.id)
+            categories=StudentCategories.objects.filter(id=ally_categories[0].student_category_id)
             ally.delete()
             user.delete()
+            categories[0].delete()
 
             messages.success(request, 'Successfully deleted the user ' + username)
             return redirect('sap:sap-dashboard')
@@ -364,7 +417,7 @@ class AlliesListView(AccessMixin, TemplateView):
                             ally_id=ally.id).values()[0]
                         categories = StudentCategories.objects.filter(
                             id=categories['student_category_id'])[0]
-                    except KeyError:
+                    except KeyError:  # pragma: no cover
                         student_categories = []
 
                     if student_categories:
@@ -477,7 +530,7 @@ class MentorsListView(generic.ListView):
                     ally_id=ally.id).values()[0]
                 categories = StudentCategories.objects.filter(
                     id=categories['student_category_id'])[0]
-            except KeyError:
+            except KeyError:  # pragma: no cover
                 categories = []
 
             if (categories) and (exclude_from_ms_default is False):
@@ -501,7 +554,7 @@ class MentorsListView(generic.ListView):
                             ally_id=ally.id).values()[0]
                         categories_from_list = StudentCategories.objects.filter(
                             id=categories_from_list['student_category_id'])[0]
-                    except KeyError:
+                    except KeyError:  # pragma: no cover
                         categories_from_list = []
                     not_found = True
                     if categories_from_list:
@@ -687,7 +740,6 @@ class AnalyticsView(AccessMixin, TemplateView):
                                                           "gradNumbers": other_numbers[1],
                                                           "facultyNumbers": other_numbers[2],
                                                           "role": role, })
-
         messages.error(request, "No allies to display!")
         return redirect('sap:sap-dashboard')
 
@@ -756,22 +808,20 @@ class CreateAdminView(AccessMixin, TemplateView):
 
 
 class CreateEventView(AccessMixin, TemplateView):
-    """Enter what this class/method does"""
+    """Create a new event functions"""
     template_name = "sap/create_event.html"
 
     def get(self, request):
-        """Enter what this class/method does"""
+        """Render create event page"""
         if request.user.is_staff:
             return render(request, self.template_name)
 
         return redirect('sap:resources')
 
     def post(self, request):
-        """Enter what this class/method does"""
+        """Creates a new event if when the admin clicks on create event button on create event page"""
 
-        notifications = Notification.objects.all()
         new_event_dict = dict(request.POST)
-        print(new_event_dict)
         event_title = new_event_dict['event_title'][0]
         event_description = new_event_dict['event_description'][0]
         event_start_time = new_event_dict['event_start_time'][0]
@@ -833,20 +883,6 @@ class CreateEventView(AccessMixin, TemplateView):
             messages.warning(request, 'End time cannot be less than start time!')
             return redirect('/create_event')
 
-        event = Event.objects.create(title=event_title,
-                                     description=event_description,
-                                     start_time=parse_datetime(event_start_time + '-0500'),
-                                     # converting time to central time before storing in db
-                                     end_time=parse_datetime(event_end_time + '-0500'),
-                                     location=event_location,
-                                     allday=allday,
-                                     invite_all=invite_all,
-                                     mentor_status=mentor_status,
-                                     special_category=special_category,
-                                     research_field=research_field,
-                                     school_year_selected=school_year_selected,
-                                     role_selected=role_selected)
-
         if invite_all_selected:
             # If all allies are invited
             allies_to_be_invited = allies_list
@@ -890,24 +926,72 @@ class CreateEventView(AccessMixin, TemplateView):
         allies_to_be_invited.extend(
             Ally.objects.filter(id__in=invited_allies_ids)
         )
-
-        all_event_ally_objs = []
-        invited_allies = set()
         allies_to_be_invited = set(allies_to_be_invited)
+        try:
+            junk = new_event_dict['email_list']
+            if junk[0] == 'get_email_list':
+                return CreateEventView.build_response(allies_to_be_invited, event_title)
+            return redirect('/calendar')
+        except KeyError:
+            event = Event.objects.create(title=event_title,
+                                         description=event_description,
+                                         start_time=parse_datetime(event_start_time + '-0500'),
+                                         # converting time to central time before storing in db
+                                         end_time=parse_datetime(event_end_time + '-0500'),
+                                         location=event_location,
+                                         allday=allday,
+                                         invite_all=invite_all,
+                                         mentor_status=mentor_status,
+                                         special_category=special_category,
+                                         research_field=research_field,
+                                         school_year_selected=school_year_selected,
+                                         role_selected=role_selected)
+            CreateEventView.invite_and_notify(request, allies_to_be_invited, event)
 
+            messages.success(request, "Event successfully created!")
+
+            return redirect('/calendar')
+    @staticmethod
+    def invite_and_notify(request, allies_to_be_invited, event):
+        """
+        invite the users, notify users
+        """
+        invited_allies = set()
+        all_event_ally_objs = []
+        notifications = Notification.objects.all()
         for ally in allies_to_be_invited:
             if ally.user.is_active:
                 event_ally_rel_obj = EventInviteeRelation(event=event, ally=ally)
                 all_event_ally_objs.append(event_ally_rel_obj)
                 invited_allies.add(event_ally_rel_obj.ally)
-            ally_user = ally.user
-            if not ally_user.is_staff:
-                user_notify = notifications.filter(recipient=ally_user.id)
-                if user_notify.exists():
-                    msg = 'Event Invitation: ' + event_title
+                ally_user = ally.user
+                if not ally_user.is_staff:
+                    user_notify = notifications.filter(recipient=ally_user.id)
+                    msg = 'Event Invitation: ' + event.title
                     make_notification(request, user_notify, ally_user, msg, event)
-
         EventInviteeRelation.objects.bulk_create(all_event_ally_objs)
 
-        messages.success(request, "Event successfully created!")
-        return redirect('/calendar')
+    @staticmethod
+    def build_response(ally_list, event_title):
+        "Creates an httpresponse object containing a file that will be returned"
+        byte_stream = io.BytesIO()
+        workbook = xlsxwriter.Workbook(byte_stream)
+        emails = workbook.add_worksheet('Ally Invite Emails')
+        emails.write(0, 0, 'Username')
+        emails.write(0, 1, 'Email')
+        rows = 1
+        for ally in ally_list:
+            emails.write(rows, 0, ally.user.username)
+            emails.write(rows, 1, ally.user.email)
+            rows += 1
+        workbook.close()
+        byte_stream.seek(0)
+        today = datetime.date.today()
+        today = today.strftime("%b-%d-%Y")
+        file_name = today + "_SAP_Invitees_" + event_title + ".xlsx"
+        response = HttpResponse(
+            byte_stream,
+            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+        response['Content-Disposition'] = 'attachment; filename=' + file_name
+        return response
