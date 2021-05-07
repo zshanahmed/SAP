@@ -20,7 +20,6 @@ from django.contrib.auth.forms import PasswordChangeForm
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.http import HttpResponseNotFound
-from django.db import IntegrityError
 from django.utils.dateparse import parse_datetime
 from notifications.signals import notify
 from notifications.models import Notification

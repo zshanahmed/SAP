@@ -756,7 +756,7 @@ class UploadAllies(AccessMixin, HttpResponse):
             data_frame['Year'] = data_frame['Year'].replace(regex=r'Sophmore', value='Sophomore')
             for i in range(0, len(data_frame)):
                 year = data_frame['Year'][i]
-                if year == "Freshman" or "Sophomore":
+                if year in ('Freshman', 'Sophomore'):
                     data_frame['interested_in_being_mentored'][i] = data_frame['Are you interested in becoming a peer mentor?'][i] or \
                                                                     data_frame['Are you interested in mentoring students?'][i]
                 data_frame['interested_in_mentoring'][i] = data_frame['Are you interested in becoming a peer mentor?'][i] or \

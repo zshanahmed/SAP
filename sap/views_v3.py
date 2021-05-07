@@ -590,6 +590,9 @@ class EditEventView(View, AccessMixin):
         return redirect('/calendar')
 
 class MentorshipView(View):
+    """
+    Views associated with mentor/mentee pairing, deletion go here.
+    """
     @staticmethod
     def get(request, ally_username='', context=''):
         """
@@ -606,8 +609,8 @@ class MentorshipView(View):
             else:
                 context = 'addMentee'
                 allies_of_interest = all_allies.filter(interested_in_being_mentored=True)
-                takenMentees = AllyMentorRelation.objects.all()
-                for mentee in takenMentees:
+                taken_mentees = AllyMentorRelation.objects.all()
+                for mentee in taken_mentees:
                     allies_of_interest = allies_of_interest.exclude(id=mentee.ally_id)
             allies = []
             for ally in allies_of_interest:
@@ -631,12 +634,13 @@ class MentorshipView(View):
         if not request.user.is_staff or context != 'addMentee':
             return HttpResponseForbidden
         post_dict = dict(request.POST)
+        print(post_dict)
         mentees = AllyMentorRelation.objects.all()
 
         try:
             mentor = User.objects.get(username=ally_username)
             mentor = Ally.objects.get(user=mentor)
-        except:
+        except ObjectDoesNotExist:
             messages.warning(request, "Mentor no longer exists!")
             return redirect('sap:sap-dashboard')
 
@@ -647,14 +651,14 @@ class MentorshipView(View):
                 mentee = Ally.objects.get(user=mentee)
                 mentees.append(mentee)
             except ObjectDoesNotExist:
-                messages.add_message('Mentee user ' + mentee_username + ' does not exist!')
+                messages.warning(request, 'Mentee user ' + mentee_username + ' does not exist!')
 
         for mentee in mentees:
             try:
                 add_mentee_relation(mentor.id, mentee.id)
                 add_mentor_relation(mentee.id, mentor.id)
             except IntegrityError:
-                messages.add_message('Mentee already has mentor!')
+                messages.warning(request, 'Mentee already has mentor!')
 
         return redirect(reverse('sap:admin_edit_ally', args=[ally_username]))
 
@@ -764,10 +768,10 @@ class MentorshipView(View):
         try:
             mentee = Ally.objects.get(user=request.user)
             mentor_user = User.objects.get(username=mentor_username)
-            menteeRelation = AllyMenteeRelation.objects.get(mentee_id=mentee.id)
-            mentorRelation = AllyMentorRelation.objects.get(ally_id=mentee.id)
-            menteeRelation.delete()
-            mentorRelation.delete()
+            mentee_relation = AllyMenteeRelation.objects.get(mentee_id=mentee.id)
+            mentor_relation = AllyMentorRelation.objects.get(ally_id=mentee.id)
+            mentee_relation.delete()
+            mentor_relation.delete()
             messages.success(request, mentor_user.first_name + " " + mentor_user.last_name + " is no longer your mentor!")
             notifications = Notification.objects.filter(recipient=mentor_user)
             make_notification(request, notifications, mentor_user,
@@ -786,10 +790,10 @@ class MentorshipView(View):
         try:
             mentee_user = User.objects.get(username=mentee_username)
             mentee = Ally.objects.get(user=mentee_user)
-            menteeRelations = AllyMenteeRelation.objects.get(mentee_id=mentee.id)
-            mentorRelations = AllyMentorRelation.objects.get(ally_id=mentee.id)
-            menteeRelations.delete()
-            mentorRelations.delete()
+            mentee_relations = AllyMenteeRelation.objects.get(mentee_id=mentee.id)
+            mentor_relations = AllyMentorRelation.objects.get(ally_id=mentee.id)
+            mentee_relations.delete()
+            mentor_relations.delete()
             messages.success(request,
                              mentee_user.first_name + " " + mentee_user.last_name + " is no longer your mentee!")
             notifications = Notification.objects.filter(recipient=mentee_user)
@@ -819,8 +823,8 @@ class MentorshipView(View):
 
         if context == "mentee":
             return redirect(reverse('sap:admin_edit_ally', args=[mentee_username]))
-        else:
-            return redirect(reverse('sap:admin_edit_ally', args=[mentor_username]))
+
+        return redirect(reverse('sap:admin_edit_ally', args=[mentor_username]))
 
     @staticmethod
     def add_mentor_as_admin(request, mentor_username, mentee_username):
