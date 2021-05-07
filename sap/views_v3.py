@@ -646,7 +646,7 @@ class FeedbackView(View):
 
             messages.info(self.request,
                           'Thank you for your feedback, we will get back to you soon!')
-        except HTTPError:
+        except HTTPError:   # pragma: no cover
             messages.warning(self.request,
                              'Please try again another time or contact team1sep@hotmail.com '
                              'and report this error code, HTTP401.')
