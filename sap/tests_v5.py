@@ -364,7 +364,11 @@ class MentorshipTests(TestCase):
         self.mentor_ally2 = Ally.objects.create(hawk_id=self.mentor_user2.username, user=self.mentor_user2)
         self.mentee_user = User.objects.create_user(username='menteeGuy', password='password123')
         self.mentee_ally = Ally.objects.create(hawk_id=self.mentee_user.username, user=self.mentee_user)
-        self.admin_user = User.objects.create_user(username='adminGuy', password='password123')
+        self.mentee_user2 = User.objects.create_user(username='menteeGuy2', password='password123')
+        self.mentee_ally2 = Ally.objects.create(hawk_id=self.mentee_user2.username, user=self.mentee_user2)
+        self.admin_user = User.objects.create_user(username='adminGuy', password='password123', is_staff=True)
+        self.mentee_mentor = AllyMentorRelation.objects.create(ally_id=self.mentee_ally2.id, mentor_id=self.mentor_ally2.id)
+        self.mentor_mentee = AllyMenteeRelation.objects.create(ally_id=self.mentor_ally2.id, mentee_id=self.mentee_ally2.id)
         self.client = Client()
 
     def test_send_nonExisting_mentor_invitation(self):
@@ -392,15 +396,20 @@ class MentorshipTests(TestCase):
         self.client.logout()
 
         self.client.login(username=self.mentee_user.username, password='password123')
-        response = self.client.get(reverse('sap:add_mentor', args=[notification.action_object.user.username, notification.id]))
+        response = self.client.get(reverse('sap:add_mentor',
+                                           args=[notification.action_object.user.username, notification.id]), follow=True)
         notification = list(Notification.objects.all())
         notification = notification[-1]
         self.assertEqual(notification.action_object, self.mentee_ally)
-        self.assertEqual(302, response.status_code)
+        self.assertEqual(200, response.status_code)
         self.check_supposed_relation(self.mentor_ally.id, self.mentee_ally.id)
+        self.client.get(reverse('sap:add_mentor', args=['junkNotARealUser', notification.id]))
+        self.client.logout()
 
-        self.client.get(reverse('sap:delete_mentor', args=[notification.action_object.user.username, 'notification']))
+        self.client.login(username=self.mentor_user.username, password='password123')
+        self.client.get(reverse('sap:delete_mentee', args=[notification.action_object.user.username, 'notification']))
         self.check_non_existant(self.mentor_ally.id, self.mentee_ally.id)
+        self.client.get(reverse('sap:delete_mentee', args=[notification.action_object.user.username, 'notification']))
 
     def test_add_and_delete_as_mentor(self):
         self.client.login(username=self.mentee_user.username, password='password123')
@@ -412,3 +421,28 @@ class MentorshipTests(TestCase):
         self.client.logout()
 
         self.client.login(username=self.mentor_user.username, password='password123')
+        response = self.client.get(reverse('sap:add_mentee', args=[notification.action_object.user.username,
+                                                                   notification.id]))
+        self.assertEqual(response.status_code, 302)
+        notification = list(Notification.objects.all())
+        notification = notification[-1]
+        self.assertEqual(notification.action_object, self.mentor_ally)
+        self.client.get(reverse('sap:add_mentee', args=['junkNotARealUser', notification.id]))
+        self.client.logout()
+
+        self.client.login(username=self.mentee_user.username, password='password123')
+        self.client.get(reverse('sap:delete_mentor', args=[notification.action_object.user.username, 'notification']))
+        self.check_non_existant(self.mentor_ally.id, self.mentee_ally.id)
+        self.client.get(reverse('sap:delete_mentor', args=[notification.action_object.user.username, 'notification']))
+
+    def test_add_mentor_admin(self):
+
+        self.client.login(username='adminGuy', password='password123')
+        response = self.client.get(reverse('sap:admin_delete_mentor_mentee', args=[self.mentee_user2.username,
+                                                                                   self.mentor_user2.username,
+                                                                                   'mentee']))
+        self.check_non_existant(self.mentor_ally2.id, self.mentee_ally2.id)
+
+    def test_add_mentor_admin(self):
+        self.client.login(username='adminGuy', password='password123')
+        response = self.client.get(reverse('sap:admin_add_mentor_mentee'))
