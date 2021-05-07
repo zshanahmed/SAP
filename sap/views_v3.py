@@ -606,8 +606,12 @@ class MentorshipView(View):
             else:
                 context = 'addMentee'
                 allies_of_interest = all_allies.filter(interested_in_being_mentored=True)
+            allies = []
+            for ally in allies_of_interest:
+                if ally.user.is_active:
+                    allies.append(ally)
             return render(request, 'sap/admin_ally_table/add_mentor_mentee.html', {
-                'allies': allies_of_interest,
+                'allies': allies,
                 'req': request.user,
                 'ally_to_change': ally_to_change,
                 'context': context,
