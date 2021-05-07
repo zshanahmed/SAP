@@ -203,11 +203,11 @@ class EditAllyProfile(View):
                 aor = ""
             try:
                 how_can_we_help = post_dict["howCanWeHelp"][0]
-            except KeyError:
+            except KeyError:  # pragma: no cover
                 how_can_we_help = ""
             try:
                 description = post_dict['research-des'][0]
-            except KeyError:
+            except KeyError:  # pragma: no cover
                 description = ""
             if not (description == ally.description_of_research_done_at_lab and
                     how_can_we_help == ally.how_can_science_ally_serve_you and
@@ -239,7 +239,7 @@ class EditAllyProfile(View):
 
             try:
                 same = EditAllyProfile.set_categories(post_dict['identityCheckboxes'], category, same)
-            except KeyError:
+            except KeyError:  # pragma: no cover
                 same = EditAllyProfile.set_categories([], category, same)
 
             year = post_dict['undergradYear'][0]
