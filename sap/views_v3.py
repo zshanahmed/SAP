@@ -14,13 +14,15 @@ from django.views.generic import View
 from django.contrib.auth import get_user_model
 from django.shortcuts import render, redirect
 from django.contrib import messages
-from django.http import HttpResponseNotFound
+from django.http import HttpResponseNotFound, HttpResponseForbidden
 from django.utils.dateparse import parse_datetime
+from django.db import IntegrityError
 from python_http_client.exceptions import HTTPError
 from sendgrid import Mail, SendGridAPIClient
 
+from sap.views import make_notification, add_mentor_relation, add_mentee_relation
 from sap.views import AccessMixin
-from .models import Ally, StudentCategories, AllyStudentCategoryRelation, Event, \
+from .models import Ally, StudentCategories, AllyStudentCategoryRelation, Event, AllyMentorRelation, AllyMenteeRelation, \
     EventInviteeRelation, EventAttendeeRelation
 from .upload_resource_to_azure import upload_file_to_azure, delete_azure_blob
 
@@ -119,9 +121,9 @@ class EditAllyProfile(View):
 
     @staticmethod
     def get(request, username=''):
-        """Enter what this class/method does"""
+        """Returns Edit ally template"""
         user_req = request.user
-
+        allies = Ally.objects.all()
         if (username != user_req.username) and not user_req.is_staff:
             messages.warning(request, 'Access Denied!')
             return redirect('sap:ally-dashboard')
@@ -130,12 +132,29 @@ class EditAllyProfile(View):
             ally = Ally.objects.get(user=user)
             category_relation = AllyStudentCategoryRelation.objects.get(ally_id=ally.id)
             category = StudentCategories.objects.get(id=category_relation.student_category_id)
+            try:
+                mentor = AllyMentorRelation.objects.get(ally_id=ally.id)
+                mentor = Ally.objects.get(id=mentor.mentor_id)
+            except ObjectDoesNotExist:  # pragma: no cover
+                mentor = []
+            try:
+                mentee_list = []
+                mentees = AllyMenteeRelation.objects.filter(ally_id=ally.id)
+                for mentee in mentees:
+                    the_ally = allies.filter(id=mentee.mentee_id)
+                    if the_ally.exists():
+                        the_ally = the_ally[0]
+                        mentee_list.append(the_ally)
+            except ObjectDoesNotExist:  # pragma: no cover
+                mentee_list = []
             return render(request, 'sap/admin_ally_table/edit_ally.html', {
                 'ally': ally,
                 'category': category,
                 'req': request.user,
+                'mentor': mentor,
+                'mentees': mentee_list
             })
-        except ObjectDoesNotExist:
+        except ObjectDoesNotExist:  # pragma: no cover
             return HttpResponseNotFound()
 
     # {'csrfmiddlewaretoken': ['ex5Zuuyjk241FNEvxQoU4a4bnYbw4oI9gtHoblO2iG6EHhRhgAmvcerjUN9Wa6c9'],
@@ -168,7 +187,7 @@ class EditAllyProfile(View):
 
             category_relation = AllyStudentCategoryRelation.objects.get(ally_id=ally.id)
             category = StudentCategories.objects.get(id=category_relation.student_category_id)
-        except ObjectDoesNotExist:
+        except ObjectDoesNotExist:  # pragma: no cover
             messages.add_message(request, messages.WARNING,
                                  'Ally does not exist!')
             if user_req.is_staff:
@@ -185,14 +204,14 @@ class EditAllyProfile(View):
             if user_type != ally.user_type:
                 ally.user_type = user_type
                 same = False
-        except KeyError:
+        except KeyError:  # pragma: no cover
             message += 'User type could not be updated!\n'
         try:
             hawk_id = post_dict['hawkID'][0]
             if hawk_id not in (ally.hawk_id, ''):
                 ally.hawk_id = hawk_id
                 same = False
-        except KeyError:
+        except KeyError:  # pragma: no cover
             message += " HawkID could not be updated!\n"
         if ally.user_type != "Undergraduate Student":
             selections, same = self.set_boolean(
@@ -201,11 +220,11 @@ class EditAllyProfile(View):
                  'mentorTrainingRadios', 'volunteerRadios'], post_dict, ally, same)
             try:
                 same = EditAllyProfile.set_categories(post_dict['mentorCheckboxes'], category, same)
-            except KeyError:
+            except KeyError:  # pragma: no cover
                 same = EditAllyProfile.set_categories([], category, same)
             try:
                 aor = ','.join(post_dict['areaOfResearchCheckboxes'])
-            except KeyError:
+            except KeyError:  # pragma: no cover
                 aor = ""
             try:
                 how_can_we_help = post_dict["howCanWeHelp"][0]
@@ -430,7 +449,7 @@ class SapNotifications(View):
             else:
                 messages.add_message(request, messages.WARNING, 'Access Denied!')
 
-        except ObjectDoesNotExist:
+        except ObjectDoesNotExist:  # pragma: no cover
             messages.add_message(request, messages.WARNING, 'Notification does not exist!')
 
         return redirect('sap:notification_center')
@@ -485,7 +504,7 @@ class DeleteEventView(AccessMixin, View):
             event.delete()
             messages.success(request, 'Event deleted successfully!')
             return redirect(reverse('sap:calendar'))
-        except ObjectDoesNotExist:
+        except ObjectDoesNotExist:  # pragma: no cover
             messages.warning(request, "Event doesn't exist!")
         return redirect(reverse('sap:calendar'))
 
@@ -652,3 +671,261 @@ class FeedbackView(View):
                              'and report this error code, HTTP401.')
 
         return redirect('sap:home')
+
+class MentorshipView(View):
+    """
+    Views associated with mentor/mentee pairing, deletion go here.
+    """
+    @staticmethod
+    def get(request, ally_username='', context=''):
+        """
+        Render a template that allows you to manually set the ally mentor mentee relationships as an admin
+        """
+        if not request.user.is_staff:
+            return HttpResponseForbidden
+        all_allies = Ally.objects.all()
+        try:
+            ally_to_change = User.objects.get(username=ally_username)
+            ally_to_change = Ally.objects.get(user=ally_to_change)
+            if context == 'addMentor':
+                allies_of_interest = all_allies.filter(interested_in_mentoring=True)
+            else:
+                context = 'addMentee'
+                allies_of_interest = all_allies.filter(interested_in_being_mentored=True)
+                taken_mentees = AllyMentorRelation.objects.all()
+                for mentee in taken_mentees:
+                    allies_of_interest = allies_of_interest.exclude(id=mentee.ally_id)
+            allies = []
+            for ally in allies_of_interest:
+                if ally.user.is_active:
+                    allies.append(ally)
+            return render(request, 'sap/admin_ally_table/add_mentor_mentee.html', {
+                'allies': allies,
+                'req': request.user,
+                'ally_to_change': ally_to_change,
+                'context': context,
+            })
+        except ObjectDoesNotExist: # pragma: no cover
+            messages.warning(request, 'Ally Does Not Exist!')
+            return redirect('sap:sap-dashboard')
+
+    @staticmethod
+    def post(request, ally_username='', context=''):
+        """
+        Add selected mentees to mentor editing as admin
+        """
+        if not request.user.is_staff or context != 'addMentee':
+            return HttpResponseForbidden
+        post_dict = dict(request.POST)
+        print(post_dict)
+        mentees = AllyMentorRelation.objects.all()
+
+        try:
+            mentor = User.objects.get(username=ally_username)
+            mentor = Ally.objects.get(user=mentor)
+        except ObjectDoesNotExist:  # pragma: no cover
+            messages.warning(request, "Mentor no longer exists!")
+            return redirect('sap:sap-dashboard')
+
+        mentees = []
+        for mentee_username in post_dict['mentees-to-add']:
+            try:
+                mentee = User.objects.get(username=mentee_username)
+                mentee = Ally.objects.get(user=mentee)
+                mentees.append(mentee)
+            except ObjectDoesNotExist:  # pragma: no cover
+                messages.warning(request, 'Mentee user ' + mentee_username + ' does not exist!')
+
+        for mentee in mentees:
+            try:
+                add_mentee_relation(mentor.id, mentee.id)
+                add_mentor_relation(mentee.id, mentor.id)
+            except IntegrityError:  # pragma: no cover
+                messages.warning(request, 'Mentee already has mentor!')
+
+        return redirect(reverse('sap:admin_edit_ally', args=[ally_username]))
+
+    @staticmethod
+    def make_mentee_notification(request, mentee_requested_username=''):
+        """
+        Makes a notification from a mentor to a mentee that asks them to become their mentee
+        """
+        sender = request.user
+        try:
+            recipient = User.objects.get(username=mentee_requested_username)
+            notifications = Notification.objects.filter(recipient=recipient)
+            mentor = Ally.objects.get(user=sender)
+            make_notification(request, notifications, recipient,
+                              sender.first_name + " " + sender.last_name + " is asking to be your mentor!",
+                              action_object=mentor)
+            messages.success(request,
+                             'Invitation for ' + recipient.first_name + " " + recipient.last_name
+                             + ' to become your mentee has been sent!')
+        except ObjectDoesNotExist:  # pragma: no cover
+            messages.warning(request, 'Ally not found!')
+
+        return redirect('sap:ally-dashboard')
+
+    @staticmethod
+    def make_mentor_notification(request, mentor_requested_username=''):
+        """
+        Makes a notification from a mentee to a mentor that asks them to become their mentor
+        """
+        sender = request.user
+        try:
+            recipient = User.objects.get(username=mentor_requested_username)
+            notifications = Notification.objects.filter(recipient=recipient)
+            mentee = Ally.objects.get(user=sender)
+            make_notification(request, notifications, recipient,
+                              sender.first_name + " " + sender.last_name + " is asking to be your mentee!",
+                              action_object=mentee)
+            messages.success(request,
+                             'Invitation for ' + recipient.first_name + " " + recipient.last_name
+                             + ' to mentor you has been sent!')
+
+        except ObjectDoesNotExist:  # pragma: no cover
+            messages.warning(request, 'Ally not found!')
+
+        return redirect('sap:ally-dashboard')
+
+    @staticmethod
+    def make_mentor_mentee(request, mentor_username='', notification_id=0):
+        """
+        Makes a mentor pair based on mentee request
+        """
+        try:
+            notification = Notification.objects.get(id=notification_id)
+            notification.delete()
+        except ObjectDoesNotExist:  # pragma: no cover
+            return HttpResponseNotFound
+        try:
+            mentee = Ally.objects.get(user=request.user)
+            mentor_user = User.objects.get(username=mentor_username)
+            mentor = Ally.objects.get(user=mentor_user)
+            add_mentor_relation(mentee.id, mentor.id)
+            add_mentee_relation(mentor.id, mentee.id)
+            messages.success(request, mentor_user.first_name + " " + mentor_user.last_name + " is now set to be your mentor!")
+            notifications = Notification.objects.filter(recipient=mentor_user)
+            make_notification(request, notifications, mentor_user,
+                              request.user.first_name + " " + request.user.last_name + " has added you as their mentor!",
+                              action_object=mentee)
+        except ObjectDoesNotExist:  # pragma: no cover
+            messages.warning(request, 'Ally not found!')
+        except IntegrityError:  # pragma: no cover
+            messages.warning(request, 'You already have a mentor!')
+        return redirect('sap:notification_center')
+
+    @staticmethod
+    def make_mentee_mentor(request, mentee_username='', notification_id=0):
+        """
+        Adds mentee pair based on mentor request
+        """
+        try:
+            notification = Notification.objects.get(id=notification_id)
+            notification.delete()
+        except ObjectDoesNotExist:  # pragma: no cover
+            return HttpResponseNotFound
+        try:
+            mentor = Ally.objects.get(user=request.user)
+            mentee_user = User.objects.get(username=mentee_username)
+            mentee = Ally.objects.get(user=mentee_user)
+            add_mentee_relation(mentor.id, mentee.id)
+            add_mentor_relation(mentee.id, mentor.id)
+            messages.success(request,
+                             mentee_user.first_name + " " + mentee_user.last_name + " is now set to be your mentee!")
+            notifications = Notification.objects.filter(recipient=mentee_user)
+            make_notification(request, notifications, mentee_user,
+                              request.user.first_name + " " + request.user.last_name + " has added you as their mentee!",
+                              action_object=mentor)
+        except ObjectDoesNotExist:  # pragma: no cover
+            messages.warning(request, 'Ally not found!')
+        except IntegrityError:  # pragma: no cover
+            messages.warning(request, 'Ally already has a mentor!')
+        return redirect('sap:notification_center')
+
+    @staticmethod
+    def delete_mentor_mentee(request, mentor_username='', context=''):
+        """
+        Removes a mentor pair based on mentee request
+        """
+        try:
+            mentee = Ally.objects.get(user=request.user)
+            mentor_user = User.objects.get(username=mentor_username)
+            mentee_relation = AllyMenteeRelation.objects.get(mentee_id=mentee.id)
+            mentor_relation = AllyMentorRelation.objects.get(ally_id=mentee.id)
+            mentee_relation.delete()
+            mentor_relation.delete()
+            messages.success(request, mentor_user.first_name + " " + mentor_user.last_name + " is no longer your mentor!")
+            notifications = Notification.objects.filter(recipient=mentor_user)
+            make_notification(request, notifications, mentor_user,
+                              request.user.first_name + " " + request.user.last_name + " has removed you as their mentor!")
+        except ObjectDoesNotExist:  # pragma: no cover
+            messages.warning(request, 'Mentor relationship does not exist!')
+        if context == 'notification':
+            return redirect('sap:notification_center')
+        return redirect(reverse('sap:admin_edit_ally', args=[request.user.username]))
+
+    @staticmethod
+    def delete_mentee_mentor(request, mentee_username='', context=''):
+        """
+        deletes a mentee pair based on mentor request
+        """
+        try:
+            mentee_user = User.objects.get(username=mentee_username)
+            mentee = Ally.objects.get(user=mentee_user)
+            mentee_relations = AllyMenteeRelation.objects.get(mentee_id=mentee.id)
+            mentor_relations = AllyMentorRelation.objects.get(ally_id=mentee.id)
+            mentee_relations.delete()
+            mentor_relations.delete()
+            messages.success(request,
+                             mentee_user.first_name + " " + mentee_user.last_name + " is no longer your mentee!")
+            notifications = Notification.objects.filter(recipient=mentee_user)
+            make_notification(request, notifications, mentee_user,
+                              request.user.first_name + " " + request.user.last_name + " has removed you as their mentee!")
+        except ObjectDoesNotExist:  # pragma: no cover
+            messages.warning(request, 'Mentee Relationship does not exist!')
+        if context == 'notification':
+            return redirect('sap:notification_center')
+        return redirect(reverse('sap:admin_edit_ally', args=[request.user.username]))
+
+    @staticmethod
+    def delete_relation_as_admin(request, mentee_username='', mentor_username='', context=''):
+        """
+        delete a mentor mentee pair as an admin
+        """
+        if not request.user.is_staff:
+            return HttpResponseForbidden
+        try:
+            mentee = User.objects.get(username=mentee_username)
+            mentee = Ally.objects.get(user=mentee)
+            AllyMentorRelation.objects.get(ally_id=mentee.id).delete()
+            AllyMenteeRelation.objects.get(mentee_id=mentee.id).delete()
+            messages.success(request, "Mentor Mentee Relationship Deleted Successfully")
+        except ObjectDoesNotExist:  # pragma: no cover
+            messages.warning(request, "Mentee Mentor Relationship Not Found!")
+
+        if context == "mentee":
+            return redirect(reverse('sap:admin_edit_ally', args=[mentee_username]))
+
+        return redirect(reverse('sap:admin_edit_ally', args=[mentor_username]))
+
+    @staticmethod
+    def add_mentor_as_admin(request, mentor_username='', mentee_username=''):
+        """
+        add mentor mentee pair as an admin
+        """
+        if not request.user.is_staff:
+            return HttpResponseForbidden
+        try:
+            mentee = User.objects.get(username=mentee_username)
+            mentee = Ally.objects.get(user=mentee)
+            mentor = User.objects.get(username=mentor_username)
+            mentor = Ally.objects.get(user=mentor)
+            add_mentor_relation(mentee.id, mentor.id)
+            add_mentee_relation(mentor.id, mentee.id)
+            messages.success(request, "Mentor Added!")
+        except ObjectDoesNotExist:  # pragma: no cover
+            messages.warning(request, "Ally Not Found!")
+        except IntegrityError:  # pragma: no cover
+            messages.warning(request, "Mentee already has mentor!")
+        return redirect(reverse('sap:admin_edit_ally', args=[mentee_username]))

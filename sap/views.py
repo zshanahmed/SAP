@@ -3,10 +3,9 @@ views has functions that are mapped to the urls in urls.py
 """
 import datetime
 import io
-
+from collections import OrderedDict
 import xlsxwriter
 from fuzzywuzzy import fuzz
-
 from django.core import serializers
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponseForbidden, HttpResponse
@@ -20,11 +19,9 @@ from django.contrib.auth.forms import PasswordChangeForm
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.http import HttpResponseNotFound
-from django.db import IntegrityError
 from django.utils.dateparse import parse_datetime
 from notifications.signals import notify
 from notifications.models import Notification
-
 from .forms import UpdateAdminProfileForm
 from .models import Announcement, EventInviteeRelation, EventAttendeeRelation, Ally, StudentCategories, \
  AllyStudentCategoryRelation, Event, AllyMentorRelation, AllyMenteeRelation
@@ -69,9 +66,7 @@ def login_success(request):
     if request.user.is_authenticated:
         if request.user.is_staff:
             return redirect('sap:sap-dashboard')
-
         return redirect('sap:ally-dashboard')
-
     return redirect('sap:home')
 
 
@@ -97,12 +92,8 @@ def add_mentor_relation(ally_id, mentor_id):
     """
     helper function for adding mentor relation
     """
-    try:
-        AllyMentorRelation.objects.create(ally_id=ally_id,
-            mentor_id=mentor_id)
-        return "Mentor added !"
-    except IntegrityError:  # pragma: no cover
-        return HttpResponse("ERROR: Mentor already exists!")
+    AllyMentorRelation.objects.create(ally_id=ally_id,
+                                      mentor_id=mentor_id)
 
 
 def add_mentee_relation(ally_id, mentee_id):
@@ -110,7 +101,8 @@ def add_mentee_relation(ally_id, mentee_id):
     helper function for adding mentee relation
     """
     AllyMenteeRelation.objects.get_or_create(ally_id=ally_id,
-                                      mentee_id=mentee_id)
+                                             mentee_id=mentee_id)
+
 
 class ViewAllyProfileFromAdminDashboard(View):
     """
@@ -162,7 +154,6 @@ class CreateAnnouncement(AccessMixin, HttpResponse):
         Enter what this class/method does
         """
         notifications = Notification.objects.all()
-
         users = User.objects.all()
         if request.user.is_staff:
             post_dict = dict(request.POST)
@@ -175,7 +166,6 @@ class CreateAnnouncement(AccessMixin, HttpResponse):
                 description=description,
                 created_at=datetime.datetime.utcnow()
             )
-
             for user in users:
                 if not user.is_staff:
                     user_notifications = notifications.filter(recipient=user.id)
@@ -184,7 +174,6 @@ class CreateAnnouncement(AccessMixin, HttpResponse):
 
             messages.success(request, 'Annoucement created successfully !!')
             return redirect('sap:sap-dashboard')
-
         return HttpResponseForbidden()
 
 
@@ -205,7 +194,6 @@ class DeleteAllyProfileFromAdminDashboard(AccessMixin, View):
             ally.delete()
             user.delete()
             categories[0].delete()
-
             messages.success(request, 'Successfully deleted the user ' + username)
             return redirect('sap:sap-dashboard')
 
@@ -334,9 +322,12 @@ class AlliesListView(AccessMixin, TemplateView):
     def get(self, request):
         """Renders the dashboard with the allies and categories as django template variables."""
         allies_list = Ally.objects.order_by('-id')
+        tmp = {}
         for ally in allies_list:
-            if not ally.user.is_active:
-                allies_list = allies_list.exclude(id=ally.id)
+            if ally.user.is_active:
+                tmp[ally] = False
+        allies_list = tmp
+
         return render(request, 'sap/dashboard.html', {'allies_list': allies_list})
 
     def post(self, request):
@@ -447,9 +438,11 @@ class AlliesListView(AccessMixin, TemplateView):
                     if exclude_from_aor and exclude_from_year and exclude_from_sc and exclude_from_ut \
                             and exclude_from_ms_major:
                         allies_list = allies_list.exclude(id=ally.id)
+            tmp = {}
             for ally in allies_list:
-                if not ally.user.is_active:
-                    allies_list = allies_list.exclude(id=ally.id)
+                if ally.user.is_active:
+                    tmp[ally] = False
+            allies_list = tmp
             return render(request, 'sap/dashboard.html', {'allies_list': allies_list})
 
         return HttpResponse()
@@ -463,11 +456,31 @@ class MentorsListView(generic.ListView):
     def get(self, request):
         """Returns a view of allies"""
         allies_list = Ally.objects.order_by('-id')
+        mentees = AllyMenteeRelation.objects.all()
+        try:
+            user_ally = Ally.objects.get(user=request.user)
+        except ObjectDoesNotExist:
+            return HttpResponseNotFound
+        try:
+            mentor = AllyMentorRelation.objects.get(ally_id=user_ally.id)
+            mentor = Ally.objects.get(id=mentor.mentor_id)
+        except ObjectDoesNotExist:
+            mentor = None
         for ally in allies_list:
             if ally.user.is_active:
                 if not ally.user.is_active:
                     allies_list = allies_list.exclude(id=ally.id)
-        return render(request, 'sap/dashboard_ally.html', {'allies_list': allies_list})
+        tmp = {}
+        for ally in allies_list:
+            has_mentor = False
+            for mentee in mentees:
+                if mentee.mentee_id == ally.id:
+                    has_mentor = True
+            tmp[ally] = has_mentor
+        allies_list = tmp
+        return render(request, 'sap/dashboard_ally.html', {'allies_list': allies_list,
+                                                           'user_ally': user_ally,
+                                                           'mentor': mentor})
 
     def post(self, request):
         """Returns filtered version of allies on the dashboard"""
@@ -578,7 +591,28 @@ class MentorsListView(generic.ListView):
                         identity_wise_list.insert(0, ally)
             else:
                 identity_wise_list = allies_list
-            return render(request, 'sap/dashboard_ally.html', {'allies_list': identity_wise_list})
+            ordered_dict = OrderedDict()
+            mentees = AllyMenteeRelation.objects.all()
+            for ally in identity_wise_list:
+                has_mentor = False
+                for mentee in mentees:
+                    if mentee.mentee_id == ally.id:
+                        has_mentor = True
+                ordered_dict[ally] = has_mentor
+            identity_wise_list = ordered_dict
+            try:
+                user_ally = Ally.objects.get(user=request.user)
+            except ObjectDoesNotExist:
+                return HttpResponseNotFound
+            try:
+                mentor = AllyMentorRelation.objects.get(ally_id=user_ally.id)
+                mentor = Ally.objects.get(id=mentor.mentor_id)
+            except ObjectDoesNotExist:
+                mentor = None
+
+            return render(request, 'sap/dashboard_ally.html', {'allies_list': identity_wise_list,
+                                                               'user_ally': user_ally,
+                                                               'mentor': mentor})
 
         return HttpResponse()
 
@@ -718,16 +752,12 @@ class AnalyticsView(AccessMixin, TemplateView):
             other_joined_per_year, undergrad_joined_per_year = AnalyticsView.user_type_per_year(allies, other_year, undergrad_year)
             undergrad_years, undergrad_numbers = AnalyticsView.clean_undergrad_dic(undergrad_joined_per_year)
             other_years, other_numbers = AnalyticsView.clean_other_dic(other_joined_per_year)
-
             students = allies.filter(user_type="Undergraduate Student")
             mentors = allies.filter(~Q(user_type="Undergraduate Student"))
-
             student_categories = AnalyticsView.find_the_categories(students, relation, categories)
             mentor_categories = AnalyticsView.find_the_categories(mentors, relation, categories)
-
             num_student_categories = AnalyticsView.determine_num_per_category(student_categories)
             num_mentor_categories = AnalyticsView.determine_num_per_category(mentor_categories)
-
             num_undergrad_per_year = AnalyticsView.undergrad_per_year(students)
 
             return render(request, 'sap/analytics.html', {"numStudentCategories": num_student_categories,
@@ -748,21 +778,17 @@ class AdminProfileView(TemplateView):
     """Enter what this class/method does"""
     template_name = "sap/profile.html"
 
-
 class AboutPageView(TemplateView):
     """Enter what this class/method does"""
     template_name = "sap/about.html"
-
 
 class ResourcesView(TemplateView):
     """Enter what this class/method does"""
     template_name = "sap/resources.html"
 
-
 class SupportPageView(TemplateView):
     """Enter what this class/method does"""
     template_name = "sap/support.html"
-
 
 class CreateAdminView(AccessMixin, TemplateView):
     """Enter what this class/method does"""
@@ -791,7 +817,6 @@ class CreateAdminView(AccessMixin, TemplateView):
                 if new_admin_dict['new_password'][0] != new_admin_dict['repeat_password'][0]:
                     messages.add_message(request, messages.ERROR, 'New password was not the same as repeated password')
                     return redirect('/create_iba_admin')
-
                 messages.add_message(request, messages.SUCCESS, 'Account Created')
                 user = User.objects.create_user(new_admin_dict['new_username'][0],
                                                 new_admin_dict['new_email'][0], new_admin_dict['new_password'][0])
@@ -820,7 +845,6 @@ class CreateEventView(AccessMixin, TemplateView):
 
     def post(self, request):
         """Creates a new event if when the admin clicks on create event button on create event page"""
-
         new_event_dict = dict(request.POST)
         event_title = new_event_dict['event_title'][0]
         event_description = new_event_dict['event_description'][0]
@@ -839,88 +863,67 @@ class CreateEventView(AccessMixin, TemplateView):
                 allies_list = allies_list.exclude(id=ally.id)
 
         allies_list = list(allies_list)
-
         if 'role_selected' in new_event_dict:
             invite_ally_user_types = new_event_dict['role_selected']
             role_selected = ','.join(new_event_dict['role_selected'])
         else:
             invite_ally_user_types = []
-
         if 'school_year_selected' in new_event_dict:
             invite_ally_school_years = new_event_dict['school_year_selected']
             school_year_selected = ','.join(new_event_dict['school_year_selected'])
         else:
             invite_ally_school_years = []
-
         if 'mentor_status' in new_event_dict:
             invite_mentor_mentee = new_event_dict['mentor_status']
             mentor_status = ','.join(new_event_dict['mentor_status'])
         else:
             invite_mentor_mentee = []
-
         if 'special_category' in new_event_dict:
             invite_ally_belonging_to_special_categories = new_event_dict['special_category']
             special_category = ','.join(new_event_dict['special_category'])
         else:
             invite_ally_belonging_to_special_categories = []
-
         if 'research_area' in new_event_dict:
             invite_ally_belonging_to_research_area = new_event_dict['research_area']
             research_field = ','.join(new_event_dict['research_area'])
         else:
             invite_ally_belonging_to_research_area = []
-
         if 'invite_all' in new_event_dict:
             invite_all_selected = True
             invite_all = new_event_dict['invite_all'][0] == 'invite_all'
         else:
             invite_all_selected = []
             invite_all = False
-
         allday = 'event_allday' in new_event_dict
-
         if event_end_time < event_start_time:
             messages.warning(request, 'End time cannot be less than start time!')
             return redirect('/create_event')
-
         if invite_all_selected:
             # If all allies are invited
             allies_to_be_invited = allies_list
-
         else:
             allies_to_be_invited = []
-
         allies_to_be_invited.extend(Ally.objects.filter(user_type__in=invite_ally_user_types))
         allies_to_be_invited.extend(Ally.objects.filter(year__in=invite_ally_school_years))
-
         if 'Mentors' in invite_mentor_mentee:
             allies_to_be_invited.extend(Ally.objects.filter(interested_in_mentoring=True))
-
         if 'Mentees' in invite_mentor_mentee:
             allies_to_be_invited.extend(Ally.objects.filter(interested_in_mentor_training=True))
-
         allies_to_be_invited.extend(Ally.objects.filter(area_of_research__in=invite_ally_belonging_to_research_area))
         student_categories_to_include_for_event = []
-
         for category in invite_ally_belonging_to_special_categories:
             if category == 'First generation college-student':
                 student_categories_to_include_for_event.extend(StudentCategories.objects.filter(first_gen_college_student=True))
-
             elif category == 'Low-income':
                 student_categories_to_include_for_event.extend(StudentCategories.objects.filter(low_income=True))
-
             elif category == 'Underrepresented racial/ethnic minority':
                 student_categories_to_include_for_event.extend(StudentCategories.objects.filter(under_represented_racial_ethnic=True))
-
             elif category == 'LGBTQ':
                 student_categories_to_include_for_event.extend(StudentCategories.objects.filter(lgbtq=True))
-
             elif category == 'Rural':
                 student_categories_to_include_for_event.extend(StudentCategories.objects.filter(rural=True))
-
             elif category == 'Disabled':
                 student_categories_to_include_for_event.extend(StudentCategories.objects.filter(disabled=True))
-
         invited_allies_ids = AllyStudentCategoryRelation.objects.filter(student_category__in=
                                                                         student_categories_to_include_for_event).values('ally')
         allies_to_be_invited.extend(
@@ -947,9 +950,7 @@ class CreateEventView(AccessMixin, TemplateView):
                                          school_year_selected=school_year_selected,
                                          role_selected=role_selected)
             CreateEventView.invite_and_notify(request, allies_to_be_invited, event)
-
             messages.success(request, "Event successfully created!")
-
             return redirect('/calendar')
     @staticmethod
     def invite_and_notify(request, allies_to_be_invited, event):

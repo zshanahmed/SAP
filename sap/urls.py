@@ -139,4 +139,38 @@ urlpatterns = [
     url(r'^dismiss_notification/(?P<notification_id>[\w-]+)/$',
         login_required(sap.views_v3.SapNotifications.dismiss_notification),
         name='dismiss_notification'),
+
+    url(r'^notify_mentor/(?P<mentor_requested_username>[\w\s-]+)$',
+        login_required(sap.views_v3.MentorshipView.make_mentor_notification), name='notify_mentor'),
+
+    url(r'^notify_mentee/(?P<mentee_requested_username>[\w\s-]+)/$',
+        login_required(sap.views_v3.MentorshipView.make_mentee_notification), name='notify_mentee'),
+
+    url(r'^add_mentor/(?P<mentor_username>[\w\s-]+)/(?P<notification_id>[\w\s-]+)$',
+        login_required(sap.views_v3.MentorshipView.make_mentor_mentee), name='add_mentor'),
+
+
+    url(r'^add_mentee/(?P<mentee_username>[\w\s-]+)/(?P<notification_id>[\w\s-]+)$',
+        login_required(sap.views_v3.MentorshipView.make_mentee_mentor), name='add_mentee'),
+
+    url(r'^delete_mentor/(?P<mentor_username>[\w\s-]+)/(?P<context>[\w\s-]+)$',
+        login_required(sap.views_v3.MentorshipView.delete_mentor_mentee), name='delete_mentor'),
+
+    url(r'^delete_mentee/(?P<mentee_username>[\w\s-]+)/(?P<context>[\w\s-]+)$',
+        login_required(sap.views_v3.MentorshipView.delete_mentee_mentor), name='delete_mentee'),
+
+    url(r'^delete_mentor/(?P<mentor_username>[\w\s-]+)$',
+        login_required(sap.views_v3.MentorshipView.delete_mentor_mentee), name='delete_mentor'),
+
+    url(r'^delete_mentee/(?P<mentee_username>[\w\s-]+)$',
+        login_required(sap.views_v3.MentorshipView.delete_mentee_mentor), name='delete_mentee'),
+
+    url(r'^admin_delete_mentor_mentee/(?P<mentee_username>[\w\s-]+)/(?P<mentor_username>[\w\s-]+)/(?P<context>[\w\s-]+)$',
+        login_required(sap.views_v3.MentorshipView.delete_relation_as_admin), name='admin_delete_mentor_mentee'),
+
+    url(r'^admin_add_mentor_mentee/(?P<ally_username>[\w\s-]+)/(?P<context>[\w\s-]+)$',
+        login_required(sap.views_v3.MentorshipView.as_view()), name='admin_add_mentor_mentee'),
+
+    url(r'^admin_add_mentor/(?P<mentor_username>[\w\s-]+)/(?P<mentee_username>[\w\s-]+)$',
+        login_required(sap.views_v3.MentorshipView.add_mentor_as_admin), name='admin_add_mentor'),
 ]
