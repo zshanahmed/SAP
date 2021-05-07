@@ -10,7 +10,7 @@ from django.views.generic import View
 from django.contrib.auth import get_user_model
 from django.shortcuts import render, redirect
 from django.contrib import messages
-from django.http import HttpResponseNotFound
+from django.http import HttpResponseNotFound, HttpResponseForbidden
 from django.utils.dateparse import parse_datetime
 from django.db import IntegrityError
 
@@ -723,3 +723,19 @@ class MentorshipView(View):
             return redirect('sap:notification_center')
         return redirect(reverse('sap:admin_edit_ally', args=[request.user.username]))
 
+    @staticmethod
+    def delete_relation_as_admin(request, mentee_username):
+        """
+        delete a mentor mentee pair as an admin
+        """
+        if not request.user.is_staff:
+            return HttpResponseForbidden
+        try:
+            mentee = User.objects.get(username=mentee_username)
+            mentee = Ally.objects.get(user=mentee)
+            AllyMentorRelation.objects.get(ally_id=mentee.id).delete()
+            AllyMenteeRelation.objects.get(mentee_id=mentee.id).delete()
+            messages.success(request, "Mentor Mentee Relationship Deleted Successfully")
+        except ObjectDoesNotExist:
+            messages.warning(request, "Mentee Mentor Relationship Not Found!")
+        return redirect(reverse('sap:admin_edit_ally', args=[mentee_username]))

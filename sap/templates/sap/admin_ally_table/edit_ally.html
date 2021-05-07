@@ -528,30 +528,34 @@
         </div>
         <div class="py-1"><strong>How can science alliance serve you?</strong></div>
         <input name="howCanWeHelp" type="text" class="form-control form-control-user" id="howHelp" value='{{ ally.how_can_science_ally_serve_you }}'>
-        {% if not req.is_staff%}
-            {% if mentees %}
-                <div class="py-1">
+        {% if mentees %}
+            <div class="py-1">
+            <div class="row mt-2">
+              <div class="col-md-5">
+                <h5 class="m-0 font-weight-bold text-primary">Mentees:</h5>
+              </div>
+            </div>
+            <div class="row mt-2"></div>
+            {% for mentee in mentees %}
                 <div class="row mt-2">
-                  <div class="col-md-5">
-                    <h5 class="m-0 font-weight-bold text-primary">Mentees:</h5>
-                  </div>
-                </div>
-                <div class="row mt-2"></div>
-                {% for mentee in mentees %}
-                    <div class="row mt-2">
-                        <div class="px-3">
-                            <span><strong>
-                              {{ mentee.user.first_name }} {{ mentee.user.last_name }}
-                            </strong><span>
-                            &emsp;
-                            <a class="btn btn-danger btn-sm" href="{% url 'sap:delete_mentee' mentee.user.username %}">
-                                <i class="fa fa-trash"></i>
-                            </a>
-                        </div>
+                    <div class="px-3">
+                        <span><strong>
+                          {{ mentee.user.first_name }} {{ mentee.user.last_name }}
+                        </strong></span>
+                        &emsp;
+                    {% if req.is_staff %}
+                        <a class="btn btn-danger btn-sm" href="{% url 'sap:admin_delete_mentor_mentee' mentee.user.username %}">
+                            <i class="fa fa-trash"></i>
+                        </a>
+                    {% else %}
+                        <a class="btn btn-danger btn-sm" href="{% url 'sap:delete_mentee' mentee.user.username %}">
+                            <i class="fa fa-trash"></i>
+                        </a>
+                    {% endif %}
                     </div>
-                {% endfor %}
                 </div>
-            {% endif %}
+            {% endfor %}
+            </div>
         {% endif %}
     </div>
 
@@ -753,11 +757,11 @@
         </div>
         {% if not req.is_staff %}
             <div class="py-1">
-            <strong>My academic standing is a factor for IBA internships; therefore, I give IBA staff permission to obtain
+                <strong>My academic standing is a factor for IBA internships; therefore, I give IBA staff permission to obtain
                 my transcripts. If I completed coursework at another college or university, I am responsible for submitting
                 transcripts from that school to the University of Iowa Office of Admissions, and IBA may obtain a copy of
                 those transcripts from Admissions.</strong>
-            <div class="form-check" id="agreementRadios">
+                <div class="form-check" id="agreementRadios">
                 {% if ally.information_release %}
                     <input type="radio" value="Yes" name="agreementRadios" id="yes" required checked>
                     <label class="form-check-label" for="agreementRadios">Yes</label>
@@ -773,51 +777,63 @@
                     <label class="form-check-label" for="agreementRadios">No</label>
                     <br>
                 {% endif %}
+                </div>
             </div>
-        </div>
-            {% if mentor %}
-                <div class="py-1">
-                    <div class="row mt-2">
-                      <div class="col-md-5">
-                        <h5 class="m-0 font-weight-bold text-primary">Mentor:</h5>
-                      </div>
-                    </div>
-                    <div class="row mt-2">
-                        <div class="px-3">
-                            <span><strong>
-                              {{ mentor.user.first_name }} {{ mentor.user.last_name }}
-                            </strong></span>
-                            &emsp;
+        {% endif %}
+        {% if mentor %}
+            <div class="py-1">
+                <div class="row mt-2">
+                  <div class="col-md-5">
+                    <h5 class="m-0 font-weight-bold text-primary">Mentor:</h5>
+                  </div>
+                </div>
+                <div class="row mt-2">
+                    <div class="px-3">
+                        <span><strong>
+                          {{ mentor.user.first_name }} {{ mentor.user.last_name }}
+                        </strong></span>
+                        &emsp;
+                        {% if req.is_staff %}
+                        <a class="btn btn-danger btn-sm" href="{% url 'sap:admin_delete_mentor_mentee' ally.user.username %}">
+                            <i class="fa fa-trash"></i>
+                        </a>
+                        {% else %}
                             <a class="btn btn-danger btn-sm" href="{% url 'sap:delete_mentor' mentor.user.username %}">
                                 <i class="fa fa-trash"></i>
                             </a>
-                        </div>
+                        {% endif %}
                     </div>
                 </div>
-           {% endif %}
-            {% if mentees %}
-                <div class="py-1">
+            </div>
+       {% endif %}
+        {% if mentees %}
+            <div class="py-1">
+            <div class="row mt-2">
+              <div class="col-md-5">
+                <h5 class="m-0 font-weight-bold text-primary">Mentees:</h5>
+              </div>
+            </div>
+            <div class="row mt-2"></div>
+            {% for mentee in mentees %}
                 <div class="row mt-2">
-                  <div class="col-md-5">
-                    <h5 class="m-0 font-weight-bold text-primary">Mentees:</h5>
-                  </div>
-                </div>
-                <div class="row mt-2"></div>
-                {% for mentee in mentees %}
-                    <div class="row mt-2">
-                        <div class="px-3">
-                            <span><strong>
-                              {{ mentee.user.first_name }} {{ mentee.user.last_name }}
-                            </strong><span>
-                            &emsp;
+                    <div class="px-3">
+                        <span><strong>
+                          {{ mentee.user.first_name }} {{ mentee.user.last_name }}
+                        </strong></span>
+                        &emsp;
+                        {% if req.is_staff %}
+                            <a class="btn btn-danger btn-sm" href="{% url 'sap:admin_delete_mentor_mentee' mentee.user.username %}">
+                                <i class="fa fa-trash"></i>
+                            </a>
+                        {% else %}
                             <a class="btn btn-danger btn-sm" href="{% url 'sap:delete_mentee' mentee.user.username %}">
                                 <i class="fa fa-trash"></i>
                             </a>
-                        </div>
+                        {% endif %}
                     </div>
-                {% endfor %}
                 </div>
-            {% endif %}
+            {% endfor %}
+            </div>
         {% endif %}
     </div>
 

@@ -98,7 +98,7 @@
                                                             </li>
                                                         {% endif %}
                                                     {% endif %}
-                                                    {% if user_ally.interested_in_mentoring and ally.interested_in_being_mentored %}
+                                                    {% if user_ally.interested_in_mentoring and ally.interested_in_being_mentored  and not mentor.id == ally.id %}
                                                         <li class="list-inline-item">
                                                             <a href="{% url 'sap:notify_mentee' ally.user.username %}" class="btn btn-dark btn-sm" type="button" data-toggle="tooltip" data-placement="top"
                                                              title="Ask to be Mentor">
