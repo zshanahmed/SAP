@@ -702,10 +702,15 @@ class MentorshipView(View):
         return redirect('sap:ally-dashboard')
 
     @staticmethod
-    def make_mentor_mentee(request, mentor_username=''):
+    def make_mentor_mentee(request, mentor_username='', notification_id=0):
         """
         Makes a mentor pair based on mentee request
         """
+        try:
+            notification = Notification.objects.get(id=notification_id)
+            notification.delete()
+        except ObjectDoesNotExist:
+            return HttpResponseNotFound
         try:
             mentee = Ally.objects.get(user=request.user)
             mentor_user = User.objects.get(username=mentor_username)
@@ -724,10 +729,15 @@ class MentorshipView(View):
         return redirect('sap:notification_center')
 
     @staticmethod
-    def make_mentee_mentor(request, mentee_username=''):
+    def make_mentee_mentor(request, mentee_username='', notification_id=0):
         """
         Adds mentee pair based on mentor request
         """
+        try:
+            notification = Notification.objects.get(id=notification_id)
+            notification.delete()
+        except ObjectDoesNotExist:
+            return HttpResponseNotFound
         try:
             mentor = Ally.objects.get(user=request.user)
             mentee_user = User.objects.get(username=mentee_username)
