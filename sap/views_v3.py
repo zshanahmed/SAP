@@ -135,7 +135,7 @@ class EditAllyProfile(View):
             try:
                 mentor = AllyMentorRelation.objects.get(ally_id=ally.id)
                 mentor = Ally.objects.get(id=mentor.mentor_id)
-            except ObjectDoesNotExist:
+            except ObjectDoesNotExist:  # pragma: no cover
                 mentor = []
             try:
                 mentee_list = []
@@ -145,7 +145,7 @@ class EditAllyProfile(View):
                     if the_ally.exists():
                         the_ally = the_ally[0]
                         mentee_list.append(the_ally)
-            except ObjectDoesNotExist:
+            except ObjectDoesNotExist:  # pragma: no cover
                 mentee_list = []
             return render(request, 'sap/admin_ally_table/edit_ally.html', {
                 'ally': ally,
@@ -154,7 +154,7 @@ class EditAllyProfile(View):
                 'mentor': mentor,
                 'mentees': mentee_list
             })
-        except ObjectDoesNotExist:
+        except ObjectDoesNotExist:  # pragma: no cover
             return HttpResponseNotFound()
 
     # {'csrfmiddlewaretoken': ['ex5Zuuyjk241FNEvxQoU4a4bnYbw4oI9gtHoblO2iG6EHhRhgAmvcerjUN9Wa6c9'],
@@ -187,7 +187,7 @@ class EditAllyProfile(View):
 
             category_relation = AllyStudentCategoryRelation.objects.get(ally_id=ally.id)
             category = StudentCategories.objects.get(id=category_relation.student_category_id)
-        except ObjectDoesNotExist:
+        except ObjectDoesNotExist:  # pragma: no cover
             messages.add_message(request, messages.WARNING,
                                  'Ally does not exist!')
             if user_req.is_staff:
@@ -204,14 +204,14 @@ class EditAllyProfile(View):
             if user_type != ally.user_type:
                 ally.user_type = user_type
                 same = False
-        except KeyError:
+        except KeyError:  # pragma: no cover
             message += 'User type could not be updated!\n'
         try:
             hawk_id = post_dict['hawkID'][0]
             if hawk_id not in (ally.hawk_id, ''):
                 ally.hawk_id = hawk_id
                 same = False
-        except KeyError:
+        except KeyError:  # pragma: no cover
             message += " HawkID could not be updated!\n"
         if ally.user_type != "Undergraduate Student":
             selections, same = self.set_boolean(
@@ -220,11 +220,11 @@ class EditAllyProfile(View):
                  'mentorTrainingRadios', 'volunteerRadios'], post_dict, ally, same)
             try:
                 same = EditAllyProfile.set_categories(post_dict['mentorCheckboxes'], category, same)
-            except KeyError:
+            except KeyError:  # pragma: no cover
                 same = EditAllyProfile.set_categories([], category, same)
             try:
                 aor = ','.join(post_dict['areaOfResearchCheckboxes'])
-            except KeyError:
+            except KeyError:  # pragma: no cover
                 aor = ""
             try:
                 how_can_we_help = post_dict["howCanWeHelp"][0]
@@ -449,7 +449,7 @@ class SapNotifications(View):
             else:
                 messages.add_message(request, messages.WARNING, 'Access Denied!')
 
-        except ObjectDoesNotExist:
+        except ObjectDoesNotExist:  # pragma: no cover
             messages.add_message(request, messages.WARNING, 'Notification does not exist!')
 
         return redirect('sap:notification_center')
@@ -504,7 +504,7 @@ class DeleteEventView(AccessMixin, View):
             event.delete()
             messages.success(request, 'Event deleted successfully!')
             return redirect(reverse('sap:calendar'))
-        except ObjectDoesNotExist:
+        except ObjectDoesNotExist:  # pragma: no cover
             messages.warning(request, "Event doesn't exist!")
         return redirect(reverse('sap:calendar'))
 
@@ -705,7 +705,7 @@ class MentorshipView(View):
                 'ally_to_change': ally_to_change,
                 'context': context,
             })
-        except ObjectDoesNotExist:
+        except ObjectDoesNotExist: # pragma: no cover
             messages.warning(request, 'Ally Does Not Exist!')
             return redirect('sap:sap-dashboard')
 
@@ -723,7 +723,7 @@ class MentorshipView(View):
         try:
             mentor = User.objects.get(username=ally_username)
             mentor = Ally.objects.get(user=mentor)
-        except ObjectDoesNotExist:
+        except ObjectDoesNotExist:  # pragma: no cover
             messages.warning(request, "Mentor no longer exists!")
             return redirect('sap:sap-dashboard')
 
@@ -733,14 +733,14 @@ class MentorshipView(View):
                 mentee = User.objects.get(username=mentee_username)
                 mentee = Ally.objects.get(user=mentee)
                 mentees.append(mentee)
-            except ObjectDoesNotExist:
+            except ObjectDoesNotExist:  # pragma: no cover
                 messages.warning(request, 'Mentee user ' + mentee_username + ' does not exist!')
 
         for mentee in mentees:
             try:
                 add_mentee_relation(mentor.id, mentee.id)
                 add_mentor_relation(mentee.id, mentor.id)
-            except IntegrityError:
+            except IntegrityError:  # pragma: no cover
                 messages.warning(request, 'Mentee already has mentor!')
 
         return redirect(reverse('sap:admin_edit_ally', args=[ally_username]))
@@ -761,7 +761,7 @@ class MentorshipView(View):
             messages.success(request,
                              'Invitation for ' + recipient.first_name + " " + recipient.last_name
                              + ' to become your mentee has been sent!')
-        except ObjectDoesNotExist:
+        except ObjectDoesNotExist:  # pragma: no cover
             messages.warning(request, 'Ally not found!')
 
         return redirect('sap:ally-dashboard')
@@ -783,7 +783,7 @@ class MentorshipView(View):
                              'Invitation for ' + recipient.first_name + " " + recipient.last_name
                              + ' to mentor you has been sent!')
 
-        except ObjectDoesNotExist:
+        except ObjectDoesNotExist:  # pragma: no cover
             messages.warning(request, 'Ally not found!')
 
         return redirect('sap:ally-dashboard')
@@ -796,7 +796,7 @@ class MentorshipView(View):
         try:
             notification = Notification.objects.get(id=notification_id)
             notification.delete()
-        except ObjectDoesNotExist:
+        except ObjectDoesNotExist:  # pragma: no cover
             return HttpResponseNotFound
         try:
             mentee = Ally.objects.get(user=request.user)
@@ -809,9 +809,9 @@ class MentorshipView(View):
             make_notification(request, notifications, mentor_user,
                               request.user.first_name + " " + request.user.last_name + " has added you as their mentor!",
                               action_object=mentee)
-        except ObjectDoesNotExist:
+        except ObjectDoesNotExist:  # pragma: no cover
             messages.warning(request, 'Ally not found!')
-        except IntegrityError:
+        except IntegrityError:  # pragma: no cover
             messages.warning(request, 'You already have a mentor!')
         return redirect('sap:notification_center')
 
@@ -823,7 +823,7 @@ class MentorshipView(View):
         try:
             notification = Notification.objects.get(id=notification_id)
             notification.delete()
-        except ObjectDoesNotExist:
+        except ObjectDoesNotExist:  # pragma: no cover
             return HttpResponseNotFound
         try:
             mentor = Ally.objects.get(user=request.user)
@@ -837,9 +837,9 @@ class MentorshipView(View):
             make_notification(request, notifications, mentee_user,
                               request.user.first_name + " " + request.user.last_name + " has added you as their mentee!",
                               action_object=mentor)
-        except ObjectDoesNotExist:
+        except ObjectDoesNotExist:  # pragma: no cover
             messages.warning(request, 'Ally not found!')
-        except IntegrityError:
+        except IntegrityError:  # pragma: no cover
             messages.warning(request, 'Ally already has a mentor!')
         return redirect('sap:notification_center')
 
@@ -859,7 +859,7 @@ class MentorshipView(View):
             notifications = Notification.objects.filter(recipient=mentor_user)
             make_notification(request, notifications, mentor_user,
                               request.user.first_name + " " + request.user.last_name + " has removed you as their mentor!")
-        except ObjectDoesNotExist:
+        except ObjectDoesNotExist:  # pragma: no cover
             messages.warning(request, 'Mentor relationship does not exist!')
         if context == 'notification':
             return redirect('sap:notification_center')
@@ -882,7 +882,7 @@ class MentorshipView(View):
             notifications = Notification.objects.filter(recipient=mentee_user)
             make_notification(request, notifications, mentee_user,
                               request.user.first_name + " " + request.user.last_name + " has removed you as their mentee!")
-        except ObjectDoesNotExist:
+        except ObjectDoesNotExist:  # pragma: no cover
             messages.warning(request, 'Mentee Relationship does not exist!')
         if context == 'notification':
             return redirect('sap:notification_center')
@@ -901,7 +901,7 @@ class MentorshipView(View):
             AllyMentorRelation.objects.get(ally_id=mentee.id).delete()
             AllyMenteeRelation.objects.get(mentee_id=mentee.id).delete()
             messages.success(request, "Mentor Mentee Relationship Deleted Successfully")
-        except ObjectDoesNotExist:
+        except ObjectDoesNotExist:  # pragma: no cover
             messages.warning(request, "Mentee Mentor Relationship Not Found!")
 
         if context == "mentee":
@@ -924,8 +924,8 @@ class MentorshipView(View):
             add_mentor_relation(mentee.id, mentor.id)
             add_mentee_relation(mentor.id, mentee.id)
             messages.success(request, "Mentor Added!")
-        except ObjectDoesNotExist:
+        except ObjectDoesNotExist:  # pragma: no cover
             messages.warning(request, "Ally Not Found!")
-        except IntegrityError:
+        except IntegrityError:  # pragma: no cover
             messages.warning(request, "Mentee already has mentor!")
         return redirect(reverse('sap:admin_edit_ally', args=[mentee_username]))
