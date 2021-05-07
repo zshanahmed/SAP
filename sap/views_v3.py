@@ -129,7 +129,7 @@ class EditAllyProfile(View):
             category = StudentCategories.objects.get(id=category_relation.student_category_id)
             try:
                 mentor = AllyMentorRelation.objects.get(ally_id=ally.id)
-                mentor = Ally.objects.get(id=mentor.ally_id)
+                mentor = Ally.objects.get(id=mentor.mentor_id)
             except ObjectDoesNotExist:
                 mentor = []
             try:
@@ -624,6 +624,41 @@ class MentorshipView(View):
             return redirect('sap:sap-dashboard')
 
     @staticmethod
+    def post(request, ally_username='', context=''):
+        """
+        Add selected mentees to mentor editing as admin
+        """
+        if not request.user.is_staff or context != 'addMentee':
+            return HttpResponseForbidden
+        post_dict = dict(request.POST)
+        mentees = AllyMentorRelation.objects.all()
+
+        try:
+            mentor = User.objects.get(username=ally_username)
+            mentor = Ally.objects.get(user=mentor)
+        except:
+            messages.warning(request, "Mentor no longer exists!")
+            return redirect('sap:sap-dashboard')
+
+        mentees = []
+        for mentee_username in post_dict['mentees-to-add']:
+            try:
+                mentee = User.objects.get(username=mentee_username)
+                mentee = Ally.objects.get(user=mentee)
+                mentees.append(mentee)
+            except ObjectDoesNotExist:
+                messages.add_message('Mentee user ' + mentee_username + ' does not exist!')
+
+        for mentee in mentees:
+            try:
+                add_mentee_relation(mentor.id, mentee.id)
+                add_mentor_relation(mentee.id, mentor.id)
+            except IntegrityError:
+                messages.add_message('Mentee already has mentor!')
+
+        return redirect(reverse('sap:admin_edit_ally', args=[ally_username]))
+
+    @staticmethod
     def make_mentee_notification(request, mentee_requested_username=''):
         """
         Makes a notification from a mentor to a mentee that asks them to become their mentee
@@ -757,7 +792,7 @@ class MentorshipView(View):
         return redirect(reverse('sap:admin_edit_ally', args=[request.user.username]))
 
     @staticmethod
-    def delete_relation_as_admin(request, mentee_username):
+    def delete_relation_as_admin(request, mentee_username, mentor_username, context=''):
         """
         delete a mentor mentee pair as an admin
         """
@@ -771,7 +806,11 @@ class MentorshipView(View):
             messages.success(request, "Mentor Mentee Relationship Deleted Successfully")
         except ObjectDoesNotExist:
             messages.warning(request, "Mentee Mentor Relationship Not Found!")
-        return redirect(reverse('sap:admin_edit_ally', args=[mentee_username]))
+
+        if context == "mentee":
+            return redirect(reverse('sap:admin_edit_ally', args=[mentee_username]))
+        else:
+            return redirect(reverse('sap:admin_edit_ally', args=[mentor_username]))
 
     @staticmethod
     def add_mentor_as_admin(request, mentor_username, mentee_username):
@@ -792,3 +831,4 @@ class MentorshipView(View):
             messages.warning(request, "Ally Not Found!")
         except IntegrityError:
             messages.warning(request, "Mentee already has mentor!")
+        return redirect(reverse('sap:admin_edit_ally', args=[mentee_username]))

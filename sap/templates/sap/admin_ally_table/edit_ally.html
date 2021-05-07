@@ -555,7 +555,7 @@
                         </strong></span>
                         &emsp;
                     {% if req.is_staff %}
-                        <a class="btn btn-danger btn-sm" href="{% url 'sap:admin_delete_mentor_mentee' mentee.user.username %}">
+                        <a class="btn btn-danger btn-sm" href="{% url 'sap:admin_delete_mentor_mentee' mentee.user.username ally.user.username 'mentor' %}">
                             <i class="fa fa-trash"></i>
                         </a>
                     {% else %}
@@ -805,7 +805,7 @@
                         </strong></span>
                         &emsp;
                         {% if req.is_staff %}
-                        <a class="btn btn-danger btn-sm" href="{% url 'sap:admin_delete_mentor_mentee' ally.user.username %}">
+                        <a class="btn btn-danger btn-sm" href="{% url 'sap:admin_delete_mentor_mentee' ally.user.username mentor.user.username 'mentee' %}">
                             <i class="fa fa-trash"></i>
                         </a>
                         {% else %}
@@ -833,7 +833,7 @@
                         </strong></span>
                         &emsp;
                         {% if req.is_staff %}
-                            <a class="btn btn-danger btn-sm" href="{% url 'sap:admin_delete_mentor_mentee' mentee.user.username %}">
+                            <a class="btn btn-danger btn-sm" href="{% url 'sap:admin_delete_mentor_mentee' mentee.user.username ally.user.username 'mentor' %}">
                                 <i class="fa fa-trash"></i>
                             </a>
                         {% else %}
