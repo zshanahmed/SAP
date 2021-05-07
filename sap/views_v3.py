@@ -889,7 +889,7 @@ class MentorshipView(View):
         return redirect(reverse('sap:admin_edit_ally', args=[request.user.username]))
 
     @staticmethod
-    def delete_relation_as_admin(request, mentee_username, mentor_username, context=''):
+    def delete_relation_as_admin(request, mentee_username='', mentor_username='', context=''):
         """
         delete a mentor mentee pair as an admin
         """
@@ -910,7 +910,7 @@ class MentorshipView(View):
         return redirect(reverse('sap:admin_edit_ally', args=[mentor_username]))
 
     @staticmethod
-    def add_mentor_as_admin(request, mentor_username, mentee_username):
+    def add_mentor_as_admin(request, mentor_username='', mentee_username=''):
         """
         add mentor mentee pair as an admin
         """

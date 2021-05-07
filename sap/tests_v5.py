@@ -455,11 +455,8 @@ class MentorshipTests(TestCase):
         Test add mentor to mentee as admin
         """
         self.client.login(username='adminGuy', password='password123')
-        response = self.client.get(reverse('sap:admin_add_mentor_mentee', args=[self.mentor_user2.username,
-                                                                                self.mentee_user2.username]))
-        self.assertEqual(response.status_code, 200)
-        self.client.get(reverse('sap:admin_add_mentor_mentee', args=[self.mentor_user2.username,
-                                                                                self.mentee_user2.username]))
+        response = self.client.get(reverse('sap:admin_add_mentor', args=[self.mentor_ally.user.username, self.mentee_ally.user.username]))
+        self.assertEqual(response.status_code, 302)
         self.check_supposed_relation(self.mentor_ally2.id, self.mentee_ally2.id)
 
     def test_get(self):
