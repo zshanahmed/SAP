@@ -34,7 +34,7 @@
                             </tr>
                         </tfoot>
                         <tbody>
-                            {% for ally in allies_list %}
+                            {% for ally, has_mentor in allies_list.items %}
                                 <!-- Logout Modal-->
                                 <div class="modal fade" id="delAllyModal" tabindex="-1" role="dialog" aria-labelledby="delAllyModalLabel" aria-hidden="true">
                                     <div class="modal-dialog" role="document">
@@ -98,7 +98,7 @@
                                                             </li>
                                                         {% endif %}
                                                     {% endif %}
-                                                    {% if user_ally.interested_in_mentoring and ally.interested_in_being_mentored  and not mentor.id == ally.id %}
+                                                    {% if user_ally.interested_in_mentoring and ally.interested_in_being_mentored  and not has_mentor %}
                                                         <li class="list-inline-item">
                                                             <a href="{% url 'sap:notify_mentee' ally.user.username %}" class="btn btn-dark btn-sm" type="button" data-toggle="tooltip" data-placement="top"
                                                              title="Ask to be Mentor">
