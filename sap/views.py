@@ -28,9 +28,8 @@ from .forms import UpdateAdminProfileForm
 from .models import Announcement, EventInviteeRelation, EventAttendeeRelation, Ally, StudentCategories, \
  AllyStudentCategoryRelation, Event, AllyMentorRelation, AllyMenteeRelation
 
-# Create your views here.
-
 User = get_user_model()
+
 
 def make_notification(request, notifications, user, msg, action_object=''):
     """
