@@ -33,6 +33,7 @@ from sap.models import StudentCategories, Ally, AllyStudentCategoryRelation, Eve
 from sap.tokens import account_activation_token, password_reset_token
 from sap.views import User, AccessMixin
 
+
 class SignUpEventView(View):
     """
     Register for event.
@@ -272,9 +273,6 @@ class SignUpView(TemplateView):
                              'and report this error code, HTTP401.')
 
     def get(self, request):
-        """
-        First log current user out
-        """
         if not request.user.is_authenticated:
             return render(request, self.template_name)
         return redirect('sap:home')

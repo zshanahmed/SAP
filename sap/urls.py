@@ -26,6 +26,7 @@ urlpatterns = [
 
     url(r'^password/$', login_required(views.ChangeAdminPassword.as_view()),
         name='change_password'),
+
     url(r'^update_profile/$', login_required(views.EditAdminProfile.as_view()),
         name='sap-admin_profile'),
 
@@ -40,6 +41,10 @@ urlpatterns = [
     url(r'^calendar/$',
         login_required(views.CalendarView.as_view()),
         name='calendar'),
+
+    url(r'^feedback/$',
+        login_required(sap.views_v3.FeedbackView.as_view()),
+        name='feedback'),
 
     url(r'^delete_event/$', login_required(sap.views_v3.DeleteEventView.as_view()),
         name='admin_delete_event'),
