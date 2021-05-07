@@ -149,6 +149,17 @@
                     <div id='contents'>
                     </div>
                     {% if req.is_staff %}
+                        <div class="row mt-2"></div>
+                        <div class="py-1">
+                            {% if ally.user_type == 'Undergraduate Student' %}
+                                <a class="btn btn-dark" href="{% url 'sap:admin_add_mentor_mentee' ally.user.username 'addMentor'%}">
+                                        Add Mentor
+                                </a>
+                            {% endif %}
+                            <a class="btn btn-success" href="{% url 'sap:admin_add_mentor_mentee' ally.user.username 'addMentee'%}">
+                                Add Mentee(s)
+                            </a>
+                        </div>
                         <button type="submit" formmethod="post" class="btn btn-primary btn-user btn-block mt-2" id="submit_new_ally">
                             Update Ally
                         </button>
@@ -159,14 +170,6 @@
                     {% endif %}
                 <hr>
                 {% if req.is_staff %}
-                    {% if ally.user_type == 'Undergraduate Student' %}
-                        <a class="btn btn-dark" href="{% url 'sap:admin_add_mentor_mentee' ally.user.username 'addMentor'%}">
-                                Add Mentor
-                        </a>
-                    {% endif %}
-                    <a class="btn btn-success" href="{% url 'sap:admin_add_mentor_mentee' ally.user.username 'addMentee'%}">
-                        Add Mentee(s)
-                    </a>
                     <a href="/dashboard" class="btn btn-primary btn-user">
                         Back
                     </a>
