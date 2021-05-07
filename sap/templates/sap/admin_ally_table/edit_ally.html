@@ -160,6 +160,7 @@
                             <a class="btn btn-success" href="{% url 'sap:admin_add_mentor_mentee' ally.user.username 'addMentee'%}">
                                 Add Mentee(s)
                             </a>
+                            {% endif %}
                         </div>
                         <button type="submit" formmethod="post" class="btn btn-primary btn-user btn-block mt-2" id="submit_new_ally">
                             Update Ally
