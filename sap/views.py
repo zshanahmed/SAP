@@ -3,10 +3,8 @@ views has functions that are mapped to the urls in urls.py
 """
 import datetime
 import io
-
 import xlsxwriter
 from fuzzywuzzy import fuzz
-
 from django.core import serializers
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponseForbidden, HttpResponse
@@ -23,7 +21,6 @@ from django.http import HttpResponseNotFound
 from django.utils.dateparse import parse_datetime
 from notifications.signals import notify
 from notifications.models import Notification
-
 from .forms import UpdateAdminProfileForm
 from .models import Announcement, EventInviteeRelation, EventAttendeeRelation, Ally, StudentCategories, \
  AllyStudentCategoryRelation, Event, AllyMentorRelation, AllyMenteeRelation
@@ -68,9 +65,7 @@ def login_success(request):
     if request.user.is_authenticated:
         if request.user.is_staff:
             return redirect('sap:sap-dashboard')
-
         return redirect('sap:ally-dashboard')
-
     return redirect('sap:home')
 
 
@@ -158,7 +153,6 @@ class CreateAnnouncement(AccessMixin, HttpResponse):
         Enter what this class/method does
         """
         notifications = Notification.objects.all()
-
         users = User.objects.all()
         if request.user.is_staff:
             post_dict = dict(request.POST)
@@ -171,7 +165,6 @@ class CreateAnnouncement(AccessMixin, HttpResponse):
                 description=description,
                 created_at=datetime.datetime.utcnow()
             )
-
             for user in users:
                 if not user.is_staff:
                     user_notifications = notifications.filter(recipient=user.id)
@@ -180,7 +173,6 @@ class CreateAnnouncement(AccessMixin, HttpResponse):
 
             messages.success(request, 'Annoucement created successfully !!')
             return redirect('sap:sap-dashboard')
-
         return HttpResponseForbidden()
 
 
@@ -201,7 +193,6 @@ class DeleteAllyProfileFromAdminDashboard(AccessMixin, View):
             ally.delete()
             user.delete()
             categories[0].delete()
-
             messages.success(request, 'Successfully deleted the user ' + username)
             return redirect('sap:sap-dashboard')
 
@@ -754,21 +745,17 @@ class AdminProfileView(TemplateView):
     """Enter what this class/method does"""
     template_name = "sap/profile.html"
 
-
 class AboutPageView(TemplateView):
     """Enter what this class/method does"""
     template_name = "sap/about.html"
-
 
 class ResourcesView(TemplateView):
     """Enter what this class/method does"""
     template_name = "sap/resources.html"
 
-
 class SupportPageView(TemplateView):
     """Enter what this class/method does"""
     template_name = "sap/support.html"
-
 
 class CreateAdminView(AccessMixin, TemplateView):
     """Enter what this class/method does"""
@@ -797,7 +784,6 @@ class CreateAdminView(AccessMixin, TemplateView):
                 if new_admin_dict['new_password'][0] != new_admin_dict['repeat_password'][0]:
                     messages.add_message(request, messages.ERROR, 'New password was not the same as repeated password')
                     return redirect('/create_iba_admin')
-
                 messages.add_message(request, messages.SUCCESS, 'Account Created')
                 user = User.objects.create_user(new_admin_dict['new_username'][0],
                                                 new_admin_dict['new_email'][0], new_admin_dict['new_password'][0])
