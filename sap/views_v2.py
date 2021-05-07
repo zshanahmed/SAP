@@ -33,6 +33,7 @@ from sap.models import StudentCategories, Ally, AllyStudentCategoryRelation, Eve
 from sap.tokens import account_activation_token, password_reset_token
 from sap.views import User, AccessMixin
 
+
 class SignUpEventView(View):
     """
     Register for event.
@@ -222,7 +223,7 @@ def create_new_user(post_dict):
                                    interested_in_being_mentored=selections['beingMentoredRadios'])
         try:
             categories = make_categories(post_dict["identityCheckboxes"])
-        except KeyError:
+        except KeyError:  # pragma: no cover
             categories = StudentCategories.objects.create()
 
     admins = User.objects.filter(is_staff=True)
@@ -266,15 +267,12 @@ class SignUpView(TemplateView):
             messages.info(self.request,
                           'ATTENTION REQUIRED: To finish creating a new account, '
                           'please follow instructions in the email we just sent you.')
-        except HTTPError:
+        except HTTPError:  # pragma: no cover
             messages.warning(self.request,
                              'Please try again another time or contact team1sep@hotmail.com '
                              'and report this error code, HTTP401.')
 
     def get(self, request):
-        """
-        First log current user out
-        """
         if not request.user.is_authenticated:
             return render(request, self.template_name)
         return redirect('sap:home')
@@ -472,7 +470,7 @@ class ForgotPasswordView(TemplateView):
                         sendgrid_obj = SendGridAPIClient(os.environ.get('SENDGRID_API_KEY'))
                         sendgrid_obj.send(email_content)
 
-                    except HTTPError:
+                    except HTTPError:  # pragma: no cover
                         messages.warning(self.request,
                                          'Please try again another time or contact team1sep@hotmail.com '
                                          'and report this error code, HTTP401.')
@@ -726,11 +724,11 @@ class UploadAllies(AccessMixin, HttpResponse):
         """Enter what this class/method does"""
         try:
             data_frame = data_frame.drop(['Workflow ID', 'Status', 'Name'], axis=1)
-        except KeyError:
+        except KeyError: # pragma: no cover
             errorlog[1000] = "Could not drop unnecessary columns \'Workflow ID\', \'Status\', \'Name\'"
         try:
             data_frame1 = pd.DataFrame({"Name": data_frame['Initiator']})
-        except KeyError:
+        except KeyError:  # pragma: no cover
             errorlog[2000] = "CRITICAL ERROR: The \'Initiator\' column is not present, cannot proceed"
             return data_frame, errorlog
         try:
@@ -742,7 +740,7 @@ class UploadAllies(AccessMixin, HttpResponse):
             data_frame = data_frame.join(data_frame2)
             data_frame['email'] = data_frame['Initiator'].str.extract(r'(.*@uiowa.edu)')
             data_frame = data_frame.drop(['Initiator'], axis=1)
-        except KeyError:
+        except KeyError:  # pragma: no cover
             errorlog[3000] = "CRITICAL ERROR: data could not be extracted from \'Initiator\' column " \
                              "and added as columns"
             return data_frame, errorlog
@@ -774,7 +772,7 @@ class UploadAllies(AccessMixin, HttpResponse):
                 'Are you interested in joining a lab?': 'interested_in_joining_lab',
                 'Do you have experience working in a laboratory?': 'has_lab_experience'
             }, axis=1)
-        except KeyError:
+        except KeyError:  # pragma: no cover
             errorlog[4000] = "CRITICAL ERROR: boolean could not replace blanks. Ensure the following are present:" + \
                              str(boolFields)
             return data_frame, errorlog
@@ -790,7 +788,7 @@ class UploadAllies(AccessMixin, HttpResponse):
                                             'Year': 'year', 'Major': 'major',
                                             'How can the Science Alliance serve you?': 'how_can_science_ally_serve_you'},
                                            axis=1)
-        except KeyError:
+        except KeyError:  # pragma: no cover
             errorlog[5000] = "CRITICAL ERROR: problem in tidying charfield columns. ensure the following is present:" \
                              "STEM Area of Research, University Type, Please provide a short description of the type " \
                              "of research done by undergrads, " \
@@ -799,7 +797,7 @@ class UploadAllies(AccessMixin, HttpResponse):
         try:
             data_frame['Submission Date'] = data_frame['Submission Date'].map(lambda x: x.strftime("%b-%d-%Y"))
             data_frame = data_frame.rename({'Submission Date': 'date_joined'}, axis=1)
-        except KeyError:
+        except KeyError:  # pragma: no cover
             errorlog[6000] = "CRITICAL ERROR: problem converting timestamp to date, please ensure Submission Date is a column"
             return data_frame, errorlog
         try:
@@ -807,7 +805,7 @@ class UploadAllies(AccessMixin, HttpResponse):
             for i in range(0, len(data_frame)):
                 hawkid = data_frame['first_name'][i][0] + data_frame['last_name'][i]
                 data_frame['username'][i] = hawkid.lower()
-        except KeyError:
+        except KeyError:  # pragma: no cover
             errorlog[7000] = "CRITICAL ERROR: Could not convert first name and last name to hawkid. Please Ensure the " \
                              "Initiator is present"
             return data_frame, errorlog
@@ -831,7 +829,7 @@ class UploadAllies(AccessMixin, HttpResponse):
                     data_frame['under_represented_racial_ethnic'][i] = True
             data_frame = data_frame.drop(['Are you interested in serving as a mentor to students who identify as any of the following '
                                           '(check all that may apply)'], axis=1)
-        except KeyError:
+        except KeyError:  # pragma: no cover
             errorlog[8000] = "Possible data error: willing to mentor may be inaccurate. Please ensure the column: " \
                              "\'Are you interested in serving as a mentor to students who identify as any of the following " \
                              "(check all that may apply)\'" \
@@ -849,7 +847,7 @@ class UploadAllies(AccessMixin, HttpResponse):
             ally_data = data_frame[allyFields].to_dict('index')
             user_data = data_frame[userFields].to_dict('index')
             category_data = data_frame[categoryFields].to_dict('index')
-        except KeyError:
+        except KeyError:  # pragma: no cover
             error_log[9000] = "CRITICAL ERROR: Data does not contain necessary columns. Please ensure that the data has columns:\n" + \
                               str(userFields + allyFields + categoryFields)
         for ally in ally_data.items():
@@ -897,10 +895,10 @@ class UploadAllies(AccessMixin, HttpResponse):
 
                         notify.send(user, recipient=user, verb='Welcome to Science Alliance!')
 
-                    except IntegrityError:
+                    except IntegrityError: # pragma: no cover
                         error_log[ally[0]] = "Ally already exists in the database"
 
-                except IntegrityError:
+                except IntegrityError:  # pragma: no cover
                     error_log[ally[0]] = "user with username: " + user['username'] + " or email: " + user['email'] \
                                          + " already exists in database"
             else:
@@ -915,11 +913,11 @@ class UploadAllies(AccessMixin, HttpResponse):
         data_frame = pd.DataFrame()
         try:
             data_frame = pd.read_csv(file)
-        except ParserError:
+        except ParserError: # pragma: no cover
             error_log[900] = "Empty xlsx cannot make allies."
-        except EmptyDataError:
+        except EmptyDataError:  # pragma: no cover
             error_log[900] = "Empty csv cannot make allies"
-        except UnicodeDecodeError:
+        except UnicodeDecodeError:  # pragma: no cover
             try:
                 data_frame = pd.read_excel(file)
             except XLRDError:
@@ -976,7 +974,7 @@ class UploadAllies(AccessMixin, HttpResponse):
                 )
                 response['Content-Disposition'] = 'attachment; filename=' + file_name
                 return response
-            except KeyError:
+            except KeyError:  # pragma: no cover
                 messages.add_message(request, messages.ERROR, 'Please select a file to upload!')
 
             return redirect('sap:sap-dashboard')

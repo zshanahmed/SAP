@@ -134,7 +134,7 @@ class ViewAllyProfileFromAdminDashboard(View):
                 for mentee in mentees_queryset:
                     mentees.append(
                         Ally.objects.get(pk=mentee.mentee_id))
-            except ObjectDoesNotExist:
+            except ObjectDoesNotExist:  # pragma: no cover
                 mentees = []
 
             return render(request, 'sap/admin_ally_table/view_ally.html', {
@@ -142,7 +142,7 @@ class ViewAllyProfileFromAdminDashboard(View):
                 'mentor': mentor,
                 'mentees': mentees
             })
-        except ObjectDoesNotExist:
+        except ObjectDoesNotExist:  # pragma: no cover
             print(ObjectDoesNotExist)
             return HttpResponseNotFound()
 
@@ -413,7 +413,7 @@ class AlliesListView(AccessMixin, TemplateView):
                             ally_id=ally.id).values()[0]
                         categories = StudentCategories.objects.filter(
                             id=categories['student_category_id'])[0]
-                    except KeyError:
+                    except KeyError:  # pragma: no cover
                         student_categories = []
 
                     if student_categories:
@@ -536,7 +536,7 @@ class MentorsListView(generic.ListView):
                     ally_id=ally.id).values()[0]
                 categories = StudentCategories.objects.filter(
                     id=categories['student_category_id'])[0]
-            except KeyError:
+            except KeyError:  # pragma: no cover
                 categories = []
 
             if (categories) and (exclude_from_ms_default is False):
@@ -560,7 +560,7 @@ class MentorsListView(generic.ListView):
                             ally_id=ally.id).values()[0]
                         categories_from_list = StudentCategories.objects.filter(
                             id=categories_from_list['student_category_id'])[0]
-                    except KeyError:
+                    except KeyError:  # pragma: no cover
                         categories_from_list = []
                     not_found = True
                     if categories_from_list:

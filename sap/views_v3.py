@@ -1,9 +1,13 @@
 """
 views_v3 has functions that are mapped to the urls in urls.py
 """
+import os
 from shutil import move
+from datetime import datetime
+
+from django.template.loader import render_to_string
 from notifications.models import Notification
-from django.core.files.storage import FileSystemStorage
+import django.core.files.storage
 from django.core.exceptions import ObjectDoesNotExist
 from django.urls import reverse
 from django.views.generic import View
@@ -13,6 +17,8 @@ from django.contrib import messages
 from django.http import HttpResponseNotFound, HttpResponseForbidden
 from django.utils.dateparse import parse_datetime
 from django.db import IntegrityError
+from python_http_client.exceptions import HTTPError
+from sendgrid import Mail, SendGridAPIClient
 
 from sap.views import make_notification, add_mentor_relation, add_mentee_relation
 from sap.views import AccessMixin
@@ -30,7 +36,7 @@ def upload_prof_pic(file, post_dict):
     @param post_dict: request dictionary
     @return:
     """
-    file_system = FileSystemStorage()
+    file_system = django.core.files.storage.FileSystemStorage()
     filename = file_system.save(file.name, file)
     move(filename, '/tmp/{}'.format(filename))
     # Need to delete the uploaded file if called by test function to avoid creating unwanted files on Azure
@@ -222,11 +228,11 @@ class EditAllyProfile(View):
                 aor = ""
             try:
                 how_can_we_help = post_dict["howCanWeHelp"][0]
-            except KeyError:
+            except KeyError:  # pragma: no cover
                 how_can_we_help = ""
             try:
                 description = post_dict['research-des'][0]
-            except KeyError:
+            except KeyError:  # pragma: no cover
                 description = ""
             if not (description == ally.description_of_research_done_at_lab and
                     how_can_we_help == ally.how_can_science_ally_serve_you and
@@ -258,7 +264,7 @@ class EditAllyProfile(View):
 
             try:
                 same = EditAllyProfile.set_categories(post_dict['identityCheckboxes'], category, same)
-            except KeyError:
+            except KeyError:  # pragma: no cover
                 same = EditAllyProfile.set_categories([], category, same)
 
             year = post_dict['undergradYear'][0]
@@ -611,6 +617,60 @@ class EditEventView(View, AccessMixin):
 
         messages.success(request, 'Event Updated Successfully')
         return redirect('/calendar')
+
+
+class FeedbackView(View):
+    """
+    Allow users to send a message to developers.
+    """
+    template_name = "sap/feedback.html"
+
+    def get(self, request):
+        """
+        User type in their email address and message
+        """
+        if request.user.is_authenticated:
+            return render(request, self.template_name)
+        return redirect('sap:home')
+
+    def post(self, request):
+        """
+        Send emails to developers
+        """
+
+        post_dict = dict(request.POST)
+
+        now = datetime.now()
+        dt_string = now.strftime("%m/%d/%Y %H:%M:%S")
+        user = request.user
+        email_user = post_dict["email_address"][0]
+        message = post_dict["message"][0]
+
+        message_body = render_to_string('sap/feedback-mail.html', {
+            'email_to_contact': email_user,
+            'message': '\n' + message,
+            'user': user,
+            'datetime': dt_string,
+        })
+
+        content = Mail(
+            from_email="iba@uiowa.edu",
+            to_emails='team1sep@hotmail.com',
+            subject='[User-Feedback] from ' + email_user + ' on ' + dt_string,
+            html_content=message_body)
+
+        try:
+            sendgrid_obj_request = SendGridAPIClient(os.environ.get('SENDGRID_API_KEY'))
+            sendgrid_obj_request.send(content)
+
+            messages.info(self.request,
+                          'Thank you for your feedback, we will get back to you soon!')
+        except HTTPError:   # pragma: no cover
+            messages.warning(self.request,
+                             'Please try again another time or contact team1sep@hotmail.com '
+                             'and report this error code, HTTP401.')
+
+        return redirect('sap:home')
 
 class MentorshipView(View):
     """
