@@ -9,7 +9,7 @@ on:
       - master
 
 env:
-  WEBAPP_NAME: 'sep-iba-team1'  # Replace with the name of your Azure web app
+  WEBAPP_NAME: 'iba-sep-team1'  # Replace with the name of your Azure web app
 
 jobs:
   build-and-test:
@@ -65,7 +65,7 @@ jobs:
       - name: Log in to Azure CLI
         uses: azure/login@v1
         with:
-          creds: ${{ secrets.AZURE_SERVICE_PRINCIPAL }}
+          creds: ${{ secrets.NEW_SITE_AZURE_SERVICE_PRINCIPAL }}
     
       - name: Disable static collection and set migration command on App Service
         uses: Azure/appservice-settings@v1
