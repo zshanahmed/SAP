@@ -1,6 +1,5 @@
 ### Science Alliance Portal (SAP) Homepage
-https://sep-iba-team1.azurewebsites.net/
-
+https://iba-sep-team1.azurewebsites.net/
 
 ### User Manual
 https://github.com/UIOWAjohnsonhj/001_SEP2021/wiki/08_UserManual
