@@ -2,5 +2,5 @@ last_login,username,first_name,last_name,email,is_active,date_joined,user_type,a
 ,eshaeffer,Elias,Shaeffer,eshaeffer@uiowa.edu,TRUE,Mar-23-2021,Undergraduate Student,,FALSE,,TRUE,FALSE,FALSE,FALSE,FALSE,,FALSE,,Senior,biomedical engineering,TRUE,FALSE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE
 ,zahmed,Zeeshan,Ahmed,zahmed@uiowa.edu,TRUE,Mar-23-2021,Graduate Student,Computer Science and Engineering,FALSE,,FALSE,TRUE,TRUE,TRUE,TRUE,,FALSE,,,,FALSE,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE
 ,nlee,Nam,Le,nlee@uiowa.edu,TRUE,Mar-23-2021,Graduate Student,Computer Science and Engineering,FALSE,,TRUE,TRUE,TRUE,TRUE,TRUE,,FALSE,,,,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE
-,biggoongachonk,Biggoonga,chonk,biggoongachonk@uiowa.edu,TRUE,Mar-23-2021,Faculty,"Biochemistry,Bioinformatics,Biology",TRUE,big research,TRUE,TRUE,FALSE,FALSE,TRUE,,FALSE,,,,FALSE,FALSE,FALSE,FALSE,TRUE,TRUE,FALSE,TRUE,FALSE,TRUE,TRUE
-,tdino,trex,dino,trex@uiowa.edu,True,Mar-24-2021,Staff,,False,,False,False,False,False,False,,False,no,,,False,False,False,False,TRUE,FALSE,TRUE,FALSE,TRUE,TRUE,TRUE
+,johndoe,John,Doe,johndoe@uiowa.edu,TRUE,Mar-23-2021,Faculty,"Biochemistry,Bioinformatics,Biology",TRUE,big research,TRUE,TRUE,FALSE,FALSE,TRUE,,FALSE,,,,FALSE,FALSE,FALSE,FALSE,TRUE,TRUE,FALSE,TRUE,FALSE,TRUE,TRUE
+,janedoe,Jane,Doe,janedoe@uiowa.edu,TRUE,Mar-24-2021,Staff,,FALSE,,FALSE,FALSE,FALSE,FALSE,FALSE,,FALSE,no,,,FALSE,FALSE,FALSE,FALSE,TRUE,FALSE,TRUE,FALSE,TRUE,TRUE,TRUE
