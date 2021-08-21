@@ -255,7 +255,7 @@ class SignUpView(TemplateView):
         })
 
         email_content = Mail(
-            from_email="iba@uiowa.edu",
+            from_email="zshanahmed2@gmail.com",
             to_emails=entered_email,
             subject='Action Required: Confirm Your New Account',
             html_content=message_body)
@@ -267,7 +267,8 @@ class SignUpView(TemplateView):
             messages.info(self.request,
                           'ATTENTION REQUIRED: To finish creating a new account, '
                           'please follow instructions in the email we just sent you.')
-        except HTTPError:  # pragma: no cover
+        except HTTPError as e:  # pragma: no cover
+            print(e.body)
             messages.warning(self.request,
                              'Please try again another time or contact team1sep@hotmail.com '
                              'and report this error code, HTTP401.')
@@ -461,7 +462,7 @@ class ForgotPasswordView(TemplateView):
                     # message_body = 'http:' + '//' + site.domain + message_
 
                     email_content = Mail(
-                        from_email="iba@uiowa.edu",
+                        from_email="zshanahmed2@gmail.com",
                         to_emails=entered_email,
                         subject='Reset Password for Science Alliance Portal',
                         html_content=message_body)

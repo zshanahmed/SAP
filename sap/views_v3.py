@@ -654,8 +654,8 @@ class FeedbackView(View):
         })
 
         content = Mail(
-            from_email="iba@uiowa.edu",
-            to_emails='team1sep@hotmail.com',
+            from_email="zshanahmed2@gmail.com",
+            to_emails='zshanahmed2@gmail.com',
             subject='[User-Feedback] from ' + email_user + ' on ' + dt_string,
             html_content=message_body)
 
