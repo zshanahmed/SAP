@@ -964,6 +964,7 @@ class UploadAllies(AccessMixin, HttpResponse):
         """Uploads allies if they match the requested format and returns a log of users added and errors encountered"""
         if request.user.is_staff:
             try:
+                print(request.FILES)
                 file = request.FILES['file']
                 output = UploadAllies.process_file(file)
                 today = date.today()
