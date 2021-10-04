@@ -1,5 +1,7 @@
 from .settings import *
 import os
+import dj_database_url
+
 
 # Configure the domain name using the environment variable
 # that Azure automatically creates for us.
@@ -22,16 +24,8 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 # DBHOST is only the server name, not the full URL
-hostname = os.environ['DBHOST']
 
 # Configure Postgres database; the full username is username@servername,
 # which we construct using the DBHOST value.
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.environ['DBNAME'],
-        'HOST': hostname + ".postgres.database.azure.com",
-        'USER': os.environ['DBUSER'] + "@" + hostname,
-        'PASSWORD': os.environ['DBPASS'] 
-    }
-}
+db_from_env = dj_database_url.config(conn_max_age=500)
+DATABASES['default'].update(db_from_env)
