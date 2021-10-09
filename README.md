@@ -1,8 +1,9 @@
 ### Science Alliance Portal (SAP) Homepage
-For demo purposes you can use the following credentials:
 
-Username: zeeahmed
-Password: uiowacs123
+For demo purposes following credentials can be used to login:
+
+- Username: zeeahmed
+- Password: uiowacs123
 
 https://scienceallianceportal.herokuapp.com/
 
