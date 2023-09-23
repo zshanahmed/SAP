@@ -184,7 +184,7 @@ def create_new_user(post_dict):
                                     email=post_dict["new_email"][0],
                                     first_name=post_dict["firstName"][0],
                                     last_name=post_dict["lastName"][0],
-                                    is_active=False)  # Set to False until user verify via email
+                                    is_active=True)  # Set to False until user verify via email
 
     if post_dict['roleSelected'][0] != "Undergraduate Student":
         selections = set_boolean(['studentsInterestedRadios', 'labShadowRadios', 'connectingWithMentorsRadios',
@@ -322,8 +322,9 @@ class SignUpView(TemplateView):
                 return redirect("/sign-up")
 
             user, _ = create_new_user(post_dict=post_dict)
-            site = get_current_site(request)
-            self.send_verification_email(user=user, site=site, entered_email=post_dict["new_email"][0])
+            messages.success(request, 'Account created! Please login to access the dashboard')
+            # site = get_current_site(request)
+            # self.send_verification_email(user=user, site=site, entered_email=post_dict["new_email"][0])
         else:
             if User.objects.filter(username=post_dict["new_username"][0]).exists():
                 messages.warning(request,
@@ -342,8 +343,9 @@ class SignUpView(TemplateView):
                                  "Password must be at least {0} characters long".format(min_length))
                 return redirect("/sign-up")
             user, _ = create_new_user(post_dict=post_dict)
-            site = get_current_site(request)
-            self.send_verification_email(user=user, site=site, entered_email=post_dict["new_email"][0])
+            # site = get_current_site(request)
+            # self.send_verification_email(user=user, site=site, entered_email=post_dict["new_email"][0])
+            messages.success(request, 'Account created! Please login to access the dashboard')
 
         return redirect("sap:home")
 
