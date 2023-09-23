@@ -2261,8 +2261,8 @@ fieldset:disabled a.btn {
 }
 .btn-secondary {
   color: #fff;
-  background-color: #858796;
-  border-color: #858796;
+  background-color: #000;
+  border-color: #000;
   box-shadow: 2px 2px 4px lightgray;
 }
 .btn-secondary:hover {
@@ -9424,7 +9424,7 @@ a:focus {
   width: 6.5rem;
 }
 .sidebar .nav-item .nav-link span {
-  font-size: 0.65rem;
+  font-size: 0.8rem;
   display: block;
 }
 .sidebar .nav-item.active .nav-link {
@@ -9601,7 +9601,7 @@ a:focus {
     margin-right: 0.25rem;
   }
   .sidebar .nav-item .nav-link span {
-    font-size: 0.85rem;
+    font-size: 1rem;
     display: inline;
   }
   .sidebar .nav-item .nav-link[data-toggle='collapse']::after {
@@ -9666,7 +9666,7 @@ a:focus {
     width: 6.5rem;
   }
   .sidebar.toggled .nav-item .nav-link span {
-    font-size: 0.65rem;
+    font-size: 0.8rem;
     display: block;
   }
   .sidebar.toggled .nav-item .nav-link i {
